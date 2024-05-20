@@ -1,2 +1,8 @@
-.xcodeproj
-.xcworkspace
+xcuserdata/
+*.xcodeproj
+*.xcworkspace
+graph.dot
+Derived/
+**/.build
+**/Derived
+Package.resolved
