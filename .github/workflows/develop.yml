@@ -38,7 +38,7 @@ jobs:
           cat ./config/TWS.xcconfig
           echo "MARK_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           echo "BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"  >> $GITHUB_ENV
-          echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${BUILD_NUMBER}"
+          echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"
 
       - name: Generate Project (Tuist)
         run: |
