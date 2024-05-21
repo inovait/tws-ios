@@ -3,15 +3,18 @@ import ProjectDescription
 // Project settings
 
 let debugConfiguration: Configuration = .debug(
-    name: "Debug"
+    name: "Debug",
+    xcconfig: .relativeToRoot("config/TWS.xcconfig")
 )
 
 let stagingConfiguration: Configuration = .release(
-    name: "Staging"
+    name: "Staging",
+    xcconfig: .relativeToRoot("config/TWS.xcconfig")
 )
 
 let releaseConfiguration: Configuration = .release(
-    name: "Release"
+    name: "Release",
+    xcconfig: .relativeToRoot("config/TWS.xcconfig")
 )
 
 // Demo app settings
@@ -42,11 +45,13 @@ let infoPlist: [String: Plist.Value] = [
 let project = Project(
     name: "TheWebSnippet",
     organizationName: "Inova IT, d.o.o.",
-    settings: .settings(configurations: [
-        debugConfiguration,
-        stagingConfiguration,
-        releaseConfiguration
-    ]),
+    settings: .settings(
+        configurations: [
+            debugConfiguration,
+            stagingConfiguration,
+            releaseConfiguration
+        ]
+    ),
     targets: [
         .target(
             name: "TWSDemo",
@@ -57,11 +62,17 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["TWSDemo/Source/**"],
             dependencies: [],
-            settings: .settings(configurations: [
-                demoDebugConfiguration,
-                demoStagingConfiguration,
-                demoReleaseConfiguration
-            ])
+            settings: .settings(
+                configurations: [
+                    demoDebugConfiguration,
+                    demoStagingConfiguration,
+                    demoReleaseConfiguration
+                ],
+                defaultSettings: .recommended(excluding: [
+                    "CODE_SIGN_IDENTITY",
+                    "DEVELOPMENT_TEAM"
+                ])
+            )
         )
     ]
 )
