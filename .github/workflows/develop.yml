@@ -1,7 +1,7 @@
 name: Develop Build
 on:
   push:
-    branches: [ WEB-16-i-os-project-setup-ci-c ]
+    branches: [ develop ]
   workflow_dispatch:
 jobs:
   build_develop:
