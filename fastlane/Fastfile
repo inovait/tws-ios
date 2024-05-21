@@ -66,6 +66,14 @@ platform :ios do
     sh("rm -rf api_key_json.json")
   end
   
+  desc "Run unit tests"
+  lane :run_tests do |options|
+    scan(
+      workspace: "./TheWebSnippet.xcworkspace",
+      scheme: "TWSDemoTests"
+    )
+  end
+  
   desc "Build adhoc app for testing"
   lane :build_staging do |options|
     setup_keychain

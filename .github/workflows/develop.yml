@@ -44,7 +44,9 @@ jobs:
         run: |
             tuist generate --no-open
 
-#       TODO: Test
+      - name: Run Tests
+        run: |
+          fastlane :run_tests
 
       - name: "Instal certificates and provision profiles, Build staging"
         env:

@@ -34,10 +34,19 @@ let demoReleaseConfiguration: Configuration = .release(
     xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig")
 )
 
+//
+
+let demoTestsConfiguration: Configuration = .debug(
+    name: "Debug",
+    xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+)
+
+
 // Plist
 
 let infoPlist: [String: Plist.Value] = [
     "UILaunchScreen": [:],
+    "CFBundleDisplayName": "The Web Snippet",
     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
     "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
 ]
@@ -59,7 +68,6 @@ let project = Project(
             name: "TWSDemo",
             destinations: .iOS,
             product: .app,
-            productName: "The Web Snippet",
             bundleId: "com.inova.tws",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(with: infoPlist),
@@ -76,6 +84,22 @@ let project = Project(
                     "CODE_SIGN_IDENTITY",
                     "DEVELOPMENT_TEAM"
                 ])
+            )
+        ),
+        .target(
+            name: "TWSDemoTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsTests",
+            infoPlist: .default,
+            sources: ["TWSDemoTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSDemo")
+            ],
+            settings: .settings(
+                configurations: [
+                    demoTestsConfiguration
+                ]
             )
         )
     ]
