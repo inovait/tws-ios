@@ -40,38 +40,22 @@ jobs:
         run: |
             tuist generate --no-open
 
-#      - name: Set build number offset
-#        uses: mlilback/build-number@v1
-#        id: buildNumber
-#        with:
-#          base: 846
-#          run-id: ${{ github.run_number }}
-#
-#      - name: Set Version
-#        run: |
-#          MARK_VERSION=$(xcodebuild -showBuildSettings -scheme ImpactWrapConsumer | grep MARKETING_VERSION | tr -d 'MARKETING_VERSION =')
-#          cd ImpactWrapConsumer
-#          export MARK_VERSION=${MARK_VERSION}
-#          /usr/bin/agvtool new-marketing-version ${MARK_VERSION}
-#          /usr/bin/agvtool new-version -all ${{ env.BUILD_NUMBER }}
-#          echo "MARK_VERSION=${MARK_VERSION}" >> $GITHUB_ENV
-#
+#       TODO:
 #      - name: Test
 #        run: echo ${{ env.MARK_VERSION }}
-#
-#
-#      - name: "Instal certificates and provision profiles, Build staging"
-#        env:
-#          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-#          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-#          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-#          API_KEY_JSON: ${{ secrets.API_KEY_JSON }}
-#        run: |
-#          export KEYCHAIN_PATH=app-signing.keychain-db
-#          export CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-#          export API_JSON=$API_KEY_JSON
-#
-#          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+      - name: "Instal certificates and provision profiles, Build staging"
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          API_KEY_JSON: ${{ secrets.API_KEY_JSON }}
+        run: |
+          export KEYCHAIN_PATH=app-signing.keychain-db
+          export CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          export API_JSON=$API_KEY_JSON
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 #
 #          fastlane build_inova_staging
 #
