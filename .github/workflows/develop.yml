@@ -30,6 +30,12 @@ jobs:
         with:
           log_level: debug
 
+      - name: Update App Version
+        run: |
+          NEW_VERSION="0.0.${{ github.run_number }}"
+          sed -i '' "s/^MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" ./config/TWS.xcconfig
+          cat ./config/TWS.xcconfig
+
       - name: Generate Project (Tuist)
         run: |
             tuist generate --no-open
