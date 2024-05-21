@@ -30,6 +30,10 @@ jobs:
         with:
           log_level: debug
 
+      - name: Generate Project (Tuist)
+        run: |
+            tuist generate --no-open
+
 #      - name: Set build number offset
 #        uses: mlilback/build-number@v1
 #        id: buildNumber
