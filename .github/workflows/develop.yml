@@ -57,7 +57,7 @@ jobs:
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 #
-#          fastlane build_inova_staging
+          fastlane build_staging
 #
 #      - name: "Generate changelog"
 #        uses: pmuraus/spotlight-changelog-generator-action@main
