@@ -1,0 +1,98 @@
+name: Develop Build
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+jobs:
+  build_develop:
+    concurrency:
+      group: ${{ github.ref }}
+    name: Build
+    runs-on: "self-hosted-mac"
+    steps:
+      - name: Validate xcode version
+        run: |
+            XCODE_VERSION=$(/usr/bin/xcodebuild -version | head -1)
+            echo ${XCODE_VERSION}
+            if [ "$XCODE_VERSION" == "Xcode 15.4" ]
+            then
+                echo "Version up to date"
+            else
+                echo "wrong version"
+                exit 1
+            fi
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+        with:
+          log_level: debug
+
+#      - name: Set build number offset
+#        uses: mlilback/build-number@v1
+#        id: buildNumber
+#        with:
+#          base: 846
+#          run-id: ${{ github.run_number }}
+#
+#      - name: Set Version
+#        run: |
+#          MARK_VERSION=$(xcodebuild -showBuildSettings -scheme ImpactWrapConsumer | grep MARKETING_VERSION | tr -d 'MARKETING_VERSION =')
+#          cd ImpactWrapConsumer
+#          export MARK_VERSION=${MARK_VERSION}
+#          /usr/bin/agvtool new-marketing-version ${MARK_VERSION}
+#          /usr/bin/agvtool new-version -all ${{ env.BUILD_NUMBER }}
+#          echo "MARK_VERSION=${MARK_VERSION}" >> $GITHUB_ENV
+#
+#      - name: Test
+#        run: echo ${{ env.MARK_VERSION }}
+#
+#
+#      - name: "Instal certificates and provision profiles, Build staging"
+#        env:
+#          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+#          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+#          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+#          API_KEY_JSON: ${{ secrets.API_KEY_JSON }}
+#        run: |
+#          export KEYCHAIN_PATH=app-signing.keychain-db
+#          export CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+#          export API_JSON=$API_KEY_JSON
+#
+#          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+#
+#          fastlane build_inova_staging
+#
+#      - name: "Generate changelog"
+#        uses: pmuraus/spotlight-changelog-generator-action@main
+#        with:
+#          jiraBaseUrl: https://impactwrap.atlassian.net
+#
+#      - name: Upload build
+#        uses: pmuraus/spotlight-upload-action@main
+#        with:
+#          buildName: "iOS Development"
+#          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
+#          files: "./Archive/ImpactWrapConsumer.ipa,./Changelog.md"
+#          apiKey: ${{secrets.SPOTLIGHT_KEY}}
+#
+#      - name: Tag build
+#        env:
+#          TAG_BUILD: "build_${{env.BUILD_NUMBER}}"
+#        run: |
+#          git tag ${{env.TAG_BUILD}}
+#          git push origin ${{env.TAG_BUILD}}
+#
+#      - name: Update JIRA
+#        uses: pmuraus/jira-ticket-transition-action@main
+#        with:
+#          sourceTransition: "In Review"
+#          targetTransition: "Ready for QA"
+#          message: "Build available in develop ${{ env.BUILD_NUMBER }}"
+#          jiraBaseUrl: "impactwrap.atlassian.net"
+#          jiraEmail: "hudson@inova.si"
+#          jiraToken: ${{secrets.JIRA_TOKEN}}
+#          githubToken: ${{secrets.GITHUB_TOKEN}}
+
