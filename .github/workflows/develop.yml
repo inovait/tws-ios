@@ -46,7 +46,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          fastlane run_tests
+          fastlane do_tests
 
       - name: "Instal certificates and provision profiles, Build staging"
         env:

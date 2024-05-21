@@ -67,7 +67,7 @@ platform :ios do
   end
   
   desc "Run unit tests"
-  lane :run_tests do |options|
+  lane :do_tests do |options|
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
       scheme: "TWSDemo"
