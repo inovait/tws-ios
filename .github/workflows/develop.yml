@@ -40,9 +40,7 @@ jobs:
         run: |
             tuist generate --no-open
 
-#       TODO:
-#      - name: Test
-#        run: echo ${{ env.MARK_VERSION }}
+#       TODO: Test
 
       - name: "Instal certificates and provision profiles, Build staging"
         env:
@@ -56,37 +54,36 @@ jobs:
           export API_JSON=$API_KEY_JSON
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          
-          fastlane build_staging
-#
-#      - name: "Generate changelog"
-#        uses: pmuraus/spotlight-changelog-generator-action@main
-#        with:
-#          jiraBaseUrl: https://impactwrap.atlassian.net
-#
-#      - name: Upload build
-#        uses: pmuraus/spotlight-upload-action@main
-#        with:
-#          buildName: "iOS Development"
-#          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-#          files: "./Archive/ImpactWrapConsumer.ipa,./Changelog.md"
-#          apiKey: ${{secrets.SPOTLIGHT_KEY}}
-#
-#      - name: Tag build
-#        env:
-#          TAG_BUILD: "build_${{env.BUILD_NUMBER}}"
-#        run: |
-#          git tag ${{env.TAG_BUILD}}
-#          git push origin ${{env.TAG_BUILD}}
-#
-#      - name: Update JIRA
-#        uses: pmuraus/jira-ticket-transition-action@main
-#        with:
-#          sourceTransition: "In Review"
-#          targetTransition: "Ready for QA"
-#          message: "Build available in develop ${{ env.BUILD_NUMBER }}"
-#          jiraBaseUrl: "impactwrap.atlassian.net"
-#          jiraEmail: "hudson@inova.si"
-#          jiraToken: ${{secrets.JIRA_TOKEN}}
-#          githubToken: ${{secrets.GITHUB_TOKEN}}
 
+          fastlane build_staging
+
+      - name: "Generate changelog"
+        uses: pmuraus/spotlight-changelog-generator-action@main
+        with:
+          jiraBaseUrl: https://inova-it.atlassian.net/
+
+      - name: Upload build
+        uses: pmuraus/spotlight-upload-action@main
+        with:
+          buildName: "iOS Development"
+          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
+          files: "./Archive/TWSDemo.ipa,./Changelog.md"
+          apiKey: ${{secrets.SPOTLIGHT_KEY}}
+
+      - name: Tag build
+        env:
+          TAG_BUILD: "build_${{env.BUILD_NUMBER}}"
+        run: |
+          git tag ${{env.TAG_BUILD}}
+          git push origin ${{env.TAG_BUILD}}
+
+      - name: Update JIRA
+        uses: pmuraus/jira-ticket-transition-action@main
+        with:
+          sourceTransition: "In Review"
+          targetTransition: "Ready for QA"
+          message: "Build available in develop ${{ env.BUILD_NUMBER }}"
+          jiraBaseUrl: "inova-it.atlassian.net"
+          jiraEmail: "hudson@inova.si"
+          jiraToken: ${{secrets.JIRA_TOKEN}}
+          githubToken: ${{secrets.GITHUB_TOKEN}}
