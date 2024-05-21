@@ -71,19 +71,13 @@ platform :ios do
     setup_keychain
     download_provision_profiles
     gym(
-        workspace: "./ImpactWrapConsumer.xcworkspace",
+        workspace: "./TheWebSnippet.xcworkspace",
         clean: true,
         output_directory: "./Archive",
-        scheme: "ImpactWrapConsumer",
-        output_name: "ImpactWrapConsumer.ipa",
+        scheme: "TWSDemo",
+        output_name: "TWSDemo.ipa",
         configuration: "Staging",
-        export_method: "ad-hoc",
-  	export_options: {
-    	    provisioningProfiles: { 
-      		"com.impactwrap.ImpactWrapConsumer" => "Impact Wrap AdHoc Provisioning Profile",
-          "com.impactwrap.ImpactWrapConsumer.ImpactWrapWidgetExtension" => "ImpactWrapWidget_adhoc"
-            }
-        }
+        export_method: "ad-hoc"
     )
     setup_delete_keychain
   end
