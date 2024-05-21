@@ -1,4 +1,4 @@
-z`name: Develop Build
+name: Develop Build
 on:
   push:
     branches: [ develop ]
