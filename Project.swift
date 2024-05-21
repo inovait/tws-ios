@@ -1,5 +1,7 @@
 import ProjectDescription
 
+let deploymentTarget = "17.0"
+
 // Project settings
 
 let debugConfiguration: Configuration = .debug(
@@ -69,7 +71,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.inova.tws",
-            deploymentTargets: .iOS("17.0"),
+            deploymentTargets: .iOS(deploymentTarget),
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
@@ -91,6 +93,7 @@ let project = Project(
             destinations: .iOS,
             product: .unitTests,
             bundleId: "com.inova.twsTests",
+            deploymentTargets: .iOS(deploymentTarget),
             infoPlist: .default,
             sources: ["TWSDemoTests/Sources/**"],
             dependencies: [
