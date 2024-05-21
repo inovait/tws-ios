@@ -37,7 +37,9 @@ let demoReleaseConfiguration: Configuration = .release(
 // Plist
 
 let infoPlist: [String: Plist.Value] = [
-    "UILaunchScreen": [:]
+    "UILaunchScreen": [:],
+    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+    "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
 ]
 
 // Project
@@ -57,10 +59,12 @@ let project = Project(
             name: "TWSDemo",
             destinations: .iOS,
             product: .app,
+            productName: "The Web Snippet",
             bundleId: "com.inova.tws",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(with: infoPlist),
-            sources: ["TWSDemo/Source/**"],
+            sources: ["TWSDemo/Sources/**"],
+            resources: ["TWSDemo/Resources/**"],
             dependencies: [],
             settings: .settings(
                 configurations: [
