@@ -18,6 +18,7 @@ struct TWSDemoApp: App {
 
     var body: some Scene {
         WindowGroup {
+            // Trigger build
             ContentView()
         }
     }
