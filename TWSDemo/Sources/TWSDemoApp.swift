@@ -40,10 +40,6 @@ struct ContentView: View {
         }
         .padding()
     }
-
-    func fakeMethod() -> String {
-        ""
-    }
 }
 
 private func _appVersion() -> String {
