@@ -89,6 +89,6 @@ func targetScripts() -> [TargetScript] {
                 "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"
             ],
             basedOnDependencyAnalysis: false
-        ),
+        )
     ]
 }
