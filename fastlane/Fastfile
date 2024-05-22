@@ -67,10 +67,13 @@ platform :ios do
   end
   
   desc "Run unit tests"
+  project_root = File.expand_path("..", Dir.pwd)
+  derived_data_path = File.join(project_root, "DerivedData")
   lane :do_tests do |options|
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
-      scheme: "TWSDemo"
+      scheme: "TWSDemo",
+      derived_data_path: derived_data_path
     )
   end
   
@@ -88,5 +91,12 @@ platform :ios do
         export_method: "ad-hoc"
     )
     setup_delete_keychain
+  end
+
+  desc "Deadcode check"
+  lane :execute_periphery_script do
+  Dir.chdir("..") do
+    sh("bash", "periphery.sh", "DerivedData")
+    end
   end
 end

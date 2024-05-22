@@ -1,0 +1,5 @@
+^.*\/Redux\/.*\.swift.*warning: Parameter 'state' is unused$
+^.*\/Redux\/.*\.swift.*warning: Parameter 'action' is unused$
+^.*\Mock.swift
+^.*\Logger.swift
+^.*\Disposable.swift

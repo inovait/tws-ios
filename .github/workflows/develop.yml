@@ -74,7 +74,7 @@ jobs:
         with:
           buildName: "iOS Development"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Archive/TWSDemo.ipa,./Changelog.md"
+          files: "./Archive/TWSDemo.ipa,TWSDemo.app.dSYM.zip,./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build
