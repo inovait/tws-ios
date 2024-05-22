@@ -76,6 +76,21 @@ func infoPlist() -> [String: Plist.Value] {
 
 func targetScripts() -> [TargetScript] {
     [
+        .pre(
+            script: #"""
+            if [[ "$(uname -m)" == arm64 ]]; then
+                export PATH="/opt/homebrew/bin:$PATH"
+            fi
+
+            if which swiftlint > /dev/null; then
+                swiftlint
+            else
+                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
+            fi
+            """#,
+            name: "SwiftLint",
+            basedOnDependencyAnalysis: false
+        ),
         .post(
             script: #"""
             "${SRCROOT}/Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
