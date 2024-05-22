@@ -65,15 +65,14 @@ platform :ios do
     #remove json with sensitive data
     sh("rm -rf api_key_json.json")
   end
-
-  # TODO: temporary disabled tests
-  #desc "Run unit tests"
-  #lane :do_tests do |options|
-  #  scan(
-  #    workspace: "./TheWebSnippet.xcworkspace",
-  #    scheme: "TWSDemo"
-  #  )
-  #end
+  
+  desc "Run unit tests"
+  lane :do_tests do |options|
+    scan(
+      workspace: "./TheWebSnippet.xcworkspace",
+      scheme: "TWSDemo"
+    )
+  end
   
   desc "Build adhoc app for testing"
   lane :build_staging do |options|
