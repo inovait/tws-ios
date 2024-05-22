@@ -1,0 +1,4 @@
+excluded:
+  - Tuist
+  - Derived
+  - periphery

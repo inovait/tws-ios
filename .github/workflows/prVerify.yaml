@@ -1,0 +1,45 @@
+name: Verifiy branch
+on:
+  push:
+    branches:
+      - '*'
+      - '!master'
+      - '!develop'
+jobs:
+  build:
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
+    name: Build Branch
+    runs-on: "self-hosted-mac"
+    steps:
+      - name: Validate xcode version
+        run: |
+            XCODE_VERSION=$(/usr/bin/xcodebuild -version | head -1)
+            echo ${XCODE_VERSION}
+            if [ "$XCODE_VERSION" == "Xcode 15.4" ]
+            then
+                echo "Version up to date"
+            else
+                echo "wrong version"
+                exit 1
+            fi
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+        with:
+          log_level: debug
+
+      - name: Generate Project (Tuist)
+        run: |
+            tuist install
+            tuist generate --no-open
+
+      - name: Run Tests
+        run: |
+          fastlane do_tests
+
+      - run: fastlane execute_periphery_script

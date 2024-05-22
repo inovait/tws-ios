@@ -1,0 +1,102 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+platform :ios do
+  before_all do
+    ENV["FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD"] = "gvjx-ioqv-fvxj-ihlo"
+  end
+  
+  desc "Delete keychain"
+  lane :setup_delete_keychain do
+    keychain_name = ENV["KEYCHAIN_PATH"]
+    keychain_path = File.expand_path("~/Library/Keychains/#{keychain_name}")
+  
+    delete_keychain(
+      keychain_path: keychain_path
+    ) if File.exist?(keychain_path)
+  end
+  
+  lane :setup_keychain do
+    keychain_name = ENV["KEYCHAIN_PATH"]
+    keychain_password = ENV["KEYCHAIN_PASSWORD"]
+
+    setup_delete_keychain
+  
+    create_keychain(
+      name: keychain_name,
+      password: keychain_password,
+      default_keychain: false,
+      unlock: true,
+      timeout: 3600
+    )
+
+    import_certificate(
+      certificate_path: ENV["CERTIFICATE_PATH"],
+      certificate_password: ENV["CERTIFICATE_PASSWORD"],
+      keychain_name: keychain_name,
+      keychain_password: keychain_password
+    )
+  end
+  
+  desc "Download provision profiles using App Store Connect API "
+  lane :download_provision_profiles do
+    #API_JSON should be ENV variable.
+    sh("printf \"%s\" \"$API_JSON\" > api_key_json.json")	#creates json file from secrets
+
+    current_directory = `pwd`.chomp 	#result of pwd
+    api_key_path = File.join(current_directory, "api_key_json.json")	#Create whole path to json file
+
+    #download all provision profiles
+    sh("fastlane", "sigh", "download_all", "--api_key_path", api_key_path)
+
+    #remove json with sensitive data
+    sh("rm -rf api_key_json.json")
+  end
+  
+  desc "Run unit tests"
+  project_root = File.expand_path("..", Dir.pwd)
+  derived_data_path = File.join(project_root, "DerivedData")
+  lane :do_tests do |options|
+    scan(
+      workspace: "./TheWebSnippet.xcworkspace",
+      scheme: "TWSDemo",
+      derived_data_path: derived_data_path
+    )
+  end
+  
+  desc "Build adhoc app for testing"
+  lane :build_staging do |options|
+    setup_keychain
+    download_provision_profiles
+    gym(
+        workspace: "./TheWebSnippet.xcworkspace",
+        clean: true,
+        output_directory: "./Archive",
+        scheme: "TWSDemo",
+        output_name: "TWSDemo.ipa",
+        configuration: "Staging",
+        export_method: "ad-hoc"
+    )
+    setup_delete_keychain
+  end
+
+  desc "Deadcode check"
+  lane :execute_periphery_script do
+  Dir.chdir("..") do
+    sh("bash", "periphery.sh", "DerivedData")
+    end
+  end
+end

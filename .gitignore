@@ -6,3 +6,13 @@ Derived/
 **/.build
 **/Derived
 Package.resolved
+
+# fastlane specific
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# periphery
+periphery/DerivedData
+periphery_output.txt
