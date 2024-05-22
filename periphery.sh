@@ -26,7 +26,7 @@ fi
 realpath "$index_store_path"
 all_filter_patterns=$(cat "$patterns_file")
 
-if periphery scan --skip-build --index-store-path "$index_store_path/Index.noindex/DataStore/" > "$periphery_output_file"; then
+if periphery scan --skip-build --index-store-path "$index_store_path/Index.noindex/DataStore/" --config .periphery.yml > "$periphery_output_file"; then
     #remove results with pattern
     grep -vE "$all_filter_patterns" "$periphery_output_file" > "$periphery_output_file_tmp"
     mv "$periphery_output_file_tmp" "$periphery_output_file"
