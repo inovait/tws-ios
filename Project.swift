@@ -3,48 +3,6 @@ import ProjectDescriptionHelpers
 
 let deploymentTarget = "17.0"
 
-// Project settings
-
-let debugConfiguration: Configuration = .debug(
-    name: "Debug",
-    xcconfig: .relativeToRoot("config/TWS.xcconfig")
-)
-
-let stagingConfiguration: Configuration = .release(
-    name: "Staging",
-    xcconfig: .relativeToRoot("config/TWS.xcconfig")
-)
-
-let releaseConfiguration: Configuration = .release(
-    name: "Release",
-    xcconfig: .relativeToRoot("config/TWS.xcconfig")
-)
-
-// Demo app settings
-
-let demoDebugConfiguration: Configuration = .debug(
-    name: "Debug",
-    xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")
-)
-
-let demoStagingConfiguration: Configuration = .release(
-    name: "Staging",
-    xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")
-)
-
-let demoReleaseConfiguration: Configuration = .release(
-    name: "Release",
-    xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig")
-)
-
-//
-
-let demoTestsConfiguration: Configuration = .debug(
-    name: "Debug",
-    xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-)
-
-
 // Plist
 
 let infoPlist: [String: Plist.Value] = [
@@ -54,7 +12,7 @@ let infoPlist: [String: Plist.Value] = [
     "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
 ]
 
-//
+// Scripts
 
 let targetScripts: [TargetScript] = [
     .post(
@@ -80,9 +38,9 @@ let project = Project(
     organizationName: "Inova IT, d.o.o.",
     settings: .settings(
         configurations: [
-            debugConfiguration,
-            stagingConfiguration,
-            releaseConfiguration
+            .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
+            .release(name: "Staging", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
+            .release(name: "Release", xcconfig: .relativeToRoot("config/TWS.xcconfig"))
         ]
     ),
     targets: [
@@ -102,9 +60,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    demoDebugConfiguration,
-                    demoStagingConfiguration,
-                    demoReleaseConfiguration
+                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
+                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
+                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
                 ],
                 defaultSettings: .recommended(excluding: [
                     "CODE_SIGN_IDENTITY",
@@ -121,11 +79,16 @@ let project = Project(
             infoPlist: .default,
             sources: ["TWSDemoTests/Sources/**"],
             dependencies: [
-                .target(name: "TWSDemo")
+                .target(name: "TWSDemo"),
+                .external(name: "FirebaseAnalytics"),
+                .external(name: "FirebaseCrashlytics")
             ],
             settings: .settings(
                 configurations: [
-                    demoTestsConfiguration
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
                 ]
             )
         )
