@@ -1,4 +1,5 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let deploymentTarget = "17.0"
 
@@ -53,6 +54,25 @@ let infoPlist: [String: Plist.Value] = [
     "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
 ]
 
+//
+
+let targetScripts: [TargetScript] = [
+    .post(
+        script: #"""
+        "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+        """#,
+        name: "Firebase Crashlystics",
+        inputPaths: [
+            "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+            "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+            "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+            "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+            "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"
+        ],
+        basedOnDependencyAnalysis: false
+    ),
+]
+
 // Project
 
 let project = Project(
@@ -75,7 +95,11 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
-            dependencies: [],
+            scripts: targetScripts,
+            dependencies: [
+                .external(name: "FirebaseAnalytics"),
+                .external(name: "FirebaseCrashlytics")
+            ],
             settings: .settings(
                 configurations: [
                     demoDebugConfiguration,
