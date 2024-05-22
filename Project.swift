@@ -47,9 +47,7 @@ let project = Project(
             infoPlist: .default,
             sources: ["TWSDemoTests/Sources/**"],
             dependencies: [
-                .target(name: "TWSDemo"),
-                .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics")
+                .target(name: "TWSDemo")
             ],
             settings: .settings(
                 configurations: [
