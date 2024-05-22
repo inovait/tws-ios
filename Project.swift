@@ -78,7 +78,7 @@ func targetScripts() -> [TargetScript] {
     [
         .post(
             script: #"""
-            "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+            "${SRCROOT}/Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
             """#,
             name: "Firebase Crashlystics",
             inputPaths: [
