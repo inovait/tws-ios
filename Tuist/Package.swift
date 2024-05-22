@@ -23,7 +23,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/firebase/firebase-ios-sdk.git",
-            from: "10.26.0"
+            exact: .init(10, 26, 0)
         )
     ]
 )
