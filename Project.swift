@@ -24,7 +24,9 @@ let project = Project(
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics")
+                .external(name: "FirebaseCrashlytics"),
+                .target(name: "TWSCore"),
+                .target(name: "TWSCommon")
             ],
             settings: .settings(
                 configurations: [
@@ -57,6 +59,90 @@ let project = Project(
                     )
                 ]
             )
+        ),
+        .target(
+            name: "TWSCore",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twscore",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSCore/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCommon"),
+                .target(name: "TWSModels"),
+                .target(name: "TWSAPI"),
+                .target(name: "TWSSnippet"),
+                .target(name: "TWSSettings"),
+            ]
+        ),
+        .target(
+            name: "TWSSnippet",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twssnippet",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSSnippet/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCommon"),
+                .target(name: "TWSModels"),
+                .target(name: "TWSAPI")
+            ]
+        ),
+        .target(
+            name: "TWSSettings",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twssettings",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSSettings/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCommon"),
+                .target(name: "TWSModels"),
+                .target(name: "TWSAPI")
+            ]
+        ),
+        .target(
+            name: "TWSModels",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twsmodels",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSModels/Sources/**"],
+            dependencies: [
+            ]
+        ),
+        .target(
+            name: "TWSAPI",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twsapi",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSAPI/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels")
+            ]
+        ),
+        .target(
+            name: "TWSCommon",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twscommon",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSCommon/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCommonStatic")
+            ]
+        ),
+        .target(
+            name: "TWSCommonStatic",
+            destinations: .iOS,
+            product: .staticFramework,
+            bundleId: "com.inova.twscommonstatic",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSCommonStatic/Sources/**"],
+            dependencies: [
+                .external(name: "ComposableArchitecture")
+            ]
         )
     ]
 )

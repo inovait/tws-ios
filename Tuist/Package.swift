@@ -6,8 +6,8 @@ import PackageDescription
     import ProjectDescriptionHelpers
 
     let packageSettings = PackageSettings(
-        productTypes: [:
-//            "Firebase": .default, // default is .staticFramework
+        productTypes: [
+            "ComposableArchitecture": .framework
         ],
         baseSettings: .settings(configurations: [
             .debug(name: "Debug"),
@@ -24,6 +24,10 @@ let package = Package(
         .package(
             url: "https://github.com/firebase/firebase-ios-sdk.git",
             exact: .init(10, 26, 0)
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/swift-composable-architecture.git",
+            exact: .init(1, 9, 3)
         )
     ]
 )
