@@ -9,11 +9,13 @@ import PackageDescription
         productTypes: [
             "ComposableArchitecture": .framework
         ],
-        baseSettings: .settings(configurations: [
-            .debug(name: "Debug"),
-            .release(name: "Staging"),
-            .release(name: "Release")
-        ])
+        baseSettings: .settings(
+            configurations: [
+                .debug(name: "Debug"),
+                .release(name: "Staging"),
+                .release(name: "Release")
+            ]
+        )
     )
 
 #endif
@@ -27,7 +29,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: .init(1, 9, 3)
+            exact: .init(1, 10, 4)
         )
     ]
 )

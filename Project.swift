@@ -25,8 +25,7 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWSCore"),
-                .target(name: "TWSCommon")
+                .target(name: "TWSKit")
             ],
             settings: .settings(
                 configurations: [
@@ -61,6 +60,25 @@ let project = Project(
             )
         ),
         .target(
+            name: "TWSKit",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twskit",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSKit/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCore"),
+                .target(name: "TWSModels")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+                ]
+            )
+        ),
+        .target(
             name: "TWSCore",
             destinations: .iOS,
             product: .framework,
@@ -69,11 +87,36 @@ let project = Project(
             sources: ["TWSCore/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
+                .target(name: "TWSSnippets"),
+                .target(name: "TWSSettings")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSSnippets",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twssnippets",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSSnippets/Sources/**"],
+            dependencies: [
+                .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSAPI"),
-                .target(name: "TWSSnippet"),
-                .target(name: "TWSSettings"),
-            ]
+                .target(name: "TWSSnippet")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         ),
         .target(
             name: "TWSSnippet",
@@ -84,9 +127,15 @@ let project = Project(
             sources: ["TWSSnippet/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels"),
-                .target(name: "TWSAPI")
-            ]
+                .target(name: "TWSModels")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         ),
         .target(
             name: "TWSSettings",
@@ -99,7 +148,14 @@ let project = Project(
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSAPI")
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         ),
         .target(
             name: "TWSModels",
@@ -109,7 +165,14 @@ let project = Project(
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSModels/Sources/**"],
             dependencies: [
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+                ]
+            )
         ),
         .target(
             name: "TWSAPI",
@@ -120,7 +183,14 @@ let project = Project(
             sources: ["TWSAPI/Sources/**"],
             dependencies: [
                 .target(name: "TWSModels")
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         ),
         .target(
             name: "TWSCommon",
@@ -131,7 +201,14 @@ let project = Project(
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommonStatic")
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         ),
         .target(
             name: "TWSCommonStatic",
@@ -142,7 +219,14 @@ let project = Project(
             sources: ["TWSCommonStatic/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture")
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         )
     ]
 )

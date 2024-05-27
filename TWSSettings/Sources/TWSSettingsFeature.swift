@@ -5,31 +5,11 @@ import ComposableArchitecture
 public struct TWSSettingsFeature {
 
     @ObservableState
-    public struct State {
-
-        public var counter = 1000
-
-        public init(counter: Int = 1000) {
-            self.counter = counter
-        }
+    public struct State { 
+        public init() { }
     }
 
-    public enum Action {
-        case increase
-        case decrease
-    }
+    public enum Action { }
 
     public init() { }
-
-    public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .increase:
-            state.counter += 1
-            return .none
-
-        case .decrease:
-            state.counter -= 1
-            return .none
-        }
-    }
 }

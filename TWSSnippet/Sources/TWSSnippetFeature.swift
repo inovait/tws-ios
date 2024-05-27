@@ -1,35 +1,21 @@
 import Foundation
 import ComposableArchitecture
+import TWSModels
 
 @Reducer
 public struct TWSSnippetFeature {
 
     @ObservableState
-    public struct State {
+    public struct State: Equatable {
 
-        public var counter = 1
+        public let snippet: TWSSnippet
 
-        public init(counter: Int = 1) {
-            self.counter = counter
+        public init(snippet: TWSSnippet) {
+            self.snippet = snippet
         }
     }
 
-    public enum Action {
-        case increase
-        case decrease
-    }
+    public enum Action { }
 
     public init() { }
-
-    public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .increase:
-            state.counter += 1
-            return .none
-
-        case .decrease:
-            state.counter -= 1
-            return .none
-        }
-    }
 }

@@ -1,17 +1,7 @@
 import SwiftUI
 import Firebase
-import TWSCore
-import ComposableArchitecture
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-
-    let store = Store(
-        initialState: TWSCoreFeature.State(
-            settings: .init(counter: 1000),
-            snippet: .init(counter: 1)
-        ),
-        reducer: { TWSCoreFeature() }
-    )
 
     func application(
         _ application: UIApplication,
@@ -29,63 +19,7 @@ struct TWSDemoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(store: delegate.store)
+            ContentView()
         }
     }
-}
-
-struct ContentView: View {
-
-    let store: StoreOf<TWSCoreFeature>
-
-    var body: some View {
-        VStack {
-            Spacer()
-
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-
-            Text("Hello world, from TWS")
-
-            Spacer()
-
-            HStack {
-                Button("Increment") {
-                    store.send(.settings(.increase))
-                }
-
-                Text("Settings counter: \(store.settings.counter)")
-
-                Button("Decrement") {
-                    store.send(.settings(.decrease))
-                }
-            }
-
-            Spacer()
-
-            HStack {
-                Button("Increment") {
-                    store.send(.snippet(.increase))
-                }
-
-                Text("Settings counter: \(store.snippet.counter)")
-
-                Button("Decrement") {
-                    store.send(.snippet(.decrease))
-                }
-            }
-
-            Spacer()
-
-            Text("v\(_appVersion())")
-        }
-        .padding()
-    }
-}
-
-private func _appVersion() -> String {
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
-    return "\(version) (\(build))"
 }
