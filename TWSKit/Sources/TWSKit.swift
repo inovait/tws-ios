@@ -4,6 +4,9 @@ import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 
+// TODO: Switch back to dynamic frameworks
+// https://github.com/tuist/tuist/issues/6339
+
 public class TWSManager {
 
     private let store: StoreOf<TWSCoreFeature>

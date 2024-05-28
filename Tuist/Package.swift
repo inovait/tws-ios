@@ -6,8 +6,8 @@ import PackageDescription
     import ProjectDescriptionHelpers
 
     let packageSettings = PackageSettings(
-        productTypes: [
-            "ComposableArchitecture": .framework
+        productTypes: [:
+//            "ComposableArchitecture": .framework
         ],
         baseSettings: .settings(
             configurations: [

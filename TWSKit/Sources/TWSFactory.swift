@@ -11,17 +11,23 @@ import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
+@_implementationOnly import TWSCommon
 @_implementationOnly import ComposableArchitecture
 
 public class TWSFactory {
 
     public class func new() -> TWSManager {
         let stream = AsyncStream<[TWSSnippet]>.makeStream()
+        let state = TWSCoreFeature.State(
+            settings: .init(),
+            snippets: .init()
+        )
+
+        let storage = state.snippets.snippets.map(\.snippet)
+        print("-> (\(storage.count)) items loaded from disk.", Date())
+
         let store = Store(
-            initialState: TWSCoreFeature.State(
-                settings: .init(),
-                snippets: .init(snippets: [])
-            ),
+            initialState: state,
             reducer: {
                 TWSCoreFeature()
                     .onChange(of: \.snippets.snippets) { _, newValue in
@@ -32,6 +38,8 @@ public class TWSFactory {
                     }
             }
         )
+
+        stream.continuation.yield(storage)
 
         return TWSManager(store: store, stream: stream.stream)
     }

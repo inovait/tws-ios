@@ -5,16 +5,14 @@ import TWSCommon
 import TWSModels
 
 @Reducer
-public struct TWSSnippetsFeature { 
+public struct TWSSnippetsFeature {
 
     @ObservableState
     public struct State {
 
-        public var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
+        @Shared(.snippets) public internal(set) var snippets
 
-        public init(snippets: IdentifiedArrayOf<TWSSnippetFeature.State>) {
-            self.snippets = snippets
-        }
+        public init() { }
     }
 
     public enum Action {

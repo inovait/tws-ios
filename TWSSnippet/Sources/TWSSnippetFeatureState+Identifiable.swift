@@ -10,7 +10,6 @@ import Foundation
 import TWSModels
 
 extension TWSSnippetFeature.State: Identifiable {
-    
     public var id: TWSSnippet.ID {
         return snippet.id
     }

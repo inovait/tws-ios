@@ -12,7 +12,6 @@ import TWSAPI
 import ComposableArchitecture
 
 public struct APIDependency {
-    
     public var getSnippets: @Sendable () async throws -> [TWSSnippet]
 }
 

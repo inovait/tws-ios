@@ -81,7 +81,7 @@ let project = Project(
         .target(
             name: "TWSCore",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscore",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCore/Sources/**"],
@@ -101,7 +101,7 @@ let project = Project(
         .target(
             name: "TWSSnippets",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippets",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippets/Sources/**"],
@@ -121,7 +121,7 @@ let project = Project(
         .target(
             name: "TWSSnippet",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippet",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippet/Sources/**"],
@@ -140,14 +140,13 @@ let project = Project(
         .target(
             name: "TWSSettings",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssettings",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSettings/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels"),
-                .target(name: "TWSAPI")
+                .target(name: "TWSModels")
             ],
             settings: .settings(
                 configurations: [
@@ -195,30 +194,13 @@ let project = Project(
         .target(
             name: "TWSCommon",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscommon",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
-                .target(name: "TWSCommonStatic")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
-                ]
-            )
-        ),
-        .target(
-            name: "TWSCommonStatic",
-            destinations: .iOS,
-            product: .staticFramework,
-            bundleId: "com.inova.twscommonstatic",
-            deploymentTargets: .iOS(deploymentTarget()),
-            sources: ["TWSCommonStatic/Sources/**"],
-            dependencies: [
-                .external(name: "ComposableArchitecture")
+                .external(name: "ComposableArchitecture"),
+                .target(name: "TWSAPI")
             ],
             settings: .settings(
                 configurations: [

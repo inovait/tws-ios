@@ -6,7 +6,7 @@ import TWSModels
 public struct TWSSnippetFeature {
 
     @ObservableState
-    public struct State: Equatable {
+    public struct State: Equatable, Codable {
 
         public let snippet: TWSSnippet
 

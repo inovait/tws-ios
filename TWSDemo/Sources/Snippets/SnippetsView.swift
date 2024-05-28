@@ -20,8 +20,12 @@ struct SnippetsView: View {
             ScrollView {
                 VStack {
                     ForEach(snippets, id: \.target) { snippet in
-                        TWSView(snippet: snippet)
-                            .border(Color.black)
+                        VStack(alignment: .leading) {
+                            Text("\(snippet.id.uuidString.suffix(4)) @ \(snippet.target.path)")
+                            TWSView(snippet: snippet)
+                                .border(Color.black)
+                        }
+
                     }
                 }
                 .padding()

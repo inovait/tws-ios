@@ -5,8 +5,9 @@ import ComposableArchitecture
 public struct TWSSettingsFeature {
 
     @ObservableState
-    public struct State { 
-        public init() { }
+    public struct State {
+        public init() {
+        }
     }
 
     public enum Action { }
