@@ -1,34 +1,39 @@
 import Foundation
 import ComposableArchitecture
+import TWSModels
 
 @Reducer
 public struct TWSSnippetFeature {
 
     @ObservableState
-    public struct State {
+    public struct State: Equatable, Codable {
 
-        public var counter = 1
+        // Used for unit tests and can be removed once the snippet won't be the only property anymore
+        public var tag: UUID?
+        public var snippet: TWSSnippet
 
-        public init(counter: Int = 1) {
-            self.counter = counter
+        public init(snippet: TWSSnippet) {
+            self.snippet = snippet
+            self.tag = nil
         }
     }
 
     public enum Action {
-        case increase
-        case decrease
+
+        @CasePathable
+        public enum Business {
+            case setTag(UUID?)
+        }
+
+        case business(Business)
     }
 
     public init() { }
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
-        case .increase:
-            state.counter += 1
-            return .none
-
-        case .decrease:
-            state.counter -= 1
+        case let .business(.setTag(tag)):
+            state.tag = tag
             return .none
         }
     }

@@ -6,6 +6,7 @@ Derived/
 **/.build
 **/Derived
 Package.resolved
+DerivedData/
 
 # fastlane specific
 **/fastlane/report.xml

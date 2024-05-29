@@ -1,7 +1,7 @@
 import Foundation
 import ComposableArchitecture
 import TWSSettings
-import TWSSnippet
+import TWSSnippets
 
 @Reducer
 public struct TWSCoreFeature {
@@ -10,11 +10,11 @@ public struct TWSCoreFeature {
     public struct State {
 
         public var settings: TWSSettingsFeature.State
-        public var snippet: TWSSnippetFeature.State
+        public var snippets: TWSSnippetsFeature.State
 
-        public init(settings: TWSSettingsFeature.State, snippet: TWSSnippetFeature.State) {
+        public init(settings: TWSSettingsFeature.State, snippets: TWSSnippetsFeature.State) {
             self.settings = settings
-            self.snippet = snippet
+            self.snippets = snippets
         }
     }
 
@@ -22,7 +22,7 @@ public struct TWSCoreFeature {
 
     public enum Action {
         case settings(TWSSettingsFeature.Action)
-        case snippet(TWSSnippetFeature.Action)
+        case snippets(TWSSnippetsFeature.Action)
     }
 
     public var body: some ReducerOf<Self> {
@@ -30,8 +30,8 @@ public struct TWSCoreFeature {
             TWSSettingsFeature()
         }
 
-        Scope(state: \.snippet, action: \.snippet) {
-            TWSSnippetFeature()
+        Scope(state: \.snippets, action: \.snippets) {
+            TWSSnippetsFeature()
         }
     }
 }
