@@ -99,7 +99,6 @@ extension WebView {
             webView.evaluateJavaScript(script, completionHandler: { (height, _) in
                 DispatchQueue.main.async { [weak self] in
                     guard let height = height as? CGFloat else { return }
-                    print("-> height", height)
 
                     if height <= 0 {
                         self?._scheduleHeightUpdate(webView)

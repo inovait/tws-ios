@@ -86,7 +86,7 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            print("Error loading snippets", error)
+            print("Snippets error loading snippets", error)
             return .none
 
         case .snippets:

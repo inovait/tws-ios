@@ -28,5 +28,3 @@ final class TWSDemoTests: XCTestCase {
         // Check the results with assertions afterwards.
     }
 }
-
-// TODO: Remove prints

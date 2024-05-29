@@ -72,7 +72,7 @@ platform :ios do
   lane :do_tests do |options|
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
-      scheme: "TWSDemo",
+      scheme: "TheWebSnippet",
       derived_data_path: derived_data_path
     )
   end
