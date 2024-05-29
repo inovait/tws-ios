@@ -4,6 +4,14 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "TheWebSnippet",
     organizationName: "Inova IT, d.o.o.",
+    options: .options(
+        automaticSchemesOptions: .enabled(
+            targetSchemesGrouping: .singleScheme,
+            codeCoverageEnabled: false,
+            testingOptions: [],
+            testScreenCaptureFormat: .screenshots
+        )
+    ),
     settings: .settings(
         configurations: [
             .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
@@ -115,6 +123,26 @@ let project = Project(
                     .debug(name: "Debug"),
                     .release(name: "Staging"),
                     .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSSnippetsTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twssnippetsTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSSnippetsTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSSnippets")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
                 ]
             )
         ),

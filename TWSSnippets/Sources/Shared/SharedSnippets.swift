@@ -16,12 +16,9 @@ extension URL {
     static let snippets = URL.documentsDirectory.appending(component: "snippets.json")
 }
 
-extension PersistenceReaderKey where Self == 
-PersistenceKeyDefault<
+extension PersistenceReaderKey where Self == PersistenceKeyDefault<
 FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>>
->
-{
-
+> {
     static var snippets: Self {
         PersistenceKeyDefault(.fileStorage(.snippets), [])
     }

@@ -21,7 +21,6 @@ struct SnippetsView: View {
                 VStack {
                     ForEach(snippets, id: \.target) { snippet in
                         VStack(alignment: .leading) {
-                            Text("\(snippet.id.uuidString.suffix(4)) @ \(snippet.target.path)")
                             TWSView(snippet: snippet)
                                 .border(Color.black)
                         }

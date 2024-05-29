@@ -29,5 +29,4 @@ final class TWSDemoTests: XCTestCase {
     }
 }
 
-// TODO: tests
 // TODO: Remove prints

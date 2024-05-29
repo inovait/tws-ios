@@ -19,7 +19,9 @@ struct TWSDemoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if NSClassFromString("XCTestCase") == nil {
+                ContentView()
+            }
         }
     }
 }
