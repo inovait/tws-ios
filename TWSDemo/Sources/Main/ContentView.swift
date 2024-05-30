@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import TWSModels
 
 struct ContentView: View {
 
