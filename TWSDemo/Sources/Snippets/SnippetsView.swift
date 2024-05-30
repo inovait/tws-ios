@@ -21,7 +21,7 @@ struct SnippetsView: View {
                 VStack {
                     ForEach(twsViewModel.snippets, id: \.target) { snippet in
                         VStack(alignment: .leading) {
-                            TWSView(snippet: snippet, bindTo: "")
+                            TWSView(snippet: snippet)
                                 .border(Color.black)
                         }
                     }
