@@ -2,3 +2,6 @@ excluded:
   - Tuist
   - Derived
   - periphery
+  - DerivedData
+disabled_rules:
+  - nesting

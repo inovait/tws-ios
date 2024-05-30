@@ -2,6 +2,7 @@ import SwiftUI
 import Firebase
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -18,32 +19,9 @@ struct TWSDemoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if NSClassFromString("XCTestCase") == nil {
+                ContentView()
+            }
         }
     }
-}
-
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Spacer()
-
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-
-            Text("Hello world, from TWS")
-
-            Spacer()
-
-            Text("v\(_appVersion())")
-        }
-        .padding()
-    }
-}
-
-private func _appVersion() -> String {
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
-    return "\(version) (\(build))"
 }
