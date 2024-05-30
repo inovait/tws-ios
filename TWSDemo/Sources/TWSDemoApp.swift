@@ -1,5 +1,7 @@
 import SwiftUI
 import Firebase
+import TWSKit
+import TWSModels
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -16,11 +18,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct TWSDemoApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @State private var twsViewModel = TWSViewModel(snippets: [])
 
     var body: some Scene {
         WindowGroup {
             if NSClassFromString("XCTestCase") == nil {
                 ContentView()
+                    .environment(twsViewModel)
+                    .task {
+                        let manager = TWSFactory.new()
+                        manager.run()
+
+                        for await snippets in manager.stream {
+                            self.twsViewModel.snippets = snippets
+                        }
+                    }
             }
         }
     }
