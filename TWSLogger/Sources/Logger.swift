@@ -6,10 +6,6 @@ public struct TWSLog {
 	public init(subsystem: String = Bundle.main.bundleIdentifier!, category: String) {
         self.logger = Logger(subsystem: subsystem, category: category)
     }
-	
-	public func log(event: String) {
-		logger.log("\(event, privacy: .public)")
-	}
 
 	public func logMessage(message: String) {
 		logger.log("\(message, privacy: .public)")
