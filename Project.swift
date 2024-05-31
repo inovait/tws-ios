@@ -25,7 +25,8 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWSKit")
+                .target(name: "TWSKit"),
+				.target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -222,6 +223,21 @@ let project = Project(
                 .external(name: "ComposableArchitecture"),
                 .target(name: "TWSAPI")
             ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSLogger",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twslogger",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSLogger/Sources/**"],
             settings: .settings(
                 configurations: [
                     .debug(name: "Debug"),
