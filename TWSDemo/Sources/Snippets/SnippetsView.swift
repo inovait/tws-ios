@@ -21,14 +21,24 @@ struct SnippetsView: View {
                 VStack {
                     ForEach(twsViewModel.snippets, id: \.target) { snippet in
                         VStack(alignment: .leading) {
-                            TWSView(snippet: snippet)
-                                .border(Color.black)
+                            TWSView(
+                                snippet: snippet,
+                                using: twsViewModel.manager,
+                                displayID: "tab-list-\(snippet.id.uuidString)"
+                            )
+                            .border(Color.black)
                         }
                     }
                 }
                 .padding()
             }
             .navigationTitle("Snippets")
+        }
+        .onAppear {
+            print("-> on appear snippets view \(twsViewModel.snippets.count)")
+        }
+        .onChange(of: twsViewModel.snippets.count) { _, newValue in
+            print("-> on change \(newValue)", Date())
         }
     }
 }

@@ -35,8 +35,10 @@ final class SnippetsTests: XCTestCase {
             .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
+        let state = TWSSnippetsFeature.State()
+
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getSnippets = { snippets }
@@ -50,9 +52,10 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
         }
 
-        let newTag = UUID()
-        await store.send(.business(.snippets(.element(id: s1ID, action: .business(.setTag(newTag)))))) {
-            $0.snippets[id: s1ID]?.tag = newTag
+        await store.send(
+            .business(.snippets(.element(id: s1ID, action: .business(.update(height: 500, forId: "display1")))))
+        ) {
+            $0.snippets[id: s1ID]?.displayInfo.displays["display1"] = .init(id: "display1", height: 500)
         }
 
         // Send response for the second time (state must be preserved)

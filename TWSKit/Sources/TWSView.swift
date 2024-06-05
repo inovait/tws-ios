@@ -12,28 +12,48 @@ import TWSModels
 
 public struct TWSView: View {
 
-    @State var height: CGFloat = .zero
+    @State var height: CGFloat
     let snippet: TWSSnippet
+    let handler: TWSManager
+    let displayID: String
 
-    public init(snippet: TWSSnippet) {
+    public init(
+        snippet: TWSSnippet,
+        using handler: TWSManager,
+        displayID id: String
+    ) {
         self.snippet = snippet
+        self.handler = handler
+        self._height = .init(initialValue: handler.height(for: snippet, displayID: id) ?? .zero)
+        self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     public var body: some View {
         WebView(
+            identifier: snippet.id,
             url: snippet.target,
             dynamicHeight: $height
         )
-        .frame(height: height)
+        .frame(idealHeight: height)
+        .onChange(of: height) { _, height in
+            guard height > 0 else { return }
+            handler.set(height: height, for: snippet, displayID: displayID)
+        }
     }
 }
 
 struct WebView: UIViewRepresentable {
 
     @Binding var dynamicHeight: CGFloat
+    let identifier: UUID
     let url: URL
 
-    init(url: URL, dynamicHeight: Binding<CGFloat>) {
+    init(
+        identifier: UUID,
+        url: URL,
+        dynamicHeight: Binding<CGFloat>
+    ) {
+        self.identifier = identifier
         self.url = url
         self._dynamicHeight = dynamicHeight
     }
@@ -43,6 +63,7 @@ struct WebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = false
         webView.navigationDelegate = context.coordinator
+        webView.configuration.websiteDataStore = .init(forIdentifier: identifier)
         return webView
     }
 
@@ -51,8 +72,9 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        uiView.load(URLRequest(url: url))
+        uiView.load(URLRequest(url: self.url))
     }
+
 }
 
 extension WebView {
@@ -66,47 +88,55 @@ extension WebView {
             self.parent = parent
         }
 
-        public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            _scheduleHeightUpdate(webView)
-        }
-
-        func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-            _scheduleHeightUpdate(webView)
-        }
-
-        func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-            _scheduleHeightUpdate(webView)
-        }
-
-        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-            _scheduleHeightUpdate(webView)
+        public func webView(
+            _ webView: WKWebView,
+            didFinish navigation: WKNavigation!
+        ) {
+            Task { [weak self] in try? await self?._updateHeight(webView) }
         }
 
         // MARK: - Helpers
 
+        @MainActor
+        @discardableResult
+        private func _updateHeight(_ webView: WKWebView) async throws -> Bool {
+            let scriptBody = #"""
+            document.readyState === 'complete' ? (() => {
+                const bodyHeight = document.body.scrollHeight;
+                const header = document.querySelector('header');
+                const headerHeight = header ? header.scrollHeight : 0;
+                const footer = document.querySelector('footer');
+                const footerHeight = footer ? footer.scrollHeight : 0;
+                return bodyHeight + headerHeight + footerHeight;
+            })() : -1;
+            """#
+
+            let result = try await webView.evaluateJavaScript(scriptBody)
+            guard let height = result as? CGFloat else { return false }
+
+            if height <= 0 {
+                _scheduleHeightUpdate(webView)
+                return false
+            } else {
+                parent.dynamicHeight = max(height, parent.dynamicHeight)
+                return true
+            }
+        }
+
         private func _scheduleHeightUpdate(_ webView: WKWebView) {
             heightWorkItem?.cancel()
             heightWorkItem = .init { [weak self] in
-                self?._updateHeight(webView)
+                Task { [webView, weak self] in
+                    do {
+                        try await self?._updateHeight(webView)
+                    } catch {
+                        assertionFailure("\(error)")
+                    }
+                }
             }
 
             guard let heightWorkItem else { fatalError("Can not be nil") }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: heightWorkItem)
-        }
-
-        private func _updateHeight(_ webView: WKWebView) {
-            let script = "document.readyState === 'complete' ? document.body.scrollHeight : -1"
-            webView.evaluateJavaScript(script, completionHandler: { (height, _) in
-                DispatchQueue.main.async { [weak self] in
-                    guard let height = height as? CGFloat else { return }
-
-                    if height <= 0 {
-                        self?._scheduleHeightUpdate(webView)
-                    } else {
-                        self?.parent.dynamicHeight = height
-                    }
-                }
-            })
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: heightWorkItem)
         }
     }
 }
