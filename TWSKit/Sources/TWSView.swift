@@ -29,8 +29,7 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        print(Self._printChanges())
-        return WebView(
+        WebView(
             identifier: snippet.id,
             url: snippet.target,
             dynamicHeight: $height
