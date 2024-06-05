@@ -29,7 +29,8 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        WebView(
+        print(Self._printChanges())
+        return WebView(
             identifier: snippet.id,
             url: snippet.target,
             dynamicHeight: $height
@@ -63,7 +64,11 @@ struct WebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = false
         webView.navigationDelegate = context.coordinator
-        webView.configuration.websiteDataStore = .init(forIdentifier: identifier)
+        webView.uiDelegate = context.coordinator
+        webView.load(URLRequest(url: self.url))
+        Task {
+            await print(webView.configuration.websiteDataStore.httpCookieStore.allCookies())
+        }
         return webView
     }
 
@@ -72,71 +77,19 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        uiView.load(URLRequest(url: self.url))
+        print("-> updated ui view")
     }
-
 }
 
 extension WebView {
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject {
 
         var parent: WebView
-        private var heightWorkItem: DispatchWorkItem?
+        var heightWorkItem: DispatchWorkItem?
 
         init(_ parent: WebView) {
             self.parent = parent
-        }
-
-        public func webView(
-            _ webView: WKWebView,
-            didFinish navigation: WKNavigation!
-        ) {
-            Task { [weak self] in try? await self?._updateHeight(webView) }
-        }
-
-        // MARK: - Helpers
-
-        @MainActor
-        @discardableResult
-        private func _updateHeight(_ webView: WKWebView) async throws -> Bool {
-            let scriptBody = #"""
-            document.readyState === 'complete' ? (() => {
-                const bodyHeight = document.body.scrollHeight;
-                const header = document.querySelector('header');
-                const headerHeight = header ? header.scrollHeight : 0;
-                const footer = document.querySelector('footer');
-                const footerHeight = footer ? footer.scrollHeight : 0;
-                return bodyHeight + headerHeight + footerHeight;
-            })() : -1;
-            """#
-
-            let result = try await webView.evaluateJavaScript(scriptBody)
-            guard let height = result as? CGFloat else { return false }
-
-            if height <= 0 {
-                _scheduleHeightUpdate(webView)
-                return false
-            } else {
-                parent.dynamicHeight = max(height, parent.dynamicHeight)
-                return true
-            }
-        }
-
-        private func _scheduleHeightUpdate(_ webView: WKWebView) {
-            heightWorkItem?.cancel()
-            heightWorkItem = .init { [weak self] in
-                Task { [webView, weak self] in
-                    do {
-                        try await self?._updateHeight(webView)
-                    } catch {
-                        assertionFailure("\(error)")
-                    }
-                }
-            }
-
-            guard let heightWorkItem else { fatalError("Can not be nil") }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: heightWorkItem)
         }
     }
 }

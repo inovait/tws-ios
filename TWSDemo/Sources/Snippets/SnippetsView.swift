@@ -24,7 +24,7 @@ struct SnippetsView: View {
                             TWSView(
                                 snippet: snippet,
                                 using: twsViewModel.manager,
-                                displayID: "tab-list-\(snippet.id.uuidString)"
+                                displayID: "list-\(snippet.id.uuidString)"
                             )
                             .border(Color.black)
                         }
