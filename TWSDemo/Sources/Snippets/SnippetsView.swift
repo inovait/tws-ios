@@ -21,8 +21,12 @@ struct SnippetsView: View {
                 VStack {
                     ForEach(twsViewModel.snippets, id: \.target) { snippet in
                         VStack(alignment: .leading) {
-                            TWSView(snippet: snippet)
-                                .border(Color.black)
+                            TWSView(
+                                snippet: snippet,
+                                using: twsViewModel.manager,
+                                displayID: "list-\(snippet.id.uuidString)"
+                            )
+                            .border(Color.black)
                         }
                     }
                 }

@@ -18,7 +18,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct TWSDemoApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @State private var twsViewModel = TWSViewModel(snippets: [])
+    @State private var twsViewModel = TWSViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -26,10 +26,7 @@ struct TWSDemoApp: App {
                 ContentView()
                     .environment(twsViewModel)
                     .task {
-                        let manager = TWSFactory.new()
-                        manager.run()
-
-                        for await snippets in manager.stream {
+                        for await snippets in twsViewModel.manager.stream {
                             self.twsViewModel.snippets = snippets
                         }
                     }

@@ -8,13 +8,16 @@
 
 import SwiftUI
 import TWSModels
+import TWSKit
 
 @Observable
 class TWSViewModel {
 
+    let manager = TWSFactory.new()
     var snippets: [TWSSnippet]
 
-    init(snippets: [TWSSnippet]) {
-        self.snippets = snippets
+    init() {
+        snippets = manager.snippets
+        manager.run()
     }
 }
