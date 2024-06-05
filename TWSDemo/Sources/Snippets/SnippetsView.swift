@@ -13,29 +13,24 @@ import TWSModels
 
 struct SnippetsView: View {
 
-    @State var snippets = [TWSSnippet]()
+    @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(snippets, id: \.target) { snippet in
+                    ForEach(twsViewModel.snippets, id: \.target) { snippet in
                         VStack(alignment: .leading) {
-                            TWSView(snippet: snippet)
-                                .border(Color.black)
+                            TWSView(
+                                snippet: snippet,
+                                using: twsViewModel.manager,
+                                displayID: "list-\(snippet.id.uuidString)"
+                            )
+                            .border(Color.black)
                         }
-
                     }
                 }
                 .padding()
-            }
-            .task {
-                let manager = TWSFactory.new()
-                manager.run()
-
-                for await snippets in manager.stream {
-                    self.snippets = snippets
-                }
             }
             .navigationTitle("Snippets")
         }
