@@ -11,21 +11,21 @@ public struct TWSLog {
 
     public func logMessage(message: String) {
         logger.log("\(message, privacy: .public)")
-        LogReporter.addToBuffer(message, category, "debug")
+        LogReporter.setFirstLogDate(Date())
     }
 
     public func logInfo(message: String) {
         logger.info("\(message)")
-        LogReporter.addToBuffer(message, category, "info")
+        LogReporter.setFirstLogDate(Date())
     }
 
     public func logWarning(message: String) {
         logger.warning("\(message)")
-        LogReporter.addToBuffer(message, category, "warning")
+        LogReporter.setFirstLogDate(Date())
     }
 
     public func logError(message: String) {
         logger.critical("\(message)")
-        LogReporter.addToBuffer(message, category, "error")
+        LogReporter.setFirstLogDate(Date())
     }
 }

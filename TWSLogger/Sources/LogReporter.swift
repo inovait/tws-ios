@@ -7,27 +7,37 @@
 //
 
 import Foundation
+import OSLog
 
 public struct LogReporter {
 
-    private static var logBuffer: [String] = []
-    private static let bufferLimit = 100
+    private static var firstLogDate: Date?
+    private static let subsystem = "com.inova.tws"
 
-    public static func addToBuffer(_ message: String, _ category: String, _ severity: String) {
-        let logTimestamp = Date().description
-        logBuffer.append("\(logTimestamp) - \(category) - \(severity): \(message)")
-        if logBuffer.count > bufferLimit {
-            logBuffer.removeFirst()
+    public static func setFirstLogDate(_ date: Date) {
+        if firstLogDate == nil {
+            firstLogDate = date
         }
     }
 
     public static func generateReport() -> URL? {
-        let logs = logBuffer
-        var report = "Log Report\n\n"
-        for log in logs {
-            report += "\(log)\n"
+        do {
+            var report = ""
+            let store = try OSLogStore(scope: .currentProcessIdentifier)
+            let position = store.position(date: firstLogDate!)
+            let entries = try store.getEntries(at: position)
+
+            let filteredEntries = entries
+                .compactMap { $0 as? OSLogEntryLog }
+                .filter { $0.subsystem == subsystem }
+
+            filteredEntries.forEach { entry in
+                report.append(entry.composedMessage)
+            }
+            return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
+        } catch {
+            return nil
         }
-        return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
     }
 }
 
