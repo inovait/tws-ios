@@ -66,9 +66,7 @@ struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.load(URLRequest(url: self.url))
-        Task {
-            await print(webView.configuration.websiteDataStore.httpCookieStore.allCookies())
-        }
+
         return webView
     }
 
@@ -77,7 +75,6 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        print("-> updated ui view")
     }
 }
 

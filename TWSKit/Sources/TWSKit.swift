@@ -32,7 +32,6 @@ public class TWSManager {
 
     func set(height: CGFloat, for snippet: TWSSnippet, displayID: String) {
         assert(Thread.isMainThread)
-        print("-> set height \(displayID)", height, Date())
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
@@ -40,7 +39,6 @@ public class TWSManager {
 
     func height(for snippet: TWSSnippet, displayID: String) -> CGFloat? {
         assert(Thread.isMainThread)
-        print("-> get height \(displayID)", height, Date())
         let height = store.snippets.snippets[id: snippet.id]?.displayInfo.displays[displayID]?.height
         return height
     }

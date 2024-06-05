@@ -34,11 +34,5 @@ struct SnippetsView: View {
             }
             .navigationTitle("Snippets")
         }
-        .onAppear {
-            print("-> on appear snippets view \(twsViewModel.snippets.count)")
-        }
-        .onChange(of: twsViewModel.snippets.count) { _, newValue in
-            print("-> on change \(newValue)", Date())
-        }
     }
 }

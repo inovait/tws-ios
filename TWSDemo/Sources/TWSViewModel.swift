@@ -17,9 +17,7 @@ class TWSViewModel {
     var snippets: [TWSSnippet]
 
     init() {
-        print("-> Init START")
         snippets = manager.snippets
-        print("-> Init END")
         manager.run()
     }
 }
