@@ -1,11 +1,10 @@
 //
 //  Logger.swift
-//  TWSDemo
+//  TWSKit
 //
-//  Created by Luka Kit on 31. 5. 24.
+//  Created by Luka Kit on 3. 6. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
-
 import TWSLogger
 
-let logger = TWSLog(category: "DemoApp")
+let logger = TWSLog(category: "TWSKit")

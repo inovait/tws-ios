@@ -24,7 +24,7 @@ public class TWSFactory {
         )
 
         let storage = state.snippets.snippets.map(\.snippet)
-        print("\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk")
+        logger.logInfo(message: "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk")
 
         let store = Store(
             initialState: state,

@@ -25,8 +25,7 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWSKit"),
-				.target(name: "TWSLogger")
+                .target(name: "TWSKit")
             ],
             settings: .settings(
                 configurations: [
@@ -69,7 +68,8 @@ let project = Project(
             sources: ["TWSKit/Sources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -109,7 +109,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSSnippet")
+                .target(name: "TWSSnippet"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
