@@ -28,6 +28,10 @@ public class TWSManager {
         store.send(.snippets(.business(.load)))
     }
 
+    public func set(source: TWSSource) {
+        store.send(.snippets(.business(.set(source: source))))
+    }
+
     // MARK: - Internal
 
     func set(height: CGFloat, for snippet: TWSSnippet, displayID: String) {

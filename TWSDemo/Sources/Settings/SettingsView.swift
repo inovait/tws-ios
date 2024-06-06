@@ -11,40 +11,46 @@ import TWSKit
 
 struct SettingsView: View {
 
-    @State private var selection: Selection = .apiResponse
-    @State private var localURLs: String = ""
+    @State var viewModel = SettingsViewModel()
+    @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Form {
-                Section(header: Text("Source Selection")) {
+                Section(
+                    header: Text("Source Selection"),
+                    footer: viewModel.invalidFootnote == nil ? nil : Text(viewModel.invalidFootnote!)
+                ) {
                     VStack {
-                        Picker("Source", selection: $selection) {
-                            ForEach(Selection.allCases, id: \.self) { selection in
+                        Picker("Source", selection: $viewModel.selection) {
+                            ForEach(SettingsViewModel.Selection.allCases, id: \.self) { selection in
                                 Text(selection.rawValue).tag(selection)
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
-                        
-                        if selection == .localURLs {
-                            TextField("Custom URLs", text: $localURLs, axis: .vertical)
-                                .toolbar {
-                                    ToolbarItemGroup(placement: .keyboard) {
-                                        HStack {
-                                            Spacer()
-                                            
-                                            Button("Done") {
-                                                UIApplication.shared.endEditing()
-                                            }
+
+                        if viewModel.selection == .localURLs {
+                            TextField(
+                                "Custom URLs",
+                                text: $viewModel.localURLs,
+                                axis: .vertical
+                            )
+                            .padding(.horizontal)
+                            .border(Color.gray, width: 1)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    HStack {
+                                        Spacer()
+
+                                        Button("Done") {
+                                            UIApplication.shared.endEditing()
+                                            viewModel.validate()
+                                            viewModel.setSource(manager: twsViewModel.manager, source: .localURLs)
                                         }
                                     }
                                 }
-                                .padding(4)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                                )
-                                .padding(.vertical, 2)
+                            }
+
                         }
                     }
                 }
@@ -53,15 +59,12 @@ struct SettingsView: View {
                     Text("v\(_appVersion())")
                 }
             }
-            .scrollDismissesKeyboard(.immediately)
+            .navigationTitle("Settings")
         }
-        .navigationTitle("Settings")
+        .onChange(of: viewModel.selection) { _, newValue in
+            viewModel.setSource(manager: twsViewModel.manager, source: newValue)
+        }
     }
-}
-
-enum Selection: String, CaseIterable {
-    case apiResponse = "API Response"
-    case localURLs = "Local URLs"
 }
 
 private func _appVersion() -> String {

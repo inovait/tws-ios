@@ -15,33 +15,35 @@ struct SnippetsTabView: View {
     @State private var selectedId: UUID?
 
     var body: some View {
-        VStack {
-            ZStack {
-                ForEach(twsViewModel.snippets) { snippet in
-                    ScrollView {
-                        TWSView(
-                            snippet: snippet,
-                            using: twsViewModel.manager,
-                            displayID: "tab-\(snippet.id.uuidString)"
-                        )
-                        .border(Color.black)
+        NavigationStack {
+            VStack {
+                ZStack {
+                    ForEach(twsViewModel.snippets) { snippet in
+                        ScrollView {
+                            TWSView(
+                                snippet: snippet,
+                                using: twsViewModel.manager,
+                                displayID: "tab-\(snippet.id.uuidString)"
+                            )
+                            .border(Color.black)
+                        }
+                        .disabled(selectedId != snippet.id)
+                        .opacity(selectedId != snippet.id ? 0 : 1)
                     }
-                    .disabled(selectedId != snippet.id)
-                    .opacity(selectedId != snippet.id ? 0 : 1)
                 }
-            }
 
-            ViewThatFits {
-                _selectionView()
-
-                ScrollView(.horizontal, showsIndicators: false) {
+                ViewThatFits {
                     _selectionView()
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        _selectionView()
+                    }
                 }
             }
-        }
-        .onAppear {
-            guard selectedId == nil else { return }
-            selectedId = twsViewModel.snippets.first?.id
+            .onAppear {
+                guard selectedId == nil else { return }
+                selectedId = twsViewModel.snippets.first?.id
+            }
         }
     }
 
@@ -51,15 +53,13 @@ struct SnippetsTabView: View {
             HStack(spacing: 1) {
                 ForEach(Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)), id: \.1.id) { idx, item in
                     Button {
-                        withAnimation {
-                            selectedId = item.id
-                        }
+                        selectedId = item.id
                     } label: {
                         VStack {
                             Text("\(idx + 1)")
                                 .font(.title)
                                 .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
-                            
+
                             Rectangle()
                                 .fill(Color.accentColor)
                                 .frame(height: selectedId == item.id ? 1 : 0)
