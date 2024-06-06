@@ -5,3 +5,5 @@ excluded:
   - DerivedData
 disabled_rules:
   - nesting
+cyclomatic_complexity:
+  ignores_case_statements: true
