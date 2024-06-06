@@ -56,7 +56,8 @@ public struct TWSSnippetsFeature {
                 break
 
             case let .customURLs(urls):
-                return .send(.business(.snippetsLoaded(.success(_generateCustomSnippets(urls: urls)))))
+                let snippets = _generateCustomSnippets(urls: urls)
+                return .send(.business(.snippetsLoaded(.success(snippets))))
 
             @unknown default:
                 break
