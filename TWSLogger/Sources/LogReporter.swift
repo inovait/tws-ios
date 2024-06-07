@@ -32,7 +32,7 @@ public struct LogReporter {
                 .filter { $0.subsystem == subsystem }
 
             filteredEntries.forEach { entry in
-                report.append(entry.composedMessage)
+                report.append("\(entry.date.description) - \(entry.category): \(entry.composedMessage)")
             }
             return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
         } catch {
