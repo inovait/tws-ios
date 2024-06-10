@@ -41,7 +41,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
             _scheduleHeightUpdate(webView)
             return false
         } else {
-            parent.dynamicHeight = height
+            DispatchQueue.main.async { [weak self] in
+                self?.parent.dynamicHeight = height
+            }
+
             return true
         }
     }

@@ -18,7 +18,10 @@ struct SnippetsTabView: View {
         NavigationStack {
             VStack {
                 ZStack {
-                    ForEach(twsViewModel.snippets) { snippet in
+                    ForEach(
+                        Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
+                        id: \.1.id
+                    ) { idx, snippet in
                         ScrollView {
                             TWSView(
                                 snippet: snippet,
@@ -27,7 +30,7 @@ struct SnippetsTabView: View {
                             )
                             .border(Color.black)
                         }
-                        .disabled(selectedId != snippet.id)
+                        .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
                         .opacity(selectedId != snippet.id ? 0 : 1)
                     }
                 }
@@ -40,6 +43,7 @@ struct SnippetsTabView: View {
                     }
                 }
             }
+            .ignoresSafeArea(.keyboard)
             .onAppear {
                 guard selectedId == nil else { return }
                 selectedId = twsViewModel.snippets.first?.id
