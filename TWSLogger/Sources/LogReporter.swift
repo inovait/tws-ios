@@ -11,8 +11,7 @@ import OSLog
 
 public struct LogReporter {
 
-    private static var firstLogDate: Date?
-    private static let subsystem = "com.inova.tws"
+    internal static var firstLogDate: Date?
 
     public static func setFirstLogDate(_ date: Date) {
         if firstLogDate == nil {
@@ -20,24 +19,37 @@ public struct LogReporter {
         }
     }
 
-    public static func generateReport() -> URL? {
+    public static func generateReport(filteredSubsytem: String = "com.inova.tws") -> URL? {
+        let filteredEntries = getLogsFromLogStore(filteredSubsytem: filteredSubsytem)
+        if let filteredEntries {
+            let report = parseLogsToString(filteredEntries)
+            return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
+        }
+        return nil
+    }
+
+    internal static func getLogsFromLogStore(filteredSubsytem: String = "com.inova.tws") -> [OSLogEntryLog]? {
         do {
-            var report = ""
             let store = try OSLogStore(scope: .currentProcessIdentifier)
             let position = store.position(date: firstLogDate!)
             let entries = try store.getEntries(at: position)
 
             let filteredEntries = entries
                 .compactMap { $0 as? OSLogEntryLog }
-                .filter { $0.subsystem == subsystem }
+                .filter { $0.subsystem == filteredSubsytem }
 
-            filteredEntries.forEach { entry in
-                report.append("\(entry.date.description) - \(entry.category): \(entry.composedMessage)")
-            }
-            return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
+            return filteredEntries
         } catch {
             return nil
         }
+    }
+
+    internal static func parseLogsToString(_ logEntries: [OSLogEntryLog]) -> String {
+        var report = ""
+        logEntries.forEach { entry in
+            report.append("\(entry.date.description) - \(entry.category): \(entry.composedMessage)")
+        }
+        return report
     }
 }
 

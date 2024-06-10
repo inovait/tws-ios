@@ -246,13 +246,33 @@ let project = Project(
                     .release(name: "Release")
                 ]
             )
+        ),
+        .target(
+            name: "TWSLoggerTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsLoggerTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSLoggerTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
         )
     ],
     schemes: [
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),
