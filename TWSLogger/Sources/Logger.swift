@@ -9,7 +9,7 @@ public struct TWSLog {
         self.logger = Logger(subsystem: subsystem, category: category)
     }
 
-    public func logMessage(message: String) {
+    public func log(message: String) {
         logger.log("\(message, privacy: .public)")
         LogReporter.setFirstLogDate(Date())
     }
@@ -19,12 +19,12 @@ public struct TWSLog {
         LogReporter.setFirstLogDate(Date())
     }
 
-    public func logWarning(message: String) {
+    public func logWarn(message: String) {
         logger.warning("\(message)")
         LogReporter.setFirstLogDate(Date())
     }
 
-    public func logError(message: String) {
+    public func logErr(message: String) {
         logger.critical("\(message)")
         LogReporter.setFirstLogDate(Date())
     }

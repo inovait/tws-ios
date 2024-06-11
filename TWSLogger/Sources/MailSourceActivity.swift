@@ -20,14 +20,18 @@ public class MailActivityItemSource: NSObject, UIActivityItemSource {
     public func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
         return fileURL
     }
-    public func activityViewController(_ activityViewController: UIActivityViewController,
-                                       itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-        return fileURL
-    }
-    public func activityViewController(_ activityViewController: UIActivityViewController,
-                                       subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-        return emailSubject
-    }
+
+    public func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+            return fileURL
+        }
+
+    public func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+            return emailSubject
+        }
 
     public func activityViewController(_ activityViewController: UIActivityViewController,
                                        dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?)

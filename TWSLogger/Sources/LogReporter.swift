@@ -28,7 +28,7 @@ public struct LogReporter {
         return nil
     }
 
-    internal static func getLogsFromLogStore(filteredSubsytem: String = "com.inova.tws") -> [OSLogEntryLog]? {
+    static func getLogsFromLogStore(filteredSubsytem: String = "com.inova.tws") -> [OSLogEntryLog]? {
         do {
             let store = try OSLogStore(scope: .currentProcessIdentifier)
             let position = store.position(date: firstLogDate!)
@@ -44,7 +44,7 @@ public struct LogReporter {
         }
     }
 
-    internal static func parseLogsToString(_ logEntries: [OSLogEntryLog]) -> String {
+    static func parseLogsToString(_ logEntries: [OSLogEntryLog]) -> String {
         var report = ""
         logEntries.forEach { entry in
             report.append("\(entry.date.description) - \(entry.category): \(entry.composedMessage)")

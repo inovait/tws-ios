@@ -8,20 +8,8 @@
 
 import SwiftUI
 import TWSKit
-import TWSLogger
 
 struct SettingsView: View {
-
-    private func shareReport(_ url: URL) {
-
-        let mailActivityItemSource = MailActivityItemSource(fileURL: url)
-
-        let activityVC = UIActivityViewController(activityItems: [mailActivityItemSource], applicationActivities: nil)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-            let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true, completion: nil)
-        }
-    }
 
     var body: some View {
         NavigationStack {
@@ -29,10 +17,7 @@ struct SettingsView: View {
                 Text("v\(_appVersion())")
                 Button("Get logs") {
                     Task {
-                        let reportUrl = LogReporter.generateReport()
-                        if let reportUrl {
-                            shareReport(reportUrl)
-                        }
+                        shareLogReport()
                     }
                 }
                 .padding(.vertical, 8)

@@ -86,7 +86,7 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            logger.logError(message: "Snippets error loading snippets: " + error.localizedDescription)
+            logger.logErr(message: "Snippets error loading snippets: " + error.localizedDescription)
             return .none
 
         case .snippets:
