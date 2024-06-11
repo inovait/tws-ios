@@ -28,10 +28,10 @@ final class TWSLoggerTests: XCTestCase {
         // Adding 4 logs and checking if the firstLogDate is set correctly
         XCTAssertNil(TWSLogger.LogReporter.firstLogDate)
 
-        logManager.logErr(message: "This is an error")
-        logManager.log(message: "This is a message")
-        logManager.logWarn(message: "This is a warning")
-        logManager.logInfo(message: "This is an info")
+        logManager.logErr("This is an error")
+        logManager.log("This is a message")
+        logManager.logWarn("This is a warning")
+        logManager.logInfo("This is an info")
 
         sleep(1)
 
