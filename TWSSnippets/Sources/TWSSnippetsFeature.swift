@@ -11,6 +11,7 @@ public struct TWSSnippetsFeature {
     public struct State: Equatable {
 
         @Shared(.snippets) public internal(set) var snippets
+        @Shared(.source) public internal(set) var source
 
         public init() { }
     }
@@ -22,6 +23,7 @@ public struct TWSSnippetsFeature {
             case load
             case snippetsLoaded(Result<[TWSSnippet], Error>)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
+            case set(source: TWSSource)
         }
 
         case business(BusinessAction)
@@ -49,6 +51,18 @@ public struct TWSSnippetsFeature {
     private func _reduce(into state: inout State, action: Action.BusinessAction) -> Effect<Action> {
         switch action {
         case .load:
+            switch state.source {
+            case .api:
+                break
+
+            case let .customURLs(urls):
+                let snippets = _generateCustomSnippets(urls: urls)
+                return .send(.business(.snippetsLoaded(.success(snippets))))
+
+            @unknown default:
+                break
+            }
+
             return .run { [api] send in
                 do {
                     let snippets = try await api.getSnippets()
@@ -89,6 +103,10 @@ public struct TWSSnippetsFeature {
             logger.logErr(message: "Snippets error loading snippets: " + error.localizedDescription)
             return .none
 
+        case let .set(source):
+            state.source = source
+            return .send(.business(.load))
+
         case .snippets:
             return .none
         }
@@ -107,5 +125,28 @@ public struct TWSSnippetsFeature {
             let idx2 = orderDict[$1.id] ?? Int.max
             return idx1 < idx2
         })
+    }
+
+    private func _generateCustomSnippets(urls: [URL]) -> [TWSSnippet] {
+        let uuidGenerator = IncrementingUUIDGenerator()
+        return urls.map {
+            .init(
+                id: uuidGenerator(),
+                target: $0
+            )
+        }
+    }
+}
+
+private class IncrementingUUIDGenerator: @unchecked Sendable {
+
+    private var sequence = 0
+
+    func callAsFunction() -> UUID {
+        defer {
+            self.sequence += 1
+        }
+
+        return UUID(self.sequence)
     }
 }

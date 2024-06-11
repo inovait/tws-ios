@@ -19,10 +19,16 @@ struct ContentView: View {
             content: {
                 SnippetsView()
                     .tabItem {
-                        Text("Snippets")
-                        Image(systemName: "list.star")
+                        Text("List")
+                        Image(systemName: "list.bullet")
                     }
                     .tag(ContentViewModel.Tab.snippets)
+
+                SnippetsTabView()
+                    .tabItem {
+                        Text("Tab")
+                        Image(systemName: "house")
+                    }
 
                 SettingsView()
                     .tabItem {
