@@ -34,6 +34,8 @@ public struct TWSSnippetsFeature {
     }
 
     @Dependency(\.api) var api
+    @Dependency(\.socket) var socket
+    @Dependency(\.continuousClock) var clock
 
     public init() { }
 
@@ -53,6 +55,9 @@ public struct TWSSnippetsFeature {
 
     private func _reduce(into state: inout State, action: Action.BusinessAction) -> Effect<Action> {
         switch action {
+
+        // MARK: - Loading snippets
+
         case .load:
             switch state.source {
             case .api:
@@ -106,6 +111,8 @@ public struct TWSSnippetsFeature {
             print("Snippets error loading snippets", error)
             return .none
 
+        // MARK: - Listening for changes via WebSocket
+
         case .listenForChanges:
             return .run { [api] send in
                 do {
@@ -116,14 +123,38 @@ public struct TWSSnippetsFeature {
                 }
             }
 
-        case .stopListeningForChanges:
-            return .none
-
         case let .listenForChangesResponse(.success(url)):
-            return .none
+            return .run { [socket, url] send in
+                for await event in await socket.connect(url) {
+                    switch event {
+                    case .didConnect:
+                        // TODO: Add logs
+                        await send(.business(.load))
+
+                    case .didDisconnect:
+                        // TODO: Add logs
+                        do {
+                            try await clock.sleep(for: .seconds(1))
+                            await send(.business(.listenForChanges))
+                        } catch {
+                            // TODO: React here
+                        }
+
+                    case let .receivedMessage(data):
+                        // TODO: Add logs
+                        break
+                    }
+                }
+            }
+            .cancellable(id: CancelID.socket)
 
         case let .listenForChangesResponse(.failure(error)):
             return .none
+
+        case .stopListeningForChanges:
+            return .cancel(id: CancelID.socket)
+
+        // MARK: - Other
 
         case let .set(source):
             state.source = source

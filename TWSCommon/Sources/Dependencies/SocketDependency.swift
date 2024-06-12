@@ -12,14 +12,14 @@ import ComposableArchitecture
 
 public struct SocketDependency {
 
-    public var connect: @Sendable () async -> AsyncStream<WebSocketEvent>
+    public var connect: @Sendable (URL) async -> AsyncStream<WebSocketEvent>
 }
 
 public enum SocketDependencyKey: DependencyKey {
 
     public static var liveValue: SocketDependency {
         .init(
-            connect: {
+            connect: { _ in
                 fatalError()
             }
         )
