@@ -22,6 +22,9 @@ public struct TWSSnippetsFeature {
         public enum BusinessAction {
             case load
             case snippetsLoaded(Result<[TWSSnippet], Error>)
+            case listenForChanges
+            case stopListeningForChanges
+            case listenForChangesResponse(Result<URL, Error>)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
         }
@@ -103,6 +106,25 @@ public struct TWSSnippetsFeature {
             print("Snippets error loading snippets", error)
             return .none
 
+        case .listenForChanges:
+            return .run { [api] send in
+                do {
+                    let socketURL = try await api.getSocket()
+                    await send(.business(.listenForChangesResponse(.success(socketURL))))
+                } catch {
+                    await send(.business(.listenForChangesResponse(.failure(error))))
+                }
+            }
+
+        case .stopListeningForChanges:
+            return .none
+
+        case let .listenForChangesResponse(.success(url)):
+            return .none
+
+        case let .listenForChangesResponse(.failure(error)):
+            return .none
+
         case let .set(source):
             state.source = source
             return .send(.business(.load))
@@ -135,6 +157,12 @@ public struct TWSSnippetsFeature {
                 target: $0
             )
         }
+    }
+}
+
+private extension TWSSnippetsFeature {
+    enum CancelID: Hashable {
+        case socket
     }
 }
 
