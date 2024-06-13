@@ -24,8 +24,16 @@ public class TWSManager {
         return store.snippets.snippets.elements.map(\.snippet)
     }
 
-    public func run() {
+    public func run(listenForChanges: Bool) {
         store.send(.snippets(.business(.load)))
+
+        if listenForChanges {
+            store.send(.snippets(.business(.listenForChanges)))
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+                self.store.send(.snippets(.business(.stopListeningForChanges)))
+            }
+        }
     }
 
     public func set(source: TWSSource) {

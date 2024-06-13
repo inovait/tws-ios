@@ -20,5 +20,6 @@ extension Request {
 
     enum Method: String {
         case get
+        case post
     }
 }

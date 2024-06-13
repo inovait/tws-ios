@@ -23,7 +23,24 @@ public struct TWSAPI {
                 return try JSONDecoder().decode([TWSSnippet].self, from: result.data)
             },
             getSocket: {
-                fatalError()
+                let result = try await Router.make(request: .init(
+                    method: .post,
+                    path: "/negotiate",
+                    host: host,
+                    queryItems: [
+                        .init(name: "apiKey", value: "true"),
+                        .init(name: "expiresAfter", value: "61")
+                    ]
+                ))
+
+                let urlStr = String(decoding: result.data, as: UTF8.self)
+
+                guard let url = URL(string: urlStr)
+                else {
+                    fatalError() // TODO:
+                }
+
+                return url
             }
         )
     }

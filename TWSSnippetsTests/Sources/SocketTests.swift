@@ -31,7 +31,9 @@ final class SocketTests: XCTestCase {
             withDependencies: {
                 $0.api.getSnippets = { [] }
                 $0.api.getSocket = { socketURL }
+                $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
+                $0.socket.listen = { _ in }
             }
         )
 
@@ -61,7 +63,9 @@ final class SocketTests: XCTestCase {
                 $0.api.getSnippets = { [] }
                 $0.api.getSocket = { socketURL }
                 $0.continuousClock = clock
+                $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
+                $0.socket.listen = { _ in }
             }
         )
 
@@ -92,5 +96,30 @@ final class SocketTests: XCTestCase {
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
+    }
+
+    @MainActor
+    func testSocketDisconnectShouldReconnect() async {
+        let socketURL = URL(string: "https://www.google.com")!
+        let stream = AsyncStream<WebSocketEvent>.makeStream()
+        let clock = TestClock()
+
+        let store = TestStore(
+            initialState: TWSSnippetsFeature.State(),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getSnippets = { [] }
+                $0.api.getSocket = { socketURL }
+                $0.continuousClock = clock
+                $0.socket.get = { _ in .init() }
+                $0.socket.connect = { _ in stream.stream }
+                $0.socket.listen = { _ in }
+            }
+        )
+
+        await store.send(.business(.listenForChanges))
+        await store.receive(\.business.listenForChangesResponse.success, socketURL)
+
+        
     }
 }

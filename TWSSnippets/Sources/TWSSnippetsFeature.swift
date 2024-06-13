@@ -125,14 +125,20 @@ public struct TWSSnippetsFeature {
 
         case let .listenForChangesResponse(.success(url)):
             return .run { [socket, url] send in
-                for await event in await socket.connect(url) {
+                print("--> start")
+                let connectionID = await socket.get(url)
+
+                for await event in await socket.connect(connectionID) {
                     switch event {
                     case .didConnect:
                         // TODO: Add logs
+                        print("-> did connect", Date())
+                        await _listenForSocketMessages(socket: socket, connectionID: connectionID)
                         await send(.business(.load))
 
                     case .didDisconnect:
                         // TODO: Add logs
+                        print("-> did disconnect", Date())
                         do {
                             try await clock.sleep(for: .seconds(1))
                             await send(.business(.listenForChanges))
@@ -141,14 +147,19 @@ public struct TWSSnippetsFeature {
                         }
 
                     case let .receivedMessage(data):
+                        print("-> did receive a message")
                         // TODO: Add logs
                         break
                     }
                 }
+
+                print("--> end")
+                await socket.closeConnection(connectionID)
             }
             .cancellable(id: CancelID.socket)
 
         case let .listenForChangesResponse(.failure(error)):
+            // TODO: Try again?
             return .none
 
         case .stopListeningForChanges:
@@ -187,6 +198,21 @@ public struct TWSSnippetsFeature {
                 id: uuidGenerator(),
                 target: $0
             )
+        }
+    }
+
+    private func _listenForSocketMessages(
+        socket: SocketDependency,
+        connectionID: UUID
+    ) async {
+        Task { @MainActor [socket] in
+            while !Task.isCancelled {
+                do {
+                    try await socket.listen(connectionID)
+                } catch {
+                    print("-> error")
+                }
+            }
         }
     }
 }

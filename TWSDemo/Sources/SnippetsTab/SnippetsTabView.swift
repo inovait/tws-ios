@@ -45,7 +45,8 @@ struct SnippetsTabView: View {
             }
             .ignoresSafeArea(.keyboard)
             .onAppear {
-                guard selectedId == nil else { return }
+                // Safe to force cast, because of the first segment
+                guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
                 selectedId = twsViewModel.snippets.first?.id
             }
         }
