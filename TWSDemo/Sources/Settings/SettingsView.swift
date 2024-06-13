@@ -8,11 +8,16 @@
 
 import SwiftUI
 import TWSKit
+import OSLog
 
 struct SettingsView: View {
 
     @State var viewModel = SettingsViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
+
+    private func logsFormatter(entry: OSLogEntryLog) -> String {
+        return "\(entry.date.description) - \(entry.category): \(entry.composedMessage)"
+    }
 
     var body: some View {
         NavigationView {
@@ -64,9 +69,14 @@ struct SettingsView: View {
                         if viewModel.logsGenerationInProgress { return }
                         Task {
                             viewModel.logsGenerationInProgress = true
-                            let reportUrl = await twsViewModel.manager.getLogsReport()
-                            shareLogsReport(reportUrl)
-                            viewModel.logsGenerationInProgress = false
+                            do {
+                                let reportUrl = try await twsViewModel.manager.getLogsReport(
+                                    reportFiltering: logsFormatter)
+                                shareLogsReport(reportUrl)
+                                viewModel.logsGenerationInProgress = false
+                            } catch {
+                                print("Unable to fetch logs: \(error)")
+                            }
                         }
                     }, label: {
                         if viewModel.logsGenerationInProgress {

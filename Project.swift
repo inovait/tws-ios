@@ -294,6 +294,23 @@ func infoPlist() -> [String: Plist.Value] {
     ]
 }
 
+func loggerInfoPlist() -> [String: Plist.Value] {
+    [
+        "OSLogPreferences": [
+            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
+                "TWSKit": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSnippets": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ]
+            ]
+        ]
+    ]
+}
+
 func targetScripts() -> [TargetScript] {
     [
         .pre(

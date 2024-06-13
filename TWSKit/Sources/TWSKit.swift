@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import TWSModels
+import OSLog
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
@@ -33,8 +34,12 @@ public class TWSManager {
         store.send(.snippets(.business(.set(source: source))))
     }
 
-    public func getLogsReport() async -> URL? {
-        return await LogReporter.generateReport()
+    public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
+        let bundleId = Bundle.main.bundleIdentifier
+        if let bundleId {
+            return try await LogReporter.generateReport(bundleId: bundleId, reportFiltering: reportFiltering)
+        }
+        return nil
     }
 
     // MARK: - Internal

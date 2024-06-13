@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import OSLog
 @testable import TWSLogger
 
 final class TWSLoggerTests: XCTestCase {
@@ -23,6 +24,10 @@ final class TWSLoggerTests: XCTestCase {
         try super.tearDownWithError()
     }
 
+    private func logFiltering(entry: OSLogEntry) -> String {
+        return entry.composedMessage
+    }
+
     func testLogs() async {
 
         // Adding 4 logs a
@@ -33,33 +38,36 @@ final class TWSLoggerTests: XCTestCase {
         logManager.logInfo("This is an info")
 
         // Fetching the logs and checking if they're present in the log report
-        let logEntries = await TWSLogger.LogReporter.getLogsFromLogStore(filteredSubsytem: "com.apple.dt.xctest.tool")
+        do {
+            let logEntries = try await TWSLogger.LogReporter.getLogsFromLogStore(bundleId: "com.apple.dt.xctest.tool")
 
-        XCTAssertNotNil(logEntries)
-        XCTAssertNotEqual(0, logEntries!.count)
+            XCTAssertNotNil(logEntries)
+            XCTAssertNotEqual(0, logEntries!.count)
 
-        let logReport = TWSLogger.LogReporter.parseLogsToString(logEntries!)
+            let logReport = TWSLogger.LogReporter.parseLogsToString(logEntries!, logFiltering)
 
-        XCTAssertNotEqual(0, logReport.count)
-        XCTAssertTrue(logReport.contains("This is an error"))
-        XCTAssertTrue(logReport.contains("This is a message"))
-        XCTAssertTrue(logReport.contains("This is a warning"))
-        XCTAssertTrue(logReport.contains("This is an info"))
+            XCTAssertNotEqual(0, logReport.count)
+            XCTAssertEqual(logReport,
+                "This is an error\nThis is a message\nThis is a warning\nThis is an info\n"
+            )
 
-        // Seeing if the file is created and if contains out logs
-        let fileURL = await TWSLogger.LogReporter.generateReport(filteredSubsytem: "com.apple.dt.xctest.tool")
-        XCTAssertNotNil(fileURL)
+            // Seeing if the file is created and if contains out logs
+            let fileURL = try await TWSLogger.LogReporter.generateReport(
+                bundleId: "com.apple.dt.xctest.tool", reportFiltering: logFiltering)
+            XCTAssertNotNil(fileURL)
 
-        if let fileURL = fileURL {
-            do {
-                let fileContent = try String(contentsOf: fileURL)
-                XCTAssertTrue(fileContent.contains("This is an error"))
-                XCTAssertTrue(fileContent.contains("This is a message"))
-                XCTAssertTrue(fileContent.contains("This is a warning"))
-                XCTAssertTrue(fileContent.contains("This is an info"))
-            } catch {
-                XCTFail("Failed to read file content: \(error)")
+            if let fileURL = fileURL {
+                do {
+                    let fileContent = try String(contentsOf: fileURL)
+                    XCTAssertEqual(fileContent,
+                        "This is an error\nThis is a message\nThis is a warning\nThis is an info\n"
+                    )
+                } catch {
+                    XCTFail("Failed to read file content: \(error)")
+                }
             }
+        } catch {
+            XCTFail("Exception received: \(error)")
         }
     }
 }
