@@ -11,21 +11,17 @@ public struct TWSLog {
 
     public func log(_ message: String) {
         logger.log("\(message, privacy: .public)")
-        LogReporter.setFirstLogDate(Date())
     }
 
     public func logInfo(_ message: String) {
         logger.info("\(message)")
-        LogReporter.setFirstLogDate(Date())
     }
 
     public func logWarn(_ message: String) {
         logger.warning("\(message)")
-        LogReporter.setFirstLogDate(Date())
     }
 
     public func logErr(_ message: String) {
         logger.critical("\(message)")
-        LogReporter.setFirstLogDate(Date())
     }
 }

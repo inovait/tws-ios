@@ -30,6 +30,7 @@ class SettingsViewModel {
             )
         }
     }
+    var logsGenerationInProgress: Bool = false
 
     var validUrls: [URL] = []
     var invalidFootnote: String?

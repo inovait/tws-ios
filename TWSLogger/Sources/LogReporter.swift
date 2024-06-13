@@ -11,38 +11,33 @@ import OSLog
 
 public struct LogReporter {
 
-    internal static var firstLogDate: Date?
-
-    public static func setFirstLogDate(_ date: Date) {
-        if firstLogDate == nil {
-            firstLogDate = date
-        }
-    }
-
-    public static func generateReport(filteredSubsytem: String = "com.inova.tws") -> URL? {
-        let filteredEntries = getLogsFromLogStore(filteredSubsytem: filteredSubsytem)
-        if let filteredEntries {
-            let report = parseLogsToString(filteredEntries)
-            return FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
-        }
-        return nil
-    }
-
-    static func getLogsFromLogStore(filteredSubsytem: String = "com.inova.tws") -> [OSLogEntryLog]? {
-        do {
-            let store = try OSLogStore(scope: .currentProcessIdentifier)
-            let position = store.position(date: firstLogDate!)
-            let entries = try store.getEntries(at: position)
-
-            let filteredEntries = entries
-                .compactMap { $0 as? OSLogEntryLog }
-                .filter { $0.subsystem == filteredSubsytem }
-
-            return filteredEntries
-        } catch {
+    public static func generateReport(filteredSubsytem: String = "com.inova.tws") async -> URL? {
+            let filteredEntries = await getLogsFromLogStore(filteredSubsytem: filteredSubsytem)
+            if let filteredEntries {
+                let report = parseLogsToString(filteredEntries)
+                return await FileHelper.saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
+            }
             return nil
         }
-    }
+
+    static func getLogsFromLogStore(
+        filteredSubsytem: String = "com.inova.tws") async -> [OSLogEntryLog]? {
+            do {
+                let begginingOfFromDate = Calendar.current.startOfDay(for: Date())
+
+                let store = try OSLogStore(scope: .currentProcessIdentifier)
+                let position = store.position(date: Calendar.current.startOfDay(for: begginingOfFromDate))
+                let entries = try store.getEntries(at: position)
+
+                let filteredEntries = entries
+                    .compactMap { $0 as? OSLogEntryLog }
+                    .filter { $0.subsystem == filteredSubsytem }
+
+                return filteredEntries
+            } catch {
+                return nil
+            }
+        }
 
     static func parseLogsToString(_ logEntries: [OSLogEntryLog]) -> String {
         var report = ""
@@ -55,7 +50,7 @@ public struct LogReporter {
 
 private struct FileHelper {
 
-    static func saveReport(_ report: String, fileName: String) -> URL? {
+    static func saveReport(_ report: String, fileName: String) async -> URL? {
         let fileManager = FileManager.default
         do {
             let documentsURL = try fileManager.url(for: .documentDirectory,

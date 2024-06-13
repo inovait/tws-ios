@@ -57,17 +57,42 @@ struct SettingsView: View {
 
                 Section(header: Text("About")) {
                     Text("v\(_appVersion())")
-                    Button("Get logs") {
+                }
+
+                Section(header: Text("Logs")) {
+                    Button(action: {
+                        if viewModel.logsGenerationInProgress { return }
                         Task {
-                            shareLogReport()
+                            viewModel.logsGenerationInProgress = true
+                            let reportUrl = await twsViewModel.manager.getLogsReport()
+                            shareLogsReport(reportUrl)
+                            viewModel.logsGenerationInProgress = false
                         }
-                    }
+                    }, label: {
+                        if viewModel.logsGenerationInProgress {
+                            ProgressView()
+                        } else {
+                            Text("Get logs")
+                        }
+                    })
                 }
             }
             .navigationTitle("Settings")
         }
         .onChange(of: viewModel.selection) { _, newValue in
             viewModel.setSource(manager: twsViewModel.manager, source: newValue)
+        }
+    }
+}
+
+private func shareLogsReport(_ reportUrl: URL?) {
+    if let reportUrl {
+        let mailActivityItemSource = MailActivityItemSource(fileURL: reportUrl)
+
+        let activityVC = UIActivityViewController(activityItems: [mailActivityItemSource], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true, completion: nil)
         }
     }
 }

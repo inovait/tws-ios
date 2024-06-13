@@ -3,6 +3,7 @@ import SwiftUI
 import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
+@_implementationOnly import TWSLogger
 
 public class TWSManager {
 
@@ -30,6 +31,10 @@ public class TWSManager {
 
     public func set(source: TWSSource) {
         store.send(.snippets(.business(.set(source: source))))
+    }
+
+    public func getLogsReport() async -> URL? {
+        return await LogReporter.generateReport()
     }
 
     // MARK: - Internal

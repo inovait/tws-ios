@@ -25,20 +25,15 @@ final class TWSLoggerTests: XCTestCase {
 
     func testLogs() async {
 
-        // Adding 4 logs and checking if the firstLogDate is set correctly
-        XCTAssertNil(TWSLogger.LogReporter.firstLogDate)
+        // Adding 4 logs a
 
         logManager.logErr("This is an error")
         logManager.log("This is a message")
         logManager.logWarn("This is a warning")
         logManager.logInfo("This is an info")
 
-        sleep(1)
-
-        XCTAssertNotNil(TWSLogger.LogReporter.firstLogDate)
-
         // Fetching the logs and checking if they're present in the log report
-        let logEntries = TWSLogger.LogReporter.getLogsFromLogStore(filteredSubsytem: "com.apple.dt.xctest.tool")
+        let logEntries = await TWSLogger.LogReporter.getLogsFromLogStore(filteredSubsytem: "com.apple.dt.xctest.tool")
 
         XCTAssertNotNil(logEntries)
         XCTAssertNotEqual(0, logEntries!.count)
@@ -52,7 +47,7 @@ final class TWSLoggerTests: XCTestCase {
         XCTAssertTrue(logReport.contains("This is an info"))
 
         // Seeing if the file is created and if contains out logs
-        let fileURL = TWSLogger.LogReporter.generateReport(filteredSubsytem: "com.apple.dt.xctest.tool")
+        let fileURL = await TWSLogger.LogReporter.generateReport(filteredSubsytem: "com.apple.dt.xctest.tool")
         XCTAssertNotNil(fileURL)
 
         if let fileURL = fileURL {
