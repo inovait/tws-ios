@@ -238,6 +238,7 @@ let project = Project(
             product: .framework,
             bundleId: "com.inova.twslogger",
             deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
             sources: ["TWSLogger/Sources/**"],
             settings: .settings(
                 configurations: [
