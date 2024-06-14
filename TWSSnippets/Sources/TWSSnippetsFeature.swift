@@ -4,6 +4,10 @@ import TWSSnippet
 import TWSCommon
 import TWSModels
 
+// swiftlint:disable identifier_name
+private let RECONNECT_TIMEOUT: TimeInterval = 3
+// swiftlint:enable identifier_name
+
 @Reducer
 public struct TWSSnippetsFeature {
 
@@ -23,7 +27,9 @@ public struct TWSSnippetsFeature {
             case load
             case snippetsLoaded(Result<[TWSSnippet], Error>)
             case listenForChanges
+            case reconnect
             case stopListeningForChanges
+            case stopReconnecting
             case listenForChangesResponse(Result<URL, Error>)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
@@ -114,6 +120,17 @@ public struct TWSSnippetsFeature {
         // MARK: - Listening for changes via WebSocket
 
         case .listenForChanges:
+            switch state.source {
+            case .api:
+                break
+
+            case .customURLs:
+                return .none
+
+            @unknown default:
+                break
+            }
+
             return .run { [api] send in
                 do {
                     let socketURL = try await api.getSocket()
@@ -127,29 +144,46 @@ public struct TWSSnippetsFeature {
             return .run { [socket, url] send in
                 print("--> start")
                 let connectionID = await socket.get(url)
+                let stream: AsyncStream<WebSocketEvent>
+                do {
+                    stream = try await socket.connect(connectionID)
+                } catch {
+                    await send(.business(.reconnect))
+                    return
+                }
 
-                for await event in await socket.connect(connectionID) {
+            mainLoop: for await event in stream {
                     switch event {
                     case .didConnect:
                         // TODO: Add logs
                         print("-> did connect", Date())
-                        await _listenForSocketMessages(socket: socket, connectionID: connectionID)
+                        var task: Task<Void, Never>?
+
                         await send(.business(.load))
+                        await withTaskCancellationHandler {
+                            task = Task {
+                                while !Task.isCancelled {
+                                    do {
+                                        try await socket.listen(connectionID)
+                                    } catch {
+                                        print("-> error")
+                                        break
+                                    }
+                                }
+                            }
+                        } onCancel: { [task] in
+                            print("-> Cancelled")
+                            task?.cancel()
+                        }
 
                     case .didDisconnect:
                         // TODO: Add logs
                         print("-> did disconnect", Date())
-                        do {
-                            try await clock.sleep(for: .seconds(1))
-                            await send(.business(.listenForChanges))
-                        } catch {
-                            // TODO: React here
-                        }
+                        break mainLoop
 
                     case let .receivedMessage(data):
                         print("-> did receive a message")
                         // TODO: Add logs
-                        break
                     }
                 }
 
@@ -157,6 +191,19 @@ public struct TWSSnippetsFeature {
                 await socket.closeConnection(connectionID)
             }
             .cancellable(id: CancelID.socket)
+            .concatenate(with: .send(.business(.reconnect)))
+
+        case .reconnect:
+            print("-> reconnect")
+            return .run { send in
+                do {
+                    try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
+                    await send(.business(.listenForChanges))
+                } catch {
+                    // TODO: ??
+                }
+            }
+            .cancellable(id: CancelID.reconnect)
 
         case let .listenForChangesResponse(.failure(error)):
             // TODO: Try again?
@@ -165,11 +212,25 @@ public struct TWSSnippetsFeature {
         case .stopListeningForChanges:
             return .cancel(id: CancelID.socket)
 
+        case .stopReconnecting:
+            return .cancel(id: CancelID.reconnect)
+
         // MARK: - Other
 
         case let .set(source):
             state.source = source
-            return .send(.business(.load))
+
+            switch source {
+            case .api:
+                return .send(.business(.load))
+                    .merge(with: .send(.business(.listenForChanges)))
+
+            case .customURLs:
+                return .send(.business(.load))
+
+            @unknown default:
+                return .send(.business(.load))
+            }
 
         case .snippets:
             return .none
@@ -200,26 +261,11 @@ public struct TWSSnippetsFeature {
             )
         }
     }
-
-    private func _listenForSocketMessages(
-        socket: SocketDependency,
-        connectionID: UUID
-    ) async {
-        Task { @MainActor [socket] in
-            while !Task.isCancelled {
-                do {
-                    try await socket.listen(connectionID)
-                } catch {
-                    print("-> error")
-                }
-            }
-        }
-    }
 }
 
 private extension TWSSnippetsFeature {
     enum CancelID: Hashable {
-        case socket
+        case socket, reconnect
     }
 }
 

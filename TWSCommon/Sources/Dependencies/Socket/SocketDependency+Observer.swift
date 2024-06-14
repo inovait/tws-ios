@@ -10,10 +10,11 @@ import UIKit
 
 class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
 
-    let continuation: AsyncStream<WebSocketEvent>.Continuation
+    let continuation: CheckedContinuation<Void, Error>
+    var isSetup = false
 
     init(
-        continuation: AsyncStream<WebSocketEvent>.Continuation
+        continuation: CheckedContinuation<Void, Error>
     ) {
         self.continuation = continuation
     }
@@ -25,9 +26,9 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
         webSocketTask: URLSessionWebSocketTask,
         didOpenWithProtocol protocol: String?
     ) {
-        DispatchQueue.main.async { [weak self] in
-            self?.continuation.yield(.didConnect)
-        }
+        guard !isSetup else { return }
+        isSetup = true
+        continuation.resume()
     }
 
     func urlSession(
@@ -36,9 +37,8 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
         didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
         reason: Data?
     ) {
-        DispatchQueue.main.async { [weak self] in
-            self?.continuation.yield(.didDisconnect)
-            self?.continuation.finish()
-        }
+        guard !isSetup else { return }
+        isSetup = true
+        continuation.resume(throwing: WebSocketError.didClose)
     }
 }

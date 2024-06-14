@@ -13,7 +13,7 @@ import ComposableArchitecture
 public struct SocketDependency {
 
     public var get: @Sendable (URL) async -> UUID
-    public var connect: @Sendable (UUID) async -> AsyncStream<WebSocketEvent>
+    public var connect: @Sendable (UUID) async throws -> AsyncStream<WebSocketEvent>
     public var listen: @Sendable (UUID) async throws -> Void
     public var closeConnection: @Sendable (UUID) async -> Void
 }
@@ -32,7 +32,7 @@ public enum SocketDependencyKey: DependencyKey {
             connect: { [storage] id in
                 guard let socket = await storage.getValue(forKey: id)
                 else { preconditionFailure("Sending a `connect` message to an invalid object: \(id)") }
-                socket.connect()
+                try await socket.connect()
                 return socket.stream
             },
             listen: { [storage] id in

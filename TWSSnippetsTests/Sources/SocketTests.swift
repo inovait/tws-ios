@@ -23,6 +23,7 @@ final class SocketTests: XCTestCase {
 
     @MainActor
     func testConnectingToSocket() async throws {
+        let clock = TestClock()
         let socketURL = URL(string: "https://www.google.com")!
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         let store: TestStoreOf<TWSSnippetsFeature> = .init(
@@ -34,6 +35,7 @@ final class SocketTests: XCTestCase {
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
                 $0.socket.listen = { _ in }
+                $0.continuousClock = clock
             }
         )
 
@@ -48,10 +50,12 @@ final class SocketTests: XCTestCase {
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
+        await store.receive(\.business.reconnect)
+        await store.send(.business(.stopReconnecting))
     }
 
     @MainActor
-    func testReconnectingToSocket() async {
+    func testReconnectingToSocket() async throws {
         let socketURL = URL(string: "https://www.google.com")!
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         let clock = TestClock()
@@ -81,8 +85,10 @@ final class SocketTests: XCTestCase {
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
-        // Reconnect after 1s
-        await clock.advance(by: .seconds(1))
+        await store.receive(\.business.reconnect, timeout: NSEC_PER_SEC)
+
+        // Reconnect after 3s
+        await clock.advance(by: .seconds(3))
 
         // Ask for new url,...
         await store.receive(\.business.listenForChanges, timeout: NSEC_PER_SEC)
@@ -96,30 +102,7 @@ final class SocketTests: XCTestCase {
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
-    }
-
-    @MainActor
-    func testSocketDisconnectShouldReconnect() async {
-        let socketURL = URL(string: "https://www.google.com")!
-        let stream = AsyncStream<WebSocketEvent>.makeStream()
-        let clock = TestClock()
-
-        let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
-            reducer: { TWSSnippetsFeature() },
-            withDependencies: {
-                $0.api.getSnippets = { [] }
-                $0.api.getSocket = { socketURL }
-                $0.continuousClock = clock
-                $0.socket.get = { _ in .init() }
-                $0.socket.connect = { _ in stream.stream }
-                $0.socket.listen = { _ in }
-            }
-        )
-
-        await store.send(.business(.listenForChanges))
-        await store.receive(\.business.listenForChangesResponse.success, socketURL)
-
-        
+        await store.receive(\.business.reconnect)
+        await store.send(.business(.stopReconnecting))
     }
 }
