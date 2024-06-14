@@ -45,7 +45,7 @@ public class MailActivityItemSource: NSObject, UIActivityItemSource {
         if activityType == .mail {
             let mailComposeVC = MFMailComposeViewController()
             mailComposeVC.setSubject(emailSubject)
-            mailComposeVC.setToRecipients(["luka.kit@inova.si"])
+            mailComposeVC.setToRecipients(emailRecipients)
 
             do {
                 let fileData = try Data(contentsOf: fileURL)
