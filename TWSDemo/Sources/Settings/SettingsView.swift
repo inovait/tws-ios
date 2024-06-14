@@ -97,9 +97,7 @@ struct SettingsView: View {
 
 private func shareLogsReport(_ reportUrl: URL?) {
     if let reportUrl {
-        let mailActivityItemSource = MailActivityItemSource(fileURL: reportUrl)
-
-        let activityVC = UIActivityViewController(activityItems: [mailActivityItemSource], applicationActivities: nil)
+        let activityVC = UIActivityViewController(activityItems: [reportUrl], applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootVC = windowScene.windows.first?.rootViewController {
             rootVC.present(activityVC, animated: true, completion: nil)
