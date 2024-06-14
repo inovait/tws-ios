@@ -240,6 +240,9 @@ let project = Project(
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: loggerInfoPlist()),
             sources: ["TWSLogger/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels")
+            ],
             settings: .settings(
                 configurations: [
                     .debug(name: "Debug"),
