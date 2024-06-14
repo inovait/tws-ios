@@ -2,30 +2,69 @@ import OSLog
 import TWSModels
 
 public struct TWSLog {
-    private let logger: os.Logger?
+    private let logger: os.Logger
 
     public init(category: String) {
         let bundleId = Bundle.main.bundleIdentifier
         if let bundleId {
             logger = Logger(subsystem: bundleId, category: category)
         } else {
-            logger = nil
+            preconditionFailure("Unable to create a logger without the bundle ID available")
         }
     }
 
-    public func log(_ message: String) {
-        logger?.log("\(message, privacy: .public)")
+    public func log(
+        message: String,
+        className: String? = nil,
+        lineNumber: String? = nil,
+        functionName: String? = nil
+    ) {
+        logger.log("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
-    public func logInfo(_ message: String) {
-        logger?.info("\(message)")
+    public func logInfo(
+        message: String,
+        className: String? = nil,
+        lineNumber: String? = nil,
+        functionName: String? = nil
+    ) {
+        logger.info("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
-    public func logWarn(_ message: String) {
-        logger?.warning("\(message)")
+    public func logWarn(
+        message: String,
+        className: String? = nil,
+        lineNumber: String? = nil,
+        functionName: String? = nil
+    ) {
+        logger.warning("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
-    public func logErr(_ message: String) {
-        logger?.critical("\(message)")
+    public func logErr(
+        message: String,
+        className: String? = nil,
+        lineNumber: String? = nil,
+        functionName: String? = nil
+    ) {
+        logger.critical("\(createLogMessage(message, className, lineNumber, functionName))")
+    }
+
+    private func createLogMessage(
+        _ message: String,
+        _ className: String?,
+        _ lineNumber: String?,
+        _ functionName: String?
+    ) -> String {
+        var log = message
+        if let className {
+            log.append(" Class: \(className)")
+        }
+        if let lineNumber {
+            log.append(" LineNumber: \(lineNumber)")
+        }
+        if let functionName {
+            log.append(" Function: \(functionName)")
+        }
+        return log
     }
 }

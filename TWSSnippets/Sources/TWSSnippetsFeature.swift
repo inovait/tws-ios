@@ -100,7 +100,12 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            logger.logErr("Snippets error loading snippets: " + error.localizedDescription)
+            logger.logErr(
+                message: "Snippets error loading snippets: " + error.localizedDescription,
+                className: "TWSSnippetsFeature",
+                lineNumber: "103",
+                functionName: "snippetsLoaded"
+            )
             return .none
 
         case let .set(source):

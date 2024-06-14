@@ -8,6 +8,7 @@ import OSLog
 
 public class TWSManager {
 
+    private let initDate: Date
     private let store: StoreOf<TWSCoreFeature>
     public let stream: AsyncStream<[TWSSnippet]>
 
@@ -17,6 +18,7 @@ public class TWSManager {
     ) {
         self.store = store
         self.stream = stream
+        self.initDate = Date()
     }
 
     // MARK: - Public
@@ -37,9 +39,14 @@ public class TWSManager {
     public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
         let bundleId = Bundle.main.bundleIdentifier
         if let bundleId {
-            return try await LogReporter.generateReport(bundleId: bundleId, reportFiltering: reportFiltering)
+            let logReporter = LogReporter()
+            return try await logReporter.generateReport(
+                bundleId: bundleId,
+                initDate: initDate,
+                reportFiltering: reportFiltering
+            )
         }
-        return nil
+        throw LoggerError.bundleIdNotAvailable
     }
 
     // MARK: - Internal

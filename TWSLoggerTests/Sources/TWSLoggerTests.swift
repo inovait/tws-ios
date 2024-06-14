@@ -29,39 +29,52 @@ final class TWSLoggerTests: XCTestCase {
     }
 
     func testLogs() async {
+        let initDate = Date()
 
-        // Adding 4 logs a
+        logManager.logErr(message: "This is an error", className: "Class 1")
+        logManager.log(message: "This is a message", lineNumber: "13")
+        logManager.logWarn(message: "This is a warning", functionName: "Function 1")
+        logManager.logInfo(
+            message: "This is an info",
+            className: "Class 1",
+            lineNumber: "13",
+            functionName: "Function 1"
+        )
 
-        logManager.logErr("This is an error")
-        logManager.log("This is a message")
-        logManager.logWarn("This is a warning")
-        logManager.logInfo("This is an info")
+        let exepectedLogResult =
+            "This is an error Class: Class 1\n" +
+            "This is a message LineNumber: 13\n" +
+            "This is a warning Function: Function 1\n" +
+            "This is an info Class: Class 1 LineNumber: 13 Function: Function 1\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
-            let logEntries = try await TWSLogger.LogReporter.getLogsFromLogStore(bundleId: "com.apple.dt.xctest.tool")
+            let logReporter = TWSLogger.LogReporter()
+            let logEntries = try await logReporter.getLogsFromLogStore(
+                bundleId: "com.apple.dt.xctest.tool",
+                initDate: initDate
+            )
 
             XCTAssertNotNil(logEntries)
             XCTAssertNotEqual(0, logEntries!.count)
 
-            let logReport = TWSLogger.LogReporter.parseLogsToString(logEntries!, logFiltering)
+            let logReport = logReporter.parseLogsToString(logEntries!, logFiltering)
 
             XCTAssertNotEqual(0, logReport.count)
-            XCTAssertEqual(logReport,
-                "This is an error\nThis is a message\nThis is a warning\nThis is an info\n"
-            )
+            XCTAssertEqual(logReport, exepectedLogResult)
 
             // Seeing if the file is created and if contains out logs
-            let fileURL = try await TWSLogger.LogReporter.generateReport(
-                bundleId: "com.apple.dt.xctest.tool", reportFiltering: logFiltering)
+            let fileURL = try await logReporter.generateReport(
+                bundleId: "com.apple.dt.xctest.tool",
+                initDate: initDate,
+                reportFiltering: logFiltering
+            )
             XCTAssertNotNil(fileURL)
 
             if let fileURL = fileURL {
                 do {
                     let fileContent = try String(contentsOf: fileURL)
-                    XCTAssertEqual(fileContent,
-                        "This is an error\nThis is a message\nThis is a warning\nThis is an info\n"
-                    )
+                    XCTAssertEqual(fileContent, exepectedLogResult)
                 } catch {
                     XCTFail("Failed to read file content: \(error)")
                 }

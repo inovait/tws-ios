@@ -71,11 +71,13 @@ struct SettingsView: View {
                             viewModel.logsGenerationInProgress = true
                             do {
                                 let reportUrl = try await twsViewModel.manager.getLogsReport(
-                                    reportFiltering: logsFormatter)
+                                    reportFiltering: logsFormatter
+                                )
                                 shareLogsReport(reportUrl)
                                 viewModel.logsGenerationInProgress = false
                             } catch {
                                 print("Unable to fetch logs: \(error)")
+                                viewModel.logsGenerationInProgress = false
                             }
                         }
                     }, label: {
