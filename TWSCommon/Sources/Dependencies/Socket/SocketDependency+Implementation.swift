@@ -70,6 +70,7 @@ class SocketConnector {
 
         case let .string(string):
             print("-> received string \(string)")
+            continuation.yield(.receivedMessage(Data()))
 
         @unknown default:
             print("...") // TODO:

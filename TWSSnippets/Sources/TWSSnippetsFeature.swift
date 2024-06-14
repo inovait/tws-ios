@@ -183,7 +183,9 @@ public struct TWSSnippetsFeature {
 
                     case let .receivedMessage(data):
                         print("-> did receive a message")
+//                        await send(.business(.load) // TODO: A
                         // TODO: Add logs
+                        await send(.business(.load))
                     }
                 }
 
