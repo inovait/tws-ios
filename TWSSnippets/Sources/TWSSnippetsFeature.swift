@@ -213,7 +213,7 @@ public struct TWSSnippetsFeature {
             }
             .cancellable(id: CancelID.reconnect)
 
-        case let .listenForChangesResponse(.failure(error)):
+        case .listenForChangesResponse(.failure):
             return .run { [clock] send in
                 try? await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                 await send(.business(.listenForChanges))

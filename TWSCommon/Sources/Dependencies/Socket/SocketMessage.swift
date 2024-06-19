@@ -32,6 +32,13 @@ public struct SocketMessage: CustomDebugStringConvertible {
         self.type = type
     }
 
+    #if DEBUG
+    init(id: UUID, type: MessageType) {
+        self.id = id
+        self.type = type
+    }
+    #endif
+
     public var debugDescription: String {
         """
         \(type) snippet: \(id)

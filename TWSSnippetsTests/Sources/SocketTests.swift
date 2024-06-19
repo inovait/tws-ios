@@ -134,7 +134,7 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.snippetsLoaded.success, [])
 
         // After message is received, refresh
-        stream.continuation.yield(.receivedMessage(Data()))
+        stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.snippetsLoaded.success, [])
 
