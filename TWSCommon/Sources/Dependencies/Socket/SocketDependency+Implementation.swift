@@ -18,7 +18,7 @@ class SocketConnector {
     let stream: AsyncStream<WebSocketEvent>
 
     init(url: URL) {
-        print("-> INIT SocketConnector")
+        logger.info("INIT SocketConnector")
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         self.stream = stream.stream
         self.continuation = stream.continuation
@@ -26,7 +26,7 @@ class SocketConnector {
     }
 
     deinit {
-        print("-> DEINIT SocketConnector")
+        logger.info("DEINIT SocketConnector")
     }
 
     func connect() async throws {
@@ -52,12 +52,10 @@ class SocketConnector {
             continuation.finish()
             return
         }
-
-        print("-> passed connection")
     }
 
     func listen() async throws {
-        print("-> listen start")
+        logger.info("Will start listening")
         guard let webSocket else {
             throw WebSocketError.webSocketNil
         }
@@ -68,7 +66,7 @@ class SocketConnector {
             try await _processMessage(data: data)
 
         case let .string(string):
-            print("->", string)
+            logger.info("Received a message: \(string)")
             if let data = string.data(using: .utf8) {
                 try await _processMessage(data: data)
             }

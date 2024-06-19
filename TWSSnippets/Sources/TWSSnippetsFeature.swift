@@ -114,8 +114,8 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            logger.logErr(
-                message: "Snippets error loading snippets: " + error.localizedDescription
+            logger.err(
+                "Snippets error loading snippets: " + error.localizedDescription
             )
             return .none
 
@@ -157,7 +157,7 @@ public struct TWSSnippetsFeature {
             mainLoop: for await event in stream {
                     switch event {
                     case .didConnect:
-                        print("-> did connect", Date())
+                        logger.info("Did connect \(Date.now)")
                         var task: Task<Void, Never>?
 
                         await send(.business(.load))
@@ -167,22 +167,22 @@ public struct TWSSnippetsFeature {
                                     do {
                                         try await socket.listen(connectionID)
                                     } catch {
-                                        print("Failed to receive a message: \(error)")
+                                        logger.err("Failed to receive a message: \(error)")
                                         break
                                     }
                                 }
                             }
                         } onCancel: { [task] in
-                            print("-> Cancelled")
+                            logger.info("Cancelled listening")
                             task?.cancel()
                         }
 
                     case .didDisconnect:
-                        print("-> did disconnect", Date())
+                        logger.info("Did disconnect \(Date())")
                         break mainLoop
 
                     case let .receivedMessage(message):
-                        print("-> received a message: \(message)")
+                        logger.info("Received a message: \(message)")
                         switch message.type {
                         case .created, .deleted:
                             await send(.business(.load))
@@ -195,20 +195,20 @@ public struct TWSSnippetsFeature {
                     }
                 }
 
-                print("--> end")
+                logger.info("The task used for listening to socket has completed. Closing connection.")
                 await socket.closeConnection(connectionID)
             }
             .cancellable(id: CancelID.socket)
             .concatenate(with: .send(.business(.reconnect)))
 
         case .reconnect:
-            print("-> reconnect")
+            logger.info("Reconnect")
             return .run { send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     await send(.business(.listenForChanges))
                 } catch {
-                    print("-> Reconnecting failed")
+                    logger.err("Reconnecting failed: \(error)")
                 }
             }
             .cancellable(id: CancelID.reconnect)

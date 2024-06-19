@@ -13,58 +13,41 @@ public struct TWSLog {
         }
     }
 
-    public func log(
-        message: String,
-        className: String? = #fileID,
-        lineNumber: Int? = #line,
-        functionName: String? = #function
-    ) {
-        logger.log("\(createLogMessage(message, className, lineNumber, functionName))")
-    }
-
-    public func logInfo(
-        message: String,
-        className: String? = #fileID,
-        lineNumber: Int? = #line,
-        functionName: String? = #function
+    public func info(
+        _ message: String,
+        className: String = #fileID,
+        lineNumber: Int = #line,
+        functionName: String = #function
     ) {
         logger.info("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
-    public func logWarn(
-        message: String,
-        className: String? = #fileID,
-        lineNumber: Int? = #line,
-        functionName: String? = #function
+    public func warn(
+        _ message: String,
+        className: String = #fileID,
+        lineNumber: Int = #line,
+        functionName: String = #function
     ) {
         logger.warning("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
-    public func logErr(
-        message: String,
-        className: String? = #fileID,
-        lineNumber: Int? = #line,
-        functionName: String? = #function
+    public func err(
+        _ message: String,
+        className: String = #fileID,
+        lineNumber: Int = #line,
+        functionName: String = #function
     ) {
         logger.critical("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
     private func createLogMessage(
         _ message: String,
-        _ className: String?,
-        _ lineNumber: Int?,
-        _ functionName: String?
+        _ className: String,
+        _ lineNumber: Int,
+        _ functionName: String
     ) -> String {
         var log = message
-        if let className {
-            log.append(" Class: \(className)")
-        }
-        if let lineNumber {
-            log.append(" LineNumber: \(lineNumber)")
-        }
-        if let functionName {
-            log.append(" Function: \(functionName)")
-        }
+        log.append(" [\(className), l\(lineNumber)]")
         return log
     }
 }
