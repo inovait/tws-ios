@@ -28,8 +28,7 @@ public struct TWSAPI {
                     path: "/negotiate",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: "true"),
-                        .init(name: "expiresAfter", value: "61")
+                        .init(name: "apiKey", value: "true")
                     ]
                 ))
 
@@ -37,7 +36,7 @@ public struct TWSAPI {
 
                 guard let url = URL(string: urlStr)
                 else {
-                    fatalError() // TODO:
+                    throw APIError.local(NSError(domain: "invalidSocketUrl", code: 0))
                 }
 
                 return url

@@ -59,7 +59,7 @@ class SocketConnector {
     func listen() async throws {
         print("-> listen start")
         guard let webSocket else {
-            fatalError() // TODO:
+            throw WebSocketError.webSocketNil
         }
 
         let result = try await webSocket.receive()

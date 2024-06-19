@@ -155,7 +155,6 @@ public struct TWSSnippetsFeature {
             mainLoop: for await event in stream {
                     switch event {
                     case .didConnect:
-                        // TODO: Add logs
                         print("-> did connect", Date())
                         var task: Task<Void, Never>?
 
@@ -177,7 +176,6 @@ public struct TWSSnippetsFeature {
                         }
 
                     case .didDisconnect:
-                        // TODO: Add logs
                         print("-> did disconnect", Date())
                         break mainLoop
 
@@ -192,9 +190,6 @@ public struct TWSSnippetsFeature {
                                 .business(.snippets(.element(id: message.id, action: .business(.snippetUpdated))))
                             )
                         }
-
-//                        await send(.business(.load) // TODO: A
-                        // TODO: Add logs
                     }
                 }
 
@@ -211,14 +206,16 @@ public struct TWSSnippetsFeature {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     await send(.business(.listenForChanges))
                 } catch {
-                    // TODO: ??
+                    print("-> Reconnecting failed")
                 }
             }
             .cancellable(id: CancelID.reconnect)
 
         case let .listenForChangesResponse(.failure(error)):
-            // TODO: Try again?
-            return .none
+            return .run { [clock] send in
+                try? await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
+                await send(.business(.listenForChanges))
+            }
 
         case .stopListeningForChanges:
             return .cancel(id: CancelID.socket)

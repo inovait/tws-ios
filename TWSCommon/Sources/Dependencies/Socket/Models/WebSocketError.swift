@@ -11,4 +11,5 @@ import Foundation
 enum WebSocketError: Error {
 
     case didClose
+    case webSocketNil
 }
