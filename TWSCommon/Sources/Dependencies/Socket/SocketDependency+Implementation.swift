@@ -33,7 +33,6 @@ class SocketConnector {
         do {
             try await withCheckedThrowingContinuation { [weak self, url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
-                
                 let operationQueue = OperationQueue()
                 operationQueue.maxConcurrentOperationCount = 1
 
@@ -66,14 +65,16 @@ class SocketConnector {
         let result = try await webSocket.receive()
         switch result {
         case let .data(data):
-            print("-> received data \(data.count)")
+            try await _processMessage(data: data)
 
         case let .string(string):
-            print("-> received string \(string)")
-            continuation.yield(.receivedMessage(Data()))
+            print("->", string)
+            if let data = string.data(using: .utf8) {
+                try await _processMessage(data: data)
+            }
 
         @unknown default:
-            print("...") // TODO:
+            break
         }
     }
 
@@ -81,5 +82,20 @@ class SocketConnector {
         print("-> websocket is set to nil")
         webSocket?.cancel()
         webSocket = nil
+    }
+
+    // MARK: - Helper
+
+    private func _processMessage(data: Data) async throws {
+        guard
+            let jsonData = try JSONSerialization.jsonObject(with: data) as? [AnyHashable: Any],
+            let message = SocketMessage(json: jsonData)
+        else {
+            let rawString = String(decoding: data, as: UTF8.self)
+            assertionFailure("Failed to process data: \(rawString)")
+            throw SocketMessageReadError.failedToParse(rawString)
+        }
+
+        continuation.yield(.receivedMessage(message))
     }
 }

@@ -39,6 +39,7 @@ public struct TWSView: View {
             guard height > 0 else { return }
             handler.set(height: height, for: snippet, displayID: displayID)
         }
+        .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
     }
 }
 
@@ -61,7 +62,7 @@ struct WebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.scrollView.bounces = false
-        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.isScrollEnabled = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.load(URLRequest(url: self.url))

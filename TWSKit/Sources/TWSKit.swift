@@ -6,7 +6,7 @@ import TWSModels
 
 public class TWSManager {
 
-    private let store: StoreOf<TWSCoreFeature>
+    private(set) var store: StoreOf<TWSCoreFeature>
     public let stream: AsyncStream<[TWSSnippet]>
 
     init(

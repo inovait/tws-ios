@@ -9,5 +9,5 @@
 import Foundation
 
 public enum WebSocketEvent {
-    case didConnect, didDisconnect, receivedMessage(Data)
+    case didConnect, didDisconnect, receivedMessage(SocketMessage)
 }

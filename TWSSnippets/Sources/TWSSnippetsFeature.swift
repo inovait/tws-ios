@@ -166,7 +166,7 @@ public struct TWSSnippetsFeature {
                                     do {
                                         try await socket.listen(connectionID)
                                     } catch {
-                                        print("-> error")
+                                        print("Failed to receive a message: \(error)")
                                         break
                                     }
                                 }
@@ -181,11 +181,20 @@ public struct TWSSnippetsFeature {
                         print("-> did disconnect", Date())
                         break mainLoop
 
-                    case let .receivedMessage(data):
-                        print("-> did receive a message")
+                    case let .receivedMessage(message):
+                        print("-> received a message: \(message)")
+                        switch message.type {
+                        case .created, .deleted:
+                            await send(.business(.load))
+
+                        case .updated:
+                            await send(
+                                .business(.snippets(.element(id: message.id, action: .business(.snippetUpdated))))
+                            )
+                        }
+
 //                        await send(.business(.load) // TODO: A
                         // TODO: Add logs
-                        await send(.business(.load))
                     }
                 }
 
