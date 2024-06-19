@@ -15,36 +15,36 @@ public struct TWSLog {
 
     public func log(
         message: String,
-        className: String? = nil,
-        lineNumber: String? = nil,
-        functionName: String? = nil
+        className: String? = #fileID,
+        lineNumber: Int? = #line,
+        functionName: String? = #function
     ) {
         logger.log("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
     public func logInfo(
         message: String,
-        className: String? = nil,
-        lineNumber: String? = nil,
-        functionName: String? = nil
+        className: String? = #fileID,
+        lineNumber: Int? = #line,
+        functionName: String? = #function
     ) {
         logger.info("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
     public func logWarn(
         message: String,
-        className: String? = nil,
-        lineNumber: String? = nil,
-        functionName: String? = nil
+        className: String? = #fileID,
+        lineNumber: Int? = #line,
+        functionName: String? = #function
     ) {
         logger.warning("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
     public func logErr(
         message: String,
-        className: String? = nil,
-        lineNumber: String? = nil,
-        functionName: String? = nil
+        className: String? = #fileID,
+        lineNumber: Int? = #line,
+        functionName: String? = #function
     ) {
         logger.critical("\(createLogMessage(message, className, lineNumber, functionName))")
     }
@@ -52,7 +52,7 @@ public struct TWSLog {
     private func createLogMessage(
         _ message: String,
         _ className: String?,
-        _ lineNumber: String?,
+        _ lineNumber: Int?,
         _ functionName: String?
     ) -> String {
         var log = message

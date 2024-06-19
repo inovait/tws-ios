@@ -18,7 +18,7 @@ public class TWSManager {
     ) {
         self.store = store
         self.stream = stream
-        self.initDate = Date()
+        self.initDate = Date().addingTimeInterval(-60)
     }
 
     // MARK: - Public
@@ -42,7 +42,7 @@ public class TWSManager {
             let logReporter = LogReporter()
             return try await logReporter.generateReport(
                 bundleId: bundleId,
-                initDate: initDate,
+                date: initDate,
                 reportFiltering: reportFiltering
             )
         }

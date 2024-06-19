@@ -11,4 +11,6 @@ import Foundation
 public enum LoggerError: Error {
     case bundleIdNotAvailable
     case unableToGetLogs
+    case unableToCreateLogFile
+    case logContentCantBeParsed
 }

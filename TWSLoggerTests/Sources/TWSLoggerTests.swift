@@ -32,41 +32,30 @@ final class TWSLoggerTests: XCTestCase {
         let initDate = Date()
 
         logManager.logErr(message: "This is an error", className: "Class 1")
-        logManager.log(message: "This is a message", lineNumber: "13")
+        logManager.log(message: "This is a message", lineNumber: 13)
         logManager.logWarn(message: "This is a warning", functionName: "Function 1")
-        logManager.logInfo(
-            message: "This is an info",
-            className: "Class 1",
-            lineNumber: "13",
-            functionName: "Function 1"
-        )
+        logManager.logInfo(message: "This is an info")
 
         let exepectedLogResult =
-            "This is an error Class: Class 1\n" +
-            "This is a message LineNumber: 13\n" +
-            "This is a warning Function: Function 1\n" +
-            "This is an info Class: Class 1 LineNumber: 13 Function: Function 1\n"
+            "This is an error Class: Class 1 LineNumber: 34 Function: testLogs()\n" +
+            "This is a message Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 13 Function: testLogs()\n" +
+            "This is a warning Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 36 Function: Function 1\n" +
+            "This is an info Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 37 Function: testLogs()\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
             let logReporter = TWSLogger.LogReporter()
             let logEntries = try await logReporter.getLogsFromLogStore(
                 bundleId: "com.apple.dt.xctest.tool",
-                initDate: initDate
+                date: initDate
             )
 
             XCTAssertNotNil(logEntries)
-            XCTAssertNotEqual(0, logEntries!.count)
-
-            let logReport = logReporter.parseLogsToString(logEntries!, logFiltering)
-
-            XCTAssertNotEqual(0, logReport.count)
-            XCTAssertEqual(logReport, exepectedLogResult)
 
             // Seeing if the file is created and if contains out logs
             let fileURL = try await logReporter.generateReport(
                 bundleId: "com.apple.dt.xctest.tool",
-                initDate: initDate,
+                date: initDate,
                 reportFiltering: logFiltering
             )
             XCTAssertNotNil(fileURL)

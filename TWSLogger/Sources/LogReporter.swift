@@ -16,20 +16,26 @@ public struct LogReporter {
 
     public func generateReport(
         bundleId: String,
-        initDate: Date,
+        date: Date,
         reportFiltering: (OSLogEntryLog) -> String
     ) async throws -> URL? {
-        let filteredEntries = try await getLogsFromLogStore(bundleId: bundleId, initDate: initDate)
-        if let filteredEntries {
-            let report = parseLogsToString(filteredEntries, reportFiltering)
-            return try await saveReport(report, fileName: "TWS-Logs-\(Date().description).txt")
+        let fileURL = try await openFile(fileName: "TWS-Logs.txt")
+        if let fileURL {
+            let filteredEntries = try await getLogsFromLogStore(bundleId: bundleId, date: date)
+            if let filteredEntries {
+                try parseLogsAndWriteToFile(filteredEntries, reportFiltering, fileURL)
+            } else {
+                throw LoggerError.unableToGetLogs
+            }
+            return fileURL
+        } else {
+            throw LoggerError.unableToCreateLogFile
         }
-        throw LoggerError.unableToGetLogs
     }
 
-    func getLogsFromLogStore(bundleId: String, initDate: Date) async throws -> [OSLogEntryLog]? {
+    func getLogsFromLogStore(bundleId: String, date: Date) async throws -> [OSLogEntryLog]? {
         let store = try OSLogStore(scope: .currentProcessIdentifier)
-        let position = store.position(date: Calendar.current.startOfDay(for: initDate.addingTimeInterval(-60 * 60)))
+        let position = store.position(date: Calendar.current.startOfDay(for: date))
         let entries = try store.getEntries(at: position)
 
         let filteredEntries = entries
@@ -39,23 +45,30 @@ public struct LogReporter {
         return filteredEntries
     }
 
-    func parseLogsToString(
+    func parseLogsAndWriteToFile(
         _ logEntries: [OSLogEntryLog],
-        _ reportFiltering: (OSLogEntryLog) -> String
-    ) -> String {
-        var report = ""
-        logEntries.forEach { entry in
-            report.append(reportFiltering(entry) + "\n")
+        _ reportFiltering: (OSLogEntryLog) -> String,
+        _ fileURL: URL
+    ) throws {
+        if let fileHandle = FileHandle(forUpdatingAtPath: fileURL.path()) {
+            try logEntries.forEach { entry in
+                guard let data = ("\(reportFiltering(entry))\n").data(using: .utf8) else {
+                    throw LoggerError.logContentCantBeParsed
+                }
+                try fileHandle.write(contentsOf: data)
+            }
+            try fileHandle.close()
+        } else {
+            throw LoggerError.unableToCreateLogFile
         }
-        return report
     }
 
-    func saveReport(_ report: String, fileName: String) async throws -> URL? {
+    func openFile(fileName: String) async throws -> URL? {
         let fileManager = FileManager.default
         let documentsURL = try fileManager.url(for: .documentDirectory,
-            in: .userDomainMask, appropriateFor: nil, create: true)
+            in: .userDomainMask, appropriateFor: nil, create: false)
         let fileURL = documentsURL.appendingPathComponent(fileName)
-        try report.write(to: fileURL, atomically: true, encoding: .utf8)
+        fileManager.createFile(atPath: fileURL.path(), contents: nil)
         return fileURL
     }
 }

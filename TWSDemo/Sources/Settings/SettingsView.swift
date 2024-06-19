@@ -100,6 +100,13 @@ struct SettingsView: View {
 private func shareLogsReport(_ reportUrl: URL?) {
     if let reportUrl {
         let activityVC = UIActivityViewController(activityItems: [reportUrl], applicationActivities: nil)
+        activityVC.completionWithItemsHandler = { (_, _, _, _) in
+            do {
+                try FileManager.default.removeItem(atPath: reportUrl.path())
+            } catch {
+                print("Unable to delete the logs file after sharing")
+            }
+        }
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootVC = windowScene.windows.first?.rootViewController {
             rootVC.present(activityVC, animated: true, completion: nil)
