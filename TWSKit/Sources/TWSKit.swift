@@ -1,12 +1,15 @@
 import Foundation
 import SwiftUI
 import TWSModels
+import OSLog
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
+@_implementationOnly import TWSLogger
 
 public class TWSManager {
 
-    private(set) var store: StoreOf<TWSCoreFeature>
+    private let initDate: Date
+    let store: StoreOf<TWSCoreFeature>
     public let stream: AsyncStream<[TWSSnippet]>
 
     init(
@@ -15,6 +18,7 @@ public class TWSManager {
     ) {
         self.store = store
         self.stream = stream
+        self.initDate = Date()
     }
 
     // MARK: - Public
@@ -40,6 +44,19 @@ public class TWSManager {
         store.send(.snippets(.business(.set(source: source))))
     }
 
+    public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
+        let bundleId = Bundle.main.bundleIdentifier
+        if let bundleId {
+            let logReporter = LogReporter()
+            return try await logReporter.generateReport(
+                bundleId: bundleId,
+                date: initDate.addingTimeInterval(-60),
+                reportFiltering: reportFiltering
+            )
+        }
+        throw LoggerError.bundleIdNotAvailable
+    }
+
     // MARK: - Internal
 
     func set(height: CGFloat, for snippet: TWSSnippet, displayID: String) {
@@ -47,11 +64,5 @@ public class TWSManager {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
-    }
-
-    func height(for snippet: TWSSnippet, displayID: String) -> CGFloat? {
-        assert(Thread.isMainThread)
-        let height = store.snippets.snippets[id: snippet.id]?.displayInfo.displays[displayID]?.height
-        return height
     }
 }

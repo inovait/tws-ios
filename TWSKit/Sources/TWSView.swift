@@ -22,9 +22,11 @@ public struct TWSView: View {
         using handler: TWSManager,
         displayID id: String
     ) {
+        let height = handler.store.snippets.snippets[id: snippet.id]?.displayInfo.displays[id]?.height
+
         self.snippet = snippet
         self.handler = handler
-        self._height = .init(initialValue: handler.height(for: snippet, displayID: id) ?? .zero)
+        self._height = .init(initialValue: height ?? .zero)
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 

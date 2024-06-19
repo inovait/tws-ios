@@ -114,7 +114,9 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            print("Snippets error loading snippets", error)
+            logger.logErr(
+                message: "Snippets error loading snippets: " + error.localizedDescription
+            )
             return .none
 
         // MARK: - Listening for changes via WebSocket
