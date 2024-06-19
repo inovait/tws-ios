@@ -68,7 +68,8 @@ let project = Project(
             sources: ["TWSKit/Sources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -108,7 +109,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSSnippet")
+                .target(name: "TWSSnippet"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -229,13 +231,52 @@ let project = Project(
                     .release(name: "Release")
                 ]
             )
+        ),
+        .target(
+            name: "TWSLogger",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twslogger",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
+            sources: ["TWSLogger/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSLoggerTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsLoggerTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSLoggerTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
         )
     ],
     schemes: [
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),
@@ -254,6 +295,23 @@ func infoPlist() -> [String: Plist.Value] {
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
         "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
+    ]
+}
+
+func loggerInfoPlist() -> [String: Plist.Value] {
+    [
+        "OSLogPreferences": [
+            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
+                "TWSKit": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSnippets": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ]
+            ]
+        ]
     ]
 }
 

@@ -1,11 +1,14 @@
 import Foundation
 import SwiftUI
 import TWSModels
+import OSLog
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
+@_implementationOnly import TWSLogger
 
 public class TWSManager {
 
+    private let initDate: Date
     private let store: StoreOf<TWSCoreFeature>
     public let stream: AsyncStream<[TWSSnippet]>
 
@@ -15,6 +18,7 @@ public class TWSManager {
     ) {
         self.store = store
         self.stream = stream
+        self.initDate = Date()
     }
 
     // MARK: - Public
@@ -30,6 +34,19 @@ public class TWSManager {
 
     public func set(source: TWSSource) {
         store.send(.snippets(.business(.set(source: source))))
+    }
+
+    public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
+        let bundleId = Bundle.main.bundleIdentifier
+        if let bundleId {
+            let logReporter = LogReporter()
+            return try await logReporter.generateReport(
+                bundleId: bundleId,
+                date: initDate.addingTimeInterval(-60),
+                reportFiltering: reportFiltering
+            )
+        }
+        throw LoggerError.bundleIdNotAvailable
     }
 
     // MARK: - Internal

@@ -17,3 +17,4 @@ DerivedData/
 # periphery
 periphery/DerivedData
 periphery_output.txt
+.DS_Store
