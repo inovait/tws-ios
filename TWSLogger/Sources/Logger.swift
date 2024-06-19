@@ -19,7 +19,7 @@ public struct TWSLog {
         lineNumber: Int? = #line,
         functionName: String? = #function
     ) {
-        logger.log("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        logger.log("\(createLogMessage(message, className, lineNumber, functionName))")
     }
 
     public func logInfo(

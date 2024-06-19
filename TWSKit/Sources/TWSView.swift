@@ -26,7 +26,6 @@ public struct TWSView: View {
         self.handler = handler
         self._height = .init(initialValue: handler.height(for: snippet, displayID: id) ?? .zero)
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
-        print(self._height.wrappedValue)
     }
 
     public var body: some View {
@@ -37,7 +36,6 @@ public struct TWSView: View {
         )
         .frame(idealHeight: height)
         .onChange(of: height) { _, height in
-            print("NewHeight: \(height)")
             guard height > 0 else { return }
             handler.set(height: height, for: snippet, displayID: displayID)
         }
