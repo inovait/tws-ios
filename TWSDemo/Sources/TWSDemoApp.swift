@@ -1,7 +1,6 @@
 import SwiftUI
 import Firebase
 import TWSKit
-import TWSModels
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 

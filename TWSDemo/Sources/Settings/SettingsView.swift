@@ -60,10 +60,6 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(header: Text("About")) {
-                    Text("v\(_appVersion())")
-                }
-
                 Section(header: Text("Logs")) {
                     Button(action: {
                         if viewModel.logsGenerationInProgress { return }
@@ -87,6 +83,10 @@ struct SettingsView: View {
                             Text("Get logs")
                         }
                     })
+                }
+
+                Section(header: Text("About")) {
+                    Text("v\(_appVersion())")
                 }
             }
             .navigationTitle("Settings")

@@ -9,7 +9,7 @@ import OSLog
 public class TWSManager {
 
     private let initDate: Date
-    private let store: StoreOf<TWSCoreFeature>
+    let store: StoreOf<TWSCoreFeature>
     public let stream: AsyncStream<[TWSSnippet]>
 
     init(
@@ -28,8 +28,12 @@ public class TWSManager {
         return store.snippets.snippets.elements.map(\.snippet)
     }
 
-    public func run() {
+    public func run(listenForChanges: Bool) {
         store.send(.snippets(.business(.load)))
+
+        if listenForChanges {
+            store.send(.snippets(.business(.listenForChanges)))
+        }
     }
 
     public func set(source: TWSSource) {
@@ -56,11 +60,5 @@ public class TWSManager {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
-    }
-
-    func height(for snippet: TWSSnippet, displayID: String) -> CGFloat? {
-        assert(Thread.isMainThread)
-        let height = store.snippets.snippets[id: snippet.id]?.displayInfo.displays[displayID]?.height
-        return height
     }
 }

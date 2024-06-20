@@ -11,7 +11,6 @@ import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
-@_implementationOnly import TWSCommon
 @_implementationOnly import ComposableArchitecture
 
 public class TWSFactory {
@@ -24,8 +23,8 @@ public class TWSFactory {
         )
 
         let storage = state.snippets.snippets.map(\.snippet)
-        logger.logInfo(
-            message: "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
+        logger.info(
+            "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
         let store = Store(

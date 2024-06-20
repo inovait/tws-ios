@@ -222,7 +222,8 @@ let project = Project(
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
-                .target(name: "TWSAPI")
+                .target(name: "TWSAPI"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [

@@ -22,15 +22,16 @@ public struct TWSView: View {
         using handler: TWSManager,
         displayID id: String
     ) {
+        let height = handler.store.snippets.snippets[id: snippet.id]?.displayInfo.displays[id]?.height
+
         self.snippet = snippet
         self.handler = handler
-        self._height = .init(initialValue: handler.height(for: snippet, displayID: id) ?? .zero)
+        self._height = .init(initialValue: height ?? .zero)
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     public var body: some View {
         WebView(
-            identifier: snippet.id,
             url: snippet.target,
             dynamicHeight: $height
         )
@@ -39,21 +40,19 @@ public struct TWSView: View {
             guard height > 0 else { return }
             handler.set(height: height, for: snippet, displayID: displayID)
         }
+        .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
     }
 }
 
 struct WebView: UIViewRepresentable {
 
     @Binding var dynamicHeight: CGFloat
-    let identifier: UUID
     let url: URL
 
     init(
-        identifier: UUID,
         url: URL,
         dynamicHeight: Binding<CGFloat>
     ) {
-        self.identifier = identifier
         self.url = url
         self._dynamicHeight = dynamicHeight
     }
@@ -61,7 +60,7 @@ struct WebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.scrollView.bounces = false
-        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.isScrollEnabled = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.load(URLRequest(url: self.url))

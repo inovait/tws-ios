@@ -31,16 +31,16 @@ final class TWSLoggerTests: XCTestCase {
     func testLogs() async {
         let initDate = Date()
 
-        logManager.logErr(message: "This is an error", className: "Class 1")
-        logManager.log(message: "This is a message", lineNumber: 13)
-        logManager.logWarn(message: "This is a warning", functionName: "Function 1")
-        logManager.logInfo(message: "This is an info")
+        logManager.err("This is an error", className: "Class 1")
+        logManager.info("This is a message", lineNumber: 13)
+        logManager.warn("This is a warning", functionName: "Function 1")
+        logManager.info("This is an info")
 
         let exepectedLogResult =
-            "This is an error Class: Class 1 LineNumber: 34 Function: testLogs()\n" +
-            "This is a message Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 13 Function: testLogs()\n" +
-            "This is a warning Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 36 Function: Function 1\n" +
-            "This is an info Class: TWSLoggerTests/TWSLoggerTests.swift LineNumber: 37 Function: testLogs()\n"
+            "This is an error [Class 1, l34]\n" +
+            "This is a message [TWSLoggerTests/TWSLoggerTests.swift, l13]\n" +
+            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l36]\n" +
+            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l37]\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {

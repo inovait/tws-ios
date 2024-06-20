@@ -37,7 +37,6 @@ class Router {
 
             if 200..<300 ~= httpResult.statusCode {
                 return .init(
-                    statusCode: httpResult.statusCode,
                     data: result.0
                 )
             } else {
@@ -51,7 +50,6 @@ class Router {
 
 struct APIResult {
 
-    let statusCode: Int
     let data: Data
 }
 

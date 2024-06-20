@@ -18,6 +18,6 @@ class TWSViewModel {
 
     init() {
         snippets = manager.snippets
-        manager.run()
+        manager.run(listenForChanges: true)
     }
 }

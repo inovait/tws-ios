@@ -22,14 +22,13 @@ struct SnippetsTabView: View {
                         Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
                         id: \.1.id
                     ) { idx, snippet in
-                        ScrollView {
-                            TWSView(
-                                snippet: snippet,
-                                using: twsViewModel.manager,
-                                displayID: "tab-\(snippet.id.uuidString)"
-                            )
-                            .border(Color.black)
-                        }
+                        TWSView(
+                            snippet: snippet,
+                            using: twsViewModel.manager,
+                            displayID: "tab-\(snippet.id.uuidString)"
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .border(Color.black)
                         .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
                         .opacity(selectedId != snippet.id ? 0 : 1)
                     }
@@ -45,7 +44,8 @@ struct SnippetsTabView: View {
             }
             .ignoresSafeArea(.keyboard)
             .onAppear {
-                guard selectedId == nil else { return }
+                // Safe to force cast, because of the first segment
+                guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
                 selectedId = twsViewModel.snippets.first?.id
             }
         }
