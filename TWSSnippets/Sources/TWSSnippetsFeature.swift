@@ -42,6 +42,7 @@ public struct TWSSnippetsFeature {
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
     @Dependency(\.continuousClock) var clock
+    @Dependency(\.mainQueue) var mainQueue
 
     public init() { }
 
@@ -65,6 +66,8 @@ public struct TWSSnippetsFeature {
         // MARK: - Loading snippets
 
         case .load:
+            logger.info("Load from source: \(state.source)")
+
             switch state.source {
             case .api:
                 break
@@ -87,6 +90,7 @@ public struct TWSSnippetsFeature {
             }
 
         case let .snippetsLoaded(.success(snippets)):
+            logger.info("Snippets loaded.")
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
 
@@ -95,10 +99,12 @@ public struct TWSSnippetsFeature {
             for snippet in snippets {
                 if currentOrder.contains(snippet.id) {
                     state.snippets[id: snippet.id]?.snippet = snippet
+                    logger.info("Updated snippet: \(snippet.id)")
                 } else {
                     state.snippets.append(
                         .init(snippet: snippet)
                     )
+                    logger.info("Added snippet: \(snippet.id)")
                 }
             }
 
@@ -106,6 +112,7 @@ public struct TWSSnippetsFeature {
 
             for id in currentOrder.subtracting(newOrder) {
                 state.snippets.remove(id: id)
+                logger.info("Removed snippet: \(id)")
             }
 
             // Keep sorted
@@ -115,13 +122,14 @@ public struct TWSSnippetsFeature {
 
         case let .snippetsLoaded(.failure(error)):
             logger.err(
-                "Snippets error loading snippets: " + error.localizedDescription
+                "Failed to load snippets: " + error.localizedDescription
             )
             return .none
 
         // MARK: - Listening for changes via WebSocket
 
         case .listenForChanges:
+            logger.info("Start listening request with source: \(state.source)")
             switch state.source {
             case .api:
                 break
@@ -144,7 +152,6 @@ public struct TWSSnippetsFeature {
 
         case let .listenForChangesResponse(.success(url)):
             return .run { [socket, url] send in
-                print("--> start")
                 let connectionID = await socket.get(url)
                 let stream: AsyncStream<WebSocketEvent>
                 do {
@@ -154,45 +161,14 @@ public struct TWSSnippetsFeature {
                     return
                 }
 
-            mainLoop: for await event in stream {
-                    switch event {
-                    case .didConnect:
-                        logger.info("Did connect \(Date.now)")
-                        var task: Task<Void, Never>?
-
-                        await send(.business(.load))
-                        await withTaskCancellationHandler {
-                            task = Task {
-                                while !Task.isCancelled {
-                                    do {
-                                        try await socket.listen(connectionID)
-                                    } catch {
-                                        logger.err("Failed to receive a message: \(error)")
-                                        break
-                                    }
-                                }
-                            }
-                        } onCancel: { [task] in
-                            logger.info("Cancelled listening")
-                            task?.cancel()
-                        }
-
-                    case .didDisconnect:
-                        logger.info("Did disconnect \(Date())")
-                        break mainLoop
-
-                    case let .receivedMessage(message):
-                        logger.info("Received a message: \(message)")
-                        switch message.type {
-                        case .created, .deleted:
-                            await send(.business(.load))
-
-                        case .updated:
-                            await send(
-                                .business(.snippets(.element(id: message.id, action: .business(.snippetUpdated))))
-                            )
-                        }
-                    }
+                do {
+                    try await _listen(
+                        connectionID: connectionID,
+                        stream: stream,
+                        send: send
+                    )
+                } catch {
+                    logger.info("Stopped listening: \(error)")
                 }
 
                 logger.info("The task used for listening to socket has completed. Closing connection.")
@@ -213,21 +189,28 @@ public struct TWSSnippetsFeature {
             }
             .cancellable(id: CancelID.reconnect)
 
-        case .listenForChangesResponse(.failure):
+        case let .listenForChangesResponse(.failure(error)):
+            logger.err(
+                "Failed to receive a socket URL: \(error.localizedDescription)"
+            )
+
             return .run { [clock] send in
                 try? await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                 await send(.business(.listenForChanges))
             }
 
         case .stopListeningForChanges:
+            logger.warn("Requested to stop listening for changes")
             return .cancel(id: CancelID.socket)
 
         case .stopReconnecting:
+            logger.warn("Requested to stop reconnecting to the socket")
             return .cancel(id: CancelID.reconnect)
 
         // MARK: - Other
 
         case let .set(source):
+            logger.info("Set source to: \(source)")
             state.source = source
 
             switch source {
@@ -270,6 +253,53 @@ public struct TWSSnippetsFeature {
                 target: $0
             )
         }
+    }
+
+    private func _listen(
+        connectionID: UUID,
+        stream: AsyncStream<WebSocketEvent>,
+        send: Send<TWSSnippetsFeature.Action>
+    ) async throws {
+    mainLoop: for await event in stream {
+        switch event {
+        case .didConnect:
+            logger.info("Did connect \(Date.now)")
+            await send(.business(.load))
+
+            do {
+                try await socket.listen(connectionID)
+            } catch {
+                logger.err("Failed to receive a message: \(error)")
+                break mainLoop
+            }
+
+            if Task.isCancelled { break mainLoop }
+
+        case .didDisconnect:
+            logger.info("Did disconnect \(Date())")
+            break mainLoop
+
+        case let .receivedMessage(message):
+            logger.info("Received a message: \(message)")
+
+            switch message.type {
+            case .created, .deleted:
+                await send(.business(.load))
+
+            case .updated:
+                await send(
+                    .business(.snippets(.element(id: message.id, action: .business(.snippetUpdated))))
+                )
+            }
+
+            do {
+                try await socket.listen(connectionID)
+            } catch {
+                logger.err("Failed to receive a message: \(error)")
+                break mainLoop
+            }
+        }
+    }
     }
 }
 

@@ -32,7 +32,6 @@ public struct TWSView: View {
 
     public var body: some View {
         WebView(
-            identifier: snippet.id,
             url: snippet.target,
             dynamicHeight: $height
         )
@@ -48,15 +47,12 @@ public struct TWSView: View {
 struct WebView: UIViewRepresentable {
 
     @Binding var dynamicHeight: CGFloat
-    let identifier: UUID
     let url: URL
 
     init(
-        identifier: UUID,
         url: URL,
         dynamicHeight: Binding<CGFloat>
     ) {
-        self.identifier = identifier
         self.url = url
         self._dynamicHeight = dynamicHeight
     }

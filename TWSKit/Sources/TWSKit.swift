@@ -33,10 +33,6 @@ public class TWSManager {
 
         if listenForChanges {
             store.send(.snippets(.business(.listenForChanges)))
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
-                self.store.send(.snippets(.business(.stopListeningForChanges)))
-            }
         }
     }
 

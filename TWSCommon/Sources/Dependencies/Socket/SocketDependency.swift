@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import TWSModels
 import ComposableArchitecture
 
 public struct SocketDependency {
@@ -42,8 +41,8 @@ public enum SocketDependencyKey: DependencyKey {
             },
             closeConnection: { [storage] id in
                 guard let socket = await storage.getValue(forKey: id)
-                else { return }
-                socket.closeConnection()
+                else { preconditionFailure("Sending a `closeConnection` message to an invalid object: \(id)") }
+                await socket.closeConnection()
                 await storage.removeValue(forKey: id)
             }
         )

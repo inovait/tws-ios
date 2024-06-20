@@ -33,6 +33,7 @@ public struct SocketMessage: CustomDebugStringConvertible {
     }
 
     #if DEBUG
+    // periphery:ignore - Used in unit tests
     init(id: UUID, type: MessageType) {
         self.id = id
         self.type = type

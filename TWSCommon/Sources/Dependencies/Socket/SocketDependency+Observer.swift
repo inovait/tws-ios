@@ -10,13 +10,30 @@ import UIKit
 
 class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
 
-    let continuation: CheckedContinuation<Void, Error>
+    let continuation: CheckedContinuation<URLSessionWebSocketTask, Error>
     var isSetup = false
+    var socket: URLSessionWebSocketTask?
 
     init(
-        continuation: CheckedContinuation<Void, Error>
+        continuation: CheckedContinuation<URLSessionWebSocketTask, Error>
     ) {
         self.continuation = continuation
+    }
+
+    // MARK: - Helpers
+
+    func resume(url: URL) {
+        let operationQueue = OperationQueue()
+        operationQueue.maxConcurrentOperationCount = 1
+
+        let session = URLSession(
+            configuration: .default,
+            delegate: self,
+            delegateQueue: operationQueue
+        )
+
+        socket = session.webSocketTask(with: url)
+        socket?.resume()
     }
 
     // MARK: - URLSessionWebSocketDelegate
@@ -28,7 +45,8 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
     ) {
         guard !isSetup else { return }
         isSetup = true
-        continuation.resume()
+        socket = nil
+        continuation.resume(returning: webSocketTask)
     }
 
     func urlSession(
@@ -39,6 +57,7 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
     ) {
         guard !isSetup else { return }
         isSetup = true
+        socket = nil
         continuation.resume(throwing: WebSocketError.didClose)
     }
 }

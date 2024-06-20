@@ -8,12 +8,11 @@
 
 import Foundation
 
-class SocketConnector {
+actor SocketConnector {
 
     private let url: URL
     private let continuation: AsyncStream<WebSocketEvent>.Continuation
     private var webSocket: URLSessionWebSocketTask?
-    private var listeningTask: Task<Void, Never>?
 
     let stream: AsyncStream<WebSocketEvent>
 
@@ -31,21 +30,12 @@ class SocketConnector {
 
     func connect() async throws {
         do {
-            try await withCheckedThrowingContinuation { [weak self, url] continuation in
+            let socket = try await withCheckedThrowingContinuation { [url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
-                let operationQueue = OperationQueue()
-                operationQueue.maxConcurrentOperationCount = 1
-
-                let session = URLSession(
-                    configuration: .default,
-                    delegate: observer,
-                    delegateQueue: operationQueue
-                )
-
-                self?.webSocket = session.webSocketTask(with: url)
-                self?.webSocket?.resume()
+                observer.resume(url: url)
             }
 
+            webSocket = socket
             continuation.yield(.didConnect)
         } catch {
             continuation.yield(.didDisconnect)
@@ -55,30 +45,42 @@ class SocketConnector {
     }
 
     func listen() async throws {
-        logger.info("Will start listening")
+        logger.info("Awaiting a new message from the server")
         guard let webSocket else {
+            logger.err("Trying to read from web socket but it is nil")
             throw WebSocketError.webSocketNil
         }
 
-        let result = try await webSocket.receive()
-        switch result {
-        case let .data(data):
-            try await _processMessage(data: data)
+        try await withTaskCancellationHandler(
+            operation: { [weak self, webSocket] in
+                guard let self else { return }
 
-        case let .string(string):
-            logger.info("Received a message: \(string)")
-            if let data = string.data(using: .utf8) {
-                try await _processMessage(data: data)
+                let result = try await webSocket.receive()
+                switch result {
+                case let .data(data):
+                    try await _processMessage(data: data)
+
+                case let .string(string):
+                    logger.info("Received a message from server.")
+                    if let data = string.data(using: .utf8) {
+                        try await _processMessage(data: data)
+                    }
+
+                @unknown default:
+                    break
+                }
+            },
+            onCancel: {
+                Task { [weak self] in
+                    logger.info("Canceled listening to websocket")
+                    await self?.closeConnection()
+                }
             }
-
-        @unknown default:
-            break
-        }
+        )
     }
 
     func closeConnection() {
-        print("-> websocket is set to nil")
-        webSocket?.cancel()
+        webSocket?.cancel(with: .goingAway, reason: nil)
         webSocket = nil
     }
 
