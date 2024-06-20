@@ -42,7 +42,6 @@ public struct TWSSnippetsFeature {
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
     @Dependency(\.continuousClock) var clock
-    @Dependency(\.mainQueue) var mainQueue
 
     public init() { }
 
