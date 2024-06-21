@@ -21,6 +21,7 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
+            entitlements: getEntitlements(),
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
@@ -288,6 +289,14 @@ let project = Project(
 
 func deploymentTarget() -> String {
     "17.0"
+}
+
+func getEntitlements() -> Entitlements {
+    return Entitlements.dictionary([
+        "com.apple.developer.associated-domains": 
+            ["applinks:thewebsnippet.com",
+             "applinks:thewebsnippet.dev"]
+    ])
 }
 
 func infoPlist() -> [String: Plist.Value] {
