@@ -90,6 +90,8 @@ public struct TWSSnippetsFeature {
 
         case let .snippetsLoaded(.success(snippets)):
             logger.info("Snippets loaded.")
+
+            var effects = [Effect<Action>]()
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
 
@@ -97,6 +99,13 @@ public struct TWSSnippetsFeature {
 
             for snippet in snippets {
                 if currentOrder.contains(snippet.id) {
+                    if state.snippets[id: snippet.id]?.snippet.target != snippet.target {
+                        // View needs to be forced refreshed
+                        effects.append(
+                            .send(.business(.snippets(.element(id: snippet.id, action: .business(.snippetUpdated)))))
+                        )
+                    }
+
                     state.snippets[id: snippet.id]?.snippet = snippet
                     logger.info("Updated snippet: \(snippet.id)")
                 } else {
