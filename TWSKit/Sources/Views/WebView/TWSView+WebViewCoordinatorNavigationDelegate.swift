@@ -15,6 +15,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didFinish navigation: WKNavigation!
     ) {
+        // TODO: maki it better, call shared method
+        // MAndatory hop
+        DispatchQueue.main.async { [weak self] in
+            self?.parent.canGoBack = webView.canGoBack
+            self?.parent.canGoForward = webView.canGoForward
+        }
+
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
         let cachedScrollHeight: CGFloat?
 

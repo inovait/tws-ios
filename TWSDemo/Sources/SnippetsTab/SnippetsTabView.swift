@@ -13,6 +13,8 @@ struct SnippetsTabView: View {
 
     @Environment(TWSViewModel.self) private var twsViewModel
     @State private var selectedId: UUID?
+    @State private var canGoBack = false
+    @State private var canGoForward = false
 
     var body: some View {
         NavigationStack {
@@ -22,13 +24,43 @@ struct SnippetsTabView: View {
                         Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
                         id: \.1.id
                     ) { idx, snippet in
-                        TWSView(
-                            snippet: snippet,
-                            using: twsViewModel.manager,
-                            displayID: "tab-\(snippet.id.uuidString)"
-                        )
+                        VStack(alignment: .leading) {
+                            let displayId = "tab-\(snippet.id.uuidString)"
+
+                            HStack {
+                                Button {
+                                    twsViewModel.manager.goBack(
+                                        snippet: snippet,
+                                        displayID: displayId
+                                    )
+                                } label: {
+                                    Image(systemName: "arrowshape.backward.fill")
+                                }
+                                .disabled(!canGoBack)
+
+                                Button {
+                                    twsViewModel.manager.goForward(
+                                        snippet: snippet,
+                                        displayID: displayId
+                                    )
+                                } label: {
+                                    Image(systemName: "arrowshape.forward.fill")
+                                }
+                                .disabled(!canGoForward)
+                            }
+
+                            Divider()
+
+                            TWSView(
+                                snippet: snippet,
+                                using: twsViewModel.manager,
+                                displayID: "tab-\(snippet.id.uuidString)",
+                                canGoBack: $canGoBack,
+                                canGoForward: $canGoForward
+                            )
+                            .border(Color.black)
+                        }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .border(Color.black)
                         .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
                         .opacity(selectedId != snippet.id ? 0 : 1)
                     }

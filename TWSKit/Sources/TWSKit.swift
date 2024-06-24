@@ -39,6 +39,22 @@ public class TWSManager {
         }
     }
 
+    public func goBack(snippet: TWSSnippet, displayID: String) {
+        NotificationBuilder.send(
+            Notification.Name.Navigation.Back,
+            snippet: snippet,
+            displayID: displayID
+        )
+    }
+
+    public func goForward(snippet: TWSSnippet, displayID: String) {
+        NotificationBuilder.send(
+            Notification.Name.Navigation.Forward,
+            snippet: snippet,
+            displayID: displayID
+        )
+    }
+
     public func set(source: TWSSource) {
         precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
 
