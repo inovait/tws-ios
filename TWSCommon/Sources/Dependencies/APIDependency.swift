@@ -19,7 +19,7 @@ public struct APIDependency {
 public enum APIDependencyKey: DependencyKey {
 
     public static var liveValue: APIDependency {
-        let api = TWSAPIFactory.new(host: "websnippet20240506104155.azurewebsites.net")
+        let api = TWSAPIFactory.new(host: "api.thewebsnippet.dev")
 
         return .init(
             getSnippets: api.getSnippets,
