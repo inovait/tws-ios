@@ -9,26 +9,38 @@
 import SwiftUI
 import TWSModels
 
-public struct TWSView: View {
+public struct TWSView<
+    LoadingView: View,
+    ErrorView: View
+>: View {
 
     let snippet: TWSSnippet
     let handler: TWSManager
     let displayID: String
-    let canGoBack: Binding<Bool>
-    let canGoForward: Binding<Bool>
+    let loadingView: () -> LoadingView
+    let errorView: (Error) -> ErrorView
+    @Binding var canGoBack: Bool
+    @Binding var canGoForward: Bool
+    @Binding var loadingState: TWSLoadingState
 
     public init(
         snippet: TWSSnippet,
         using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
-        canGoForward: Binding<Bool>
+        canGoForward: Binding<Bool>,
+        loadingState: Binding<TWSLoadingState>,
+        @ViewBuilder loadingView: @escaping () -> LoadingView,
+        @ViewBuilder errorView: @escaping (Error) -> ErrorView
     ) {
         self.snippet = snippet
         self.handler = handler
         self.displayID = id
-        self.canGoBack = canGoBack
-        self.canGoForward = canGoForward
+        self._canGoBack = canGoBack
+        self._canGoForward = canGoForward
+        self._loadingState = loadingState
+        self.loadingView = loadingView
+        self.errorView = errorView
     }
 
     public var body: some View {
@@ -37,12 +49,28 @@ public struct TWSView: View {
                 snippet: snippet,
                 using: handler,
                 displayID: displayID,
-                canGoBack: canGoBack,
-                canGoForward: canGoForward
+                canGoBack: $canGoBack,
+                canGoForward: $canGoForward,
+                loadingState: $loadingState
             )
+            .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
+            .id(snippet.id)
+            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+
+            ZStack {
+                switch loadingState {
+                case .idle, .loading:
+                    loadingView()
+
+                case .loaded:
+                    EmptyView()
+
+                case let .failed(error):
+                    errorView(error)
+                }
+            }
+            .frame(width: loadingState.showView ? 0 : nil, height: loadingState.showView ? 0 : nil)
         }
-        .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
-        .id(snippet.id)
     }
 }
 
@@ -51,8 +79,11 @@ private struct _TWSView: View {
     @State var height: CGFloat = 16
     @State private var backCommandID = UUID()
     @State private var forwardCommandID = UUID()
+    @State private var networkObserver = NetworkMonitor()
+
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
+    @Binding var loadingState: TWSLoadingState
 
     let snippet: TWSSnippet
     let handler: TWSManager
@@ -63,19 +94,22 @@ private struct _TWSView: View {
         using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
-        canGoForward: Binding<Bool>
+        canGoForward: Binding<Bool>,
+        loadingState: Binding<TWSLoadingState>
     ) {
         self.snippet = snippet
         self.handler = handler
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
+        self._loadingState = loadingState
     }
 
     var body: some View {
         WebView(
             url: snippet.target,
             displayID: displayID,
+            isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
             backCommandId: backCommandID,
             forwardCommandID: forwardCommandID,
@@ -84,14 +118,10 @@ private struct _TWSView: View {
                 handler.set(height: height, for: snippet, displayID: displayID)
             },
             canGoBack: $canGoBack,
-            canGoForward: $canGoForward
+            canGoForward: $canGoForward,
+            loadingState: $loadingState
         )
         .frame(idealHeight: height)
-//        .task {
-//            if let height = handler.store.snippets.snippets[id: snippet.id]?.displayInfo.displays[displayID]?.height {
-//                self.height = height
-//            }
-//        }
         .onReceive(
             NotificationCenter.default.publisher(for: Notification.Name.Navigation.Back)
         ) { notification in

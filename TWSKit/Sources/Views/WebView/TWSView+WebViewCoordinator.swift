@@ -18,6 +18,7 @@ extension WebView {
         var heightObserver: NSKeyValueObservation?
         var backCommandId: UUID?
         var forwardCommandID: UUID?
+        var isConnectedToNetwork: Bool = true
         let snippetHeightProvider: SnippetHeightProvider
 
         init(
@@ -63,7 +64,10 @@ extension WebView {
                     }
                 }
 
-                self.parent.dynamicHeight = newHeight
+                // Mandatory to hop the thread, because of UI layout change
+                DispatchQueue.main.async { [weak self] in
+                    self?.parent.dynamicHeight = newHeight
+                }
             }
         }
     }

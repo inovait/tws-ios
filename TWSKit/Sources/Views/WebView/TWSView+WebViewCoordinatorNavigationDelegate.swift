@@ -15,13 +15,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didFinish navigation: WKNavigation!
     ) {
-        // TODO: maki it better, call shared method
-        // MAndatory hop
-        DispatchQueue.main.async { [weak self] in
-            self?.parent.canGoBack = webView.canGoBack
-            self?.parent.canGoForward = webView.canGoForward
-        }
-
+        logger.debug("[Delegate] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
         let cachedScrollHeight: CGFloat?
 
@@ -35,8 +29,82 @@ extension WebView.Coordinator: WKNavigationDelegate {
             cachedScrollHeight = nil
         }
 
-        let scrollHeight = max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
-        parent.dynamicHeight = scrollHeight
-        return
+        parent.updateState(
+            for: webView,
+            loadingState: .loaded,
+            dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
+        )
+    }
+
+    public func webView(
+        _ webView: WKWebView,
+        didFail navigation: WKNavigation!,
+        withError error: any Error
+    ) {
+        logger.debug("[Delegate] Navigation failed: \(String(describing: navigation)), error: \(error.localizedDescription)")
+        parent.updateState(for: webView, loadingState: .failed(error))
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didFailProvisionalNavigation navigation: WKNavigation!,
+        withError error: any Error
+    ) {
+        logger.debug("[Delegate] Provisional navigation failed: \(String(describing: navigation)), error: \(error.localizedDescription)")
+        parent.updateState(for: webView, loadingState: .failed(error))
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didStartProvisionalNavigation navigation: WKNavigation!
+    ) {
+        logger.debug("[Delegate] Navigation started: \(String(describing: navigation))")
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!
+    ) {
+        logger.debug("[Delegate] Received server redirect: \(String(describing: navigation))")
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didCommit navigation: WKNavigation!
+    ) {
+        logger.debug("[Delegate] Content started arriving for main frame: \(String(describing: navigation))")
+    }
+
+    func webViewWebContentProcessDidTerminate(
+        _ webView: WKWebView
+    ) {
+        logger.debug("[Delegate] Web content process terminated")
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        logger.debug("[Delegate] Decide policy for navigation action: \(navigationAction)")
+        decisionHandler(.allow)
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
+        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+    ) {
+        logger.debug("[Delegate] Decide policy for navigation response: \(navigationResponse)")
+        decisionHandler(.allow)
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        logger.debug("[Delegate] Received authentication challenge")
+        completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge
     }
 }

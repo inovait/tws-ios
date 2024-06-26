@@ -34,6 +34,7 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
+    @State private var loadingState: TWSLoadingState = .idle
     @State private var canGoBack = false
     @State private var canGoForward = false
 
@@ -70,7 +71,29 @@ private struct SnippetView: View {
                 using: twsViewModel.manager,
                 displayID: displayId,
                 canGoBack: $canGoBack,
-                canGoForward: $canGoForward
+                canGoForward: $canGoForward,
+                loadingState: $loadingState,
+                loadingView: {
+                    HStack {
+                        Spacer()
+
+                        ProgressView(label: { Text("Loading...") })
+
+                        Spacer()
+                    }
+                    .padding()
+                },
+                errorView: { error in
+                    HStack {
+                        Spacer()
+
+                        Text("Error: \(error.localizedDescription)")
+                            .padding()
+
+                        Spacer()
+                    }
+                    .padding()
+                }
             )
             .border(Color.black)
         }

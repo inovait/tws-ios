@@ -14,9 +14,11 @@ struct WebView: UIViewRepresentable {
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
+    @Binding var loadingState: TWSLoadingState
 
     let url: URL
     let displayID: String
+    let isConnectedToNetwork: Bool
     let backCommandId: UUID
     let forwardCommandID: UUID
     let snippetHeightProvider: SnippetHeightProvider
@@ -25,16 +27,19 @@ struct WebView: UIViewRepresentable {
     init(
         url: URL,
         displayID: String,
+        isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
         backCommandId: UUID,
         forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
         onHeightCalculated: @escaping @Sendable (CGFloat) -> Void,
         canGoBack: Binding<Bool>,
-        canGoForward: Binding<Bool>
+        canGoForward: Binding<Bool>,
+        loadingState: Binding<TWSLoadingState>
     ) {
         self.url = url
         self.displayID = displayID
+        self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
         self.backCommandId = backCommandId
         self.forwardCommandID = forwardCommandID
@@ -42,6 +47,7 @@ struct WebView: UIViewRepresentable {
         self.onHeightCalculated = onHeightCalculated
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
+        self._loadingState = loadingState
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -53,7 +59,7 @@ struct WebView: UIViewRepresentable {
         webView.load(URLRequest(url: self.url))
 
         context.coordinator.observe(heightOf: webView)
-        _updateState(for: webView)
+        updateState(for: webView, loadingState: .loading)
 
         return webView
     }
@@ -66,6 +72,7 @@ struct WebView: UIViewRepresentable {
         defer {
             context.coordinator.backCommandId = backCommandId
             context.coordinator.forwardCommandID = forwardCommandID
+            context.coordinator.isConnectedToNetwork = isConnectedToNetwork
         }
 
         if
@@ -80,26 +87,43 @@ struct WebView: UIViewRepresentable {
             uiView.goForward()
         }
 
-        _updateState(for: uiView)
+        let regainedNetworkConnection = !context.coordinator.isConnectedToNetwork && isConnectedToNetwork
+        var stateUpdated: Bool?
+
+        if regainedNetworkConnection, case .failed = loadingState {
+            if uiView.url == nil {
+                updateState(for: uiView, loadingState: .loading)
+                uiView.load(URLRequest(url: self.url))
+                stateUpdated = true
+            } else if !uiView.isLoading {
+                uiView.reload()
+            }
+        }
+
+        if let stateUpdated, !stateUpdated {
+            updateState(for: uiView)
+        }
     }
 
     // MARK: - Helpers
 
-    private func _updateState(for webView: WKWebView) {
-        // Thread hop is mandatory
+    func updateState(
+        for webView: WKWebView,
+        loadingState: TWSLoadingState? = nil,
+        dynamicHeight: CGFloat? = nil
+    ) {
+        // Mandatory to hop the thread, because of UI layout change
         DispatchQueue.main.async {
-            // TODO: remove print; only when it changes
-            print(
-            """
-            Update state:
-            can go back: \(webView.canGoBack)
-            can go forward: \(webView.canGoForward)
-            ----------------------------
-            """
-            )
-
             canGoBack = webView.canGoBack
             canGoForward = webView.canGoForward
+
+            if let dynamicHeight {
+                self.dynamicHeight = dynamicHeight
+            }
+
+            if let loadingState {
+                self.loadingState = loadingState
+            }
         }
     }
 }
