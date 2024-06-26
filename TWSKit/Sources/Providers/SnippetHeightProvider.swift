@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import TWSModels
 
 protocol SnippetHeightProvider {
 

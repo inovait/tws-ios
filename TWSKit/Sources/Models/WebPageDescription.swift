@@ -10,9 +10,13 @@ import Foundation
 
 struct WebPageDescription: Hashable {
 
+    // periphery:ignore - Used as part of hashable
     let scheme: String?
+    // periphery:ignore - Used as part of hashable
     let host: String?
+    // periphery:ignore - Used as part of hashable
     let path: String
+    // periphery:ignore - Used as part of hashable
     let query: String?
 
     init(_ target: URL) {

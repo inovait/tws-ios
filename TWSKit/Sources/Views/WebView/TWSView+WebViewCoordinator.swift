@@ -14,7 +14,6 @@ extension WebView {
     class Coordinator: NSObject {
 
         var parent: WebView
-        var heightWorkItem: DispatchWorkItem?
         var heightObserver: NSKeyValueObservation?
         var backCommandId: UUID?
         var forwardCommandID: UUID?
