@@ -26,7 +26,7 @@ class SnippetHeightProviderImpl: SnippetHeightProvider {
     }
 
     func getHeight(for hash: WebPageDescription, displayID: String) -> CGFloat? {
-        print("Get h(\(store[hash]?[displayID] ?? -1)) for \(hash.path)@\(displayID)")
+        logger.debug("Get h(\(store[hash]?[displayID] ?? -1)) for \(hash.path)@\(displayID)")
         return store[hash]?[displayID]
     }
 }
