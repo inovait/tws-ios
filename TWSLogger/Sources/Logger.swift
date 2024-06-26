@@ -13,6 +13,15 @@ public struct TWSLog {
         }
     }
 
+    public func debug(
+        _ message: String,
+        className: String = #fileID,
+        lineNumber: Int = #line,
+        functionName: String = #function
+    ) {
+        logger.debug("\(createLogMessage(message, className, lineNumber, functionName))")
+    }
+
     public func info(
         _ message: String,
         className: String = #fileID,
