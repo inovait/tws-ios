@@ -21,6 +21,7 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
+            entitlements: getEntitlements(),
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
@@ -89,7 +90,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSSnippets"),
-                .target(name: "TWSSettings")
+                .target(name: "TWSSettings"),
+                .target(name: "TWSUniversalLinks")
             ],
             settings: .settings(
                 configurations: [
@@ -271,6 +273,26 @@ let project = Project(
                     )
                 ]
             )
+        ),
+        .target(
+            name: "TWSUniversalLinks",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twsuniversallinks",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSUniversalLinks/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels"),
+                .target(name: "TWSCommon"),
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         )
     ],
     schemes: [
@@ -288,6 +310,14 @@ let project = Project(
 
 func deploymentTarget() -> String {
     "17.0"
+}
+
+func getEntitlements() -> Entitlements {
+    return Entitlements.dictionary([
+        "com.apple.developer.associated-domains":
+            ["applinks:thewebsnippet.com",
+             "applinks:thewebsnippet.dev"]
+    ])
 }
 
 func infoPlist() -> [String: Plist.Value] {

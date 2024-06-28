@@ -28,6 +28,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         } else {
             cachedScrollHeight = nil
         }
+        webView.evaluateJavaScript("document.title") { (result, error) in
+            if let title = result as? String, error == nil {
+                DispatchQueue.main.async { [weak self] in
+                    self?.parent.pageTitle = title
+                }
+            }
+        }
 
         parent.updateState(
             for: webView,
@@ -93,7 +100,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
         logger.debug("[Navigation] Decide policy for navigation action: \(navigationAction)")
-        
+
         // OAuth request to Google in embedded browsers are not allowed
         if let url = navigationAction.request.url, url.absoluteString.starts(with: "https://accounts.google.com") {
             redirectedToSafari = true
