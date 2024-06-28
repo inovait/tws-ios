@@ -15,13 +15,7 @@ class TWSViewModel {
 
     let manager = TWSFactory.new()
     var snippets: [TWSSnippet]
-    var qrLoadedSnippet: TWSSnippet? {
-        didSet {
-            if qrLoadedSnippet == nil {
-                manager.clearQRSnippet()
-            }
-        }
-    }
+    var qrLoadedSnippet: TWSSnippet?
 
     init() {
         snippets = manager.snippets

@@ -61,7 +61,7 @@ public struct TWSUniversalLinksFeature {
             logger.err("QR snippet load failed: \(error.localizedDescription)")
             state.loadedSnippet = nil
             return .none
-            
+
         case .business(.clearLoadedSnippet):
             state.loadedSnippet = nil
             return .none

@@ -56,7 +56,7 @@ struct ContentView: View {
                         Text("TWS - \(viewModel.webViewTitle)")
                         Spacer()
                         Button(action: {
-                            twsViewModel.qrLoadedSnippet = nil
+                            twsViewModel.manager.clearQRSnippet()
                         }, label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 22))
