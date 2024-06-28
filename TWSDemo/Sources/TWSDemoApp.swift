@@ -1,6 +1,5 @@
 import SwiftUI
 import Firebase
-import TWSKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
