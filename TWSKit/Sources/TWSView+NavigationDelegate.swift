@@ -15,6 +15,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didFinish navigation: WKNavigation!
     ) {
+        webView.evaluateJavaScript("document.title") { (result, error) in
+            if let title = result as? String, error == nil {
+                DispatchQueue.main.async { [weak self] in
+                    self?.parent.pageTitle = title
+                }
+            }
+        }
         Task { [weak self] in try? await self?._updateHeight(webView) }
     }
 

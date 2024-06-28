@@ -2,6 +2,7 @@ import Foundation
 import ComposableArchitecture
 import TWSSettings
 import TWSSnippets
+import TWSUniversalLinks
 
 @Reducer
 public struct TWSCoreFeature {
@@ -11,10 +12,15 @@ public struct TWSCoreFeature {
 
         public var settings: TWSSettingsFeature.State
         public var snippets: TWSSnippetsFeature.State
+        public var universalLinks: TWSUniversalLinksFeature.State
 
-        public init(settings: TWSSettingsFeature.State, snippets: TWSSnippetsFeature.State) {
+        public init(
+            settings: TWSSettingsFeature.State,
+            snippets: TWSSnippetsFeature.State,
+            universalLinks: TWSUniversalLinksFeature.State) {
             self.settings = settings
             self.snippets = snippets
+            self.universalLinks = universalLinks
         }
     }
 
@@ -23,6 +29,7 @@ public struct TWSCoreFeature {
     public enum Action {
         case settings(TWSSettingsFeature.Action)
         case snippets(TWSSnippetsFeature.Action)
+        case universalLinks(TWSUniversalLinksFeature.Action)
     }
 
     public var body: some ReducerOf<Self> {
@@ -32,6 +39,10 @@ public struct TWSCoreFeature {
 
         Scope(state: \.snippets, action: \.snippets) {
             TWSSnippetsFeature()
+        }
+
+        Scope(state: \.universalLinks, action: \.universalLinks) {
+            TWSUniversalLinksFeature()
         }
     }
 }

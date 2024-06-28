@@ -90,7 +90,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSSnippets"),
-                .target(name: "TWSSettings")
+                .target(name: "TWSSettings"),
+                .target(name: "TWSUniversalLinks")
             ],
             settings: .settings(
                 configurations: [
@@ -272,6 +273,26 @@ let project = Project(
                     )
                 ]
             )
+        ),
+        .target(
+            name: "TWSUniversalLinks",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twsuniversallinks",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSUniversalLinks/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels"),
+                .target(name: "TWSCommon"),
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
         )
     ],
     schemes: [
@@ -293,7 +314,7 @@ func deploymentTarget() -> String {
 
 func getEntitlements() -> Entitlements {
     return Entitlements.dictionary([
-        "com.apple.developer.associated-domains": 
+        "com.apple.developer.associated-domains":
             ["applinks:thewebsnippet.com",
              "applinks:thewebsnippet.dev"]
     ])

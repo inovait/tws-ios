@@ -25,9 +25,7 @@ struct TWSDemoApp: App {
                 ContentView()
                     .environment(twsViewModel)
                     .task {
-                        for await snippets in twsViewModel.manager.stream {
-                            self.twsViewModel.snippets = snippets
-                        }
+                        await twsViewModel.startupInitTasks()
                     }
             }
         }

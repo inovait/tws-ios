@@ -7,10 +7,12 @@
 //
 
 import SwiftUI
+import TWSKit
 
 struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
+    @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
         TabView(
@@ -37,5 +39,44 @@ struct ContentView: View {
                     .tag(ContentViewModel.Tab.settings)
             }
         )
+        .onChange(of: twsViewModel.qrLoadedSnippet, { _, _ in
+            viewModel.fullscreenSnippet = twsViewModel.qrLoadedSnippet
+            viewModel.displayFullscreenSnippet = twsViewModel.qrLoadedSnippet != nil
+        })
+        .onOpenURL(perform: { url in
+            twsViewModel.handleIncomingUrl(url)
+        })
+        .fullScreenCover(isPresented: $viewModel.displayFullscreenSnippet) {
+            if let snippet = viewModel.fullscreenSnippet {
+                VStack {
+                    HStack {
+                        Text("TWS - \(viewModel.webViewTitle)")
+                        Spacer()
+                        Button(action: {
+                            twsViewModel.qrLoadedSnippet = nil
+                        }, label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 22))
+                                .buttonStyle(PlainButtonStyle())
+                                .foregroundColor(.black)
+                        })
+                    }
+                    .padding()
+                    .overlay(
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.black),
+                        alignment: .bottom
+                    )
+                    TWSView(
+                        snippet: snippet,
+                        using: twsViewModel.manager,
+                        displayID: snippet.id.uuidString,
+                        onPageTitleChanged: { newTitle in
+                            viewModel.webViewTitle = newTitle
+                        })
+                }
+            }
+        }
     }
 }

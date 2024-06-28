@@ -14,16 +14,18 @@ import ComposableArchitecture
 public struct APIDependency {
     public var getSnippets: @Sendable () async throws -> [TWSSnippet]
     public var getSocket: @Sendable () async throws -> URL
+    public var getSnippetById: @Sendable (_ snippetId: String) async throws -> TWSSnippet
 }
 
 public enum APIDependencyKey: DependencyKey {
 
     public static var liveValue: APIDependency {
-        let api = TWSAPIFactory.new(host: "websnippet20240506104155.azurewebsites.net")
+        let api = TWSAPIFactory.new(host: "api.thewebsnippet.dev")
 
         return .init(
             getSnippets: api.getSnippets,
-            getSocket: api.getSocket
+            getSocket: api.getSocket,
+            getSnippetById: api.getSnippetById
         )
     }
 }
