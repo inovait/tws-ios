@@ -10,7 +10,8 @@ public class TWSManager {
 
     private let initDate: Date
     let store: StoreOf<TWSCoreFeature>
-    var snippetHeightProvider: SnippetHeightProvider
+    let snippetHeightProvider: SnippetHeightProvider
+    let navigationProvider: NavigationProvider
     public let stream: AsyncStream<[TWSSnippet]>
 
     init(
@@ -21,6 +22,7 @@ public class TWSManager {
         self.stream = stream
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
+        self.navigationProvider = NavigationProviderImpl()
     }
 
     // MARK: - Public
@@ -59,7 +61,7 @@ public class TWSManager {
         precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
 
         // Reset height store
-        snippetHeightProvider = SnippetHeightProviderImpl()
+        snippetHeightProvider.reset()
 
         // Send to store
         store.send(.snippets(.business(.set(source: source))))

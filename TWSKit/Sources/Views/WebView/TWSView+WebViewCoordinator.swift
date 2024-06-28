@@ -17,16 +17,20 @@ extension WebView {
         var heightObserver: NSKeyValueObservation?
         var backCommandId: UUID?
         var forwardCommandID: UUID?
-        var isConnectedToNetwork: Bool = true
+        var isConnectedToNetwork = true
+        var redirectedToSafari = false
+        var openURL: URL?
         let snippetHeightProvider: SnippetHeightProvider
+        let navigationProvider: NavigationProvider
 
         init(
             _ parent: WebView,
-            snippetHeightProvider: SnippetHeightProvider
-
+            snippetHeightProvider: SnippetHeightProvider,
+            navigationProvider: NavigationProvider
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
+            self.navigationProvider = navigationProvider
         }
 
         deinit {
