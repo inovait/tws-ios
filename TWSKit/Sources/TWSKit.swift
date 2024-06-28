@@ -12,6 +12,7 @@ public class TWSManager {
     let store: StoreOf<TWSCoreFeature>
     public let snippetsStream: AsyncStream<[TWSSnippet]>
     public let qrSnippetStream: AsyncStream<TWSSnippet?>
+    var snippetHeightProvider: SnippetHeightProvider
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -22,6 +23,7 @@ public class TWSManager {
         self.snippetsStream = snippetsStream
         self.qrSnippetStream = qrSnippetStream
         self.initDate = Date()
+        self.snippetHeightProvider = SnippetHeightProviderImpl()
     }
 
     // MARK: - Public
@@ -37,6 +39,7 @@ public class TWSManager {
     }
 
     public func run(listenForChanges: Bool) {
+        precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
         store.send(.snippets(.business(.load)))
 
         if listenForChanges {
@@ -44,11 +47,35 @@ public class TWSManager {
         }
     }
 
+    public func goBack(snippet: TWSSnippet, displayID: String) {
+        NotificationBuilder.send(
+            Notification.Name.Navigation.Back,
+            snippet: snippet,
+            displayID: displayID
+        )
+    }
+
+    public func goForward(snippet: TWSSnippet, displayID: String) {
+        NotificationBuilder.send(
+            Notification.Name.Navigation.Forward,
+            snippet: snippet,
+            displayID: displayID
+        )
+    }
+
     public func set(source: TWSSource) {
+        precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
+
+        // Reset height store
+        snippetHeightProvider = SnippetHeightProviderImpl()
+
+        // Send to store
         store.send(.snippets(.business(.set(source: source))))
     }
 
     public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
+        precondition(Thread.isMainThread, "`getLogsReport(reportFiltering:)` can only be called on main thread")
+
         let bundleId = Bundle.main.bundleIdentifier
         if let bundleId {
             let logReporter = LogReporter()
@@ -73,6 +100,11 @@ public class TWSManager {
 
     func set(height: CGFloat, for snippet: TWSSnippet, displayID: String) {
         assert(Thread.isMainThread)
+        guard
+            store.snippets.snippets[id: snippet.id] != nil
+        else {
+            return
+        }
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))

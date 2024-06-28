@@ -39,6 +39,7 @@ if periphery scan --skip-build --index-store-path "$index_store_path/Index.noind
         exit 1
     fi
     echo "Haven't found any deadcode"
+    cat "$periphery_output_file"
 else
     echo "Periphery failed, reason could be that project build folder in not created or path to it is wrong"
     exit 1

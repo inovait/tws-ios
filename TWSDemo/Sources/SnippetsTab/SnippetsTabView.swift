@@ -8,6 +8,7 @@
 
 import SwiftUI
 import TWSKit
+import TWSModels
 
 struct SnippetsTabView: View {
 
@@ -22,15 +23,11 @@ struct SnippetsTabView: View {
                         Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
                         id: \.1.id
                     ) { idx, snippet in
-                        TWSView(
-                            snippet: snippet,
-                            using: twsViewModel.manager,
-                            displayID: "tab-\(snippet.id.uuidString)"
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .border(Color.black)
-                        .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
-                        .opacity(selectedId != snippet.id ? 0 : 1)
+                        ZStack {
+                            SnippetView(snippet: snippet)
+                                .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
+                                .opacity(selectedId != snippet.id ? 0 : 1)
+                        }
                     }
                 }
 
@@ -74,6 +71,77 @@ struct SnippetsTabView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+private struct SnippetView: View {
+
+    let snippet: TWSSnippet
+    @Environment(TWSViewModel.self) private var twsViewModel
+    @State private var loadingState: TWSLoadingState = .idle
+    @State private var canGoBack = false
+    @State private var canGoForward = false
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            let displayId = "tab-\(snippet.id.uuidString)"
+
+            HStack {
+                Button {
+                    twsViewModel.manager.goBack(
+                        snippet: snippet,
+                        displayID: displayId
+                    )
+                } label: {
+                    Image(systemName: "arrowshape.backward.fill")
+                }
+                .disabled(!canGoBack)
+
+                Button {
+                    twsViewModel.manager.goForward(
+                        snippet: snippet,
+                        displayID: displayId
+                    )
+                } label: {
+                    Image(systemName: "arrowshape.forward.fill")
+                }
+                .disabled(!canGoForward)
+            }
+
+            Divider()
+
+            TWSView(
+                snippet: snippet,
+                using: twsViewModel.manager,
+                displayID: "tab-\(snippet.id.uuidString)",
+                canGoBack: $canGoBack,
+                canGoForward: $canGoForward,
+                loadingState: $loadingState,
+                loadingView: {
+                    HStack {
+                        Spacer()
+
+                        ProgressView(label: { Text("Loading...") })
+
+                        Spacer()
+                    }
+                    .padding()
+                },
+                errorView: { error in
+                    HStack {
+                        Spacer()
+
+                        Text("Error: \(error.localizedDescription)")
+                            .padding()
+
+                        Spacer()
+                    }
+                    .padding()
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .border(Color.black)
         }
     }
 }
