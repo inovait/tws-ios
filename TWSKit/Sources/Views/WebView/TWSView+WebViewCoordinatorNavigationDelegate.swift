@@ -28,6 +28,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         } else {
             cachedScrollHeight = nil
         }
+        webView.evaluateJavaScript("document.title") { (result, error) in
+            if let title = result as? String, error == nil {
+                DispatchQueue.main.async { [weak self] in
+                    self?.parent.pageTitle = title
+                }
+            }
+        }
 
         parent.updateState(
             for: webView,

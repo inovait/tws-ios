@@ -13,6 +13,9 @@ struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
+    @State private var loadingState: TWSLoadingState = .idle
+    @State private var canGoBack = false
+    @State private var canGoForward = false
 
     var body: some View {
         TabView(
@@ -72,6 +75,30 @@ struct ContentView: View {
                         snippet: snippet,
                         using: twsViewModel.manager,
                         displayID: snippet.id.uuidString,
+                        canGoBack: $canGoBack,
+                        canGoForward: $canGoForward,
+                        loadingState: $loadingState,
+                        loadingView: {
+                            HStack {
+                                Spacer()
+
+                                ProgressView(label: { Text("Loading...") })
+
+                                Spacer()
+                            }
+                            .padding()
+                        },
+                        errorView: { error in
+                            HStack {
+                                Spacer()
+
+                                Text("Error: \(error.localizedDescription)")
+                                    .padding()
+
+                                Spacer()
+                            }
+                            .padding()
+                        },
                         onPageTitleChanged: { newTitle in
                             viewModel.webViewTitle = newTitle
                         })
