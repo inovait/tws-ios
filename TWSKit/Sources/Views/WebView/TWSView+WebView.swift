@@ -20,9 +20,11 @@ struct WebView: UIViewRepresentable {
     let url: URL
     let displayID: String
     let isConnectedToNetwork: Bool
+    let openURL: URL?
     let backCommandId: UUID
     let forwardCommandID: UUID
     let snippetHeightProvider: SnippetHeightProvider
+    let navigationProvider: NavigationProvider
     let onHeightCalculated: (CGFloat) -> Void
 
     init(
@@ -31,9 +33,11 @@ struct WebView: UIViewRepresentable {
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
         pageTitle: Binding<String>,
+        openURL: URL?,
         backCommandId: UUID,
         forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
+        navigationProvider: NavigationProvider,
         onHeightCalculated: @escaping @Sendable (CGFloat) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
@@ -44,10 +48,13 @@ struct WebView: UIViewRepresentable {
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
         self._pageTitle = pageTitle
+        self.openURL = openURL
         self.backCommandId = backCommandId
         self.forwardCommandID = forwardCommandID
         self.snippetHeightProvider = snippetHeightProvider
+        self.navigationProvider = navigationProvider
         self.onHeightCalculated = onHeightCalculated
+        self._dynamicHeight = dynamicHeight
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
         self._loadingState = loadingState
@@ -68,15 +75,25 @@ struct WebView: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self, snippetHeightProvider: snippetHeightProvider)
+        Coordinator(
+            self,
+            snippetHeightProvider: snippetHeightProvider,
+            navigationProvider: navigationProvider
+        )
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
+
+        // Save state at the end
+
         defer {
             context.coordinator.backCommandId = backCommandId
             context.coordinator.forwardCommandID = forwardCommandID
             context.coordinator.isConnectedToNetwork = isConnectedToNetwork
+            context.coordinator.openURL = openURL
         }
+
+        // Go back & Go forward
 
         if
             let prevBackCommand = context.coordinator.backCommandId,
@@ -90,6 +107,8 @@ struct WebView: UIViewRepresentable {
             uiView.goForward()
         }
 
+        // Regained network connection
+
         let regainedNetworkConnection = !context.coordinator.isConnectedToNetwork && isConnectedToNetwork
         var stateUpdated: Bool?
 
@@ -102,6 +121,26 @@ struct WebView: UIViewRepresentable {
                 uiView.reload()
             }
         }
+
+        // OAuth - Google sign-in
+
+        if
+            context.coordinator.redirectedToSafari,
+            let openURL,
+            openURL != context.coordinator.openURL {
+
+            context.coordinator.redirectedToSafari = false
+
+            do {
+                try navigationProvider.continueNavigation(with: openURL, from: uiView)
+            } catch NavigationError.viewControllerNotFound {
+                uiView.load(URLRequest(url: openURL))
+            } catch {
+                logger.err("Failed to continue navigation: \(error)")
+            }
+        }
+
+        // Update state
 
         if let stateUpdated, !stateUpdated {
             updateState(for: uiView)

@@ -8,6 +8,7 @@
 
 import Foundation
 import WebKit
+@_implementationOnly import TWSCommon
 
 extension WebView.Coordinator: WKNavigationDelegate {
 
@@ -15,7 +16,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didFinish navigation: WKNavigation!
     ) {
-        logger.debug("[Delegate] Navigation finished: \(String(describing: navigation))")
+        logger.debug("[Navigation] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
         let cachedScrollHeight: CGFloat?
 
@@ -48,7 +49,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didFail navigation: WKNavigation!,
         withError error: any Error
     ) {
-        logger.debug("[Delegate] Navigation failed: \(String(describing: navigation)), error: \(error.localizedDescription)")
+        var msg = "[Navigation] Navigation failed: \(String(describing: navigation)),"
+        msg +=  " error: \(error.localizedDescription)"
+
+        logger.debug(msg)
         parent.updateState(for: webView, loadingState: .failed(error))
     }
 
@@ -57,7 +61,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didFailProvisionalNavigation navigation: WKNavigation!,
         withError error: any Error
     ) {
-        logger.debug("[Delegate] Provisional navigation failed: \(String(describing: navigation)), error: \(error.localizedDescription)")
+        var msg = "[Navigation] Provisional navigation failed: \(String(describing: navigation)),"
+        msg += "error: \(error.localizedDescription)"
+
+        logger.debug(msg)
         parent.updateState(for: webView, loadingState: .failed(error))
     }
 
@@ -65,27 +72,27 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
-        logger.debug("[Delegate] Navigation started: \(String(describing: navigation))")
+        logger.debug("[Navigation] Navigation started: \(String(describing: navigation))")
     }
 
     func webView(
         _ webView: WKWebView,
         didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!
     ) {
-        logger.debug("[Delegate] Received server redirect: \(String(describing: navigation))")
+        logger.debug("[Navigation] Received server redirect: \(String(describing: navigation))")
     }
 
     func webView(
         _ webView: WKWebView,
         didCommit navigation: WKNavigation!
     ) {
-        logger.debug("[Delegate] Content started arriving for main frame: \(String(describing: navigation))")
+        logger.debug("[Navigation] Content started arriving for main frame: \(String(describing: navigation))")
     }
 
     func webViewWebContentProcessDidTerminate(
         _ webView: WKWebView
     ) {
-        logger.debug("[Delegate] Web content process terminated")
+        logger.debug("[Navigation] Web content process terminated")
     }
 
     func webView(
@@ -93,7 +100,16 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        logger.debug("[Delegate] Decide policy for navigation action: \(navigationAction)")
+        logger.debug("[Navigation] Decide policy for navigation action: \(navigationAction)")
+
+        // OAuth request to Google in embedded browsers are not allowed
+        if let url = navigationAction.request.url, url.isTWSAuthenticationRequest() {
+            redirectedToSafari = true
+            UIApplication.shared.open(url, options: [:])
+            decisionHandler(.cancel)
+            return
+        }
+
         decisionHandler(.allow)
     }
 
@@ -102,7 +118,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decidePolicyFor navigationResponse: WKNavigationResponse,
         decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
     ) {
-        logger.debug("[Delegate] Decide policy for navigation response: \(navigationResponse)")
+        logger.debug("[Navigation] Decide policy for navigation response: \(navigationResponse)")
         decisionHandler(.allow)
     }
 
@@ -111,7 +127,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        logger.debug("[Delegate] Received authentication challenge")
+        logger.debug("[Navigation] Received authentication challenge")
         completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge
     }
 }

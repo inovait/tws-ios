@@ -7,6 +7,9 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         productTypes: [
+
+            // TCA
+
             "ComposableArchitecture": .framework,
             "Dependencies": .framework,
             "Clocks": .framework,
@@ -20,7 +23,12 @@ import PackageDescription
             "Perception": .framework,
             "CasePaths": .framework,
             "CustomDump": .framework,
-            "XCTestDynamicOverlay": .framework
+            "XCTestDynamicOverlay": .framework,
+
+            // URL Routing
+
+            "URLRouting": .framework,
+            "Parsing": .framework
         ],
         baseSettings: .settings(
             configurations: [
@@ -43,6 +51,10 @@ let package = Package(
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
             exact: .init(1, 11, 1)
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/swift-url-routing",
+            exact: .init(0, 6, 0)
         )
     ]
 )

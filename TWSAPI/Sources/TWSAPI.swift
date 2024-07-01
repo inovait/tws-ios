@@ -5,7 +5,7 @@ public struct TWSAPI {
 
     public let getSnippets: @Sendable () async throws -> [TWSSnippet]
     public let getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: String) async throws -> TWSSnippet
+    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
 
     static func live(
         host: String
@@ -45,7 +45,7 @@ public struct TWSAPI {
             getSnippetById: { snippetId in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/snippets/\(snippetId)",
+                    path: "/snippets/\(snippetId.uuidString)",
                     host: host,
                     queryItems: [
                         .init(name: "apiKey", value: "true")

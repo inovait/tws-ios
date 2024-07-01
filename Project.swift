@@ -224,6 +224,7 @@ let project = Project(
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
+                .external(name: "URLRouting"),
                 .target(name: "TWSAPI"),
                 .target(name: "TWSLogger")
             ],
@@ -315,8 +316,11 @@ func deploymentTarget() -> String {
 func getEntitlements() -> Entitlements {
     return Entitlements.dictionary([
         "com.apple.developer.associated-domains":
-            ["applinks:thewebsnippet.com",
-             "applinks:thewebsnippet.dev"]
+            [
+                "applinks:thewebsnippet.com",
+                "applinks:thewebsnippet.dev",
+                "applinks:spotlight.inova.si"
+            ]
     ])
 }
 

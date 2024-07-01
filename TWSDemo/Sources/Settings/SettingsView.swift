@@ -40,7 +40,7 @@ struct SettingsView: View {
                                 text: $viewModel.localURLs,
                                 axis: .vertical
                             )
-                            .padding(.horizontal)
+                            .padding()
                             .border(Color.gray, width: 1)
                             .toolbar {
                                 ToolbarItemGroup(placement: .keyboard) {

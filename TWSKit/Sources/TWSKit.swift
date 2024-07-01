@@ -12,7 +12,8 @@ public class TWSManager {
     let store: StoreOf<TWSCoreFeature>
     public let snippetsStream: AsyncStream<[TWSSnippet]>
     public let qrSnippetStream: AsyncStream<TWSSnippet?>
-    var snippetHeightProvider: SnippetHeightProvider
+    let snippetHeightProvider: SnippetHeightProvider
+    let navigationProvider: NavigationProvider
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -24,6 +25,7 @@ public class TWSManager {
         self.qrSnippetStream = qrSnippetStream
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
+        self.navigationProvider = NavigationProviderImpl()
     }
 
     // MARK: - Public
@@ -67,7 +69,7 @@ public class TWSManager {
         precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
 
         // Reset height store
-        snippetHeightProvider = SnippetHeightProviderImpl()
+        snippetHeightProvider.reset()
 
         // Send to store
         store.send(.snippets(.business(.set(source: source))))
@@ -89,7 +91,7 @@ public class TWSManager {
     }
 
     public func handleIncomingUrl(_ url: URL) {
-        store.send(.universalLinks(.business(.loadSnippet(url))))
+        store.send(.universalLinks(.business(.onUniversalLink(url))))
     }
 
     public func clearQRSnippet() {

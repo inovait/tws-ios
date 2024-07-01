@@ -89,6 +89,7 @@ private struct _TWSView: View {
     @State private var backCommandID = UUID()
     @State private var forwardCommandID = UUID()
     @State private var networkObserver = NetworkMonitor()
+    @State private var openURL: URL?
 
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
@@ -124,9 +125,11 @@ private struct _TWSView: View {
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
             pageTitle: $pageTitle,
+            openURL: openURL,
             backCommandId: backCommandID,
             forwardCommandID: forwardCommandID,
             snippetHeightProvider: handler.snippetHeightProvider,
+            navigationProvider: handler.navigationProvider,
             onHeightCalculated: { height in
                 handler.set(height: height, for: snippet, displayID: displayID)
             },
@@ -134,6 +137,8 @@ private struct _TWSView: View {
             canGoForward: $canGoForward,
             loadingState: $loadingState
         )
+        // Used for Authentication via Safari
+        .onOpenURL { url in openURL = url }
         .frame(idealHeight: height)
         .onReceive(
             NotificationCenter.default.publisher(for: Notification.Name.Navigation.Back)
