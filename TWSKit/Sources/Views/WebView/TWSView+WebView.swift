@@ -15,6 +15,7 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
+    @Binding var pageTitle: String
 
     let url: URL
     let displayID: String
@@ -29,6 +30,7 @@ struct WebView: UIViewRepresentable {
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
+        pageTitle: Binding<String>,
         backCommandId: UUID,
         forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
@@ -41,6 +43,7 @@ struct WebView: UIViewRepresentable {
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
+        self._pageTitle = pageTitle
         self.backCommandId = backCommandId
         self.forwardCommandID = forwardCommandID
         self.snippetHeightProvider = snippetHeightProvider

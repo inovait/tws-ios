@@ -74,25 +74,10 @@ private struct SnippetView: View {
                 canGoForward: $canGoForward,
                 loadingState: $loadingState,
                 loadingView: {
-                    HStack {
-                        Spacer()
-
-                        ProgressView(label: { Text("Loading...") })
-
-                        Spacer()
-                    }
-                    .padding()
+                    WebViewLoadingView()
                 },
                 errorView: { error in
-                    HStack {
-                        Spacer()
-
-                        Text("Error: \(error.localizedDescription)")
-                            .padding()
-
-                        Spacer()
-                    }
-                    .padding()
+                    WebViewErrorView(error: error)
                 }
             )
             .border(Color.black)

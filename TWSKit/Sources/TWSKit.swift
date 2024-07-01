@@ -10,15 +10,18 @@ public class TWSManager {
 
     private let initDate: Date
     let store: StoreOf<TWSCoreFeature>
+    public let snippetsStream: AsyncStream<[TWSSnippet]>
+    public let qrSnippetStream: AsyncStream<TWSSnippet?>
     var snippetHeightProvider: SnippetHeightProvider
-    public let stream: AsyncStream<[TWSSnippet]>
 
     init(
         store: StoreOf<TWSCoreFeature>,
-        stream: AsyncStream<[TWSSnippet]>
+        snippetsStream: AsyncStream<[TWSSnippet]>,
+        qrSnippetStream: AsyncStream<TWSSnippet?>
     ) {
         self.store = store
-        self.stream = stream
+        self.snippetsStream = snippetsStream
+        self.qrSnippetStream = qrSnippetStream
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
     }
@@ -28,6 +31,11 @@ public class TWSManager {
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
         return store.snippets.snippets.elements.map(\.snippet)
+    }
+
+    public var qrLoadedSnippet: TWSSnippet? {
+        precondition(Thread.isMainThread, "`loadedSnippet()` can only be called on main thread")
+        return store.universalLinks.loadedSnippet
     }
 
     public func run(listenForChanges: Bool) {
@@ -78,6 +86,14 @@ public class TWSManager {
             )
         }
         throw LoggerError.bundleIdNotAvailable
+    }
+
+    public func handleIncomingUrl(_ url: URL) {
+        store.send(.universalLinks(.business(.loadSnippet(url))))
+    }
+
+    public func clearQRSnippet() {
+        store.send(.universalLinks(.business(.clearLoadedSnippet)))
     }
 
     // MARK: - Internal

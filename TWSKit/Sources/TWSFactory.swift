@@ -16,10 +16,12 @@ import TWSModels
 public class TWSFactory {
 
     public class func new() -> TWSManager {
-        let stream = AsyncStream<[TWSSnippet]>.makeStream()
+        let snippetsStream = AsyncStream<[TWSSnippet]>.makeStream()
+        let qrSnippetStream = AsyncStream<TWSSnippet?>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
-            snippets: .init()
+            snippets: .init(),
+            universalLinks: .init()
         )
 
         let storage = state.snippets.snippets.map(\.snippet)
@@ -33,15 +35,21 @@ public class TWSFactory {
                 TWSCoreFeature()
                     .onChange(of: \.snippets.snippets) { _, newValue in
                         Reduce { _, _ in
-                            stream.continuation.yield(newValue.map(\.snippet))
+                            snippetsStream.continuation.yield(newValue.map(\.snippet))
+                            return .none
+                        }
+                    }
+                    .onChange(of: \.universalLinks.loadedSnippet) { _, newValue in
+                        Reduce { _, _ in
+                            qrSnippetStream.continuation.yield(newValue)
                             return .none
                         }
                     }
             }
         )
 
-        stream.continuation.yield(storage)
+        snippetsStream.continuation.yield(storage)
 
-        return TWSManager(store: store, stream: stream.stream)
+        return TWSManager(store: store, snippetsStream: snippetsStream.stream, qrSnippetStream: qrSnippetStream.stream)
     }
 }

@@ -7,11 +7,15 @@
 //
 
 import Foundation
+import TWSModels
 
 @Observable
 class ContentViewModel {
 
     var tab: Tab = .snippets
+    var fullscreenSnippet: TWSSnippet?
+    var displayFullscreenSnippet: Bool = false
+    var webViewTitle: String = ""
 }
 
 extension ContentViewModel {
