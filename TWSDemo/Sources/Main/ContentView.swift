@@ -53,7 +53,15 @@ struct ContentView: View {
             if let snippet = viewModel.fullscreenSnippet {
                 VStack {
                     HStack {
-                        Text("TWS - \(viewModel.webViewTitle)")
+                        Button(action: {
+                            if let url = URL(string: "https://manage.thewebsnippet.dev/snippets-list") {
+                                UIApplication.shared.open(url)
+                            }
+                        },
+                               label: {
+                            Text("TWS - \(viewModel.webViewTitle)")
+                                .foregroundColor(.black)
+                        })
                         Spacer()
                         Button(action: {
                             twsViewModel.manager.clearQRSnippet()
