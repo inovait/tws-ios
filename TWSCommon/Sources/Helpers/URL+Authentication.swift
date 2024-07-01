@@ -15,8 +15,8 @@ public extension URL {
             "https://accounts.google.com"
         ]
 
-        for endpoint in endpoints {
-            if absoluteString.starts(with: endpoint) { return true }
+        for endpoint in endpoints where absoluteString.starts(with: endpoint) {
+            return true
         }
 
         return false

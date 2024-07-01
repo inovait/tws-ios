@@ -74,16 +74,10 @@ class NavigationProviderImpl: NavigationProvider {
     }
 }
 
-// TODO:
-
-enum NavigationError: Error {
-
-    case parentNotFound
-    case viewControllerNotFound
-    case presentedViewControllerNotFound
-}
+// MARK: - Helpers
 
 private extension UIView {
+
     func parentViewController() -> UIViewController? {
         var parentResponder: UIResponder? = self
         while parentResponder != nil {
