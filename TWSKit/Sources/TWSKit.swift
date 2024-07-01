@@ -91,7 +91,7 @@ public class TWSManager {
     }
 
     public func handleIncomingUrl(_ url: URL) {
-        store.send(.universalLinks(.business(.loadSnippet(url))))
+        store.send(.universalLinks(.business(.onUniversalLink(url))))
     }
 
     public func clearQRSnippet() {

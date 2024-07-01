@@ -224,6 +224,7 @@ let project = Project(
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
+                .external(name: "URLRouting"),
                 .target(name: "TWSAPI"),
                 .target(name: "TWSLogger")
             ],

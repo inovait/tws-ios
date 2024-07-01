@@ -59,9 +59,9 @@ class NavigationProviderImpl: NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws {
-        guard let vc = _presentedVCs.removeValue(forKey: webView)?.viewController
+        guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
         else { throw NavigationError.viewControllerNotFound }
-        vc.dismiss(animated: animated, completion: completion)
+        viewController.dismiss(animated: animated, completion: completion)
     }
 
     func continueNavigation(

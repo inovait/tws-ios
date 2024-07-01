@@ -8,6 +8,7 @@
 
 import Foundation
 import WebKit
+@_implementationOnly import TWSCommon
 
 extension WebView.Coordinator: WKNavigationDelegate {
 
@@ -102,7 +103,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation] Decide policy for navigation action: \(navigationAction)")
 
         // OAuth request to Google in embedded browsers are not allowed
-        if let url = navigationAction.request.url, url.absoluteString.starts(with: "https://accounts.google.com") {
+        if let url = navigationAction.request.url, url.isTWSAuthenticationRequest() {
             redirectedToSafari = true
             UIApplication.shared.open(url, options: [:])
             decisionHandler(.cancel)

@@ -14,7 +14,7 @@ import ComposableArchitecture
 public struct APIDependency {
     public var getSnippets: @Sendable () async throws -> [TWSSnippet]
     public var getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: String) async throws -> TWSSnippet
+    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
 }
 
 public enum APIDependencyKey: DependencyKey {

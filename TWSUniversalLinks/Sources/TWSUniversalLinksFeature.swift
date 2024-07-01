@@ -24,7 +24,7 @@ public struct TWSUniversalLinksFeature {
 
         @CasePathable
         public enum BusinessAction {
-            case loadSnippet(URL)
+            case onUniversalLink(URL)
             case snippetLoaded(Result<TWSSnippet, Error>)
             case clearLoadedSnippet
         }
@@ -38,18 +38,27 @@ public struct TWSUniversalLinksFeature {
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
-        case .business(.loadSnippet(let readUrl)):
-            logger.info("Received QR code URL to parse: \(readUrl)")
-            let urlParser = TWSUniversalLinksParser()
-            let snippetId = urlParser.getSnippetIdFromURL(readUrl)
+        case let .business(.onUniversalLink(url)):
+            guard !url.isTWSAuthenticationRequest()
+            else { return .none }
+            logger.info("Received a universal link: \(url)")
 
-            return .run { [api] send in
-                do {
-                    let snippet = try await api.getSnippetById(snippetId)
-                    await send(.business(.snippetLoaded(.success(snippet))))
-                } catch {
-                    await send(.business(.snippetLoaded(.failure(error))))
+            do {
+                switch try universalLinksRouter.match(url: url) {
+                case let .snippet(id):
+                    return .run { [api] send in
+                        do {
+                            let snippet = try await api.getSnippetById(id)
+                            await send(.business(.snippetLoaded(.success(snippet))))
+                        } catch {
+                            await send(.business(.snippetLoaded(.failure(error))))
+                        }
+                    }
                 }
+            } catch {
+                dump(error)
+                logger.err("Failed to process an universal link: \(url), error: \(error.localizedDescription)")
+                return .none
             }
 
         case let .business(.snippetLoaded(.success(snippet))):
@@ -66,6 +75,5 @@ public struct TWSUniversalLinksFeature {
             state.loadedSnippet = nil
             return .none
         }
-
     }
 }

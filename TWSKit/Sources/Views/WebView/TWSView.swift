@@ -137,11 +137,8 @@ private struct _TWSView: View {
             canGoForward: $canGoForward,
             loadingState: $loadingState
         )
-        // TODO: Remove this
-        .onOpenURL { url in
-            print("Received url", url)
-            openURL = url
-        }
+        // Used for Authentication via Safari
+        .onOpenURL { url in openURL = url }
         .frame(idealHeight: height)
         .onReceive(
             NotificationCenter.default.publisher(for: Notification.Name.Navigation.Back)
