@@ -83,7 +83,7 @@ let project = Project(
         .target(
             name: "TWSCore",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscore",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCore/Sources/**"],
@@ -104,7 +104,7 @@ let project = Project(
         .target(
             name: "TWSSnippets",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippets",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippets/Sources/**"],
@@ -145,7 +145,7 @@ let project = Project(
         .target(
             name: "TWSSnippet",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippet",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippet/Sources/**"],
@@ -164,7 +164,7 @@ let project = Project(
         .target(
             name: "TWSSettings",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssettings",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSettings/Sources/**"],
@@ -200,7 +200,7 @@ let project = Project(
         .target(
             name: "TWSAPI",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twsapi",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSAPI/Sources/**"],
@@ -218,7 +218,7 @@ let project = Project(
         .target(
             name: "TWSCommon",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscommon",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCommon/Sources/**"],
@@ -239,7 +239,7 @@ let project = Project(
         .target(
             name: "TWSLogger",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twslogger",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: loggerInfoPlist()),
@@ -278,7 +278,7 @@ let project = Project(
         .target(
             name: "TWSUniversalLinks",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twsuniversallinks",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSUniversalLinks/Sources/**"],
