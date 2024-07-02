@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
