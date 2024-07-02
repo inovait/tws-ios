@@ -15,8 +15,6 @@ public struct TWSUniversalLinksFeature {
 
     @ObservableState
     public struct State: Equatable {
-        public internal(set) var loadedSnippet: TWSSnippet?
-
         public init() { }
     }
 
@@ -26,10 +24,15 @@ public struct TWSUniversalLinksFeature {
         public enum BusinessAction {
             case onUniversalLink(URL)
             case snippetLoaded(Result<TWSSnippet, Error>)
-            case clearLoadedSnippet
+        }
+
+        @CasePathable
+        public enum DelegateAction {
+            case snippetLoaded(TWSSnippet)
         }
 
         case business(BusinessAction)
+        case delegate(DelegateAction)
     }
 
     @Dependency(\.api) var api
@@ -63,16 +66,13 @@ public struct TWSUniversalLinksFeature {
 
         case let .business(.snippetLoaded(.success(snippet))):
             logger.info("QR snippet loaded successfully")
-            state.loadedSnippet = snippet
-            return .none
+            return .send(.delegate(.snippetLoaded(snippet)))
 
         case let .business(.snippetLoaded(.failure(error))):
             logger.err("QR snippet load failed: \(error.localizedDescription)")
-            state.loadedSnippet = nil
             return .none
 
-        case .business(.clearLoadedSnippet):
-            state.loadedSnippet = nil
+        case .delegate:
             return .none
         }
     }

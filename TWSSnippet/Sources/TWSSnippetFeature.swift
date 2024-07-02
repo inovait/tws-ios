@@ -11,10 +11,12 @@ public struct TWSSnippetFeature {
         public var snippet: TWSSnippet
         public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
+        public var isPrivate: Bool = false
 
-        public init(snippet: TWSSnippet) {
+        public init(snippet: TWSSnippet, isPrivate: Bool = false) {
             self.snippet = snippet
             self.displayInfo = .init()
+            self.isPrivate = isPrivate
         }
     }
 

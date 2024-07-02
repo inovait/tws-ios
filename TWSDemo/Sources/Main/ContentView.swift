@@ -13,6 +13,7 @@ struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
+    @State private var pageTitle: String = ""
     @State private var loadingState: TWSLoadingState = .idle
     @State private var canGoBack = false
     @State private var canGoForward = false
@@ -59,12 +60,12 @@ struct ContentView: View {
                             }
                         },
                                label: {
-                            Text("TWS - \(viewModel.webViewTitle)")
+                            Text("TWS - \($pageTitle.wrappedValue)")
                                 .foregroundColor(.black)
                         })
                         Spacer()
                         Button(action: {
-                            twsViewModel.manager.clearQRSnippet()
+                            twsViewModel.qrLoadedSnippet = nil
                         }, label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 22))
@@ -79,6 +80,7 @@ struct ContentView: View {
                             .foregroundColor(.black),
                         alignment: .bottom
                     )
+                    Spacer()
                     TWSView(
                         snippet: snippet,
                         using: twsViewModel.manager,
@@ -86,14 +88,12 @@ struct ContentView: View {
                         canGoBack: $canGoBack,
                         canGoForward: $canGoForward,
                         loadingState: $loadingState,
+                        pageTitle: $pageTitle,
                         loadingView: {
                             WebViewLoadingView()
                         },
                         errorView: { error in
                             WebViewErrorView(error: error)
-                        },
-                        onPageTitleChanged: { newTitle in
-                            viewModel.webViewTitle = newTitle
                         })
                 }
             }
