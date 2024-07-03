@@ -91,7 +91,8 @@ let project = Project(
                 .target(name: "TWSCommon"),
                 .target(name: "TWSSnippets"),
                 .target(name: "TWSSettings"),
-                .target(name: "TWSUniversalLinks")
+                .target(name: "TWSUniversalLinks"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -151,7 +152,8 @@ let project = Project(
             sources: ["TWSSnippet/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -170,7 +172,8 @@ let project = Project(
             sources: ["TWSSettings/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -205,7 +208,8 @@ let project = Project(
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSAPI/Sources/**"],
             dependencies: [
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -342,6 +346,30 @@ func loggerInfoPlist() -> [String: Plist.Value] {
                     "Persist": "Debug"
                 ],
                 "TWSSnippets": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSCore": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSnippet": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSCommon": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSettings": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSApi": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSUniversalLinks": [
                     "Enable": "Debug",
                     "Persist": "Debug"
                 ]
