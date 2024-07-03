@@ -75,7 +75,6 @@ public class TWSManager {
     }
 
     public func getLogsReport(reportFiltering: @Sendable @escaping (TWSLogEntryLog) -> String) async throws -> URL? {
-        precondition(Thread.isMainThread, "`getLogsReport(reportFiltering:)` can only be called on main thread")
 
         let bundleId = Bundle.main.bundleIdentifier
         if let bundleId {
