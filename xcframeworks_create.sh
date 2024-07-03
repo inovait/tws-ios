@@ -30,8 +30,7 @@ do
     -configuration Release \
     -destination "generic/platform=iOS" \
     -archivePath "${DERIVED_DATA_PATH}/${SCHEME}_ios_devices.xcarchive" \
-    SKIP_INSTALL=NO \
-    # BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    SKIP_INSTALL=NO
 
   # Build for iOS simulators
   xcodebuild archive \
@@ -40,8 +39,7 @@ do
     -configuration Release \
     -destination "generic/platform=iOS Simulator" \
     -archivePath "${DERIVED_DATA_PATH}/${SCHEME}_ios_simulators.xcarchive" \
-    SKIP_INSTALL=NO \
-    # BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    SKIP_INSTALL=NO
 
   # Create XCFramework
   xcodebuild -create-xcframework \
@@ -50,4 +48,8 @@ do
     -output "${OUTPUT_DIRECTORY}/${SCHEME}.xcframework"
 
   echo "XCFramework created for ${SCHEME} at ${OUTPUT_DIRECTORY}/${SCHEME}.xcframework"
+	
+	# zip the framwork
+	zip -r "${OUTPUT_DIRECTORY}/${SCHEME}.xcframework.zip" "${OUTPUT_DIRECTORY}/${SCHEME}.xcframework"
+	echo "Zipped ${OUTPUT_DIRECTORY}/${SCHEME}.xcframework to ${OUTPUT_DIRECTORY}/${SCHEME}.xcframework.zip"
 done

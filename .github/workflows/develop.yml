@@ -78,7 +78,7 @@ jobs:
         with:
           buildName: "iOS Development"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Archive/TWSDemo.ipa,./Archive/TWSDemo.app.dSYM.zip,./Changelog.md,XCFrameworks/TWSKit.xcframework,./Changelog.md,XCFrameworks/TWSModels.xcframework"
+          files: "./Archive/TWSDemo.ipa,./Archive/TWSDemo.app.dSYM.zip,./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build
