@@ -54,15 +54,17 @@ struct ContentView: View {
             if let snippet = viewModel.fullscreenSnippet {
                 VStack {
                     HStack {
-                        Button(action: {
-                            if let url = URL(string: "https://manage.thewebsnippet.dev/snippets-list") {
-                                UIApplication.shared.open(url)
+                        Button(
+                            action: {
+                                if let url = URL(string: "https://manage.thewebsnippet.dev/snippets-list") {
+                                    UIApplication.shared.open(url)
+                                }
+                            },
+                            label: {
+                                Text("TWS - \($pageTitle.wrappedValue)")
+                                    .foregroundColor(.black)
                             }
-                        },
-                        label: {
-                            Text("TWS - \($pageTitle.wrappedValue)")
-                                .foregroundColor(.black)
-                        })
+                        )
                         Spacer()
                         Button(action: {
                             twsViewModel.qrLoadedSnippet = nil
