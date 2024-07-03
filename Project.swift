@@ -348,6 +348,30 @@ func loggerInfoPlist() -> [String: Plist.Value] {
                 "TWSSnippets": [
                     "Enable": "Debug",
                     "Persist": "Debug"
+                ],
+                "TWSCore": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSnippet": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSCommon": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSSettings": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSApi": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
+                ],
+                "TWSUniversalLinks": [
+                    "Enable": "Debug",
+                    "Persist": "Debug"
                 ]
             ]
         ]
