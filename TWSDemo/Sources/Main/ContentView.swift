@@ -59,7 +59,7 @@ struct ContentView: View {
                                 UIApplication.shared.open(url)
                             }
                         },
-                               label: {
+                        label: {
                             Text("TWS - \($pageTitle.wrappedValue)")
                                 .foregroundColor(.black)
                         })

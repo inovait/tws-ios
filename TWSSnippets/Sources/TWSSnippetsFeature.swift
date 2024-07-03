@@ -90,15 +90,17 @@ public struct TWSSnippetsFeature {
             }
 
         case let .snippetAdded(snippet):
-            if state.snippets.filter({ existingSnippet in
-                existingSnippet.snippet == snippet
-            }).isEmpty {
+            let snippetAlreadyInState = !state.snippets.filter({ existingSnippet in
+                existingSnippet.snippet.id == snippet.id
+            }).isEmpty
+
+            if snippetAlreadyInState {
+                logger.info("Snippet already in the state: \(snippet.id)")
+            } else {
                 state.snippets.append(
                     .init(snippet: snippet, isPrivate: true)
                 )
                 logger.info("Added snippet: \(snippet.id)")
-            } else {
-                logger.info("Snippet already in the state: \(snippet.id)")
             }
             return .none
 

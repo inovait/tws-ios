@@ -10,16 +10,16 @@ public class TWSManager {
 
     private let initDate: Date
     let store: StoreOf<TWSCoreFeature>
-    public let snippetsStream: AsyncStream<TWSStreamEvent>
+    public let events: AsyncStream<TWSStreamEvent>
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
     init(
         store: StoreOf<TWSCoreFeature>,
-        snippetsStream: AsyncStream<TWSStreamEvent>
+        events: AsyncStream<TWSStreamEvent>
     ) {
         self.store = store
-        self.snippetsStream = snippetsStream
+        self.events = events
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()

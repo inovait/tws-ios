@@ -27,14 +27,14 @@ class TWSViewModel {
     }
 
     func startupInitTasks() async {
-        for await snippetEvent in self.manager.snippetsStream {
+        for await snippetEvent in self.manager.events {
             switch snippetEvent {
-            case .snippetLoaded(let snippet):
+            case .universalLinkSnippetLoaded(let snippet):
                 self.qrLoadedSnippet = snippet
-            case .snippetsLoaded(let snippets):
+            case .snippetsUpdated(let snippets):
                 self.snippets = snippets
             default:
-                print("Unhandled QR Stream event")
+                print("Unhandled stream event")
             }
         }
     }

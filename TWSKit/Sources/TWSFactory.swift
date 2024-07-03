@@ -16,7 +16,7 @@ import Foundation
 public class TWSFactory {
 
     public class func new() -> TWSManager {
-        let snippetsStream = AsyncStream<TWSStreamEvent>.makeStream()
+        let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
             snippets: .init(),
@@ -32,7 +32,7 @@ public class TWSFactory {
             Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
                 switch action {
                 case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    snippetsStream.continuation.yield(.snippetLoaded(snippet))
+                    events.continuation.yield(.universalLinkSnippetLoaded(snippet))
                     return .none
                 default:
                     return .none
@@ -44,7 +44,7 @@ public class TWSFactory {
                         let newSnippets = newValue.filter({ snippetState in
                             !snippetState.isPrivate
                         }).map(\.snippet)
-                        snippetsStream.continuation.yield(.snippetsLoaded(newSnippets))
+                        events.continuation.yield(.snippetsUpdated(newSnippets))
                         return .none
                     }
                 }
@@ -55,8 +55,8 @@ public class TWSFactory {
             reducer: { combinedReducers }
         )
 
-        snippetsStream.continuation.yield(.snippetsLoaded(storage))
+        events.continuation.yield(.snippetsUpdated(storage))
 
-        return TWSManager(store: store, snippetsStream: snippetsStream.stream)
+        return TWSManager(store: store, events: events.stream)
     }
 }
