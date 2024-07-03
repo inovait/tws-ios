@@ -6,30 +6,7 @@ import PackageDescription
     import ProjectDescriptionHelpers
 
     let packageSettings = PackageSettings(
-        productTypes: [
-
-            // TCA
-
-            "ComposableArchitecture": .framework,
-            "Dependencies": .framework,
-            "Clocks": .framework,
-            "ConcurrencyExtras": .framework,
-            "CombineSchedulers": .framework,
-            "IdentifiedCollections": .framework,
-            "OrderedCollections": .framework,
-            "_CollectionsUtilities": .framework,
-            "DependenciesMacros": .framework,
-            "SwiftUINavigationCore": .framework,
-            "Perception": .framework,
-            "CasePaths": .framework,
-            "CustomDump": .framework,
-            "XCTestDynamicOverlay": .framework,
-
-            // URL Routing
-
-            "URLRouting": .framework,
-            "Parsing": .framework
-        ],
+        productTypes: [:],
         baseSettings: .settings(
             configurations: [
                 .debug(name: "Debug"),

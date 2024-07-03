@@ -1,3 +1,5 @@
+build/
+XCFrameworks/
 xcuserdata/
 *.xcodeproj
 *.xcworkspace

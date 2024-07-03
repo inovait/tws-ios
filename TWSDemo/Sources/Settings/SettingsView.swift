@@ -15,10 +15,6 @@ struct SettingsView: View {
     @State var viewModel = SettingsViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
 
-    private func logsFormatter(entry: OSLogEntryLog) -> String {
-        return "\(entry.date.description) - \(entry.category): \(entry.composedMessage)"
-    }
-
     var body: some View {
         NavigationView {
             Form {
@@ -67,7 +63,9 @@ struct SettingsView: View {
                             viewModel.logsGenerationInProgress = true
                             do {
                                 let reportUrl = try await twsViewModel.manager.getLogsReport(
-                                    reportFiltering: logsFormatter
+                                    reportFiltering: {
+                                        "\($0.date.description) - \($0.category): \($0.composedMessage)"
+                                    }
                                 )
                                 shareLogsReport(reportUrl)
                                 viewModel.logsGenerationInProgress = false

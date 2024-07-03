@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import TWSModels
-import OSLog
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
@@ -75,7 +74,7 @@ public class TWSManager {
         store.send(.snippets(.business(.set(source: source))))
     }
 
-    public func getLogsReport(reportFiltering: (OSLogEntryLog) -> String) async throws -> URL? {
+    public func getLogsReport(reportFiltering: @Sendable @escaping (TWSLogEntryLog) -> String) async throws -> URL? {
         precondition(Thread.isMainThread, "`getLogsReport(reportFiltering:)` can only be called on main thread")
 
         let bundleId = Bundle.main.bundleIdentifier
@@ -84,7 +83,10 @@ public class TWSManager {
             return try await logReporter.generateReport(
                 bundleId: bundleId,
                 date: initDate.addingTimeInterval(-60),
-                reportFiltering: reportFiltering
+                reportFiltering: { input in
+                    let log = TWSLogEntryLog(from: input)
+                    return reportFiltering(log)
+                }
             )
         }
         throw LoggerError.bundleIdNotAvailable
