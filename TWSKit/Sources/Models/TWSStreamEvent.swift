@@ -9,6 +9,6 @@
 import TWSModels
 
 public enum TWSStreamEvent {
-    case universalLinkSnippetLoaded(TWSSnippet?)
+    case universalLinkSnippetLoaded(TWSSnippet)
     case snippetsUpdated([TWSSnippet])
 }
