@@ -44,5 +44,23 @@ public struct TWSCoreFeature {
         Scope(state: \.universalLinks, action: \.universalLinks) {
             TWSUniversalLinksFeature()
         }
+
+        _QRSnippetDelegateFeature()
+    }
+}
+
+@Reducer
+private struct _QRSnippetDelegateFeature {
+
+    typealias State = TWSCoreFeature.State
+    typealias Action = TWSCoreFeature.Action
+
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        switch action {
+        case let .universalLinks(.delegate(.snippetLoaded(snippet))):
+            return .send(.snippets(.business(.snippetAdded(snippet))))
+        default:
+            return .none
+        }
     }
 }

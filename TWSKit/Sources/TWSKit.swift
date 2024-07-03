@@ -9,19 +9,16 @@ public class TWSManager {
 
     private let initDate: Date
     let store: StoreOf<TWSCoreFeature>
-    public let snippetsStream: AsyncStream<[TWSSnippet]>
-    public let qrSnippetStream: AsyncStream<TWSSnippet?>
+    public let events: AsyncStream<TWSStreamEvent>
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
     init(
         store: StoreOf<TWSCoreFeature>,
-        snippetsStream: AsyncStream<[TWSSnippet]>,
-        qrSnippetStream: AsyncStream<TWSSnippet?>
+        events: AsyncStream<TWSStreamEvent>
     ) {
         self.store = store
-        self.snippetsStream = snippetsStream
-        self.qrSnippetStream = qrSnippetStream
+        self.events = events
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
@@ -32,11 +29,6 @@ public class TWSManager {
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
         return store.snippets.snippets.elements.map(\.snippet)
-    }
-
-    public var qrLoadedSnippet: TWSSnippet? {
-        precondition(Thread.isMainThread, "`loadedSnippet()` can only be called on main thread")
-        return store.universalLinks.loadedSnippet
     }
 
     public func run(listenForChanges: Bool) {
@@ -93,11 +85,8 @@ public class TWSManager {
     }
 
     public func handleIncomingUrl(_ url: URL) {
+        precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
         store.send(.universalLinks(.business(.onUniversalLink(url))))
-    }
-
-    public func clearQRSnippet() {
-        store.send(.universalLinks(.business(.clearLoadedSnippet)))
     }
 
     // MARK: - Internal

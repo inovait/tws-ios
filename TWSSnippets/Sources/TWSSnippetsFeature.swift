@@ -26,6 +26,7 @@ public struct TWSSnippetsFeature {
         public enum BusinessAction {
             case load
             case snippetsLoaded(Result<[TWSSnippet], Error>)
+            case snippetAdded(TWSSnippet)
             case listenForChanges
             case reconnect
             case stopListeningForChanges
@@ -87,6 +88,21 @@ public struct TWSSnippetsFeature {
                     await send(.business(.snippetsLoaded(.failure(error))))
                 }
             }
+
+        case let .snippetAdded(snippet):
+            let snippetAlreadyInState = !state.snippets.filter({ existingSnippet in
+                existingSnippet.snippet.id == snippet.id
+            }).isEmpty
+
+            if snippetAlreadyInState {
+                logger.info("Snippet already in the state: \(snippet.id)")
+            } else {
+                state.snippets.append(
+                    .init(snippet: snippet, isPrivate: true)
+                )
+                logger.info("Added snippet: \(snippet.id)")
+            }
+            return .none
 
         case let .snippetsLoaded(.success(snippets)):
             logger.info("Snippets loaded.")

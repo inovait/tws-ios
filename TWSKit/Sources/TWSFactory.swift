@@ -7,17 +7,16 @@
 //
 
 import Foundation
-import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
+@_implementationOnly import TWSSnippet
 @_implementationOnly import ComposableArchitecture
 
 public class TWSFactory {
 
     public class func new() -> TWSManager {
-        let snippetsStream = AsyncStream<[TWSSnippet]>.makeStream()
-        let qrSnippetStream = AsyncStream<TWSSnippet?>.makeStream()
+        let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
             snippets: .init(),
@@ -29,27 +28,35 @@ public class TWSFactory {
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
+        let combinedReducers = CombineReducers {
+            Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
+                switch action {
+                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
+                    events.continuation.yield(.universalLinkSnippetLoaded(snippet))
+                    return .none
+                default:
+                    return .none
+                }
+            }
+            TWSCoreFeature()
+                .onChange(of: \.snippets.snippets) { _, newValue in
+                    Reduce { _, _ in
+                        let newSnippets = newValue.filter({ snippetState in
+                            !snippetState.isPrivate
+                        }).map(\.snippet)
+                        events.continuation.yield(.snippetsUpdated(newSnippets))
+                        return .none
+                    }
+                }
+        }
+
         let store = Store(
             initialState: state,
-            reducer: {
-                TWSCoreFeature()
-                    .onChange(of: \.snippets.snippets) { _, newValue in
-                        Reduce { _, _ in
-                            snippetsStream.continuation.yield(newValue.map(\.snippet))
-                            return .none
-                        }
-                    }
-                    .onChange(of: \.universalLinks.loadedSnippet) { _, newValue in
-                        Reduce { _, _ in
-                            qrSnippetStream.continuation.yield(newValue)
-                            return .none
-                        }
-                    }
-            }
+            reducer: { combinedReducers }
         )
 
-        snippetsStream.continuation.yield(storage)
+        events.continuation.yield(.snippetsUpdated(storage))
 
-        return TWSManager(store: store, snippetsStream: snippetsStream.stream, qrSnippetStream: qrSnippetStream.stream)
+        return TWSManager(store: store, events: events.stream)
     }
 }

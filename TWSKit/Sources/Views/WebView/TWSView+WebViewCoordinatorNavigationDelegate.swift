@@ -29,6 +29,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
         } else {
             cachedScrollHeight = nil
         }
+
+        // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
             if let title = result as? String, error == nil {
                 DispatchQueue.main.async { [weak self] in
