@@ -342,39 +342,56 @@ func loggerInfoPlist() -> [String: Plist.Value] {
         "OSLogPreferences": [
             "$(PRODUCT_BUNDLE_IDENTIFIER)": [
                 "TWSKit": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSSnippets": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSCore": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSSnippet": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSCommon": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSSettings": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSApi": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ],
                 "TWSUniversalLinks": [
-                    "Enable": "Debug",
-                    "Persist": "Debug"
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
                 ]
             ]
-        ]
+        ],
+        "Enable-Private-Data": true
     ]
 }
 
