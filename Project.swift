@@ -66,6 +66,7 @@ let project = Project(
             product: .framework,
             bundleId: "com.inova.twskit",
             deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
             sources: ["TWSKit/Sources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
@@ -108,6 +109,7 @@ let project = Project(
             product: .staticFramework,
             bundleId: "com.inova.twssnippets",
             deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
             sources: ["TWSSnippets/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
@@ -225,6 +227,7 @@ let project = Project(
             product: .staticFramework,
             bundleId: "com.inova.twscommon",
             deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
@@ -333,60 +336,7 @@ func infoPlist() -> [String: Plist.Value] {
         "UILaunchScreen": [:],
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}",
-        "OSLogPreferences": [
-            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
-                "TWSKit": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSSnippets": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSCore": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSSnippet": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSCommon": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSSettings": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSApi": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ],
-                "TWSUniversalLinks": [
-                    "Level": [
-                        "Enable": "Debug",
-                        "Persist": "Debug"
-                    ]
-                ]
-            ]
-        ],
-        "Enable-Private-Data": true
+        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
     ]
 }
 
