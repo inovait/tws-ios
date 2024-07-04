@@ -3,6 +3,7 @@ excluded:
   - Derived
   - periphery
   - DerivedData
+  - Project.swift
 disabled_rules:
   - nesting
   - function_body_length

@@ -202,10 +202,10 @@ public struct TWSSnippetsFeature {
             .concatenate(with: .send(.business(.reconnect)))
 
         case .reconnect:
-            logger.info("Reconnect")
             return .run { send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
+                    logger.info("Reconnect")
                     await send(.business(.listenForChanges))
                 } catch {
                     logger.err("Reconnecting failed: \(error)")

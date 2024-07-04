@@ -16,19 +16,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didFinish navigation: WKNavigation!
     ) {
-        logger.debug("[Navigation] Navigation finished: \(String(describing: navigation))")
+        logger.debug("[Navigation \(webView.hash)] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
-        let cachedScrollHeight: CGFloat?
 
-        if let url = webView.url {
-            let hash = WebPageDescription(url)
-            cachedScrollHeight = snippetHeightProvider.getHeight(
-                for: hash,
-                displayID: parent.displayID
-            )
-        } else {
-            cachedScrollHeight = nil
-        }
+        _updateHeight(webView: webView)
 
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
@@ -38,12 +29,6 @@ extension WebView.Coordinator: WKNavigationDelegate {
                 }
             }
         }
-
-        parent.updateState(
-            for: webView,
-            loadingState: .loaded,
-            dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
-        )
     }
 
     public func webView(
@@ -51,7 +36,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didFail navigation: WKNavigation!,
         withError error: any Error
     ) {
-        var msg = "[Navigation] Navigation failed: \(String(describing: navigation)),"
+        var msg = "[Navigation \(webView.hash)] Navigation failed: \(String(describing: navigation)),"
         msg +=  " error: \(error.localizedDescription)"
 
         logger.debug(msg)
@@ -63,7 +48,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didFailProvisionalNavigation navigation: WKNavigation!,
         withError error: any Error
     ) {
-        var msg = "[Navigation] Provisional navigation failed: \(String(describing: navigation)),"
+        var msg = "[Navigation \(webView.hash)] Provisional navigation failed: \(String(describing: navigation)),"
         msg += "error: \(error.localizedDescription)"
 
         logger.debug(msg)
@@ -74,27 +59,32 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
-        logger.debug("[Navigation] Navigation started: \(String(describing: navigation))")
+        logger.debug("[Navigation \(webView.hash)] Navigation started: \(String(describing: navigation))")
     }
 
     func webView(
         _ webView: WKWebView,
         didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!
     ) {
-        logger.debug("[Navigation] Received server redirect: \(String(describing: navigation))")
+        logger.debug("[Navigation \(webView.hash)] Received server redirect: \(String(describing: navigation))")
     }
 
     func webView(
         _ webView: WKWebView,
         didCommit navigation: WKNavigation!
     ) {
-        logger.debug("[Navigation] Content started arriving for main frame: \(String(describing: navigation))")
+        var msg = "[Navigation \(webView.hash)] Content started arriving for main frame: "
+        msg += "\(String(describing: navigation))"
+
+        logger.debug(msg)
+        _updateHeight(webView: webView)
     }
 
     func webViewWebContentProcessDidTerminate(
         _ webView: WKWebView
     ) {
-        logger.debug("[Navigation] Web content process terminated")
+        logger.debug("[Navigation \(webView.hash)] Web content process terminated")
+        webView.reload()
     }
 
     func webView(
@@ -102,7 +92,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        logger.debug("[Navigation] Decide policy for navigation action: \(navigationAction)")
+        logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction)")
 
         // OAuth request to Google in embedded browsers are not allowed
         if let url = navigationAction.request.url, url.isTWSAuthenticationRequest() {
@@ -120,7 +110,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decidePolicyFor navigationResponse: WKNavigationResponse,
         decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
     ) {
-        logger.debug("[Navigation] Decide policy for navigation response: \(navigationResponse)")
+        logger.debug("[Navigation \(webView.hash)] Decide policy for navigation response: \(navigationResponse)")
         decisionHandler(.allow)
     }
 
@@ -129,7 +119,31 @@ extension WebView.Coordinator: WKNavigationDelegate {
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        logger.debug("[Navigation] Received authentication challenge")
+        logger.debug("[Navigation \(webView.hash)] Received authentication challenge")
         completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge
+    }
+
+    // MARK: - Helpers
+
+    private func _updateHeight(
+        webView: WKWebView
+    ) {
+        let cachedScrollHeight: CGFloat?
+
+        if let url = webView.url {
+            let hash = WebPageDescription(url)
+            cachedScrollHeight = snippetHeightProvider.getHeight(
+                for: hash,
+                displayID: parent.displayID
+            )
+        } else {
+            cachedScrollHeight = nil
+        }
+
+        parent.updateState(
+            for: webView,
+            loadingState: .loaded,
+            dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
+        )
     }
 }

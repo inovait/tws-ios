@@ -17,13 +17,14 @@ extension WebView.Coordinator: WKUIDelegate {
         for navigationAction: WKNavigationAction,
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        var msg = "[UI] Create web view with configuration: \(configuration)"
+        var msg = "[UI \(webView.hash)] Create web view with configuration: \(configuration)"
         msg += ", for navigation action: \(navigationAction)"
         msg += ", window features: \(windowFeatures)"
 
         logger.debug(msg)
 
         let newWebView = WKWebView(frame: webView.frame, configuration: configuration)
+        newWebView.allowsBackForwardNavigationGestures = true
         newWebView.scrollView.bounces = false
         newWebView.scrollView.isScrollEnabled = true
         newWebView.navigationDelegate = self
@@ -40,13 +41,13 @@ extension WebView.Coordinator: WKUIDelegate {
 
             return newWebView
         } catch {
-            logger.err("[UI] Failed to create a new web view: \(error)")
+            logger.err("[UI \(webView.hash)] Failed to create a new web view: \(error)")
             return nil
         }
     }
 
     public func webViewDidClose(_ webView: WKWebView) {
-        logger.debug("[UI] Web view did close")
+        logger.debug("[UI \(webView.hash)] Web view did close")
         do {
             try navigationProvider.didClose(
                 webView: webView,
@@ -54,7 +55,7 @@ extension WebView.Coordinator: WKUIDelegate {
                 completion: nil
             )
         } catch {
-            logger.err("[UI] Failed to close the web view: \(webView)")
+            logger.err("[UI \(webView.hash)] Failed to close the web view: \(webView)")
         }
     }
 
@@ -64,7 +65,10 @@ extension WebView.Coordinator: WKUIDelegate {
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping () -> Void
     ) {
-        logger.debug("[UI] Run JavaScript alert panel with message: \(message), initiated by frame: \(frame)")
+        var msg = "[UI \(webView.hash)] Run JavaScript alert panel with message: \(message), "
+        msg += "initiated by frame: \(frame)"
+
+        logger.debug(msg)
         completionHandler()
     }
 
@@ -74,7 +78,10 @@ extension WebView.Coordinator: WKUIDelegate {
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping (Bool) -> Void
     ) {
-        logger.debug("[UI] Run JavaScript confirm panel with message: \(message), initiated by frame: \(frame)")
+        var msg = "[UI \(webView.hash)] Run JavaScript confirm panel with message: \(message), "
+        msg += "initiated by frame: \(frame)"
+
+        logger.debug(msg)
         completionHandler(true)
     }
 
@@ -85,7 +92,7 @@ extension WebView.Coordinator: WKUIDelegate {
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping (String?) -> Void
     ) {
-        var msg = "[UI] Run JavaScript text input panel with prompt: \(prompt)"
+        var msg = "[UI \(webView.hash)] Run JavaScript text input panel with prompt: \(prompt)"
         msg += ", default text: \(String(describing: defaultText)), initiated by frame: \(frame)"
         logger.debug(msg)
         completionHandler(defaultText)

@@ -134,7 +134,11 @@ private struct _TWSView: View {
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
-        .frame(idealHeight: height)
+        .frame(
+            minWidth: 0,
+            maxWidth: .infinity,
+            idealHeight: height
+        )
         .onReceive(
             NotificationCenter.default.publisher(for: Notification.Name.Navigation.Back)
         ) { notification in
