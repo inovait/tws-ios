@@ -343,7 +343,107 @@ func infoPlist() -> [String: Plist.Value] {
 func loggerInfoPlist() -> [String: Plist.Value] {
     [
         "OSLogPreferences": [
-            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
+            "com.inova.twskit": [
+                "TWSKit": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippets": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCore": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippet": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCommon": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSettings": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSApi": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSUniversalLinks": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ]
+            ],
+            "com.inova.tws": [
+                "TWSKit": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippets": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCore": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippet": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCommon": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSettings": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSApi": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSUniversalLinks": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ]
+            ],
+            "com.inova.twssnippets": [
                 "TWSKit": [
                     "Level": [
                         "Enable": "Debug",
