@@ -19,7 +19,7 @@ public struct TWSLog {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.debug("\(createLogMessage(message, className, lineNumber, functionName))")
+        logger.debug("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
     public func info(
@@ -28,7 +28,7 @@ public struct TWSLog {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.info("\(createLogMessage(message, className, lineNumber, functionName))")
+        logger.info("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
     public func warn(
@@ -37,7 +37,7 @@ public struct TWSLog {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.warning("\(createLogMessage(message, className, lineNumber, functionName))")
+        logger.warning("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
     public func err(
@@ -46,7 +46,7 @@ public struct TWSLog {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.critical("\(createLogMessage(message, className, lineNumber, functionName))")
+        logger.critical("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
     }
 
     private func createLogMessage(
