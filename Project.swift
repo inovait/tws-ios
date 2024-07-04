@@ -333,7 +333,60 @@ func infoPlist() -> [String: Plist.Value] {
         "UILaunchScreen": [:],
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
+        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}",
+        "OSLogPreferences": [
+            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
+                "TWSKit": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippets": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCore": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippet": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCommon": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSettings": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSApi": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSUniversalLinks": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ]
+            ]
+        ],
+        "Enable-Private-Data": true
     ]
 }
 
