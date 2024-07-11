@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// An enum to define the loading status of the snippet
 public enum TWSLoadingState: Equatable {
 
     public static func == (lhs: TWSLoadingState, rhs: TWSLoadingState) -> Bool {
@@ -28,6 +29,7 @@ public enum TWSLoadingState: Equatable {
 
 extension TWSLoadingState {
 
+    /// A flag that defines if the view can be shown, depending on it's loading state
     var showView: Bool {
         switch self {
         case .idle, .loading, .failed: false
