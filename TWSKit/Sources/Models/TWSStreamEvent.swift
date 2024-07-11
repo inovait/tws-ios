@@ -15,6 +15,6 @@ public enum TWSStreamEvent {
     case universalLinkSnippetLoaded(TWSSnippet)
     
     /// This event is sent when there are new snippets available
-        /// - Parameter [TWSSnippet] A list of new snippets
+        /// - Parameter TWSSnippets A list of new snippets
     case snippetsUpdated([TWSSnippet])
 }
