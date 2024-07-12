@@ -34,6 +34,7 @@ struct ContentView: View {
                         Text("Tab")
                         Image(systemName: "house")
                     }
+                    .tag(ContentViewModel.Tab.fullscreenSnippets)
 
                 SettingsView()
                     .tabItem {

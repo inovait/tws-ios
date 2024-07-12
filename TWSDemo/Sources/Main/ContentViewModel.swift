@@ -21,6 +21,6 @@ class ContentViewModel {
 extension ContentViewModel {
 
     enum Tab: Hashable {
-        case snippets, settings
+        case snippets, fullscreenSnippets, settings
     }
 }
