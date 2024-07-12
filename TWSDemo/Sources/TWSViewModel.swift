@@ -26,6 +26,7 @@ class TWSViewModel {
         manager.handleIncomingUrl(url)
     }
 
+    @MainActor
     func startupInitTasks() async {
         for await snippetEvent in self.manager.events {
             switch snippetEvent {
