@@ -8,7 +8,9 @@ This guide will show you how
 
 ### Setup universal links
 
-You'll need to setup UniversalLinks for your app on the domain you're trying to login with Google. Your assetlinks.json should look like this:
+You'll need to setup UniversalLinks for your app on the domain you're trying to login with Google. Make sure you check the URL that GoogleLogin calls after the login. You need to match the URL in your paths. In this sample the path "``/__/auth/handler``" is used. The same path also needs to be provided, if you're building the project with CLI. More info about that can be found in the dedicated CLI link, found on the main page. 
+
+Your assetlinks.json should look like this:
 
 ```
 {
