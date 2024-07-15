@@ -3,6 +3,8 @@ import TWSModels
 
 public struct TWSAPI {
 
+    private static let _tmpAPIKey = "8281fd90d96b862ba9d76583007ec4b89691b39884a01aa90da5cbb3ad365690"
+
     public let getSnippets: @Sendable () async throws -> [TWSSnippet]
     public let getSocket: @Sendable () async throws -> URL
     public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
@@ -14,10 +16,10 @@ public struct TWSAPI {
             getSnippets: {
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/snippets/register",
+                    path: "/organizations/register",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: "true")
+                        .init(name: "apiKey", value: Self._tmpAPIKey)
                     ]
                 ))
 
@@ -29,7 +31,8 @@ public struct TWSAPI {
                     path: "/negotiate",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: "true")
+                        .init(name: "apiKey", value: TWSAPI._tmpAPIKey),
+                        .init(name: "userId", value: "abc123")
                     ]
                 ))
 
@@ -45,7 +48,7 @@ public struct TWSAPI {
             getSnippetById: { snippetId in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/snippets/\(snippetId.uuidString)",
+                    path: "organizations/snippets/\(snippetId.uuidString)",
                     host: host,
                     queryItems: [
                         .init(name: "apiKey", value: "true")
