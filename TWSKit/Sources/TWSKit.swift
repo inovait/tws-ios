@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-import TWSModels
+@_exported import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
@@ -26,13 +26,13 @@ public class TWSManager {
     }
 
     // MARK: - Public
-    
+
     /// A getter for the list of loaded snippets
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
         return store.snippets.snippets.elements.map(\.snippet)
     }
-    
+
     /// A function that starts loading snippets
     /// - Parameter listenForChanges: A flag that enables real time updates when any of the snippets change on the server
     public func run(listenForChanges: Bool) {
@@ -44,7 +44,6 @@ public class TWSManager {
         }
     }
 
-    
     /// A function that load the previous snippet in the list
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
@@ -56,7 +55,7 @@ public class TWSManager {
             displayID: displayID
         )
     }
-    
+
     /// A function that load the next snippet in the list
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
@@ -69,7 +68,6 @@ public class TWSManager {
         )
     }
 
-    
     /// A function that sets the location from where the snippets are going to be loaded
     /// - Parameter source: Define the source of the snippets
     public func set(source: TWSSource) {
@@ -82,7 +80,6 @@ public class TWSManager {
         store.send(.snippets(.business(.set(source: source))))
     }
 
-    
     /// An async function that gathers all the logs in the current session
     /// - Parameter reportFiltering: A function that lets you define which data of the logs do you want displayed
     /// - Returns: An URL of the file that has all the logs written inside
@@ -103,7 +100,6 @@ public class TWSManager {
         throw LoggerError.bundleIdNotAvailable
     }
 
-    
     /// A function you use to handle universal links regarding snippets
     /// - Parameter url: The received universal link
     public func handleIncomingUrl(_ url: URL) {

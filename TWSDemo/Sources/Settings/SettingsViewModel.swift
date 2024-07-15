@@ -8,7 +8,6 @@
 
 import Foundation
 import TWSKit
-import TWSModels
 
 @Observable
 class SettingsViewModel {

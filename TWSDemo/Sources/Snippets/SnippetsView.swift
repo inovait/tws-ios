@@ -9,7 +9,6 @@
 import UIKit
 import SwiftUI
 import TWSKit
-import TWSModels
 
 struct SnippetsView: View {
 
