@@ -24,7 +24,7 @@ public struct TWSView<
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
-    
+
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
