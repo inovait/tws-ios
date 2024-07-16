@@ -21,6 +21,7 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
+            entitlements: getEntitlements(),
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
@@ -68,7 +69,8 @@ let project = Project(
             sources: ["TWSKit/Sources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -81,14 +83,16 @@ let project = Project(
         .target(
             name: "TWSCore",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscore",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCore/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSSnippets"),
-                .target(name: "TWSSettings")
+                .target(name: "TWSSettings"),
+                .target(name: "TWSUniversalLinks"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -101,14 +105,15 @@ let project = Project(
         .target(
             name: "TWSSnippets",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippets",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippets/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSSnippet")
+                .target(name: "TWSSnippet"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -141,13 +146,14 @@ let project = Project(
         .target(
             name: "TWSSnippet",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssnippet",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippet/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -160,13 +166,14 @@ let project = Project(
         .target(
             name: "TWSSettings",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twssettings",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSettings/Sources/**"],
             dependencies: [
                 .target(name: "TWSCommon"),
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -196,12 +203,13 @@ let project = Project(
         .target(
             name: "TWSAPI",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twsapi",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSAPI/Sources/**"],
             dependencies: [
-                .target(name: "TWSModels")
+                .target(name: "TWSModels"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -214,13 +222,74 @@ let project = Project(
         .target(
             name: "TWSCommon",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twscommon",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSCommon/Sources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
-                .target(name: "TWSAPI")
+                .external(name: "URLRouting"),
+                .target(name: "TWSAPI"),
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSLogger",
+            destinations: .iOS,
+            product: .staticFramework,
+            bundleId: "com.inova.twslogger",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: loggerInfoPlist()),
+            sources: ["TWSLogger/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
+                ]
+            )
+        ),
+        .target(
+            name: "TWSLoggerTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsLoggerTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSLoggerTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSLogger")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
+        ),
+        .target(
+            name: "TWSUniversalLinks",
+            destinations: .iOS,
+            product: .staticFramework,
+            bundleId: "com.inova.twsuniversallinks",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSUniversalLinks/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels"),
+                .target(name: "TWSCommon"),
+                .target(name: "TWSLogger")
             ],
             settings: .settings(
                 configurations: [
@@ -235,7 +304,7 @@ let project = Project(
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),
@@ -248,12 +317,81 @@ func deploymentTarget() -> String {
     "17.0"
 }
 
+func getEntitlements() -> Entitlements {
+    return Entitlements.dictionary([
+        "com.apple.developer.associated-domains":
+            [
+                "applinks:thewebsnippet.com",
+                "applinks:thewebsnippet.dev",
+                "applinks:spotlight.inova.si"
+            ]
+    ])
+}
+
 func infoPlist() -> [String: Plist.Value] {
     [
         "UILaunchScreen": [:],
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
         "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
+    ]
+}
+
+func loggerInfoPlist() -> [String: Plist.Value] {
+    [
+        "OSLogPreferences": [
+            "$(PRODUCT_BUNDLE_IDENTIFIER)": [
+                "TWSKit": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippets": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCore": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSnippet": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSCommon": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSSettings": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSApi": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSUniversalLinks": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ]
+            ]
+        ],
+        "Enable-Private-Data": true
     ]
 }
 

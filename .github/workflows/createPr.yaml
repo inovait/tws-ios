@@ -25,7 +25,7 @@ jobs:
           targetTransition: "In Progress"
           sourceTransition: "Selected for Development"
           message: ${{env.OWNER_NAME}} started working on this issue ${{steps.open-pr.outputs.pr_url}}
-          jiraBaseUrl: "impactwrap.atlassian.net"
+          jiraBaseUrl: "inova-it.atlassian.net"
           jiraEmail: "hudson@inova.si"
           jiraToken: ${{secrets.JIRA_TOKEN}}
           githubToken: ${{secrets.GITHUB_TOKEN}}

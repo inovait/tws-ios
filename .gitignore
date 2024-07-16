@@ -1,3 +1,5 @@
+build/
+XCFrameworks/
 xcuserdata/
 *.xcodeproj
 *.xcworkspace
@@ -17,3 +19,4 @@ DerivedData/
 # periphery
 periphery/DerivedData
 periphery_output.txt
+.DS_Store

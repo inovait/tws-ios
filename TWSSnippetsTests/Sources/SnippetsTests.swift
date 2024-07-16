@@ -215,4 +215,52 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[2], snippetsStates[3]])
         }
     }
+
+    @MainActor
+    func testSourceToAPI() async {
+        let testClock = TestClock()
+        let socketURL = URL(string: "https://www.google.com")!
+        let store = TestStore(
+            initialState: TWSSnippetsFeature.State(),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getSnippets = { [] }
+                $0.api.getSocket = { socketURL }
+                $0.socket.get = { _ in .init() }
+                $0.socket.connect = { _ in .makeStream().stream }
+                $0.socket.closeConnection = { _ in }
+                $0.continuousClock = testClock
+            }
+        )
+
+        await store.send(.business(.set(source: .api))) {
+            $0.source = .api
+        }
+
+        await store.receive(\.business.load)
+        await store.receive(\.business.listenForChanges)
+        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.listenForChangesResponse.success, socketURL)
+
+        await store.send(.business(.stopListeningForChanges))
+        await store.receive(\.business.reconnect)
+        await store.send(.business(.stopReconnecting))
+    }
+
+    @MainActor
+    func testSourceToCustomURLs() async {
+        let store = TestStore(
+            initialState: TWSSnippetsFeature.State(),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getSnippets = { [] }
+            }
+        )
+
+        await store.send(.business(.set(source: .customURLs([])))) {
+            $0.source = .customURLs([])
+        }
+        await store.receive(\.business.load)
+        await store.receive(\.business.snippetsLoaded.success, [])
+    }
 }

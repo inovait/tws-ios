@@ -9,7 +9,6 @@
 import UIKit
 import SwiftUI
 import TWSKit
-import TWSModels
 
 struct SnippetsView: View {
 
@@ -20,19 +19,67 @@ struct SnippetsView: View {
             ScrollView {
                 VStack {
                     ForEach(twsViewModel.snippets, id: \.target) { snippet in
-                        VStack(alignment: .leading) {
-                            TWSView(
-                                snippet: snippet,
-                                using: twsViewModel.manager,
-                                displayID: "list-\(snippet.id.uuidString)"
-                            )
-                            .border(Color.black)
-                        }
+                        SnippetView(snippet: snippet)
                     }
                 }
                 .padding()
             }
             .navigationTitle("Snippets")
+        }
+    }
+}
+
+private struct SnippetView: View {
+
+    let snippet: TWSSnippet
+    @Environment(TWSViewModel.self) private var twsViewModel
+    @State private var loadingState: TWSLoadingState = .idle
+    @State private var canGoBack = false
+    @State private var canGoForward = false
+
+    var body: some View {
+        let displayId = "list-\(snippet.id.uuidString)"
+
+        VStack(alignment: .leading) {
+            HStack {
+                Button {
+                    twsViewModel.manager.goBack(
+                        snippet: snippet,
+                        displayID: displayId
+                    )
+                } label: {
+                    Image(systemName: "arrowshape.backward.fill")
+                }
+                .disabled(!canGoBack)
+
+                Button {
+                    twsViewModel.manager.goForward(
+                        snippet: snippet,
+                        displayID: displayId
+                    )
+                } label: {
+                    Image(systemName: "arrowshape.forward.fill")
+                }
+                .disabled(!canGoForward)
+            }
+
+            Divider()
+
+            TWSView(
+                snippet: snippet,
+                using: twsViewModel.manager,
+                displayID: displayId,
+                canGoBack: $canGoBack,
+                canGoForward: $canGoForward,
+                loadingState: $loadingState,
+                loadingView: {
+                    WebViewLoadingView()
+                },
+                errorView: { error in
+                    WebViewErrorView(error: error)
+                }
+            )
+            .border(Color.black)
         }
     }
 }

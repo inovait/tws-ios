@@ -3,6 +3,24 @@ retain_public: true
 retain_swift_ui_previews: true
 schemes:
 - TWSDemo
+- TWSKit
+- TWSCore
+- TWSSnippets
+- TWSSnippet
+- TWSSettings
+- TWSCommon
+- TWSLogger
+- TWSAPI
+- TWSModels
 targets:
 - TWSDemo
+- TWSKit
+- TWSCore
+- TWSSnippets
+- TWSSnippet
+- TWSSettings
+- TWSCommon
+- TWSLogger
+- TWSAPI
+- TWSModels
 workspace: TheWebSnippet.xcworkspace

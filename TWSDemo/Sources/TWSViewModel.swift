@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import TWSModels
 import TWSKit
 
 @Observable
@@ -15,9 +14,28 @@ class TWSViewModel {
 
     let manager = TWSFactory.new()
     var snippets: [TWSSnippet]
+    var qrLoadedSnippet: TWSSnippet?
 
     init() {
         snippets = manager.snippets
-        manager.run()
+        manager.run(listenForChanges: true)
+    }
+
+    func handleIncomingUrl(_ url: URL) {
+        manager.handleIncomingUrl(url)
+    }
+
+    @MainActor
+    func startupInitTasks() async {
+        for await snippetEvent in self.manager.events {
+            switch snippetEvent {
+            case .universalLinkSnippetLoaded(let snippet):
+                self.qrLoadedSnippet = snippet
+            case .snippetsUpdated(let snippets):
+                self.snippets = snippets
+            default:
+                print("Unhandled stream event")
+            }
+        }
     }
 }

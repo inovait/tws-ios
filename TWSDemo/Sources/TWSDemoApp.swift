@@ -1,7 +1,5 @@
 import SwiftUI
 import Firebase
-import TWSKit
-import TWSModels
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -26,9 +24,7 @@ struct TWSDemoApp: App {
                 ContentView()
                     .environment(twsViewModel)
                     .task {
-                        for await snippets in twsViewModel.manager.stream {
-                            self.twsViewModel.snippets = snippets
-                        }
+                        await twsViewModel.startupInitTasks()
                     }
             }
         }

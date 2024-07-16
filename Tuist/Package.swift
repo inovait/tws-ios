@@ -6,22 +6,7 @@ import PackageDescription
     import ProjectDescriptionHelpers
 
     let packageSettings = PackageSettings(
-        productTypes: [
-            "ComposableArchitecture": .framework,
-            "Dependencies": .framework,
-            "Clocks": .framework,
-            "ConcurrencyExtras": .framework,
-            "CombineSchedulers": .framework,
-            "IdentifiedCollections": .framework,
-            "OrderedCollections": .framework,
-            "_CollectionsUtilities": .framework,
-            "DependenciesMacros": .framework,
-            "SwiftUINavigationCore": .framework,
-            "Perception": .framework,
-            "CasePaths": .framework,
-            "CustomDump": .framework,
-            "XCTestDynamicOverlay": .framework
-        ],
+        productTypes: [:],
         baseSettings: .settings(
             configurations: [
                 .debug(name: "Debug"),
@@ -38,11 +23,15 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/firebase/firebase-ios-sdk.git",
-            exact: .init(10, 26, 0)
+            exact: .init(10, 28, 0)
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: .init(1, 10, 4)
+            exact: .init(1, 11, 1)
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/swift-url-routing",
+            exact: .init(0, 6, 0)
         )
     ]
 )

@@ -3,5 +3,11 @@ excluded:
   - Derived
   - periphery
   - DerivedData
+  - Project.swift
 disabled_rules:
   - nesting
+  - function_body_length
+cyclomatic_complexity:
+  ignores_case_statements: true
+line_length:
+  ignores_comments: true
