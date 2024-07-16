@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import TWSModels
+import TWSKit
 
 @Observable
 class ContentViewModel {

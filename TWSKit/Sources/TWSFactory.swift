@@ -13,8 +13,11 @@ import Foundation
 @_implementationOnly import TWSSnippet
 @_implementationOnly import ComposableArchitecture
 
+/// A class designed to initialize a new ``TWSManager``
 public class TWSFactory {
 
+    /// Sets up the app's reducers and main store
+    /// - Returns: An instance of ``TWSManager``
     public class func new() -> TWSManager {
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
