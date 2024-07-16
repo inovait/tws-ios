@@ -5,7 +5,7 @@ import SwiftUI
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
 
-/// A class that handles all the communication between your app and the SDK's functionalities
+/// A class that handles all the communication between your app and the functionalities in the SDK.
 public class TWSManager {
 
     private let initDate: Date

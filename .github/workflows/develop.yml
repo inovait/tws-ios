@@ -98,3 +98,16 @@ jobs:
           jiraEmail: "hudson@inova.si"
           jiraToken: ${{secrets.JIRA_TOKEN}}
           githubToken: ${{secrets.GITHUB_TOKEN}}
+
+      - name: "Build And Upload Documentation"
+        env:
+          SCHEME: "TWSKit"
+          WORKSPACE: "TheWebSnippet.xcworkspace"
+          DESTINATION: "'generic/platform=iOS'"
+          DERIVED_DATA_PATH: "documentationFolder"
+          HOSTING_BASE_PATH: "tws-ios-docs"
+          STATIC_WEB_PATH: "./staticWeb"
+        run: |
+            chmod +x upload_documentation.sh
+            upload_documentation.sh ${{SCHEME}} ${{WORKSPACE}} ${{DESTINATION}} ${{DERIVED_DATA_PATH}} ${{HOSTING_BASE_PATH}} ${{STATIC_WEB_PATH}}
+
