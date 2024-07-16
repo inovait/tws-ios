@@ -9,6 +9,7 @@
 import SwiftUI
 import TWSModels
 
+/// The main view to use to display snippets
 public struct TWSView<
     LoadingView: View,
     ErrorView: View
@@ -23,7 +24,18 @@ public struct TWSView<
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
-
+    
+    /// Main contructor
+    /// - Parameters:
+    ///   - snippet: The snippet you want to display
+    ///   - handler: Pass along the ``TWSManager`` instance that you're using
+    ///   - id: Display id of the view that will be presented
+    ///   - canGoBack: Used for lists, when you want to load the previous snippet
+    ///   - canGoForward: Used for lists, when you want to load the next snippet
+    ///   - loadingState: An instance of ``TWSLoadingState`` that tells you the state of the snippet
+    ///   - pageTitle: Once the snippet is loaded, it's title will be set in this variable
+    ///   - loadingView: A custom view to display while the snippet is loading
+    ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
         using handler: TWSManager,

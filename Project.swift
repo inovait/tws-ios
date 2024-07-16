@@ -186,7 +186,7 @@ let project = Project(
         .target(
             name: "TWSModels",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.inova.twsmodels",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSModels/Sources/**"],

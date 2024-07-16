@@ -9,6 +9,7 @@
 import Foundation
 import OSLog
 
+/// A struct used to display logs
 public struct TWSLogEntryLog: Sendable {
 
     public let date: Date
