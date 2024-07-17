@@ -43,6 +43,7 @@ public struct TWSSnippetsFeature {
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
     @Dependency(\.continuousClock) var clock
+    @Dependency(\.configuration) var configuration
 
     public init() { }
 
@@ -82,7 +83,7 @@ public struct TWSSnippetsFeature {
 
             return .run { [api] send in
                 do {
-                    let snippets = try await api.getSnippets()
+                    let snippets = try await api.getSnippets(configuration())
                     await send(.business(.snippetsLoaded(.success(snippets))))
                 } catch {
                     await send(.business(.snippetsLoaded(.failure(error))))
@@ -167,7 +168,7 @@ public struct TWSSnippetsFeature {
 
             return .run { [api] send in
                 do {
-                    let socketURL = try await api.getSocket()
+                    let socketURL = try await api.getSocket(configuration())
                     await send(.business(.listenForChangesResponse(.success(socketURL))))
                 } catch {
                     await send(.business(.listenForChangesResponse(.failure(error))))

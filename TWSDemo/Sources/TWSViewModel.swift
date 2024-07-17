@@ -12,7 +12,10 @@ import TWSKit
 @Observable
 class TWSViewModel {
 
-    let manager = TWSFactory.new()
+    let manager = TWSFactory.new(with: .init(
+        organizationID: "8281fd90d96b862ba9d76583007ec4b89691b39884a01aa90da5cbb3ad365690",
+        projectID: "60c6988a-557e-402a-94a4-02cfb51f5728"
+    ))
     var snippets: [TWSSnippet]
     var qrLoadedSnippet: TWSSnippet?
 
