@@ -36,6 +36,7 @@ public struct TWSUniversalLinksFeature {
     }
 
     @Dependency(\.api) var api
+    @Dependency(\.configuration) var configuration
 
     public init() { }
 
@@ -51,7 +52,7 @@ public struct TWSUniversalLinksFeature {
                 case let .snippet(id):
                     return .run { [api] send in
                         do {
-                            let snippet = try await api.getSnippetById(id)
+                            let snippet = try await api.getSnippetById(configuration(), id)
                             await send(.business(.snippetLoaded(.success(snippet))))
                         } catch {
                             await send(.business(.snippetLoaded(.failure(error))))

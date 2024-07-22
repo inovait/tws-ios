@@ -16,9 +16,23 @@ import Foundation
 /// A class designed to initialize a new ``TWSManager``
 public class TWSFactory {
 
+    private static var _instances = ThreadSafeSet<TWSConfiguration>()
+
     /// Sets up the app's reducers and main store
     /// - Returns: An instance of ``TWSManager``
-    public class func new() -> TWSManager {
+    public class func new(
+        with configuration: TWSConfiguration
+    ) -> TWSManager {
+        defer { _instances.insert(configuration) }
+        guard !_instances.contains(configuration)
+        else { preconditionFailure(
+            """
+            Only one instance per configuration is allowed.
+            Due to an unknown limitation, if two connections are established simultaneously,
+            one will drop the other.
+            """
+        )}
+
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
@@ -35,23 +49,34 @@ public class TWSFactory {
             Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
                 switch action {
                 case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    events.continuation.yield(.universalLinkSnippetLoaded(snippet))
+                    // Hop the thread
+                    DispatchQueue.main.async {
+                        events.continuation.yield(.universalLinkSnippetLoaded(snippet))
+                    }
+
                     return .none
                 default:
                     return .none
                 }
             }
+
             TWSCoreFeature()
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
                         let newSnippets = newValue.filter({ snippetState in
                             !snippetState.isPrivate
                         }).map(\.snippet)
-                        events.continuation.yield(.snippetsUpdated(newSnippets))
+                        // Hop the thread
+                        DispatchQueue.main.async {
+                            events.continuation.yield(.snippetsUpdated(newSnippets))
+                        }
+
                         return .none
                     }
                 }
         }
+        // Set the environment
+        .dependency(\.configuration.configuration, { configuration })
 
         let store = Store(
             initialState: state,

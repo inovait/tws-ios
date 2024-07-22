@@ -12,9 +12,9 @@ import TWSAPI
 import ComposableArchitecture
 
 public struct APIDependency {
-    public var getSnippets: @Sendable () async throws -> [TWSSnippet]
-    public var getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
+    public var getSnippets: @Sendable (TWSConfiguration) async throws -> [TWSSnippet]
+    public var getSocket: @Sendable (TWSConfiguration) async throws -> URL
+    public var getSnippetById: @Sendable (TWSConfiguration, _ snippetId: UUID) async throws -> TWSSnippet
 }
 
 public enum APIDependencyKey: DependencyKey {
