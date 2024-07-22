@@ -14,10 +14,10 @@ public struct TWSAPI {
             getSnippets: { configuration in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/organizations/register",
+                    path: "/organizations/\(configuration.organizationID)/projects/\(configuration.projectID)/register",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: configuration.organizationID)
+                        .init(name: "apiKey", value: "abc123")
                     ]
                 ))
 
@@ -29,8 +29,7 @@ public struct TWSAPI {
                     path: "/negotiate",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: configuration.organizationID),
-                        .init(name: "userId", value: "abc123")
+                        .init(name: "projectId", value: configuration.projectID)
                     ]
                 ))
 

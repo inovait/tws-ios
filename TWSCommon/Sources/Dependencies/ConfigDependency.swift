@@ -26,6 +26,10 @@ public enum ConfigDependencyKey: DependencyKey {
             configuration: { preconditionFailure("Configuration dependency was not overridden") }
         )
     }
+
+    public static var testValue: ConfigDependency {
+        .init(configuration: { .init(organizationID: "abc", projectID: "123") })
+    }
 }
 
 public extension DependencyValues {

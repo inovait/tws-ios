@@ -41,7 +41,7 @@ final class SnippetsTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getSnippets = { _ in snippets }
             }
         )
 
@@ -79,7 +79,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getSnippets = { _ in snippets }
             }
         )
 
@@ -92,7 +92,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send for the second time without one element. Snippet should be removed from state
 
-        store.dependencies.api.getSnippets = { [snippets[1], snippets[2]] }
+        store.dependencies.api.getSnippets = { _ in [snippets[1], snippets[2]] }
 
         await store.send(.business(.load)).finish()
         await store.receive(\.business.snippetsLoaded.success) {
@@ -116,7 +116,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [snippets[0], snippets[2] ] }
+                $0.api.getSnippets = { _ in [snippets[0], snippets[2] ] }
             }
         )
 
@@ -128,7 +128,7 @@ final class SnippetsTests: XCTestCase {
         }
 
         // Send for the second time with new element. Snippet should be added in right order
-        store.dependencies.api.getSnippets = { snippets }
+        store.dependencies.api.getSnippets = { _ in snippets }
 
         await store.send(.business(.load)).finish()
         await store.receive(\.business.snippetsLoaded.success) {
@@ -154,7 +154,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getSnippets = { _ in snippets }
             }
         )
 
@@ -167,7 +167,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the second time but change the order
 
-        store.dependencies.api.getSnippets = { [snippets[1], snippets[2], snippets[0] ] }
+        store.dependencies.api.getSnippets = { _ in [snippets[1], snippets[2], snippets[0] ] }
 
         await store.send(.business(.load)).finish()
         await store.receive(\.business.snippetsLoaded.success) {
@@ -195,7 +195,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [snippets[0], snippets[1], snippets[2]] }
+                $0.api.getSnippets = { _ in [snippets[0], snippets[1], snippets[2]] }
             }
         )
 
@@ -208,7 +208,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the second time but remove some and add some
 
-        store.dependencies.api.getSnippets = { [snippets[0], snippets[2], snippets[3] ] }
+        store.dependencies.api.getSnippets = { _ in [snippets[0], snippets[2], snippets[3] ] }
 
         await store.send(.business(.load)).finish()
         await store.receive(\.business.snippetsLoaded.success) {
@@ -224,8 +224,8 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [] }
-                $0.api.getSocket = { socketURL }
+                $0.api.getSnippets = { _ in [] }
+                $0.api.getSocket = { _ in socketURL }
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in .makeStream().stream }
                 $0.socket.closeConnection = { _ in }
@@ -253,7 +253,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [] }
+                $0.api.getSnippets = { _ in [] }
             }
         )
 
