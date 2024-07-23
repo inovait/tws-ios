@@ -5,7 +5,7 @@ public struct TWSAPI {
 
     public let getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
     public let getSocket: @Sendable (TWSConfiguration) async throws -> URL
-    public var getSnippetById: @Sendable (TWSConfiguration, _ snippetId: UUID) async throws -> TWSSnippet
+    public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ token: String) async throws -> TWSSharedSnippet
 
     static func live(
         host: String
@@ -18,7 +18,8 @@ public struct TWSAPI {
                     host: host,
                     queryItems: [
                         .init(name: "apiKey", value: "abc123")
-                    ]
+                    ],
+                    headers: [:]
                 ))
 
                 return try JSONDecoder().decode(TWSProject.self, from: result.data)
@@ -30,7 +31,8 @@ public struct TWSAPI {
                     host: host,
                     queryItems: [
                         .init(name: "projectId", value: configuration.projectID)
-                    ]
+                    ],
+                    headers: [:]
                 ))
 
                 let urlStr = String(decoding: result.data, as: UTF8.self)
@@ -42,17 +44,20 @@ public struct TWSAPI {
 
                 return url
             },
-            getSnippetById: { _, snippetId in
+            getSnippetBySharedId: { _, token in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "organizations/snippets/\(snippetId.uuidString)",
+                    path: "/share/\(token)",
                     host: host,
                     queryItems: [
                         .init(name: "apiKey", value: "true")
+                    ],
+                    headers: [
+                        "Accept": "application/json"
                     ]
                 ))
 
-                return try JSONDecoder().decode(TWSSnippet.self, from: result.data)
+                return try JSONDecoder().decode(TWSSharedSnippet.self, from: result.data)
             }
         )
     }

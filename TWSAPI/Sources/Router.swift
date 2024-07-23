@@ -26,6 +26,9 @@ class Router {
 
         var urlRequest = URLRequest(url: url, timeoutInterval: 60)
         urlRequest.httpMethod = request.method.rawValue.uppercased()
+        for header in request.headers {
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        }
 
         do {
             let result = try await URLSession.shared.data(for: urlRequest)

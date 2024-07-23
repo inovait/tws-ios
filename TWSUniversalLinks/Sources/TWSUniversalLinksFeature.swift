@@ -52,9 +52,8 @@ public struct TWSUniversalLinksFeature {
                 case let .snippet(id):
                     return .run { [api] send in
                         do {
-                            print("HERE")
-//                            let snippet = try await api.getSnippetById(configuration(), id)
-//                            await send(.business(.snippetLoaded(.success(snippet))))
+                            let project = try await api.getSnippetBySharedId(configuration(), id)
+                            await send(.business(.snippetLoaded(.success(project.snippet))))
                         } catch {
                             await send(.business(.snippetLoaded(.failure(error))))
                         }
