@@ -7,6 +7,8 @@ excluded:
 disabled_rules:
   - nesting
   - function_body_length
+  - cyclomatic_complexity
+  - type_body_length
 cyclomatic_complexity:
   ignores_case_statements: true
 line_length:

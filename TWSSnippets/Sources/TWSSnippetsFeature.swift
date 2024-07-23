@@ -83,8 +83,8 @@ public struct TWSSnippetsFeature {
 
             return .run { [api] send in
                 do {
-                    let snippets = try await api.getSnippets(configuration())
-                    await send(.business(.snippetsLoaded(.success(snippets))))
+                    let project = try await api.getProject(configuration())
+                    await send(.business(.snippetsLoaded(.success(project.snippets))))
                 } catch {
                     await send(.business(.snippetsLoaded(.failure(error))))
                 }
@@ -146,9 +146,16 @@ public struct TWSSnippetsFeature {
             return .none
 
         case let .snippetsLoaded(.failure(error)):
-            logger.err(
-                "Failed to load snippets: " + error.localizedDescription
-            )
+            if let error = error as? DecodingError {
+                logger.err(
+                    "Failed to decode snippets: \(error)"
+                )
+            } else {
+                logger.err(
+                    "Failed to load snippets: \(error)"
+                )
+            }
+
             return .none
 
         // MARK: - Listening for changes via WebSocket

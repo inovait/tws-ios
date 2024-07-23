@@ -3,7 +3,7 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getSnippets: @Sendable (TWSConfiguration) async throws -> [TWSSnippet]
+    public let getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
     public let getSocket: @Sendable (TWSConfiguration) async throws -> URL
     public var getSnippetById: @Sendable (TWSConfiguration, _ snippetId: UUID) async throws -> TWSSnippet
 
@@ -11,7 +11,7 @@ public struct TWSAPI {
         host: String
     ) -> Self {
         .init(
-            getSnippets: { configuration in
+            getProject: { configuration in
                 let result = try await Router.make(request: .init(
                     method: .get,
                     path: "/organizations/\(configuration.organizationID)/projects/\(configuration.projectID)/register",
@@ -21,7 +21,7 @@ public struct TWSAPI {
                     ]
                 ))
 
-                return try JSONDecoder().decode([TWSSnippet].self, from: result.data)
+                return try JSONDecoder().decode(TWSProject.self, from: result.data)
             },
             getSocket: { configuration in
                 let result = try await Router.make(request: .init(
