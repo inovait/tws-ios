@@ -10,5 +10,5 @@ import Foundation
 
 enum UniversalLinkRoute {
 
-    case snippet(id: UUID)
+    case snippet(id: String)
 }

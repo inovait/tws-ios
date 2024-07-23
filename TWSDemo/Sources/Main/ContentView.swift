@@ -51,6 +51,13 @@ struct ContentView: View {
         .onOpenURL(perform: { url in
             twsViewModel.handleIncomingUrl(url)
         })
+        // This is needed when a link is opened by scanning a QR code with the camera app.
+        // In that case, the `onOpenURL` is not called.
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
+            guard let url = userActivity.webpageURL
+            else { return }
+            twsViewModel.handleIncomingUrl(url)
+        })
         .fullScreenCover(isPresented: $viewModel.displayFullscreenSnippet) {
             if let snippet = viewModel.fullscreenSnippet {
                 VStack {

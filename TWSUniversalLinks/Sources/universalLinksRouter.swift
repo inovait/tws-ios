@@ -13,7 +13,7 @@ let universalLinksRouter = OneOf {
 
     Route(.case(UniversalLinkRoute.snippet(id:))) {
         Path { "shared" }
-        Path { UUID.parser() }
+        Path { Parse(.string) }
         End().pullback(\.path)
     }
 }
