@@ -9,6 +9,7 @@
 import XCTest
 @testable import TWSSnippets
 @testable import TWSCommon
+@testable import TWSModels
 @testable import ComposableArchitecture
 
 final class SocketTests: XCTestCase {
@@ -30,7 +31,7 @@ final class SocketTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { _ in [] }
+                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
                 $0.api.getSocket = { _ in socketURL }
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
@@ -65,7 +66,7 @@ final class SocketTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { _ in [] }
+                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
                 $0.api.getSocket = { _ in socketURL }
                 $0.continuousClock = clock
                 $0.socket.get = { _ in .init() }
@@ -117,7 +118,7 @@ final class SocketTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { _ in [] }
+                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
                 $0.api.getSocket = { _ in socketURL }
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }

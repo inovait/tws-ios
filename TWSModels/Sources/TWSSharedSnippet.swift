@@ -14,10 +14,10 @@ public struct TWSSharedSnippet: Codable, Equatable {
     
     /// The organization to which the snippet is bind to
     public let organization: Organization
-
+    
     /// The project to which the snippet is bind to
     public let project: Project
-
+    
     /// The snippet which was opened via universal link
     public let snippet: TWSSnippet
 }
@@ -26,11 +26,11 @@ public extension TWSSharedSnippet {
     
     /// TWS project's information
     struct Project: Codable, Equatable {
-
+        
         /// The ID of the TWS project
         public let id: String
     }
-
+    
     /// TWS organization's information
     struct Organization: Codable, Equatable {
         
