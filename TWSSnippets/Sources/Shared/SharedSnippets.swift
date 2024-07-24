@@ -8,16 +8,18 @@
 
 import Foundation
 import TWSSnippet
+import TWSModels
 import ComposableArchitecture
 
-extension URL {
-    static let snippets = URL.documentsDirectory.appending(component: "snippets.json")
+private extension URL {
+    static func snippets(for config: TWSConfiguration) -> URL {
+        .documentsDirectory
+        .appending(component: "\(config.organizationID)_\(config.projectID)_snippets.json")
+    }
 }
 
-extension PersistenceReaderKey where Self == PersistenceKeyDefault<
-FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>>
-> {
-    static var snippets: Self {
-        PersistenceKeyDefault(.fileStorage(.snippets), [])
+extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>> {
+    static func snippets(for config: TWSConfiguration) -> Self {
+        .fileStorage(.snippets(for: config))
     }
 }

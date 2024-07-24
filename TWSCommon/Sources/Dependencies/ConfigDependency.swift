@@ -28,7 +28,9 @@ public enum ConfigDependencyKey: DependencyKey {
     }
 
     public static var testValue: ConfigDependency {
-        .init(configuration: { .init(organizationID: "abc", projectID: "123") })
+        let id1 = "00000000-0000-0000-0000-000000000000"
+        let id2 = "00000000-0000-0000-0000-000000000001"
+        return .init(configuration: { .init(organizationID: id1, projectID: id2) })
     }
 }
 

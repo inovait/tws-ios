@@ -14,10 +14,16 @@ public struct TWSSnippetsFeature {
     @ObservableState
     public struct State: Equatable {
 
-        @Shared(.snippets) public internal(set) var snippets
-        @Shared(.source) public internal(set) var source
+        @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
+        @Shared public internal(set) var source: TWSSource
+        var socketURL: URL?
 
-        public init() { }
+        public init(
+            configuration: TWSConfiguration
+        ) {
+            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
+            _source = Shared(wrappedValue: .api, .source(for: configuration))
+        }
     }
 
     public enum Action {
@@ -25,13 +31,12 @@ public struct TWSSnippetsFeature {
         @CasePathable
         public enum BusinessAction {
             case load
-            case snippetsLoaded(Result<[TWSSnippet], Error>)
+            case projectLoaded(Result<TWSProject, Error>)
             case snippetAdded(TWSSnippet)
             case listenForChanges
             case reconnect
             case stopListeningForChanges
             case stopReconnecting
-            case listenForChangesResponse(Result<URL, Error>)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
         }
@@ -74,8 +79,12 @@ public struct TWSSnippetsFeature {
                 break
 
             case let .customURLs(urls):
+                let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
                 let snippets = _generateCustomSnippets(urls: urls)
-                return .send(.business(.snippetsLoaded(.success(snippets))))
+                return .send(.business(.projectLoaded(.success(.init(
+                    listenOn: dummySocketURL,
+                    snippets: snippets
+                )))))
 
             @unknown default:
                 break
@@ -84,9 +93,9 @@ public struct TWSSnippetsFeature {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
-                    await send(.business(.snippetsLoaded(.success(project.snippets))))
+                    await send(.business(.projectLoaded(.success(project))))
                 } catch {
-                    await send(.business(.snippetsLoaded(.failure(error))))
+                    await send(.business(.projectLoaded(.failure(error))))
                 }
             }
 
@@ -105,12 +114,15 @@ public struct TWSSnippetsFeature {
             }
             return .none
 
-        case let .snippetsLoaded(.success(snippets)):
+        case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
 
             var effects = [Effect<Action>]()
+            let snippets = project.snippets
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
+            let shouldListen = state.socketURL != project.listenOn
+            state.socketURL = project.listenOn
 
             // Update current or add new
 
@@ -143,9 +155,9 @@ public struct TWSSnippetsFeature {
             // Keep sorted
             _sort(basedOn: newOrder, &state)
 
-            return .none
+            return shouldListen ? .send(.business(.listenForChanges)) : .none
 
-        case let .snippetsLoaded(.failure(error)):
+        case let .projectLoaded(.failure(error)):
             if let error = error as? DecodingError {
                 logger.err(
                     "Failed to decode snippets: \(error)"
@@ -161,28 +173,25 @@ public struct TWSSnippetsFeature {
         // MARK: - Listening for changes via WebSocket
 
         case .listenForChanges:
-            logger.info("Start listening request with source: \(state.source)")
+            logger.info("Request to start listening request with source: \(state.source)")
             switch state.source {
             case .api:
                 break
 
             case .customURLs:
+                logger.info("Won't listen because the snippets are overridden locally.")
                 return .none
 
             @unknown default:
                 break
             }
 
-            return .run { [api] send in
-                do {
-                    let socketURL = try await api.getSocket(configuration())
-                    await send(.business(.listenForChangesResponse(.success(socketURL))))
-                } catch {
-                    await send(.business(.listenForChangesResponse(.failure(error))))
-                }
+            guard let url = state.socketURL
+            else {
+                logger.err("Failed to listen for changes. URL is nil")
+                return .none
             }
 
-        case let .listenForChangesResponse(.success(url)):
             return .run { [socket, url] send in
                 let connectionID = await socket.get(url)
                 let stream: AsyncStream<WebSocketEvent>
@@ -221,16 +230,6 @@ public struct TWSSnippetsFeature {
             }
             .cancellable(id: CancelID.reconnect)
 
-        case let .listenForChangesResponse(.failure(error)):
-            logger.err(
-                "Failed to receive a socket URL: \(error.localizedDescription)"
-            )
-
-            return .run { [clock] send in
-                try? await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
-                await send(.business(.listenForChanges))
-            }
-
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")
             return .cancel(id: CancelID.socket)
@@ -246,11 +245,7 @@ public struct TWSSnippetsFeature {
             state.source = source
 
             switch source {
-            case .api:
-                return .send(.business(.load))
-                    .merge(with: .send(.business(.listenForChanges)))
-
-            case .customURLs:
+            case .api, .customURLs:
                 return .send(.business(.load))
 
             @unknown default:

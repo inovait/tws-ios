@@ -36,7 +36,7 @@ public class TWSFactory {
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
-            snippets: .init(),
+            snippets: .init(configuration: configuration),
             universalLinks: .init()
         )
 

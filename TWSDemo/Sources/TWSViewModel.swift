@@ -21,7 +21,7 @@ class TWSViewModel {
 
     init() {
         snippets = manager.snippets
-        manager.run(listenForChanges: true)
+        manager.run()
     }
 
     func handleIncomingUrl(_ url: URL) {

@@ -13,7 +13,6 @@ import ComposableArchitecture
 
 public struct APIDependency {
     public var getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
-    public var getSocket: @Sendable (TWSConfiguration) async throws -> URL
     public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ snippetId: String) async throws -> TWSSharedSnippet
 }
 
@@ -24,7 +23,6 @@ public enum APIDependencyKey: DependencyKey {
 
         return .init(
             getProject: api.getProject,
-            getSocket: api.getSocket,
             getSnippetBySharedId: api.getSnippetBySharedId
         )
     }
