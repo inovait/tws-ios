@@ -387,5 +387,3 @@ private class IncrementingUUIDGenerator: @unchecked Sendable {
         return UUID(self.sequence)
     }
 }
-
-struct Dummy { }
