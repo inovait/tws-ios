@@ -53,6 +53,9 @@ final class SocketTests: XCTestCase {
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
+        await store.receive(\.business.isSocketConnected, true) {
+            $0.isSocketConnected = true
+        }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
@@ -88,12 +91,18 @@ final class SocketTests: XCTestCase {
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
+        await store.receive(\.business.isSocketConnected, true) {
+            $0.isSocketConnected = true
+        }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
+        await store.receive(\.business.isSocketConnected, false) {
+            $0.isSocketConnected = false
+        }
         await store.receive(\.business.delayReconnect, timeout: NSEC_PER_SEC)
 
         // Reconnect after 3s
@@ -112,6 +121,9 @@ final class SocketTests: XCTestCase {
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
+        await store.receive(\.business.isSocketConnected, true) {
+            $0.isSocketConnected = true
+        }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
@@ -147,6 +159,9 @@ final class SocketTests: XCTestCase {
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
+        await store.receive(\.business.isSocketConnected, true) {
+            $0.isSocketConnected = true
+        }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 

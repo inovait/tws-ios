@@ -17,7 +17,7 @@ public struct TWSSnippetsObserverFeature {
         TWSSnippetsFeature()
             .onChange(of: \.socketURL) { oldValue, newValue in
                 Reduce { _, _ in
-                    if oldValue == nil && newValue != nil { // TODO: If not connected
+                    if oldValue != newValue && newValue != nil {
                         return .send(.business(.listenForChanges))
                     } else {
                         return .none
@@ -36,6 +36,7 @@ public struct TWSSnippetsFeature {
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
         public internal(set) var socketURL: URL?
+        public internal(set) var isSocketConnected = false
 
         public init(
             configuration: TWSConfiguration
@@ -57,6 +58,7 @@ public struct TWSSnippetsFeature {
             case reconnectTriggered
             case stopListeningForChanges
             case stopReconnecting
+            case isSocketConnected(Bool)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
         }
@@ -193,6 +195,13 @@ public struct TWSSnippetsFeature {
         // MARK: - Listening for changes via WebSocket
 
         case .listenForChanges:
+            guard !state.isSocketConnected
+            else {
+                let socket = state.socketURL?.absoluteString ?? ""
+                logger.info("Early return, because the socket is already connected to: \(socket)")
+                return .none
+            }
+
             logger.info("Request to start listening request with source: \(state.source)")
             switch state.source {
             case .api:
@@ -238,6 +247,10 @@ public struct TWSSnippetsFeature {
             }
             .cancellable(id: CancelID.socket)
             .concatenate(with: .send(.business(.delayReconnect)))
+
+        case let .isSocketConnected(isConnected):
+            state.isSocketConnected = isConnected
+            return .none
 
         case .delayReconnect:
             return .run { send in
@@ -316,6 +329,7 @@ public struct TWSSnippetsFeature {
         switch event {
         case .didConnect:
             logger.info("Did connect \(Date.now)")
+            await send(.business(.isSocketConnected(true)))
             await send(.business(.load))
 
             do {
@@ -329,6 +343,7 @@ public struct TWSSnippetsFeature {
 
         case .didDisconnect:
             logger.info("Did disconnect \(Date())")
+            await send(.business(.isSocketConnected(false)))
             break mainLoop
 
         case let .receivedMessage(message):
