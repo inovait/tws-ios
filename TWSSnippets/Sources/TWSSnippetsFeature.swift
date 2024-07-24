@@ -143,7 +143,6 @@ public struct TWSSnippetsFeature {
             let snippets = project.snippets
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
-            let shouldListen = state.socketURL != project.listenOn
             state.socketURL = project.listenOn
 
             // Update current or add new
@@ -387,4 +386,8 @@ private class IncrementingUUIDGenerator: @unchecked Sendable {
 
         return UUID(self.sequence)
     }
+}
+
+public struct Dummy {
+    
 }
