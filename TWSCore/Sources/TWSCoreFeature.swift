@@ -38,7 +38,7 @@ public struct TWSCoreFeature {
         }
 
         Scope(state: \.snippets, action: \.snippets) {
-            TWSSnippetsFeature()
+            TWSSnippetsObserverFeature()
         }
 
         Scope(state: \.universalLinks, action: \.universalLinks) {

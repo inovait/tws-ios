@@ -9,6 +9,25 @@ private let RECONNECT_TIMEOUT: TimeInterval = 3
 // swiftlint:enable identifier_name
 
 @Reducer
+public struct TWSSnippetsObserverFeature {
+
+    public init() { }
+
+    public var body: some ReducerOf<TWSSnippetsFeature> {
+        TWSSnippetsFeature()
+            .onChange(of: \.socketURL) { oldValue, newValue in
+                Reduce { _, _ in
+                    if oldValue == nil && newValue != nil { // TODO: If not connected
+                        return .send(.business(.listenForChanges))
+                    } else {
+                        return .none
+                    }
+                }
+            }
+    }
+}
+
+@Reducer
 public struct TWSSnippetsFeature {
 
     @ObservableState
@@ -16,7 +35,7 @@ public struct TWSSnippetsFeature {
 
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
-        var socketURL: URL?
+        public internal(set) var socketURL: URL?
 
         public init(
             configuration: TWSConfiguration
@@ -34,7 +53,8 @@ public struct TWSSnippetsFeature {
             case projectLoaded(Result<TWSProject, Error>)
             case snippetAdded(TWSSnippet)
             case listenForChanges
-            case reconnect
+            case delayReconnect
+            case reconnectTriggered
             case stopListeningForChanges
             case stopReconnecting
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
@@ -155,7 +175,7 @@ public struct TWSSnippetsFeature {
             // Keep sorted
             _sort(basedOn: newOrder, &state)
 
-            return shouldListen ? .send(.business(.listenForChanges)) : .none
+            return .none
 
         case let .projectLoaded(.failure(error)):
             if let error = error as? DecodingError {
@@ -189,6 +209,7 @@ public struct TWSSnippetsFeature {
             guard let url = state.socketURL
             else {
                 logger.err("Failed to listen for changes. URL is nil")
+                assertionFailure()
                 return .none
             }
 
@@ -198,7 +219,7 @@ public struct TWSSnippetsFeature {
                 do {
                     stream = try await socket.connect(connectionID)
                 } catch {
-                    await send(.business(.reconnect))
+                    await send(.business(.delayReconnect))
                     return
                 }
 
@@ -216,19 +237,23 @@ public struct TWSSnippetsFeature {
                 await socket.closeConnection(connectionID)
             }
             .cancellable(id: CancelID.socket)
-            .concatenate(with: .send(.business(.reconnect)))
+            .concatenate(with: .send(.business(.delayReconnect)))
 
-        case .reconnect:
+        case .delayReconnect:
             return .run { send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     logger.info("Reconnect")
-                    await send(.business(.listenForChanges))
+                    await send(.business(.reconnectTriggered))
                 } catch {
                     logger.err("Reconnecting failed: \(error)")
                 }
             }
             .cancellable(id: CancelID.reconnect)
+
+        case .reconnectTriggered:
+            state.socketURL = nil
+            return .send(.business(.load))
 
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")

@@ -14,6 +14,12 @@ import XCTest
 
 final class SocketTests: XCTestCase {
 
+    let socketURL = URL(string: "https://www.google.com")!
+    let configuration = TWSConfiguration(
+        organizationID: "00000000-0000-0000-0000-000000000000",
+        projectID: "00000000-0000-0000-0000-000000000001"
+    )
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -24,15 +30,16 @@ final class SocketTests: XCTestCase {
 
     @MainActor
     func testConnectingToSocket() async throws {
+        var state = TWSSnippetsFeature.State(configuration: configuration)
+        state.socketURL = socketURL
+
         let clock = TestClock()
-        let socketURL = URL(string: "https://www.google.com")!
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         let store: TestStoreOf<TWSSnippetsFeature> = .init(
-            initialState: TWSSnippetsFeature.State(),
-            reducer: { TWSSnippetsFeature() },
+            initialState: state,
+            reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
-                $0.api.getSocket = { _ in socketURL }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: [])}
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
                 $0.socket.closeConnection = { _ in }
@@ -42,32 +49,32 @@ final class SocketTests: XCTestCase {
         )
 
         await store.send(.business(.listenForChanges))
-        await store.receive(\.business.listenForChangesResponse.success, socketURL)
 
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
-        await store.receive(\.business.reconnect)
+        await store.receive(\.business.delayReconnect)
         await store.send(.business(.stopReconnecting))
     }
 
     @MainActor
     func testReconnectingToSocket() async throws {
-        let socketURL = URL(string: "https://www.google.com")!
+        var state = TWSSnippetsFeature.State(configuration: configuration)
+        state.socketURL = socketURL
+
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         let clock = TestClock()
 
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
-            reducer: { TWSSnippetsFeature() },
+            initialState: state,
+            reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
-                $0.api.getSocket = { _ in socketURL }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: [])}
                 $0.continuousClock = clock
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
@@ -77,49 +84,56 @@ final class SocketTests: XCTestCase {
         )
 
         await store.send(.business(.listenForChanges))
-        await store.receive(\.business.listenForChangesResponse.success)
 
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
-        await store.receive(\.business.reconnect, timeout: NSEC_PER_SEC)
+        await store.receive(\.business.delayReconnect, timeout: NSEC_PER_SEC)
 
         // Reconnect after 3s
         await clock.advance(by: .seconds(3))
+        await store.receive(\.business.reconnectTriggered, timeout: NSEC_PER_SEC) {
+            $0.socketURL = nil
+        }
 
         // Ask for new url,...
+        await store.receive(\.business.load)
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.socketURL = self.socketURL
+        }
         await store.receive(\.business.listenForChanges, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.listenForChangesResponse.success)
 
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
-        await store.receive(\.business.reconnect)
+        await store.receive(\.business.delayReconnect)
         await store.send(.business(.stopReconnecting))
     }
 
     @MainActor
     func testOnSocketMessageRefresh() async throws {
+        var state = TWSSnippetsFeature.State(configuration: configuration)
+        state.socketURL = socketURL
+
         let clock = TestClock()
         let socketURL = URL(string: "https://www.google.com")!
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         let store: TestStoreOf<TWSSnippetsFeature> = .init(
-            initialState: TWSSnippetsFeature.State(),
-            reducer: { TWSSnippetsFeature() },
+            initialState: state,
+            reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
-                $0.api.getSocket = { _ in socketURL }
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
                 $0.socket.closeConnection = { _ in }
@@ -129,22 +143,21 @@ final class SocketTests: XCTestCase {
         )
 
         await store.send(.business(.listenForChanges))
-        await store.receive(\.business.listenForChangesResponse.success, socketURL)
 
         // After the socket connection is established, check the snippets again
 
         stream.continuation.yield(.didConnect)
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
-        await store.receive(\.business.reconnect)
+        await store.receive(\.business.delayReconnect)
         await store.send(.business(.stopReconnecting))
     }
 }
