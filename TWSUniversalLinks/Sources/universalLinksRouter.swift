@@ -9,11 +9,20 @@
 import Foundation
 import URLRouting
 
-let universalLinksRouter = OneOf {
-
+private let universalLinksRouter = OneOf {
     Route(.case(UniversalLinkRoute.snippet(id:))) {
+        OneOf {
+            Host("thewebsnippet.dev")
+        }
         Path { "shared" }
         Path { Parse(.string) }
         End().pullback(\.path)
+    }
+}
+
+public class TWSUniversalLinkRouter {
+
+    public class func route(for url: URL) throws -> UniversalLinkRoute {
+        try universalLinksRouter.match(url: url)
     }
 }

@@ -48,7 +48,7 @@ public struct TWSUniversalLinksFeature {
             logger.info("Received a universal link: \(url)")
 
             do {
-                switch try universalLinksRouter.match(url: url) {
+                switch try TWSUniversalLinkRouter.route(for: url) {
                 case let .snippet(id):
                     return .run { [api] send in
                         do {

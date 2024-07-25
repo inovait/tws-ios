@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum UniversalLinkRoute {
+public enum UniversalLinkRoute {
 
     case snippet(id: String)
 }

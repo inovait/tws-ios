@@ -8,6 +8,7 @@
 
 import Foundation
 import WebKit
+@_implementationOnly import TWSUniversalLinks
 @_implementationOnly import TWSCommon
 
 extension WebView.Coordinator: WKNavigationDelegate {
@@ -96,8 +97,18 @@ extension WebView.Coordinator: WKNavigationDelegate {
 
         // OAuth request to Google in embedded browsers are not allowed
         if let url = navigationAction.request.url, url.isTWSAuthenticationRequest() {
+            logger.info("Google OAuth request detected.")
             redirectedToSafari = true
             UIApplication.shared.open(url, options: [:])
+            decisionHandler(.cancel)
+            return
+        }
+
+        // Handle deep links that are opened internally
+        if let url = navigationAction.request.url,
+           (try? TWSUniversalLinkRouter.route(for: url)) != nil {
+            logger.info("Internal deep link detected: \(url)")
+            parent.onUniversalLinkDetected(url)
             decisionHandler(.cancel)
             return
         }

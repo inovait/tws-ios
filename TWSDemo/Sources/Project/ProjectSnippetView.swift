@@ -29,6 +29,7 @@ struct ProjectSnippetView: View {
                     },
                     label: {
                         Text("TWS - \($pageTitle.wrappedValue)")
+                            .lineLimit(1)
                             .foregroundColor(.black)
                     }
                 )
