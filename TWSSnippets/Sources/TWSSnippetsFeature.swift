@@ -40,8 +40,8 @@ public struct TWSSnippetsFeature {
 
         public init(
             configuration: TWSConfiguration,
-            snippets: [TWSSnippet]?,
-            socketURL: URL?
+            snippets: [TWSSnippet]? = nil,
+            socketURL: URL? = nil
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))
