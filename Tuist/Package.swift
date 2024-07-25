@@ -31,7 +31,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
-            exact: .init(0, 6, 1)
+            exact: .init(0, 6, 2)
         )
     ]
 )
