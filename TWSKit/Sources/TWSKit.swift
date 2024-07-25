@@ -6,23 +6,32 @@ import SwiftUI
 @_implementationOnly import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
-public class TWSManager {
+public final class TWSManager: Identifiable {
 
-    private let initDate: Date
-    let store: StoreOf<TWSCoreFeature>
     public let events: AsyncStream<TWSStreamEvent>
+
+    let store: StoreOf<TWSCoreFeature>
+    let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
+    private let initDate: Date
+
     init(
         store: StoreOf<TWSCoreFeature>,
-        events: AsyncStream<TWSStreamEvent>
+        events: AsyncStream<TWSStreamEvent>,
+        configuration: TWSConfiguration
     ) {
         self.store = store
         self.events = events
+        self.configuration = configuration
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+    }
+
+    deinit {
+        TWSFactory.destroy(configuration: configuration)
     }
 
     // MARK: - Public

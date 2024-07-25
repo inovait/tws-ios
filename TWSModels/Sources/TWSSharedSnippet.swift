@@ -8,9 +8,14 @@
 
 import Foundation
 
-/// Information provided when a snippet si opened via univarsal link. It contains everything needed,
+/// Information provided when a snippet is opened via universal link. It contains everything needed,
 /// to start a new, separate, TWS flow
-public struct TWSSharedSnippet: Codable, Equatable {
+public struct TWSSharedSnippet: Codable, Equatable, Identifiable {
+
+    /// Identifiable conformance
+    public var id: String {
+        "\(organization.id)~\(project.id)~\(snippet.id)"
+    }
 
     /// The organization to which the snippet is bind to
     public let organization: Organization
@@ -20,6 +25,14 @@ public struct TWSSharedSnippet: Codable, Equatable {
 
     /// The snippet which was opened via universal link
     public let snippet: TWSSnippet
+
+    /// The configuration for the presented snippet
+    public var configuration: TWSConfiguration {
+        .init(
+            organizationID: organization.id,
+            projectID: project.id
+        )
+    }
 }
 
 public extension TWSSharedSnippet {

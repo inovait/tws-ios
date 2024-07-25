@@ -23,12 +23,12 @@ public struct TWSUniversalLinksFeature {
         @CasePathable
         public enum BusinessAction {
             case onUniversalLink(URL)
-            case snippetLoaded(Result<TWSSnippet, Error>)
+            case snippetLoaded(Result<TWSSharedSnippet, Error>)
         }
 
         @CasePathable
         public enum DelegateAction {
-            case snippetLoaded(TWSSnippet)
+            case snippetLoaded(TWSSharedSnippet)
         }
 
         case business(BusinessAction)
@@ -52,8 +52,8 @@ public struct TWSUniversalLinksFeature {
                 case let .snippet(id):
                     return .run { [api] send in
                         do {
-                            let project = try await api.getSnippetBySharedId(configuration(), id)
-                            await send(.business(.snippetLoaded(.success(project.snippet))))
+                            let snippet = try await api.getSnippetBySharedId(configuration(), id)
+                            await send(.business(.snippetLoaded(.success(snippet))))
                         } catch {
                             await send(.business(.snippetLoaded(.failure(error))))
                         }

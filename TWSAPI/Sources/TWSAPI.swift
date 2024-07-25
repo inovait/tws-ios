@@ -30,7 +30,7 @@ public struct TWSAPI {
             getSnippetBySharedId: { _, token in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/share/\(token)",
+                    path: "/shared/\(token)",
                     host: host,
                     queryItems: [
                         .init(name: "apiKey", value: "abc123")

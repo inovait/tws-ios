@@ -16,27 +16,59 @@ import Foundation
 /// A class designed to initialize a new ``TWSManager``
 public class TWSFactory {
 
-    private static var _instances = ThreadSafeSet<TWSConfiguration>()
+    private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
 
     /// Sets up the app's reducers and main store
-    /// - Returns: An instance of ``TWSManager``
+    /// - Parameter configuration: Configuration of a project you would like to show
+    /// - Returns: An instance of ``TWSManager
     public class func new(
         with configuration: TWSConfiguration
     ) -> TWSManager {
-        defer { _instances.insert(configuration) }
-        guard !_instances.contains(configuration)
-        else { preconditionFailure(
-            """
-            Only one instance per configuration is allowed.
-            Due to an unknown limitation, if two connections are established simultaneously,
-            one will drop the other.
-            """
-        )}
+        _new(
+            configuration: configuration,
+            snippets: nil,
+            socketURL: nil
+        )
+    }
+
+    /// Sets up the TWS manager
+    /// - Parameter shared: Information about the TWSSnippet opened via universal link
+    /// - Returns: An instance of ``TWSManager``
+    public class func new(
+        with shared: TWSSharedSnippet
+    ) -> TWSManager {
+        print("-> Requesting new manager")
+        return _new(
+            configuration: shared.configuration,
+            snippets: [shared.snippet],
+            socketURL: nil
+        )
+    }
+
+    // MARK: - Internal
+
+    class func destroy(
+        configuration: TWSConfiguration
+    ) {
+        _instances.removeValue(forKey: configuration)
+    }
+
+    // MARK: - Helpers
+
+    private class func _new(
+        configuration: TWSConfiguration,
+        snippets: [TWSSnippet]?,
+        socketURL: URL?
+    ) -> TWSManager {
+        if let manager = _instances[configuration]?.box {
+            logger.info("Reusing TWSManager for configuration: \(configuration)")
+            return manager
+        }
 
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
-            snippets: .init(configuration: configuration),
+            snippets: .init(configuration: configuration, snippets: snippets, socketURL: socketURL),
             universalLinks: .init()
         )
 
@@ -85,6 +117,9 @@ public class TWSFactory {
 
         events.continuation.yield(.snippetsUpdated(storage))
 
-        return TWSManager(store: store, events: events.stream)
+        let manager = TWSManager(store: store, events: events.stream, configuration: configuration)
+        logger.info("Created a new TWSManager for configuration: \(configuration)")
+        _instances[configuration] = WeakBox(manager)
+        return manager
     }
 }

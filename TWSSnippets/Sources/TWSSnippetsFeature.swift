@@ -39,10 +39,21 @@ public struct TWSSnippetsFeature {
         public internal(set) var isSocketConnected = false
 
         public init(
-            configuration: TWSConfiguration
+            configuration: TWSConfiguration,
+            snippets: [TWSSnippet]?,
+            socketURL: URL?
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))
+
+            if let snippets {
+                let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
+                self.snippets = .init(uniqueElements: state)
+            }
+
+            if let socketURL {
+                self.socketURL = socketURL
+            }
         }
     }
 
@@ -52,7 +63,6 @@ public struct TWSSnippetsFeature {
         public enum BusinessAction {
             case load
             case projectLoaded(Result<TWSProject, Error>)
-            case snippetAdded(TWSSnippet)
             case listenForChanges
             case delayReconnect
             case reconnectTriggered
@@ -120,21 +130,6 @@ public struct TWSSnippetsFeature {
                     await send(.business(.projectLoaded(.failure(error))))
                 }
             }
-
-        case let .snippetAdded(snippet):
-            let snippetAlreadyInState = !state.snippets.filter({ existingSnippet in
-                existingSnippet.snippet.id == snippet.id
-            }).isEmpty
-
-            if snippetAlreadyInState {
-                logger.info("Snippet already in the state: \(snippet.id)")
-            } else {
-                state.snippets.append(
-                    .init(snippet: snippet, isPrivate: true)
-                )
-                logger.info("Added snippet: \(snippet.id)")
-            }
-            return .none
 
         case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")

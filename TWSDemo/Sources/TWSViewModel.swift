@@ -17,11 +17,13 @@ class TWSViewModel {
         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
     ))
     var snippets: [TWSSnippet]
-    var qrLoadedSnippet: TWSSnippet?
+    var universalLinkLoadedProject: LoadedProjectInfo?
 
     init() {
         snippets = manager.snippets
-        manager.run()
+        // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
+        // Therefore, the initializer should be free of any business logic.
+        // Calling `run` here will trigger a refresh, potentially causing excessive updates.
     }
 
     func handleIncomingUrl(_ url: URL) {
@@ -29,16 +31,36 @@ class TWSViewModel {
     }
 
     @MainActor
+    func start() async {
+        manager.run()
+    }
+
+    @MainActor
     func startupInitTasks() async {
         for await snippetEvent in self.manager.events {
             switch snippetEvent {
-            case .universalLinkSnippetLoaded(let snippet):
-                self.qrLoadedSnippet = snippet
+            case let .universalLinkSnippetLoaded(project):
+                self.universalLinkLoadedProject = .init(
+                    manager: TWSFactory.new(with: project),
+                    selectedID: project.snippet.id
+                )
+
             case .snippetsUpdated(let snippets):
                 self.snippets = snippets
+
             default:
                 print("Unhandled stream event")
             }
         }
+    }
+}
+
+struct LoadedProjectInfo: Identifiable {
+
+    let manager: TWSManager
+    let selectedID: UUID
+
+    var id: TWSManager.ID {
+        manager.id
     }
 }

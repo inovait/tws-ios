@@ -9,12 +9,12 @@
 import Foundation
 import TWSKit
 
+// TODO: Open from app
+
 @Observable
 class ContentViewModel {
 
     var tab: Tab = .snippets
-    var fullscreenSnippet: TWSSnippet?
-    var displayFullscreenSnippet: Bool = false
     var webViewTitle: String = ""
 }
 
