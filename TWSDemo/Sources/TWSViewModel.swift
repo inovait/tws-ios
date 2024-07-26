@@ -54,13 +54,3 @@ class TWSViewModel {
         }
     }
 }
-
-struct LoadedProjectInfo: Identifiable {
-
-    let manager: TWSManager
-    let selectedID: UUID
-
-    var id: TWSManager.ID {
-        manager.id
-    }
-}
