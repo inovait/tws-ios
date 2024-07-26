@@ -37,7 +37,6 @@ public class TWSFactory {
     public class func new(
         with shared: TWSSharedSnippet
     ) -> TWSManager {
-        print("-> Requesting new manager")
         return _new(
             configuration: shared.configuration,
             snippets: [shared.snippet],
