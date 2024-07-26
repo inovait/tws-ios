@@ -7,14 +7,11 @@
 //
 
 import Foundation
-import TWSKit
 
 @Observable
 class ContentViewModel {
 
     var tab: Tab = .snippets
-    var fullscreenSnippet: TWSSnippet?
-    var displayFullscreenSnippet: Bool = false
     var webViewTitle: String = ""
 }
 

@@ -140,6 +140,9 @@ private struct _TWSView: View {
             onHeightCalculated: { height in
                 handler.set(height: height, for: snippet, displayID: displayID)
             },
+            onUniversalLinkDetected: { url in
+                handler.handleIncomingUrl(url)
+            },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,
             loadingState: $loadingState

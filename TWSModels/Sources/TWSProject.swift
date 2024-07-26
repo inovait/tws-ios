@@ -16,4 +16,12 @@ public struct TWSProject: Codable, Equatable {
 
     /// Array of snippets bind to the project
     public let snippets: [TWSSnippet]
+
+    public init(
+        listenOn: URL,
+        snippets: [TWSSnippet]
+    ) {
+        self.listenOn = listenOn
+        self.snippets = snippets
+    }
 }

@@ -6,23 +6,32 @@ import SwiftUI
 @_implementationOnly import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
-public class TWSManager {
+public final class TWSManager: Identifiable {
 
-    private let initDate: Date
-    let store: StoreOf<TWSCoreFeature>
     public let events: AsyncStream<TWSStreamEvent>
+
+    let store: StoreOf<TWSCoreFeature>
+    let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
+    private let initDate: Date
+
     init(
         store: StoreOf<TWSCoreFeature>,
-        events: AsyncStream<TWSStreamEvent>
+        events: AsyncStream<TWSStreamEvent>,
+        configuration: TWSConfiguration
     ) {
         self.store = store
         self.events = events
+        self.configuration = configuration
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+    }
+
+    deinit {
+        TWSFactory.destroy(configuration: configuration)
     }
 
     // MARK: - Public
@@ -33,15 +42,10 @@ public class TWSManager {
         return store.snippets.snippets.elements.map(\.snippet)
     }
 
-    /// A function that starts loading snippets
-    /// - Parameter listenForChanges: A flag that enables real time updates when any of the snippets change on the server
-    public func run(listenForChanges: Bool) {
+    /// A function that starts loading snippets and listen for changes
+    public func run() {
         precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
         store.send(.snippets(.business(.load)))
-
-        if listenForChanges {
-            store.send(.snippets(.business(.listenForChanges)))
-        }
     }
 
     /// A function that load the previous snippet in the list

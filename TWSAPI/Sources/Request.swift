@@ -14,6 +14,7 @@ struct Request {
     let path: String
     let host: String
     let queryItems: [URLQueryItem]
+    let headers: [String: String]
 }
 
 extension Request {

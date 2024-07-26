@@ -12,6 +12,7 @@ schemes:
 - TWSLogger
 - TWSAPI
 - TWSModels
+- TWSUniversalLinks
 targets:
 - TWSDemo
 - TWSKit
@@ -23,4 +24,5 @@ targets:
 - TWSLogger
 - TWSAPI
 - TWSModels
+- TWSUniversalLinks
 workspace: TheWebSnippet.xcworkspace

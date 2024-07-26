@@ -9,7 +9,5 @@ disabled_rules:
   - function_body_length
   - cyclomatic_complexity
   - type_body_length
-cyclomatic_complexity:
-  ignores_case_statements: true
 line_length:
   ignores_comments: true

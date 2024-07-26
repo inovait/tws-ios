@@ -27,11 +27,11 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: .init(1, 12, 0)
+            exact: .init(1, 12, 1)
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
-            exact: .init(0, 6, 1)
+            exact: .init(0, 6, 2)
         )
     ]
 )

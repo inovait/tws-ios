@@ -24,6 +24,7 @@ struct TWSDemoApp: App {
                 ContentView()
                     .environment(twsViewModel)
                     .task {
+                        await twsViewModel.start()
                         await twsViewModel.startupInitTasks()
                     }
             }

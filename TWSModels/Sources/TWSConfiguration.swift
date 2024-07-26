@@ -12,19 +12,29 @@ import Foundation
 public struct TWSConfiguration: Hashable {
 
     /// The ID of the TWS organization
-    public let organizationID: String
+    public let organizationID: UUID
 
     /// The ID of the TWS project
-    public let projectID: String
+    public let projectID: UUID
 
     /// Initializes a new configuration
     /// - Parameters:
-    ///   - organizationID: The ID of the TWS organization
-    ///   - projectID: The ID of the TWS project
+    ///   - organizationID: A valid UUID of the TWS organization.
+    ///   - projectID: A valid UUID of the TWS project.
     public init(
         organizationID: String,
         projectID: String
     ) {
+        guard let organizationID = UUID(uuidString: organizationID)
+        else { preconditionFailure(
+            "Invalid `organization ID`. It should be a valid UUID. Received: \(organizationID)"
+        )}
+
+        guard let projectID = UUID(uuidString: projectID)
+        else { preconditionFailure(
+            "Invalid `organization ID`. It should be a valid UUID. Received: \(projectID)"
+        )}
+
         self.organizationID = organizationID
         self.projectID = projectID
     }
