@@ -12,9 +12,7 @@ import TWSKit
 struct ProjectView: View {
 
     @State private var viewModel: ProjectViewModel
-    @State private var pageTitle: String = ""
     @State private var selectedID: UUID
-    @Environment(\.dismiss) var dismiss
 
     init(manager: TWSManager, selectedID: UUID) {
         _viewModel = .init(initialValue: ProjectViewModel(manager: manager))

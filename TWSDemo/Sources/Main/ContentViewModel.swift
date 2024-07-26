@@ -7,9 +7,6 @@
 //
 
 import Foundation
-import TWSKit
-
-// TODO: Open from app
 
 @Observable
 class ContentViewModel {

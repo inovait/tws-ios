@@ -7,15 +7,11 @@
 //
 
 import SwiftUI
-import TWSKit
 
 struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var canGoBack = false
-    @State private var canGoForward = false
 
     var body: some View {
         @Bindable var twsViewModel = twsViewModel
