@@ -8,6 +8,7 @@ import SwiftUI
 /// A class that handles all the communication between your app and the SDK's functionalities
 public final class TWSManager: Identifiable {
 
+    /// A getter for the event stream that is used to communicate updates. Check ``TWSStreamEvent`` enum for details.
     public let events: AsyncStream<TWSStreamEvent>
 
     let store: StoreOf<TWSCoreFeature>
@@ -48,7 +49,7 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(.load)))
     }
 
-    /// A function that load the previous snippet in the list
+    /// A function that invokes the browser's back functionality
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
     ///   - displayID: The displayID you've set in your ``TWSView``
@@ -60,7 +61,7 @@ public final class TWSManager: Identifiable {
         )
     }
 
-    /// A function that load the next snippet in the list
+    /// A function that invokes the browser's forward functionality
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
     ///   - displayID: The displayID you've set in your ``TWSView``
