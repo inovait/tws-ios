@@ -18,7 +18,7 @@ public class TWSFactory {
 
     private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
 
-    /// Sets up the app's reducers and main store
+    /// Creates and returns a new instance of ``TWSManager``
     /// - Parameter configuration: Configuration of a project you would like to show
     /// - Returns: An instance of ``TWSManager
     public class func new(
