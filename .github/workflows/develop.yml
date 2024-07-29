@@ -110,5 +110,5 @@ jobs:
           STATIC_WEB_PATH: "./staticWeb"
         run: |
             chmod +x upload_documentation.sh
-            upload_documentation.sh ${{SCHEME}} ${{WORKSPACE}} ${{DESTINATION}} ${{DERIVED_DATA_PATH}} ${{HOSTING_BASE_PATH}} ${{STATIC_WEB_PATH}}
+            upload_documentation.sh ${{env.SCHEME}} ${{env.WORKSPACE}} ${{env.DESTINATION}} ${{env.DERIVED_DATA_PATH}} ${{env.HOSTING_BASE_PATH}} ${{env.STATIC_WEB_PATH}}
 
