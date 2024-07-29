@@ -1,0 +1,3 @@
+[submodule "tws-ios-docs"]
+	path = tws-ios-docs
+	url = https://github.com/inovait/tws-ios-docs.git
