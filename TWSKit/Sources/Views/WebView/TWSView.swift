@@ -24,7 +24,7 @@ public struct TWSView<
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
-    
+
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
@@ -139,6 +139,9 @@ private struct _TWSView: View {
             navigationProvider: handler.navigationProvider,
             onHeightCalculated: { height in
                 handler.set(height: height, for: snippet, displayID: displayID)
+            },
+            onUniversalLinkDetected: { url in
+                handler.handleIncomingUrl(url)
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,

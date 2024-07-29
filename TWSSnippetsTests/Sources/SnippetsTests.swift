@@ -15,6 +15,12 @@ import XCTest
 
 final class SnippetsTests: XCTestCase {
 
+    let socketURL = URL(string: "https://www.google.com")!
+    let configuration = TWSConfiguration(
+        organizationID: "00000000-0000-0000-0000-000000000000",
+        projectID: "00000000-0000-0000-0000-000000000001"
+    )
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -35,21 +41,22 @@ final class SnippetsTests: XCTestCase {
             .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
-        let state = TWSSnippetsFeature.State()
+        let state = TWSSnippetsFeature.State(configuration: configuration)
 
         let store = TestStore(
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: snippets)}
             }
         )
 
         // Send response for the first time
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
+            $0.socketURL = self.socketURL
         }
 
         await store.send(
@@ -60,7 +67,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the second time (state must be preserved)
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success)
+        await store.receive(\.business.projectLoaded.success)
     }
 
     @MainActor
@@ -76,26 +83,29 @@ final class SnippetsTests: XCTestCase {
         ]
 
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: snippets)}
             }
         )
 
         // Send response for the first time
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
+            $0.socketURL = self.socketURL
         }
 
         // Send for the second time without one element. Snippet should be removed from state
 
-        store.dependencies.api.getSnippets = { [snippets[1], snippets[2]] }
+        store.dependencies.api.getProject = { _ in
+            TWSProject(listenOn: self.socketURL, snippets: [snippets[1], snippets[2]])
+        }
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets.removeFirst()
         }
     }
@@ -113,25 +123,28 @@ final class SnippetsTests: XCTestCase {
         ]
 
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [snippets[0], snippets[2] ] }
+                $0.api.getProject = { _ in
+                    TWSProject(listenOn: self.socketURL, snippets: [snippets[0], snippets[2]])
+                }
             }
         )
 
         // Send response for the first time
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
+            $0.socketURL = self.socketURL
         }
 
         // Send for the second time with new element. Snippet should be added in right order
-        store.dependencies.api.getSnippets = { snippets }
+        store.dependencies.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: snippets)}
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets.insert(.init(snippet: snippets[1]), at: 1)
         }
     }
@@ -151,26 +164,29 @@ final class SnippetsTests: XCTestCase {
         let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
 
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { snippets }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: snippets)}
             }
         )
 
         // Send response for the first time
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippetsStates)
+            $0.socketURL = self.socketURL
         }
 
         // Send response for the second time but change the order
 
-        store.dependencies.api.getSnippets = { [snippets[1], snippets[2], snippets[0] ] }
+        store.dependencies.api.getProject = { _ in
+            TWSProject(listenOn: self.socketURL, snippets: [snippets[1], snippets[2], snippets[0]])
+        }
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[1], snippetsStates[2], snippetsStates[0]])
         }
     }
@@ -192,26 +208,31 @@ final class SnippetsTests: XCTestCase {
         let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
 
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [snippets[0], snippets[1], snippets[2]] }
+                $0.api.getProject = { _ in
+                    TWSProject(listenOn: self.socketURL, snippets: [snippets[0], snippets[1], snippets[2]])
+                }
             }
         )
 
         // Send response for the first time
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
+            $0.socketURL = self.socketURL
         }
 
         // Send response for the second time but remove some and add some
 
-        store.dependencies.api.getSnippets = { [snippets[0], snippets[2], snippets[3] ] }
+        store.dependencies.api.getProject = { _ in
+            TWSProject(listenOn: self.socketURL, snippets: [snippets[0], snippets[2], snippets[3]])
+        }
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.snippetsLoaded.success) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[2], snippetsStates[3]])
         }
     }
@@ -219,13 +240,11 @@ final class SnippetsTests: XCTestCase {
     @MainActor
     func testSourceToAPI() async {
         let testClock = TestClock()
-        let socketURL = URL(string: "https://www.google.com")!
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
-            reducer: { TWSSnippetsFeature() },
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [] }
-                $0.api.getSocket = { socketURL }
+                $0.api.getProject = { _ in .init(listenOn: self.socketURL, snippets: [])}
                 $0.socket.get = { _ in .init() }
                 $0.socket.connect = { _ in .makeStream().stream }
                 $0.socket.closeConnection = { _ in }
@@ -238,29 +257,36 @@ final class SnippetsTests: XCTestCase {
         }
 
         await store.receive(\.business.load)
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.socketURL = self.socketURL
+        }
         await store.receive(\.business.listenForChanges)
-        await store.receive(\.business.snippetsLoaded.success, [])
-        await store.receive(\.business.listenForChangesResponse.success, socketURL)
+
+        // Stop listening
 
         await store.send(.business(.stopListeningForChanges))
-        await store.receive(\.business.reconnect)
+        await store.receive(\.business.delayReconnect)
         await store.send(.business(.stopReconnecting))
     }
 
     @MainActor
     func testSourceToCustomURLs() async {
         let store = TestStore(
-            initialState: TWSSnippetsFeature.State(),
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getSnippets = { [] }
+                $0.api.getProject = { _ in TWSProject(listenOn: self.socketURL, snippets: [])}
             }
         )
+
+        let dummySocket = URL(string: "wss://api.thewebsnippet.com")!
 
         await store.send(.business(.set(source: .customURLs([])))) {
             $0.source = .customURLs([])
         }
         await store.receive(\.business.load)
-        await store.receive(\.business.snippetsLoaded.success, [])
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: dummySocket, snippets: [])) {
+            $0.socketURL = dummySocket
+        }
     }
 }

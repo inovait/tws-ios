@@ -18,12 +18,15 @@ This will be a quick tutorial on how to quickly set up your app using ``TWSKit``
 @Observable
 class TWSViewModel {
 
-    let manager = TWSFactory.new()
+    let manager = TWSFactory.new(with: .init(
+        organizationID: "<ORGANIZATION_ID>",
+        projectID: "<PROJECT_ID>"
+    ))
     var snippets: [TWSSnippet]
 
     init() {
         snippets = manager.snippets
-        manager.run(listenForChanges: true)
+        manager.run()
     }
 }
 ```

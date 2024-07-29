@@ -13,7 +13,7 @@ jobs:
         with:
           targetTransition: "In Review"
           sourceTransition: "In Progress"
-          jiraBaseUrl: "impactwrap.atlassian.net"
+          jiraBaseUrl: "inova-it.atlassian.net"
           jiraEmail: "hudson@inova.si"
           jiraToken: ${{secrets.JIRA_TOKEN}}
           githubToken: ${{secrets.GITHUB_TOKEN}}

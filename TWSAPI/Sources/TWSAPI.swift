@@ -3,56 +3,44 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getSnippets: @Sendable () async throws -> [TWSSnippet]
-    public let getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
+    public let getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
+    public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ token: String) async throws -> TWSSharedSnippet
 
     static func live(
         host: String
     ) -> Self {
         .init(
-            getSnippets: {
+            getProject: { configuration in
+                // Need to transform to lowercased, otherwise server returns 404
+                let organizationID = configuration.organizationID.uuidString.lowercased()
+                let projectID = configuration.projectID.uuidString.lowercased()
+
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/snippets/register",
+                    path: "/organizations/\(organizationID)/projects/\(projectID)/register",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: "true")
-                    ]
+                        .init(name: "apiKey", value: "abc123")
+                    ],
+                    headers: [:]
                 ))
 
-                return try JSONDecoder().decode([TWSSnippet].self, from: result.data)
+                return try JSONDecoder().decode(TWSProject.self, from: result.data)
             },
-            getSocket: {
-                let result = try await Router.make(request: .init(
-                    method: .post,
-                    path: "/negotiate",
-                    host: host,
-                    queryItems: [
-                        .init(name: "apiKey", value: "true")
-                    ]
-                ))
-
-                let urlStr = String(decoding: result.data, as: UTF8.self)
-
-                guard let url = URL(string: urlStr)
-                else {
-                    throw APIError.local(NSError(domain: "invalidSocketUrl", code: 0))
-                }
-
-                return url
-            },
-            getSnippetById: { snippetId in
+            getSnippetBySharedId: { _, token in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/snippets/\(snippetId.uuidString)",
+                    path: "/shared/\(token)",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: "true")
+                        .init(name: "apiKey", value: "abc123")
+                    ],
+                    headers: [
+                        "Accept": "application/json"
                     ]
                 ))
 
-                return try JSONDecoder().decode(TWSSnippet.self, from: result.data)
+                return try JSONDecoder().decode(TWSSharedSnippet.self, from: result.data)
             }
         )
     }

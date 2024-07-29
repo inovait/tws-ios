@@ -7,19 +7,15 @@
 //
 
 import SwiftUI
-import TWSKit
 
 struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
     @Environment(TWSViewModel.self) private var twsViewModel
-    @State private var pageTitle: String = ""
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var canGoBack = false
-    @State private var canGoForward = false
 
     var body: some View {
-        TabView(
+        @Bindable var twsViewModel = twsViewModel
+        return TabView(
             selection: $viewModel.tab,
             content: {
                 SnippetsView()
@@ -34,6 +30,7 @@ struct ContentView: View {
                         Text("Tab")
                         Image(systemName: "house")
                     }
+                    .tag(ContentViewModel.Tab.fullscreenSnippets)
 
                 SettingsView()
                     .tabItem {
@@ -43,62 +40,18 @@ struct ContentView: View {
                     .tag(ContentViewModel.Tab.settings)
             }
         )
-        .onChange(of: twsViewModel.qrLoadedSnippet, { _, _ in
-            viewModel.fullscreenSnippet = twsViewModel.qrLoadedSnippet
-            viewModel.displayFullscreenSnippet = twsViewModel.qrLoadedSnippet != nil
-        })
         .onOpenURL(perform: { url in
             twsViewModel.handleIncomingUrl(url)
         })
-        .fullScreenCover(isPresented: $viewModel.displayFullscreenSnippet) {
-            if let snippet = viewModel.fullscreenSnippet {
-                VStack {
-                    HStack {
-                        Button(
-                            action: {
-                                if let url = URL(string: "https://manage.thewebsnippet.dev/snippets-list") {
-                                    UIApplication.shared.open(url)
-                                }
-                            },
-                            label: {
-                                Text("TWS - \($pageTitle.wrappedValue)")
-                                    .foregroundColor(.black)
-                            }
-                        )
-                        Spacer()
-                        Button(action: {
-                            twsViewModel.qrLoadedSnippet = nil
-                        }, label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 22))
-                                .buttonStyle(PlainButtonStyle())
-                                .foregroundColor(.black)
-                        })
-                    }
-                    .padding()
-                    .overlay(
-                        Rectangle()
-                            .frame(height: 1)
-                            .foregroundColor(.black),
-                        alignment: .bottom
-                    )
-                    Spacer()
-                    TWSView(
-                        snippet: snippet,
-                        using: twsViewModel.manager,
-                        displayID: snippet.id.uuidString,
-                        canGoBack: $canGoBack,
-                        canGoForward: $canGoForward,
-                        loadingState: $loadingState,
-                        pageTitle: $pageTitle,
-                        loadingView: {
-                            WebViewLoadingView()
-                        },
-                        errorView: { error in
-                            WebViewErrorView(error: error)
-                        })
-                }
-            }
+        // This is needed when a link is opened by scanning a QR code with the camera app.
+        // In that case, the `onOpenURL` is not called.
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
+            guard let url = userActivity.webpageURL
+            else { return }
+            twsViewModel.handleIncomingUrl(url)
+        })
+        .sheet(item: $twsViewModel.universalLinkLoadedProject) {
+            ProjectView(manager: $0.manager, selectedID: $0.selectedID)
         }
     }
 }

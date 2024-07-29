@@ -9,15 +9,52 @@ private let RECONNECT_TIMEOUT: TimeInterval = 3
 // swiftlint:enable identifier_name
 
 @Reducer
+public struct TWSSnippetsObserverFeature {
+
+    public init() { }
+
+    public var body: some ReducerOf<TWSSnippetsFeature> {
+        TWSSnippetsFeature()
+            .onChange(of: \.socketURL) { oldValue, newValue in
+                Reduce { _, _ in
+                    if oldValue != newValue && newValue != nil {
+                        return .send(.business(.listenForChanges))
+                    } else {
+                        return .none
+                    }
+                }
+            }
+    }
+}
+
+@Reducer
 public struct TWSSnippetsFeature {
 
     @ObservableState
     public struct State: Equatable {
 
-        @Shared(.snippets) public internal(set) var snippets
-        @Shared(.source) public internal(set) var source
+        @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
+        @Shared public internal(set) var source: TWSSource
+        public internal(set) var socketURL: URL?
+        public internal(set) var isSocketConnected = false
 
-        public init() { }
+        public init(
+            configuration: TWSConfiguration,
+            snippets: [TWSSnippet]? = nil,
+            socketURL: URL? = nil
+        ) {
+            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
+            _source = Shared(wrappedValue: .api, .source(for: configuration))
+
+            if let snippets {
+                let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
+                self.snippets = .init(uniqueElements: state)
+            }
+
+            if let socketURL {
+                self.socketURL = socketURL
+            }
+        }
     }
 
     public enum Action {
@@ -25,13 +62,13 @@ public struct TWSSnippetsFeature {
         @CasePathable
         public enum BusinessAction {
             case load
-            case snippetsLoaded(Result<[TWSSnippet], Error>)
-            case snippetAdded(TWSSnippet)
+            case projectLoaded(Result<TWSProject, Error>)
             case listenForChanges
-            case reconnect
+            case delayReconnect
+            case reconnectTriggered
             case stopListeningForChanges
             case stopReconnecting
-            case listenForChangesResponse(Result<URL, Error>)
+            case isSocketConnected(Bool)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
         }
@@ -43,6 +80,7 @@ public struct TWSSnippetsFeature {
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
     @Dependency(\.continuousClock) var clock
+    @Dependency(\.configuration) var configuration
 
     public init() { }
 
@@ -73,8 +111,12 @@ public struct TWSSnippetsFeature {
                 break
 
             case let .customURLs(urls):
+                let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
                 let snippets = _generateCustomSnippets(urls: urls)
-                return .send(.business(.snippetsLoaded(.success(snippets))))
+                return .send(.business(.projectLoaded(.success(.init(
+                    listenOn: dummySocketURL,
+                    snippets: snippets
+                )))))
 
             @unknown default:
                 break
@@ -82,34 +124,21 @@ public struct TWSSnippetsFeature {
 
             return .run { [api] send in
                 do {
-                    let snippets = try await api.getSnippets()
-                    await send(.business(.snippetsLoaded(.success(snippets))))
+                    let project = try await api.getProject(configuration())
+                    await send(.business(.projectLoaded(.success(project))))
                 } catch {
-                    await send(.business(.snippetsLoaded(.failure(error))))
+                    await send(.business(.projectLoaded(.failure(error))))
                 }
             }
 
-        case let .snippetAdded(snippet):
-            let snippetAlreadyInState = !state.snippets.filter({ existingSnippet in
-                existingSnippet.snippet.id == snippet.id
-            }).isEmpty
-
-            if snippetAlreadyInState {
-                logger.info("Snippet already in the state: \(snippet.id)")
-            } else {
-                state.snippets.append(
-                    .init(snippet: snippet, isPrivate: true)
-                )
-                logger.info("Added snippet: \(snippet.id)")
-            }
-            return .none
-
-        case let .snippetsLoaded(.success(snippets)):
+        case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
 
             var effects = [Effect<Action>]()
+            let snippets = project.snippets
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
+            state.socketURL = project.listenOn
 
             // Update current or add new
 
@@ -144,44 +173,56 @@ public struct TWSSnippetsFeature {
 
             return .none
 
-        case let .snippetsLoaded(.failure(error)):
-            logger.err(
-                "Failed to load snippets: " + error.localizedDescription
-            )
+        case let .projectLoaded(.failure(error)):
+            if let error = error as? DecodingError {
+                logger.err(
+                    "Failed to decode snippets: \(error)"
+                )
+            } else {
+                logger.err(
+                    "Failed to load snippets: \(error)"
+                )
+            }
+
             return .none
 
         // MARK: - Listening for changes via WebSocket
 
         case .listenForChanges:
-            logger.info("Start listening request with source: \(state.source)")
+            guard !state.isSocketConnected
+            else {
+                let socket = state.socketURL?.absoluteString ?? ""
+                logger.info("Early return, because the socket is already connected to: \(socket)")
+                return .none
+            }
+
+            logger.info("Request to start listening request with source: \(state.source)")
             switch state.source {
             case .api:
                 break
 
             case .customURLs:
+                logger.info("Won't listen because the snippets are overridden locally.")
                 return .none
 
             @unknown default:
                 break
             }
 
-            return .run { [api] send in
-                do {
-                    let socketURL = try await api.getSocket()
-                    await send(.business(.listenForChangesResponse(.success(socketURL))))
-                } catch {
-                    await send(.business(.listenForChangesResponse(.failure(error))))
-                }
+            guard let url = state.socketURL
+            else {
+                logger.err("Failed to listen for changes. URL is nil")
+                assertionFailure()
+                return .none
             }
 
-        case let .listenForChangesResponse(.success(url)):
             return .run { [socket, url] send in
                 let connectionID = await socket.get(url)
                 let stream: AsyncStream<WebSocketEvent>
                 do {
                     stream = try await socket.connect(connectionID)
                 } catch {
-                    await send(.business(.reconnect))
+                    await send(.business(.delayReconnect))
                     return
                 }
 
@@ -199,29 +240,27 @@ public struct TWSSnippetsFeature {
                 await socket.closeConnection(connectionID)
             }
             .cancellable(id: CancelID.socket)
-            .concatenate(with: .send(.business(.reconnect)))
+            .concatenate(with: .send(.business(.delayReconnect)))
 
-        case .reconnect:
+        case let .isSocketConnected(isConnected):
+            state.isSocketConnected = isConnected
+            return .none
+
+        case .delayReconnect:
             return .run { send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     logger.info("Reconnect")
-                    await send(.business(.listenForChanges))
+                    await send(.business(.reconnectTriggered))
                 } catch {
                     logger.err("Reconnecting failed: \(error)")
                 }
             }
             .cancellable(id: CancelID.reconnect)
 
-        case let .listenForChangesResponse(.failure(error)):
-            logger.err(
-                "Failed to receive a socket URL: \(error.localizedDescription)"
-            )
-
-            return .run { [clock] send in
-                try? await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
-                await send(.business(.listenForChanges))
-            }
+        case .reconnectTriggered:
+            state.socketURL = nil
+            return .send(.business(.load))
 
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")
@@ -238,11 +277,7 @@ public struct TWSSnippetsFeature {
             state.source = source
 
             switch source {
-            case .api:
-                return .send(.business(.load))
-                    .merge(with: .send(.business(.listenForChanges)))
-
-            case .customURLs:
+            case .api, .customURLs:
                 return .send(.business(.load))
 
             @unknown default:
@@ -288,6 +323,7 @@ public struct TWSSnippetsFeature {
         switch event {
         case .didConnect:
             logger.info("Did connect \(Date.now)")
+            await send(.business(.isSocketConnected(true)))
             await send(.business(.load))
 
             do {
@@ -301,6 +337,7 @@ public struct TWSSnippetsFeature {
 
         case .didDisconnect:
             logger.info("Did disconnect \(Date())")
+            await send(.business(.isSocketConnected(false)))
             break mainLoop
 
         case let .receivedMessage(message):

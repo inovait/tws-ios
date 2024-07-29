@@ -12,9 +12,8 @@ import TWSAPI
 import ComposableArchitecture
 
 public struct APIDependency {
-    public var getSnippets: @Sendable () async throws -> [TWSSnippet]
-    public var getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
+    public var getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
+    public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ snippetId: String) async throws -> TWSSharedSnippet
 }
 
 public enum APIDependencyKey: DependencyKey {
@@ -23,9 +22,8 @@ public enum APIDependencyKey: DependencyKey {
         let api = TWSAPIFactory.new(host: "api.thewebsnippet.dev")
 
         return .init(
-            getSnippets: api.getSnippets,
-            getSocket: api.getSocket,
-            getSnippetById: api.getSnippetById
+            getProject: api.getProject,
+            getSnippetBySharedId: api.getSnippetBySharedId
         )
     }
 }
