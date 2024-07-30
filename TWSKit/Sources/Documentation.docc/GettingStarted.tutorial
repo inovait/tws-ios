@@ -1,0 +1,31 @@
+@Tutorial() {
+    @Intro(title: "Getting started with TWSKit") {
+        This tutorial will show you how to quickly add TWSKit functionalities to your app
+    }
+    
+    @Section(title: "Load and display a snippet") {
+        @ContentAndMedia {
+            Follow the steps to load your first snippet.
+        }
+        
+        @Steps {
+            @Step {
+                Use ``TWSFactory`` to create a new instance. This instance will be your main point of accessing your snippets. Link up the manager’s snippets with your local snippets array and call run() on the manager to start loading the snippets. 
+                @Code(name: "TWSViewModel.swift", file: TWSViewModel.swift)
+                
+            }
+            
+            @Step {
+                Start listening to the manager's events to be notified of changes of snippets
+                @Code(name: "EventListening.swift", file: EventListening.swift)
+                
+            }
+            
+            @Step {
+                Display your snippet using ``TWSView``. Pass along the @State variables if you want to be notified of snippet data
+                @Code(name: "SnippetView.swift", file: SnippetView.swift)
+                
+            }
+        }
+    }
+}

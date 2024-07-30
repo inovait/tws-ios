@@ -29,7 +29,7 @@ public struct TWSView<
     /// - Parameters:
     ///   - snippet: The snippet you want to display
     ///   - handler: Pass along the ``TWSManager`` instance that you're using
-    ///   - id: Display id of the view that will be presented
+    ///   - id: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the autoheight to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
     ///   - canGoBack: Used for lists, when you want to load the previous snippet
     ///   - canGoForward: Used for lists, when you want to load the next snippet
     ///   - loadingState: An instance of ``TWSLoadingState`` that tells you the state of the snippet
