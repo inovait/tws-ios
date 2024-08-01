@@ -35,5 +35,8 @@ struct ProjectView: View {
             await viewModel.start()
             await viewModel.startupInitTasks()
         }
+        .sheet(item: $viewModel.universalLinkLoadedProject) {
+            ProjectView(manager: $0.manager, selectedID: $0.selectedID)
+        }
     }
 }

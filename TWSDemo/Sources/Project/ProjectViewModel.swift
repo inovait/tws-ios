@@ -12,8 +12,9 @@ import TWSKit
 @Observable
 class ProjectViewModel {
 
-    var snippets: [TWSSnippet]
     let manager: TWSManager
+    var snippets: [TWSSnippet]
+    var universalLinkLoadedProject: LoadedProjectInfo?
 
     init(manager: TWSManager) {
         self.snippets = manager.snippets
@@ -32,14 +33,15 @@ class ProjectViewModel {
     func startupInitTasks() async {
         for await snippetEvent in self.manager.events {
             switch snippetEvent {
-            case .universalLinkSnippetLoaded:
-                break
+            case let .universalLinkSnippetLoaded(project):
+                let manager = TWSFactory.new(with: project)
+                universalLinkLoadedProject = .init(manager: manager, selectedID: project.snippet.id)
 
             case .snippetsUpdated(let snippets):
                 self.snippets = snippets
 
-            default:
-                print("Unhandled stream event")
+            @unknown default:
+                break
             }
         }
     }
