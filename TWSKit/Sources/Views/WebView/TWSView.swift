@@ -71,6 +71,9 @@ public struct TWSView<
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
             .id(snippet.id)
+            .onChange(of: handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0, { _, newValue in
+                print("-> [changed] for \(snippet.id) ~ \(displayID)")
+            })
             .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
 
             ZStack {
@@ -116,6 +119,7 @@ private struct _TWSView: View {
         loadingState: Binding<TWSLoadingState>,
         pageTitle: Binding<String>
     ) {
+        print("-> INIT with \(snippet.target)")
         self.snippet = snippet
         self.handler = handler
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)

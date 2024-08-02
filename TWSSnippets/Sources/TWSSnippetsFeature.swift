@@ -147,7 +147,16 @@ public struct TWSSnippetsFeature {
                     if state.snippets[id: snippet.id]?.snippet.target != snippet.target {
                         // View needs to be forced refreshed
                         effects.append(
-                            .send(.business(.snippets(.element(id: snippet.id, action: .business(.snippetUpdated)))))
+                            .send(
+                                .business(
+                                    .snippets(
+                                        .element(
+                                            id: snippet.id,
+                                            action: .business(.snippetUpdated(target: snippet.target))
+                                        )
+                                    )
+                                )
+                            )
                         )
                     }
 
@@ -320,6 +329,7 @@ public struct TWSSnippetsFeature {
         send: Send<TWSSnippetsFeature.Action>
     ) async throws {
     mainLoop: for await event in stream {
+        print("[Socket] did receive event: \(event) ~ ")
         switch event {
         case .didConnect:
             logger.info("Did connect \(Date.now)")
@@ -348,8 +358,16 @@ public struct TWSSnippetsFeature {
                 await send(.business(.load))
 
             case .updated:
+                print("[Socket] updated, target: \(message.target?.absoluteString ?? "nil")")
                 await send(
-                    .business(.snippets(.element(id: message.id, action: .business(.snippetUpdated))))
+                    .business(
+                        .snippets(
+                            .element(
+                                id: message.id,
+                                action: .business(.snippetUpdated(target: message.target))
+                            )
+                        )
+                    )
                 )
             }
 

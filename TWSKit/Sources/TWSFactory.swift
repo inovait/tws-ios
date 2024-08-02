@@ -59,10 +59,10 @@ public class TWSFactory {
         snippets: [TWSSnippet]?,
         socketURL: URL?
     ) -> TWSManager {
-        if let manager = _instances[configuration]?.box {
-            logger.info("Reusing TWSManager for configuration: \(configuration)")
-            return manager
-        }
+//        if let manager = _instances[configuration]?.box {
+//            logger.info("Reusing TWSManager for configuration: \(configuration)")
+//            return manager
+//        }
 
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
@@ -118,7 +118,7 @@ public class TWSFactory {
 
         let manager = TWSManager(store: store, events: events.stream, configuration: configuration)
         logger.info("Created a new TWSManager for configuration: \(configuration)")
-        _instances[configuration] = WeakBox(manager)
+//        _instances[configuration] = WeakBox(manager)
         return manager
     }
 }

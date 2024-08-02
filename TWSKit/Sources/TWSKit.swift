@@ -17,6 +17,7 @@ public final class TWSManager: Identifiable {
     let navigationProvider: NavigationProvider
 
     private let initDate: Date
+    private let _id = UUID().uuidString.suffix(4)
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -29,9 +30,11 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+        print("-> [Socket] Manager init \(_id)")
     }
 
     deinit {
+        print("-> [Socket] Manager deinit \(_id)")
         TWSFactory.destroy(configuration: configuration)
     }
 
