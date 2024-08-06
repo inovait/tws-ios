@@ -16,8 +16,6 @@ class ProjectViewModel {
     let manager: TWSManager
     var snippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
-    // TODO:
-    private let _id = UUID().uuidString.suffix(4)
 
     init(manager: TWSManager) {
         self.snippets = manager.snippets
@@ -34,10 +32,7 @@ class ProjectViewModel {
 
     @MainActor
     func startupInitTasks() async {
-        print("-> [Listen]", _id, "Start")
-
         await manager.observe { event in
-            print("-> [Listen]", self._id, "Received", event)
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 let manager = TWSFactory.new(with: project)
@@ -50,7 +45,5 @@ class ProjectViewModel {
                 break
             }
         }
-
-        print("-> [Listen]", _id, "End")
     }
 }

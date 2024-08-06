@@ -70,20 +70,11 @@ public struct TWSView<
                 pageTitle: $pageTitle
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
-            .onChange(of: handler.store.snippets.snippets[id: snippet.id]?.updateCount, { oldValue, newValue in
-                print("-> changed", oldValue, newValue)
-            })
             .id(snippet.id)
-            .id(snippet.target) // The actual URL changed for the same Snippet - redraw is required
-            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0) // The internal payload has changed - redraw is required
-            .overlay {
-                // TODO:
-                VStack {
-                    Text("\(snippet.id)")
-                    Text("\(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)")
-                }
-                .background(Color.white)
-            }
+            // The actual URL changed for the same Snippet ~ redraw is required
+            .id(snippet.target)
+            // The internal payload of the target URL has changed ~ redraw is required
+            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
 
             ZStack {
                 switch loadingState {
@@ -157,8 +148,7 @@ private struct _TWSView: View {
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,
-            loadingState: $loadingState,
-            cccount: handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0
+            loadingState: $loadingState
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }

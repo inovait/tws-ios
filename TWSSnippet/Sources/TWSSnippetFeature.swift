@@ -11,13 +11,10 @@ public struct TWSSnippetFeature {
         public var snippet: TWSSnippet
         public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
-        // TODO:
-        public var isPrivate: Bool = false
 
-        public init(snippet: TWSSnippet, isPrivate: Bool = false) {
+        public init(snippet: TWSSnippet) {
             self.snippet = snippet
             self.displayInfo = .init()
-            self.isPrivate = isPrivate
         }
     }
 
@@ -50,13 +47,13 @@ public struct TWSSnippetFeature {
 
         case let .business(.snippetUpdated(target)):
             if let target, target != state.snippet.target {
-                print("-> [Socket] changed from \(state.snippet.target) to \(target) and count \(state.updateCount) ~")
+                logger.info("Snippet changed URL from \(state.snippet.target) to \(target).")
                 state.snippet.target = target
             } else {
-                print("-> [Socket] webview payload changed ~ updating count")
+                print("Snippet's payload changed")
                 state.updateCount += 1
             }
-            
+
             return .none
         }
     }

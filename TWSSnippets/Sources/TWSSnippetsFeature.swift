@@ -387,16 +387,3 @@ private extension TWSSnippetsFeature {
         case socket, reconnect
     }
 }
-
-private class IncrementingUUIDGenerator: @unchecked Sendable {
-
-    private var sequence = 0
-
-    func callAsFunction() -> UUID {
-        defer {
-            self.sequence += 1
-        }
-
-        return UUID(self.sequence)
-    }
-}

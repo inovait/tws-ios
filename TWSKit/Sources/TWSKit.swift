@@ -10,7 +10,6 @@ import Combine
 @MainActor
 public final class TWSManager: Identifiable {
 
-    // A shared observer
     let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
     let configuration: TWSConfiguration
@@ -31,11 +30,11 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
-        print("-> [Socket] Manager init \(_id)")
+        logger.debug("TWSManager init \(_id)")
     }
 
     deinit {
-        print("-> [Socket] Manager deinit \(_id)")
+        logger.debug("TWSManager deinit \(_id)")
         MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
@@ -53,9 +52,11 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(.load)))
     }
 
+    /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
+    /// - Parameter onEvent: A callback triggered for every update
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
-        let observer = ObserverAsyncStream(upstream: observer)
-        await observer.listen(onEvent: onEvent)
+        let adapter = CombineToAsyncStreamAdapter(upstream: observer)
+        await adapter.listen(onEvent: onEvent)
     }
 
     /// A function that invokes the browser's back functionality
@@ -133,59 +134,5 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
-    }
-}
-
-@MainActor
-class ObserverAsyncStream {
-
-    private var handler: AnyCancellable?
-    private var upstream: AnyPublisher<TWSStreamEvent, Never>
-
-    init(
-        upstream: AnyPublisher<TWSStreamEvent, Never>
-    ) {
-        self.upstream = upstream
-    }
-
-    func listen(
-        onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void
-    ) async {
-        let stream = AsyncStream<TWSStreamEvent>.makeStream()
-        handler = upstream
-            .handleEvents(
-                receiveCompletion: { [weak self] _ in
-                    guard let self else { return }
-                    cancel()
-                    stream.continuation.finish()
-                },
-                receiveCancel: { [weak self] in
-                    guard let self else { return }
-                    cancel()
-                    stream.continuation.finish()
-                }
-            )
-            .sink(receiveValue: { value in
-                stream.continuation.yield(value)
-            })
-
-        await withTaskCancellationHandler(
-            operation: {
-                for await event in stream.stream {
-                    onEvent(event)
-                }
-            },
-            onCancel: {
-                Task { [weak self] in
-                    guard let self else { return }
-                    await cancel()
-                }
-            }
-        )
-    }
-
-    func cancel() {
-        handler?.cancel()
-        handler = nil
     }
 }

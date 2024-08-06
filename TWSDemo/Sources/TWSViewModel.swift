@@ -9,8 +9,8 @@
 import SwiftUI
 import TWSKit
 
-@Observable
 @MainActor
+@Observable
 class TWSViewModel {
 
     let manager = TWSFactory.new(with: .init(
@@ -18,13 +18,7 @@ class TWSViewModel {
         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
     ))
     var snippets: [TWSSnippet]
-    var universalLinkLoadedProject: LoadedProjectInfo? {
-        didSet {
-            print("-> did set project to: \(universalLinkLoadedProject?.manager.id)")
-        }
-    }
-    // TODO:
-    private let _id = UUID().uuidString.suffix(4)
+    var universalLinkLoadedProject: LoadedProjectInfo?
 
     init() {
         snippets = manager.snippets
@@ -42,9 +36,7 @@ class TWSViewModel {
     }
 
     func startupInitTasks() async {
-        print("-> [Listen]", _id, "Start")
         await manager.observe { event in
-            print("-> [Listen]", self._id, "Received", event)
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 self.universalLinkLoadedProject = .init(
@@ -59,7 +51,5 @@ class TWSViewModel {
                 print("Unhandled stream event")
             }
         }
-
-        print("-> [Listen]", _id, "End")
     }
 }

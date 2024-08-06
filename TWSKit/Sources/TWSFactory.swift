@@ -84,11 +84,7 @@ public class TWSFactory {
             mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
-                        // TODO: is private
-                        let newSnippets = newValue.filter({ snippetState in
-                            !snippetState.isPrivate
-                        }).map(\.snippet)
-
+                        let newSnippets = newValue.map(\.snippet)
                         return .send(.snippetsDidChange(newSnippets))
                     }
                 }
@@ -107,57 +103,5 @@ public class TWSFactory {
         logger.info("Created a new TWSManager for configuration: \(configuration)")
         _instances[configuration] = WeakBox(manager)
         return manager
-    }
-}
-
-// TODO: Move
-
-private struct MainReducer: MVVMAdapter {
-
-    let publisher: PassthroughSubject<TWSStreamEvent, Never>
-    let casePath: AnyCasePath<TWSCoreFeature.Action, TWSStreamEvent> = .tws
-    let childReducer: any Reducer<TWSCoreFeature.State, TWSCoreFeature.Action> = TWSCoreFeature()
-}
-
-//
-
-protocol MVVMAdapter: Reducer {
-
-    associatedtype ChildReducerState
-    associatedtype ChildReducerAction
-    associatedtype Notification
-
-    var publisher: PassthroughSubject<Notification, Never> { get }
-    var childReducer: any Reducer<ChildReducerState, ChildReducerAction> { get }
-    var casePath: AnyCasePath<ChildReducerAction, Notification> { get }
-}
-
-extension MVVMAdapter where State == ChildReducerState, Action == ChildReducerAction {
-
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        let effects = childReducer.reduce(into: &state, action: action)
-        if let notification = casePath.extract(from: action) { publisher.send(notification) }
-        return effects
-    }
-}
-
-extension AnyCasePath {
-
-    static var tws: AnyCasePath<TWSCoreFeature.Action, TWSStreamEvent> {
-        .init(
-            embed: { _ in fatalError("Embedding is no valid") },
-            extract: { action in
-                switch action {
-                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    return .universalLinkSnippetLoaded(snippet)
-
-                case let .snippetsDidChange(snippets):
-                    return .snippetsUpdated(snippets)
-
-                default:
-                    return nil
-                }
-            }
-        )
     }
 }
