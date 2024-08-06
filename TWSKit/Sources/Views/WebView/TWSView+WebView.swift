@@ -17,6 +17,7 @@ struct WebView: UIViewRepresentable {
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
 
+    let vid = UUID().uuidString.suffix(4)
     let url: URL
     let displayID: String
     let isConnectedToNetwork: Bool
@@ -27,6 +28,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onHeightCalculated: (CGFloat) -> Void
     let onUniversalLinkDetected: (URL) -> Void
+    let cccount: Int
 
     init(
         url: URL,
@@ -43,7 +45,9 @@ struct WebView: UIViewRepresentable {
         onUniversalLinkDetected: @escaping @Sendable (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>
+        loadingState: Binding<TWSLoadingState>,
+        // TODO:
+        cccount: Int
     ) {
         self.url = url
         self.displayID = displayID
@@ -61,9 +65,12 @@ struct WebView: UIViewRepresentable {
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
         self._loadingState = loadingState
+        self.cccount = cccount
+        print("-> [WK] init [\(url) - \(pageTitle.wrappedValue)]", vid, url, cccount)
     }
 
     func makeUIView(context: Context) -> WKWebView {
+        print("[WK] makeUIView", vid, url, cccount)
         let webView = WKWebView()
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = true
@@ -87,6 +94,7 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
+        print("[WK] updateUIView", vid, url, cccount)
 
         // Save state at the end
 
@@ -143,6 +151,14 @@ struct WebView: UIViewRepresentable {
                 logger.err("Failed to continue navigation: \(error)")
             }
         }
+
+        // TODO:
+
+//        // Target changed
+//
+//        if url != context.coordinator.parent.url {
+//            uiView.load(URLRequest(url: self.url))
+//        }
 
         // Update state
 

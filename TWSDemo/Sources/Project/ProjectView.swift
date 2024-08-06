@@ -9,6 +9,7 @@
 import SwiftUI
 import TWSKit
 
+@MainActor
 struct ProjectView: View {
 
     @State private var viewModel: ProjectViewModel

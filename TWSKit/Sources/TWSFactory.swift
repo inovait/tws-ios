@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
@@ -14,6 +15,7 @@ import Foundation
 @_implementationOnly import ComposableArchitecture
 
 /// A class designed to initialize a new ``TWSManager``
+@MainActor
 public class TWSFactory {
 
     private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
@@ -59,10 +61,10 @@ public class TWSFactory {
         snippets: [TWSSnippet]?,
         socketURL: URL?
     ) -> TWSManager {
-//        if let manager = _instances[configuration]?.box {
-//            logger.info("Reusing TWSManager for configuration: \(configuration)")
-//            return manager
-//        }
+        if let manager = _instances[configuration]?.box {
+            logger.info("Reusing TWSManager for configuration: \(configuration)")
+            return manager
+        }
 
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
@@ -76,33 +78,18 @@ public class TWSFactory {
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
+        let publisher = PassthroughSubject<TWSStreamEvent, Never>()
+        let mainReducer = MainReducer(publisher: publisher)
         let combinedReducers = CombineReducers {
-            Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
-                switch action {
-                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    // Hop the thread
-                    DispatchQueue.main.async {
-                        events.continuation.yield(.universalLinkSnippetLoaded(snippet))
-                    }
-
-                    return .none
-                default:
-                    return .none
-                }
-            }
-
-            TWSCoreFeature()
+            mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
+                        // TODO: is private
                         let newSnippets = newValue.filter({ snippetState in
                             !snippetState.isPrivate
                         }).map(\.snippet)
-                        // Hop the thread
-                        DispatchQueue.main.async {
-                            events.continuation.yield(.snippetsUpdated(newSnippets))
-                        }
 
-                        return .none
+                        return .send(.snippetsDidChange(newSnippets))
                     }
                 }
         }
@@ -116,9 +103,61 @@ public class TWSFactory {
 
         events.continuation.yield(.snippetsUpdated(storage))
 
-        let manager = TWSManager(store: store, events: events.stream, configuration: configuration)
+        let manager = TWSManager(store: store, observer: publisher.eraseToAnyPublisher(), configuration: configuration)
         logger.info("Created a new TWSManager for configuration: \(configuration)")
-//        _instances[configuration] = WeakBox(manager)
+        _instances[configuration] = WeakBox(manager)
         return manager
+    }
+}
+
+// TODO: Move
+
+private struct MainReducer: MVVMAdapter {
+
+    let publisher: PassthroughSubject<TWSStreamEvent, Never>
+    let casePath: AnyCasePath<TWSCoreFeature.Action, TWSStreamEvent> = .tws
+    let childReducer: any Reducer<TWSCoreFeature.State, TWSCoreFeature.Action> = TWSCoreFeature()
+}
+
+//
+
+protocol MVVMAdapter: Reducer {
+
+    associatedtype ChildReducerState
+    associatedtype ChildReducerAction
+    associatedtype Notification
+
+    var publisher: PassthroughSubject<Notification, Never> { get }
+    var childReducer: any Reducer<ChildReducerState, ChildReducerAction> { get }
+    var casePath: AnyCasePath<ChildReducerAction, Notification> { get }
+}
+
+extension MVVMAdapter where State == ChildReducerState, Action == ChildReducerAction {
+
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        let effects = childReducer.reduce(into: &state, action: action)
+        if let notification = casePath.extract(from: action) { publisher.send(notification) }
+        return effects
+    }
+}
+
+extension AnyCasePath {
+
+    static var tws: AnyCasePath<TWSCoreFeature.Action, TWSStreamEvent> {
+        .init(
+            embed: { _ in fatalError("Embedding is no valid") },
+            extract: { action in
+                switch action {
+                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
+                    return .universalLinkSnippetLoaded(snippet)
+
+                case let .snippetsDidChange(snippets):
+                    return .snippetsUpdated(snippets)
+
+                default:
+                    return nil
+                }
+            }
+        )
     }
 }

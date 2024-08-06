@@ -70,11 +70,20 @@ public struct TWSView<
                 pageTitle: $pageTitle
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
-            .id(snippet.id)
-            .onChange(of: handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0, { _, newValue in
-                print("-> [changed] for \(snippet.id) ~ \(displayID)")
+            .onChange(of: handler.store.snippets.snippets[id: snippet.id]?.updateCount, { oldValue, newValue in
+                print("-> changed", oldValue, newValue)
             })
-            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+            .id(snippet.id)
+            .id(snippet.target) // The actual URL changed for the same Snippet - redraw is required
+            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0) // The internal payload has changed - redraw is required
+            .overlay {
+                // TODO:
+                VStack {
+                    Text("\(snippet.id)")
+                    Text("\(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)")
+                }
+                .background(Color.white)
+            }
 
             ZStack {
                 switch loadingState {
@@ -119,7 +128,6 @@ private struct _TWSView: View {
         loadingState: Binding<TWSLoadingState>,
         pageTitle: Binding<String>
     ) {
-        print("-> INIT with \(snippet.target)")
         self.snippet = snippet
         self.handler = handler
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -142,14 +150,15 @@ private struct _TWSView: View {
             snippetHeightProvider: handler.snippetHeightProvider,
             navigationProvider: handler.navigationProvider,
             onHeightCalculated: { height in
-                handler.set(height: height, for: snippet, displayID: displayID)
+                Task { [weak handler] in await handler?.set(height: height, for: snippet, displayID: displayID) }
             },
             onUniversalLinkDetected: { url in
-                handler.handleIncomingUrl(url)
+                Task { [weak handler] in await handler?.handleIncomingUrl(url) }
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,
-            loadingState: $loadingState
+            loadingState: $loadingState,
+            cccount: handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }

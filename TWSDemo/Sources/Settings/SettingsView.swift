@@ -10,6 +10,7 @@ import SwiftUI
 import TWSKit
 import OSLog
 
+@MainActor
 struct SettingsView: View {
 
     @State var viewModel = SettingsViewModel()

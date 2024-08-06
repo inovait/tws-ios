@@ -1,16 +1,17 @@
 import Foundation
 import SwiftUI
+import Combine
 @_exported import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
+@MainActor
 public final class TWSManager: Identifiable {
 
-    /// A getter for the event stream that is used to communicate updates. Check ``TWSStreamEvent`` enum for details.
-    public let events: AsyncStream<TWSStreamEvent>
-
+    // A shared observer
+    let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
     let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
@@ -21,11 +22,11 @@ public final class TWSManager: Identifiable {
 
     init(
         store: StoreOf<TWSCoreFeature>,
-        events: AsyncStream<TWSStreamEvent>,
+        observer: AnyPublisher<TWSStreamEvent, Never>,
         configuration: TWSConfiguration
     ) {
         self.store = store
-        self.events = events
+        self.observer = observer.share().eraseToAnyPublisher()
         self.configuration = configuration
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
@@ -35,7 +36,7 @@ public final class TWSManager: Identifiable {
 
     deinit {
         print("-> [Socket] Manager deinit \(_id)")
-        TWSFactory.destroy(configuration: configuration)
+        MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
     // MARK: - Public
@@ -50,6 +51,11 @@ public final class TWSManager: Identifiable {
     public func run() {
         precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
         store.send(.snippets(.business(.load)))
+    }
+
+    public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
+        let observer = ObserverAsyncStream(upstream: observer)
+        await observer.listen(onEvent: onEvent)
     }
 
     /// A function that invokes the browser's back functionality
@@ -127,5 +133,59 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
+    }
+}
+
+@MainActor
+class ObserverAsyncStream {
+
+    private var handler: AnyCancellable?
+    private var upstream: AnyPublisher<TWSStreamEvent, Never>
+
+    init(
+        upstream: AnyPublisher<TWSStreamEvent, Never>
+    ) {
+        self.upstream = upstream
+    }
+
+    func listen(
+        onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void
+    ) async {
+        let stream = AsyncStream<TWSStreamEvent>.makeStream()
+        handler = upstream
+            .handleEvents(
+                receiveCompletion: { [weak self] _ in
+                    guard let self else { return }
+                    cancel()
+                    stream.continuation.finish()
+                },
+                receiveCancel: { [weak self] in
+                    guard let self else { return }
+                    cancel()
+                    stream.continuation.finish()
+                }
+            )
+            .sink(receiveValue: { value in
+                stream.continuation.yield(value)
+            })
+
+        await withTaskCancellationHandler(
+            operation: {
+                for await event in stream.stream {
+                    onEvent(event)
+                }
+            },
+            onCancel: {
+                Task { [weak self] in
+                    guard let self else { return }
+                    await cancel()
+                }
+            }
+        )
+    }
+
+    func cancel() {
+        handler?.cancel()
+        handler = nil
     }
 }

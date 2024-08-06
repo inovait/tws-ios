@@ -9,12 +9,15 @@
 import Foundation
 import TWSKit
 
+@MainActor
 @Observable
 class ProjectViewModel {
 
     let manager: TWSManager
     var snippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
+    // TODO:
+    private let _id = UUID().uuidString.suffix(4)
 
     init(manager: TWSManager) {
         self.snippets = manager.snippets
@@ -31,11 +34,14 @@ class ProjectViewModel {
 
     @MainActor
     func startupInitTasks() async {
-        for await snippetEvent in self.manager.events {
-            switch snippetEvent {
+        print("-> [Listen]", _id, "Start")
+
+        await manager.observe { event in
+            print("-> [Listen]", self._id, "Received", event)
+            switch event {
             case let .universalLinkSnippetLoaded(project):
                 let manager = TWSFactory.new(with: project)
-                universalLinkLoadedProject = .init(manager: manager, selectedID: project.snippet.id)
+                self.universalLinkLoadedProject = .init(manager: manager, selectedID: project.snippet.id)
 
             case .snippetsUpdated(let snippets):
                 self.snippets = snippets
@@ -44,5 +50,7 @@ class ProjectViewModel {
                 break
             }
         }
+
+        print("-> [Listen]", _id, "End")
     }
 }
