@@ -34,7 +34,7 @@ public final class TWSManager: Identifiable {
     }
 
     deinit {
-        logger.debug("TWSManager deinit \(_id)")
+        logger.debug("-> TWS Manager deinit \(_id)")
         MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
@@ -53,6 +53,7 @@ public final class TWSManager: Identifiable {
     }
 
     /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
+    /// It is automatically canceled when the parent task is cancelled.
     /// - Parameter onEvent: A callback triggered for every update
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
         let adapter = CombineToAsyncStreamAdapter(upstream: observer)

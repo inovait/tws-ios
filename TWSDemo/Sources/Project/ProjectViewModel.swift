@@ -13,8 +13,9 @@ import TWSKit
 @Observable
 class ProjectViewModel {
 
+    private let _id = UUID().uuidString.suffix(4)
     let manager: TWSManager
-    var snippets: [TWSSnippet]
+    private(set) var snippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
 
     init(manager: TWSManager) {
@@ -23,23 +24,31 @@ class ProjectViewModel {
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
+        print("Project view model init", _id, Unmanaged.passUnretained(self).toOpaque())
     }
 
-    @MainActor
+    deinit {
+        print("-> Project view model deinit", _id)
+    }
+
     func start() async {
         manager.run()
     }
 
-    @MainActor
     func startupInitTasks() async {
-        await manager.observe { event in
+        await manager.observe { [weak self] event in
+            guard let self else { return }
+
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 let manager = TWSFactory.new(with: project)
-                self.universalLinkLoadedProject = .init(manager: manager, selectedID: project.snippet.id)
+                self.universalLinkLoadedProject = .init(
+                    viewModel: .init(manager: manager),
+                    selectedID: project.snippet.id
+                )
 
-            case .snippetsUpdated(let snippets):
-                self.snippets = snippets
+            case let .snippetsUpdated(updatedSnippets):
+                self.snippets = updatedSnippets
 
             @unknown default:
                 break

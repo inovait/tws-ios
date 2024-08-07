@@ -36,11 +36,13 @@ class TWSViewModel {
     }
 
     func startupInitTasks() async {
-        await manager.observe { event in
+        await manager.observe { [weak self] event in
+            guard let self else { return }
+
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 self.universalLinkLoadedProject = .init(
-                    manager: TWSFactory.new(with: project),
+                    viewModel: .init(manager: TWSFactory.new(with: project)),
                     selectedID: project.snippet.id
                 )
 
@@ -48,7 +50,7 @@ class TWSViewModel {
                 self.snippets = snippets
 
             default:
-                print("Unhandled stream event")
+                assertionFailure("Unhandled stream event")
             }
         }
     }

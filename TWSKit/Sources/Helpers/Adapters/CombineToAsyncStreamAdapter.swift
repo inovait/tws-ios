@@ -29,13 +29,11 @@ class CombineToAsyncStreamAdapter {
             .handleEvents(
                 receiveCompletion: { [weak self] _ in
                     guard let self else { return }
-                    cancel()
-                    stream.continuation.finish()
+                    cancel(continuation: stream.continuation)
                 },
                 receiveCancel: { [weak self] in
                     guard let self else { return }
-                    cancel()
-                    stream.continuation.finish()
+                    cancel(continuation: stream.continuation)
                 }
             )
             .sink(receiveValue: { value in
@@ -52,14 +50,17 @@ class CombineToAsyncStreamAdapter {
             onCancel: {
                 Task { [weak self] in
                     guard let self else { return }
-                    await cancel()
+                    await cancel(continuation: stream.continuation)
                 }
             }
         )
     }
 
-    func cancel() {
+    func cancel(
+        continuation: AsyncStream<TWSStreamEvent>.Continuation
+    ) {
         handler?.cancel()
         handler = nil
+        continuation.finish()
     }
 }

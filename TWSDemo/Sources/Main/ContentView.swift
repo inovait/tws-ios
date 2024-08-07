@@ -52,7 +52,7 @@ struct ContentView: View {
             twsViewModel.handleIncomingUrl(url)
         })
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
-            ProjectView(manager: $0.manager, selectedID: $0.selectedID)
+            ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
         }
     }
 }

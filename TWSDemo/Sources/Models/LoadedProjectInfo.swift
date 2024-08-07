@@ -11,10 +11,10 @@ import TWSKit
 
 struct LoadedProjectInfo: Identifiable {
 
-    let manager: TWSManager
+    let viewModel: ProjectViewModel
     let selectedID: UUID
 
     var id: TWSManager.ID {
-        manager.id
+        viewModel.manager.id
     }
 }

@@ -17,6 +17,7 @@ struct WebView: UIViewRepresentable {
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
 
+    let id = UUID().uuidString.suffix(4)
     let url: URL
     let displayID: String
     let isConnectedToNetwork: Bool
@@ -75,6 +76,7 @@ struct WebView: UIViewRepresentable {
         context.coordinator.observe(heightOf: webView)
         updateState(for: webView, loadingState: .loading)
 
+        logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
         return webView
     }
 
@@ -84,6 +86,10 @@ struct WebView: UIViewRepresentable {
             snippetHeightProvider: snippetHeightProvider,
             navigationProvider: navigationProvider
         )
+    }
+
+    static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
+        logger.debug("DEINIT WKWebView \(uiView.hash)")
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
