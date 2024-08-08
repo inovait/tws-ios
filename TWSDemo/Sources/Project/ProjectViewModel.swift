@@ -16,6 +16,7 @@ class ProjectViewModel {
     private let _id = UUID().uuidString.suffix(4)
     let manager: TWSManager
     private(set) var snippets: [TWSSnippet]
+    let destinationID = UUID()
     var universalLinkLoadedProject: LoadedProjectInfo?
 
     init(manager: TWSManager) {
@@ -44,6 +45,8 @@ class ProjectViewModel {
                 print("->", _id, "Received event: universal link loaded")
                 let manager = TWSFactory.new(with: project)
                 self.universalLinkLoadedProject = .init(
+                    viewID: destinationID,
+                    configuration: project.configuration,
                     viewModel: .init(manager: manager),
                     selectedID: project.snippet.id
                 )

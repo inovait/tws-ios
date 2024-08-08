@@ -17,6 +17,7 @@ class TWSViewModel {
         organizationID: "357b24f6-4714-42b1-9e15-0b07cae2fcd6",
         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
     ))
+    let destinationID = UUID()
     var snippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
 
@@ -42,6 +43,8 @@ class TWSViewModel {
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 self.universalLinkLoadedProject = .init(
+                    viewID: destinationID,
+                    configuration: project.configuration,
                     viewModel: .init(manager: TWSFactory.new(with: project)),
                     selectedID: project.snippet.id
                 )

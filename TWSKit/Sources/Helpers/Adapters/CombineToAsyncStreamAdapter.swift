@@ -20,11 +20,11 @@ class CombineToAsyncStreamAdapter {
         upstream: AnyPublisher<TWSStreamEvent, Never>
     ) {
         self.upstream = upstream
-        logger.debug("INIT CombineToAsyncStreamAdapter \(id)")
+        logger.info("INIT CombineToAsyncStreamAdapter \(id)")
     }
 
     deinit {
-        logger.debug("DEINIT CombineToAsyncStreamAdapter \(id)")
+        logger.info("DEINIT CombineToAsyncStreamAdapter \(id)")
     }
 
     func listen(
