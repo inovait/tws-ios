@@ -25,7 +25,7 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                     .tag(ContentViewModel.Tab.fullscreenSnippets)
-                
+
                 SnippetsView()
                     .tabItem {
                         Text("List")

@@ -32,7 +32,6 @@ actor SocketConnector {
 
     func connect() async throws {
         do {
-            let id = UUID().uuidString.suffix(4)
             let socket = try await withCheckedThrowingContinuation { [url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
                 observer.resume(url: url)

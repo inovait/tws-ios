@@ -25,7 +25,7 @@ struct ProjectView: View {
             ForEach(viewModel.snippets) { snippet in
                 ProjectSnippetView(
                     snippet: snippet,
-                    manager: viewModel.manager!
+                    manager: viewModel.manager
                 )
                 .tabItem { Text("\(snippet.id.uuidString.suffix(4))") }
                 .tag(snippet.id)
