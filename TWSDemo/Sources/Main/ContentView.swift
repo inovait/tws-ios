@@ -19,19 +19,19 @@ struct ContentView: View {
         return TabView(
             selection: $viewModel.tab,
             content: {
-                SnippetsView()
-                    .tabItem {
-                        Text("List")
-                        Image(systemName: "list.bullet")
-                    }
-                    .tag(ContentViewModel.Tab.snippets)
-
                 SnippetsTabView()
                     .tabItem {
                         Text("Tab")
                         Image(systemName: "house")
                     }
                     .tag(ContentViewModel.Tab.fullscreenSnippets)
+                
+                SnippetsView()
+                    .tabItem {
+                        Text("List")
+                        Image(systemName: "list.bullet")
+                    }
+                    .tag(ContentViewModel.Tab.snippets)
 
                 SettingsView()
                     .tabItem {

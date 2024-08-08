@@ -66,11 +66,11 @@ public struct TWSUniversalLinksFeature {
             }
 
         case let .business(.snippetLoaded(.success(snippet))):
-            logger.info("QR snippet loaded successfully")
+            logger.info("Universal link: snippet loaded successfully")
             return .send(.delegate(.snippetLoaded(snippet)))
 
         case let .business(.snippetLoaded(.failure(error))):
-            logger.err("QR snippet load failed: \(error.localizedDescription)")
+            logger.err("Universal link: load failed: \(error.localizedDescription)")
             return .none
 
         case .delegate:

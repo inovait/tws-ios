@@ -24,11 +24,11 @@ class ProjectViewModel {
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
-        print("Project view model init", _id, Unmanaged.passUnretained(self).toOpaque())
+        print("INIT ->", _id, "ProjectViewModel", Unmanaged.passUnretained(self).toOpaque())
     }
 
     deinit {
-        print("-> Project view model deinit", _id)
+        print("DEINIT ->", _id, "ProjectViewModel")
     }
 
     func start() async {
@@ -41,6 +41,7 @@ class ProjectViewModel {
 
             switch event {
             case let .universalLinkSnippetLoaded(project):
+                print("->", _id, "Received event: universal link loaded")
                 let manager = TWSFactory.new(with: project)
                 self.universalLinkLoadedProject = .init(
                     viewModel: .init(manager: manager),
@@ -48,11 +49,16 @@ class ProjectViewModel {
                 )
 
             case let .snippetsUpdated(updatedSnippets):
+                print("->", _id, "Received event: snippets updated")
                 self.snippets = updatedSnippets
 
             @unknown default:
                 break
             }
         }
+
+        print("->", _id, "Stopped listening")
+        snippets = []
+        universalLinkLoadedProject = nil
     }
 }

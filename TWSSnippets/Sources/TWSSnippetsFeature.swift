@@ -225,8 +225,8 @@ public struct TWSSnippetsFeature {
                 return .none
             }
 
-            return .run { [socket, url] send in
-                let connectionID = await socket.get(url)
+            return .run { [socket, url, config = configuration()] send in
+                let connectionID = await socket.get(config, url)
                 let stream: AsyncStream<WebSocketEvent>
                 do {
                     stream = try await socket.connect(connectionID)
@@ -248,7 +248,7 @@ public struct TWSSnippetsFeature {
                 logger.info("The task used for listening to socket has completed. Closing connection.")
                 await socket.closeConnection(connectionID)
             }
-            .cancellable(id: CancelID.socket)
+            .cancellable(id: CancelID.socket(configuration()))
             .concatenate(with: .send(.business(.delayReconnect)))
 
         case let .isSocketConnected(isConnected):
@@ -259,13 +259,14 @@ public struct TWSSnippetsFeature {
             return .run { send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
+                    guard !Task.isCancelled else { return }
                     logger.info("Reconnect")
                     await send(.business(.reconnectTriggered))
                 } catch {
                     logger.err("Reconnecting failed: \(error)")
                 }
             }
-            .cancellable(id: CancelID.reconnect)
+            .cancellable(id: CancelID.reconnect(configuration()))
 
         case .reconnectTriggered:
             state.socketURL = nil
@@ -273,11 +274,11 @@ public struct TWSSnippetsFeature {
 
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")
-            return .cancel(id: CancelID.socket)
+            return .cancel(id: CancelID.socket(configuration()))
 
         case .stopReconnecting:
             logger.warn("Requested to stop reconnecting to the socket")
-            return .cancel(id: CancelID.reconnect)
+            return .cancel(id: CancelID.reconnect(configuration()))
 
         // MARK: - Other
 
@@ -383,7 +384,11 @@ public struct TWSSnippetsFeature {
 }
 
 private extension TWSSnippetsFeature {
+
+    // It is important to further differentiate cancel events with `TWSConfiguration`
+    // This is because TCA uses combine pipelines, which means the same hashable value
+    // could potentially leak to all active stores.
     enum CancelID: Hashable {
-        case socket, reconnect
+        case socket(TWSConfiguration), reconnect(TWSConfiguration)
     }
 }

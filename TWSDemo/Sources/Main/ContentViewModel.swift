@@ -12,7 +12,7 @@ import Foundation
 @Observable
 class ContentViewModel {
 
-    var tab: Tab = .snippets
+    var tab: Tab = .fullscreenSnippets
     var webViewTitle: String = ""
 }
 

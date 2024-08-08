@@ -12,6 +12,7 @@ import Combine
 @MainActor
 class CombineToAsyncStreamAdapter {
 
+    private let id = UUID().uuidString.suffix(4)
     private var handler: AnyCancellable?
     private var upstream: AnyPublisher<TWSStreamEvent, Never>
 
@@ -19,6 +20,11 @@ class CombineToAsyncStreamAdapter {
         upstream: AnyPublisher<TWSStreamEvent, Never>
     ) {
         self.upstream = upstream
+        logger.debug("INIT CombineToAsyncStreamAdapter \(id)")
+    }
+
+    deinit {
+        logger.debug("DEINIT CombineToAsyncStreamAdapter \(id)")
     }
 
     func listen(
@@ -44,13 +50,13 @@ class CombineToAsyncStreamAdapter {
             operation: {
                 for await event in stream.stream {
                     // Hop the thread
-                    DispatchQueue.main.async { onEvent(event) }
+                    await MainActor.run { onEvent(event) }
                 }
             },
             onCancel: {
-                Task { [weak self] in
+                Task { @MainActor [weak self] in
                     guard let self else { return }
-                    await cancel(continuation: stream.continuation)
+                    cancel(continuation: stream.continuation)
                 }
             }
         )

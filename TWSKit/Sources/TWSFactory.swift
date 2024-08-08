@@ -52,6 +52,11 @@ public class TWSFactory {
         configuration: TWSConfiguration
     ) {
         _instances.removeValue(forKey: configuration)
+
+        Task { @MainActor in
+            @Dependency(\.socket) var socket
+            await socket.abort(configuration)
+        }
     }
 
     // MARK: - Helpers

@@ -30,11 +30,11 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
-        logger.debug("TWSManager init \(_id)")
+        logger.info("INIT TWSManager \(_id)")
     }
 
     deinit {
-        logger.debug("-> TWS Manager deinit \(_id)")
+        logger.info("DEINIT TWSManager \(_id)")
         MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
@@ -48,7 +48,7 @@ public final class TWSManager: Identifiable {
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
-        precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
+        precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         store.send(.snippets(.business(.load)))
     }
 
@@ -56,6 +56,7 @@ public final class TWSManager: Identifiable {
     /// It is automatically canceled when the parent task is cancelled.
     /// - Parameter onEvent: A callback triggered for every update
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
+        precondition(Thread.isMainThread, "`observe` can only be called on main thread")
         let adapter = CombineToAsyncStreamAdapter(upstream: observer)
         await adapter.listen(onEvent: onEvent)
     }
