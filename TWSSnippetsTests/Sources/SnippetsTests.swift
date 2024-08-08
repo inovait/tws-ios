@@ -245,7 +245,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in .init(listenOn: self.socketURL, snippets: [])}
-                $0.socket.get = { _ in .init() }
+                $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in .makeStream().stream }
                 $0.socket.closeConnection = { _ in }
                 $0.continuousClock = testClock
