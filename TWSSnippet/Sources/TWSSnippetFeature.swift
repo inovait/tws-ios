@@ -50,7 +50,7 @@ public struct TWSSnippetFeature {
                 logger.info("Snippet changed URL from \(state.snippet.target) to \(target).")
                 state.snippet.target = target
             } else {
-                print("Snippet's payload changed")
+                logger.info("Snippet's payload changed")
                 state.updateCount += 1
             }
 

@@ -330,7 +330,6 @@ public struct TWSSnippetsFeature {
         send: Send<TWSSnippetsFeature.Action>
     ) async throws {
     mainLoop: for await event in stream {
-        print("[Socket] did receive event: \(event) ~ ")
         switch event {
         case .didConnect:
             logger.info("Did connect \(Date.now)")
@@ -359,7 +358,6 @@ public struct TWSSnippetsFeature {
                 await send(.business(.load))
 
             case .updated:
-                print("[Socket] updated, target: \(message.target?.absoluteString ?? "nil")")
                 await send(
                     .business(
                         .snippets(
