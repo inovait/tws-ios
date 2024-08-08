@@ -8,10 +8,11 @@
 
 import Foundation
 
+@MainActor
 @Observable
 class ContentViewModel {
 
-    var tab: Tab = .snippets
+    var tab: Tab = .fullscreenSnippets
     var webViewTitle: String = ""
 }
 

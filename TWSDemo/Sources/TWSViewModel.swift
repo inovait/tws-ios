@@ -9,6 +9,7 @@
 import SwiftUI
 import TWSKit
 
+@MainActor
 @Observable
 class TWSViewModel {
 
@@ -16,6 +17,7 @@ class TWSViewModel {
         organizationID: "357b24f6-4714-42b1-9e15-0b07cae2fcd6",
         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
     ))
+    let destinationID = UUID()
     var snippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
 
@@ -30,18 +32,20 @@ class TWSViewModel {
         manager.handleIncomingUrl(url)
     }
 
-    @MainActor
     func start() async {
         manager.run()
     }
 
-    @MainActor
     func startupInitTasks() async {
-        for await snippetEvent in self.manager.events {
-            switch snippetEvent {
+        await manager.observe { [weak self] event in
+            guard let self else { return }
+
+            switch event {
             case let .universalLinkSnippetLoaded(project):
                 self.universalLinkLoadedProject = .init(
-                    manager: TWSFactory.new(with: project),
+                    viewID: destinationID,
+                    configuration: project.configuration,
+                    viewModel: .init(manager: TWSFactory.new(with: project)),
                     selectedID: project.snippet.id
                 )
 
@@ -49,7 +53,7 @@ class TWSViewModel {
                 self.snippets = snippets
 
             default:
-                print("Unhandled stream event")
+                assertionFailure("Unhandled stream event")
             }
         }
     }

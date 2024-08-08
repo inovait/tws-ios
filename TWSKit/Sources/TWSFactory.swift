@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 @_implementationOnly import TWSCore
 @_implementationOnly import TWSSettings
 @_implementationOnly import TWSSnippets
@@ -14,6 +15,7 @@ import Foundation
 @_implementationOnly import ComposableArchitecture
 
 /// A class designed to initialize a new ``TWSManager``
+@MainActor
 public class TWSFactory {
 
     private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
@@ -50,6 +52,11 @@ public class TWSFactory {
         configuration: TWSConfiguration
     ) {
         _instances.removeValue(forKey: configuration)
+
+        Task { @MainActor in
+            @Dependency(\.socket) var socket
+            await socket.abort(configuration)
+        }
     }
 
     // MARK: - Helpers
@@ -76,33 +83,14 @@ public class TWSFactory {
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
+        let publisher = PassthroughSubject<TWSStreamEvent, Never>()
+        let mainReducer = MainReducer(publisher: publisher)
         let combinedReducers = CombineReducers {
-            Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
-                switch action {
-                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    // Hop the thread
-                    DispatchQueue.main.async {
-                        events.continuation.yield(.universalLinkSnippetLoaded(snippet))
-                    }
-
-                    return .none
-                default:
-                    return .none
-                }
-            }
-
-            TWSCoreFeature()
+            mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
-                        let newSnippets = newValue.filter({ snippetState in
-                            !snippetState.isPrivate
-                        }).map(\.snippet)
-                        // Hop the thread
-                        DispatchQueue.main.async {
-                            events.continuation.yield(.snippetsUpdated(newSnippets))
-                        }
-
-                        return .none
+                        let newSnippets = newValue.map(\.snippet)
+                        return .send(.snippetsDidChange(newSnippets))
                     }
                 }
         }
@@ -116,7 +104,7 @@ public class TWSFactory {
 
         events.continuation.yield(.snippetsUpdated(storage))
 
-        let manager = TWSManager(store: store, events: events.stream, configuration: configuration)
+        let manager = TWSManager(store: store, observer: publisher.eraseToAnyPublisher(), configuration: configuration)
         logger.info("Created a new TWSManager for configuration: \(configuration)")
         _instances[configuration] = WeakBox(manager)
         return manager

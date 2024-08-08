@@ -9,11 +9,15 @@
 import Foundation
 import TWSKit
 
+@MainActor
 @Observable
 class ProjectViewModel {
 
-    var snippets: [TWSSnippet]
+    private let _id = UUID().uuidString.suffix(4)
     let manager: TWSManager
+    private(set) var snippets: [TWSSnippet]
+    let destinationID = UUID()
+    var universalLinkLoadedProject: LoadedProjectInfo?
 
     init(manager: TWSManager) {
         self.snippets = manager.snippets
@@ -21,26 +25,43 @@ class ProjectViewModel {
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
+        print("INIT ->", _id, "ProjectViewModel", Unmanaged.passUnretained(self).toOpaque())
     }
 
-    @MainActor
+    deinit {
+        print("DEINIT ->", _id, "ProjectViewModel")
+    }
+
     func start() async {
         manager.run()
     }
 
-    @MainActor
     func startupInitTasks() async {
-        for await snippetEvent in self.manager.events {
-            switch snippetEvent {
-            case .universalLinkSnippetLoaded:
+        await manager.observe { [weak self] event in
+            guard let self else { return }
+
+            switch event {
+            case let .universalLinkSnippetLoaded(project):
+                print("->", _id, "Received event: universal link loaded")
+                let manager = TWSFactory.new(with: project)
+                self.universalLinkLoadedProject = .init(
+                    viewID: destinationID,
+                    configuration: project.configuration,
+                    viewModel: .init(manager: manager),
+                    selectedID: project.snippet.id
+                )
+
+            case let .snippetsUpdated(updatedSnippets):
+                print("->", _id, "Received event: snippets updated")
+                self.snippets = updatedSnippets
+
+            @unknown default:
                 break
-
-            case .snippetsUpdated(let snippets):
-                self.snippets = snippets
-
-            default:
-                print("Unhandled stream event")
             }
         }
+
+        print("->", _id, "Stopped listening")
+        snippets = []
+        universalLinkLoadedProject = nil
     }
 }

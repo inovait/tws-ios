@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
@@ -18,19 +19,19 @@ struct ContentView: View {
         return TabView(
             selection: $viewModel.tab,
             content: {
-                SnippetsView()
-                    .tabItem {
-                        Text("List")
-                        Image(systemName: "list.bullet")
-                    }
-                    .tag(ContentViewModel.Tab.snippets)
-
                 SnippetsTabView()
                     .tabItem {
                         Text("Tab")
                         Image(systemName: "house")
                     }
                     .tag(ContentViewModel.Tab.fullscreenSnippets)
+
+                SnippetsView()
+                    .tabItem {
+                        Text("List")
+                        Image(systemName: "list.bullet")
+                    }
+                    .tag(ContentViewModel.Tab.snippets)
 
                 SettingsView()
                     .tabItem {
@@ -51,7 +52,7 @@ struct ContentView: View {
             twsViewModel.handleIncomingUrl(url)
         })
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
-            ProjectView(manager: $0.manager, selectedID: $0.selectedID)
+            ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
         }
     }
 }

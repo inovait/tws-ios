@@ -1,38 +1,41 @@
 import Foundation
 import SwiftUI
+import Combine
 @_exported import TWSModels
 @_implementationOnly import TWSCore
 @_implementationOnly import ComposableArchitecture
 @_implementationOnly import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
+@MainActor
 public final class TWSManager: Identifiable {
 
-    /// A getter for the event stream that is used to communicate updates. Check ``TWSStreamEvent`` enum for details.
-    public let events: AsyncStream<TWSStreamEvent>
-
+    let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
     let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
     private let initDate: Date
+    private let _id = UUID().uuidString.suffix(4)
 
     init(
         store: StoreOf<TWSCoreFeature>,
-        events: AsyncStream<TWSStreamEvent>,
+        observer: AnyPublisher<TWSStreamEvent, Never>,
         configuration: TWSConfiguration
     ) {
         self.store = store
-        self.events = events
+        self.observer = observer.share().eraseToAnyPublisher()
         self.configuration = configuration
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+        logger.info("INIT TWSManager \(_id)")
     }
 
     deinit {
-        TWSFactory.destroy(configuration: configuration)
+        logger.info("DEINIT TWSManager \(_id)")
+        MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
     // MARK: - Public
@@ -45,8 +48,17 @@ public final class TWSManager: Identifiable {
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
-        precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
+        precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         store.send(.snippets(.business(.load)))
+    }
+
+    /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
+    /// It is automatically canceled when the parent task is cancelled.
+    /// - Parameter onEvent: A callback triggered for every update
+    public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
+        precondition(Thread.isMainThread, "`observe` can only be called on main thread")
+        let adapter = CombineToAsyncStreamAdapter(upstream: observer)
+        await adapter.listen(onEvent: onEvent)
     }
 
     /// A function that invokes the browser's back functionality

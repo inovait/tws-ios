@@ -71,6 +71,9 @@ public struct TWSView<
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
             .id(snippet.id)
+            // The actual URL changed for the same Snippet ~ redraw is required
+            .id(snippet.target)
+            // The internal payload of the target URL has changed ~ redraw is required
             .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
 
             ZStack {
@@ -90,6 +93,7 @@ public struct TWSView<
     }
 }
 
+@MainActor
 private struct _TWSView: View {
 
     @State var height: CGFloat = 16
@@ -138,10 +142,16 @@ private struct _TWSView: View {
             snippetHeightProvider: handler.snippetHeightProvider,
             navigationProvider: handler.navigationProvider,
             onHeightCalculated: { height in
-                handler.set(height: height, for: snippet, displayID: displayID)
+                Task { @MainActor [weak handler] in
+                    assert(Thread.isMainThread)
+                    handler?.set(height: height, for: snippet, displayID: displayID)
+                }
             },
             onUniversalLinkDetected: { url in
-                handler.handleIncomingUrl(url)
+                Task { @MainActor [weak handler] in
+                    assert(Thread.isMainThread)
+                    handler?.handleIncomingUrl(url)
+                }
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,

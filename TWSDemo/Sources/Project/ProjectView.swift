@@ -9,13 +9,14 @@
 import SwiftUI
 import TWSKit
 
+@MainActor
 struct ProjectView: View {
 
     @State private var viewModel: ProjectViewModel
     @State private var selectedID: UUID
 
-    init(manager: TWSManager, selectedID: UUID) {
-        _viewModel = .init(initialValue: ProjectViewModel(manager: manager))
+    init(viewModel: ProjectViewModel, selectedID: UUID) {
+        _viewModel = .init(initialValue: viewModel)
         _selectedID = .init(initialValue: selectedID)
     }
 
@@ -34,6 +35,9 @@ struct ProjectView: View {
         .task {
             await viewModel.start()
             await viewModel.startupInitTasks()
+        }
+        .sheet(item: $viewModel.universalLinkLoadedProject) {
+            ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
         }
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 import TWSKit
 import TWSModels
 
+@MainActor
 struct SnippetsTabView: View {
 
     @Environment(TWSViewModel.self) private var twsViewModel

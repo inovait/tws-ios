@@ -10,22 +10,24 @@ import Foundation
 
 actor SocketConnector {
 
+    private let id = UUID().uuidString.suffix(4)
     private let url: URL
     private let continuation: AsyncStream<WebSocketEvent>.Continuation
     private var webSocket: URLSessionWebSocketTask?
+    private weak var _observer: SocketEventObserver?
 
     let stream: AsyncStream<WebSocketEvent>
 
     init(url: URL) {
-        logger.info("INIT SocketConnector")
         let stream = AsyncStream<WebSocketEvent>.makeStream()
         self.stream = stream.stream
         self.continuation = stream.continuation
         self.url = url
+        logger.info("INIT SocketConnector \(id)")
     }
 
     deinit {
-        logger.info("DEINIT SocketConnector")
+        logger.info("DEINIT SocketConnector \(id)")
     }
 
     func connect() async throws {
@@ -33,6 +35,7 @@ actor SocketConnector {
             let socket = try await withCheckedThrowingContinuation { [url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
                 observer.resume(url: url)
+                self._observer = observer
             }
 
             webSocket = socket
@@ -71,6 +74,7 @@ actor SocketConnector {
                 }
             },
             onCancel: {
+                continuation.finish()
                 Task { [weak self] in
                     logger.info("Canceled listening to websocket")
                     await self?.closeConnection()
@@ -82,6 +86,7 @@ actor SocketConnector {
     func closeConnection() {
         webSocket?.cancel(with: .goingAway, reason: nil)
         webSocket = nil
+        _observer?.invalidate()
     }
 
     // MARK: - Helper

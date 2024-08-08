@@ -21,7 +21,7 @@ class NetworkMonitor {
         self.monitor = NWPathMonitor()
         self.queue = DispatchQueue(label: "NetworkMonitor")
         self.monitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
                 self?.isConnected = (path.status == .satisfied)
             }
         }

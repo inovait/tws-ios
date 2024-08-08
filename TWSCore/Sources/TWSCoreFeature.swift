@@ -2,6 +2,7 @@ import Foundation
 import ComposableArchitecture
 import TWSSettings
 import TWSSnippets
+import TWSModels
 import TWSUniversalLinks
 
 @Reducer
@@ -29,6 +30,7 @@ public struct TWSCoreFeature {
     public enum Action {
         case settings(TWSSettingsFeature.Action)
         case snippets(TWSSnippetsFeature.Action)
+        case snippetsDidChange([TWSSnippet])
         case universalLinks(TWSUniversalLinksFeature.Action)
     }
 

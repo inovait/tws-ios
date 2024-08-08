@@ -31,11 +31,13 @@ extension WebView {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
             self.navigationProvider = navigationProvider
+            logger.debug("INIT Coordinator for WKWebView \(parent.id)")
         }
 
         deinit {
             heightObserver?.invalidate()
             heightObserver = nil
+            logger.debug("DEINIT Coordinator for WKWebView \(parent.id)")
         }
 
         // MARK: - Internals
