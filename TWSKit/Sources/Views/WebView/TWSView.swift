@@ -132,6 +132,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             url: snippet.target,
+            attachments: snippet.injectUrl,
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,

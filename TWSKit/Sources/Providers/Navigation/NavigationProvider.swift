@@ -6,7 +6,7 @@
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import WebKit
 
 protocol NavigationProvider {
@@ -17,6 +17,13 @@ protocol NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws
+
+    func present(
+        from: WKWebView,
+        alert: UIAlertController,
+        animated: Bool,
+        completion: (() -> Void)?
+    )
 
     func didClose(
         webView: WKWebView,
@@ -52,6 +59,17 @@ class NavigationProviderImpl: NavigationProvider {
         )
 
         parent.present(newViewController, animated: animated, completion: completion)
+    }
+
+    func present(
+        from: WKWebView,
+        alert: UIAlertController,
+        animated: Bool,
+        completion: (() -> Void)?
+    ) {
+        guard let parent = from.parentViewController()
+        else { completion?(); return }
+        parent.present(alert, animated: animated, completion: completion)
     }
 
     func didClose(
