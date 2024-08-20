@@ -214,7 +214,12 @@ struct WebView: UIViewRepresentable {
             document.head.appendChild(style);
             """
 
-            let script = WKUserScript(source: source, injectionTime: injectionTime, forMainFrameOnly: forMainFrameOnly)
+            let script = WKUserScript(
+                source: source,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
             controller.addUserScript(script)
         }
     }
@@ -234,7 +239,12 @@ struct WebView: UIViewRepresentable {
             document.head.appendChild(link);
             """
 
-            let script = WKUserScript(source: sourceCSS, injectionTime: injectionTime, forMainFrameOnly: forMainFrameOnly)
+            let script = WKUserScript(
+                source: sourceCSS,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
             controller.addUserScript(script)
         }
     }
@@ -250,7 +260,12 @@ struct WebView: UIViewRepresentable {
                 .replacingOccurrences(of: "\n", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let script = WKUserScript(source: value, injectionTime: injectionTime, forMainFrameOnly: forMainFrameOnly)
+            let script = WKUserScript(
+                source: value,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
             controller.addUserScript(script)
         }
     }
@@ -262,7 +277,7 @@ struct WebView: UIViewRepresentable {
         forMainFrameOnly: Bool = false
     ) {
         guard let attachments else { return }
-        for attachment in attachments.filter({ $0.type == .js }) {
+        for attachment in attachments.filter({ $0.type == .javascript }) {
             let sourceJS = """
             var script = document.createElement('script');
             script.src = '\(attachment.url.absoluteString)';
@@ -270,7 +285,12 @@ struct WebView: UIViewRepresentable {
             document.head.appendChild(script);
             """
 
-            let script = WKUserScript(source: sourceJS, injectionTime: injectionTime, forMainFrameOnly: forMainFrameOnly)
+            let script = WKUserScript(
+                source: sourceJS,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
             controller.addUserScript(script)
         }
     }

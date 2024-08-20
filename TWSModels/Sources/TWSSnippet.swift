@@ -14,7 +14,7 @@ public struct TWSSnippet: Identifiable, Codable, Equatable {
 }
 
 public extension TWSSnippet {
-    
+
     struct Attachment: Codable, Equatable {
 
         public let url: URL
@@ -30,6 +30,6 @@ public extension TWSSnippet {
 public extension TWSSnippet.Attachment {
 
     enum `Type`: Codable, Equatable {
-        case js, css
+        case javascript, css
     }
 }
