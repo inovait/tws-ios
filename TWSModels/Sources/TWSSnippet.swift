@@ -19,6 +19,11 @@ public extension TWSSnippet {
 
         public let url: URL
         public let type: `Type`
+
+        public init(url: URL, type: `Type`) {
+            self.url = url
+            self.type = type
+        }
     }
 }
 
