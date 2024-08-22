@@ -17,6 +17,8 @@ public struct TWSView<
 
     let snippet: TWSSnippet
     let handler: TWSManager
+    let cssOverrides: [TWSRawCSS]
+    let jsOverrides: [TWSRawJS]
     let displayID: String
     let loadingView: () -> LoadingView
     let errorView: (Error) -> ErrorView
@@ -28,6 +30,8 @@ public struct TWSView<
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
+    ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
+    ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - handler: Pass along the ``TWSManager`` instance that you're using
     ///   - id: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the autoheight to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
     ///   - canGoBack: Used for lists, when you want to load the previous snippet
@@ -38,6 +42,8 @@ public struct TWSView<
     ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
+        cssOverrides: [TWSRawCSS] = [],
+        jsOverrides: [TWSRawJS] = [],
         using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
@@ -48,6 +54,8 @@ public struct TWSView<
         @ViewBuilder errorView: @escaping (Error) -> ErrorView
     ) {
         self.snippet = snippet
+        self.cssOverrides = cssOverrides
+        self.jsOverrides = jsOverrides
         self.handler = handler
         self.displayID = id
         self._canGoBack = canGoBack
@@ -62,6 +70,8 @@ public struct TWSView<
         ZStack {
             _TWSView(
                 snippet: snippet,
+                cssOverrides: cssOverrides,
+                jsOverrides: jsOverrides,
                 using: handler,
                 displayID: displayID,
                 canGoBack: $canGoBack,
@@ -108,11 +118,15 @@ private struct _TWSView: View {
     @Binding var pageTitle: String
 
     let snippet: TWSSnippet
+    let cssOverrides: [TWSRawCSS]
+    let jsOverrides: [TWSRawJS]
     let handler: TWSManager
     let displayID: String
 
     init(
         snippet: TWSSnippet,
+        cssOverrides: [TWSRawCSS],
+        jsOverrides: [TWSRawJS],
         using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
@@ -121,6 +135,8 @@ private struct _TWSView: View {
         pageTitle: Binding<String>
     ) {
         self.snippet = snippet
+        self.cssOverrides = cssOverrides
+        self.jsOverrides = jsOverrides
         self.handler = handler
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._canGoBack = canGoBack
@@ -132,6 +148,9 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             url: snippet.target,
+            attachments: snippet.dynamicResources,
+            cssOverrides: cssOverrides,
+            jsOverrides: jsOverrides,
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,

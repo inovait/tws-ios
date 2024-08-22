@@ -19,6 +19,9 @@ struct WebView: UIViewRepresentable {
 
     let id = UUID().uuidString.suffix(4)
     let url: URL
+    let attachments: [TWSSnippet.Attachment]?
+    let cssOverrides: [TWSRawCSS]
+    let jsOverrides: [TWSRawJS]
     let displayID: String
     let isConnectedToNetwork: Bool
     let openURL: URL?
@@ -31,6 +34,9 @@ struct WebView: UIViewRepresentable {
 
     init(
         url: URL,
+        attachments: [TWSSnippet.Attachment]?,
+        cssOverrides: [TWSRawCSS],
+        jsOverrides: [TWSRawJS],
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
@@ -47,6 +53,9 @@ struct WebView: UIViewRepresentable {
         loadingState: Binding<TWSLoadingState>
     ) {
         self.url = url
+        self.attachments = attachments
+        self.cssOverrides = cssOverrides
+        self.jsOverrides = jsOverrides
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
@@ -65,7 +74,16 @@ struct WebView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        let controller = WKUserContentController()
+        _rawInjectCSS(to: controller, rawCSS: cssOverrides)
+        _rawInjectJS(to: controller, rawJS: jsOverrides)
+        _urlInjectCSS(to: controller, attachments: attachments)
+        _urlInjectJS(to: controller, attachments: attachments)
+
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = controller
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
@@ -176,6 +194,104 @@ struct WebView: UIViewRepresentable {
             if let loadingState {
                 self.loadingState = loadingState
             }
+        }
+    }
+
+    private func _rawInjectCSS(
+        to controller: WKUserContentController,
+        rawCSS: [TWSRawCSS],
+        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        forMainFrameOnly: Bool = false
+    ) {
+        for css in rawCSS {
+            let value = css.value
+                .replacingOccurrences(of: "\n", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let source = """
+            var style = document.createElement('style');
+            style.innerHTML = '\(value)';
+            document.head.appendChild(style);
+            """
+
+            let script = WKUserScript(
+                source: source,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
+            controller.addUserScript(script)
+        }
+    }
+
+    private func _urlInjectCSS(
+        to controller: WKUserContentController,
+        attachments: [TWSSnippet.Attachment]?,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        forMainFrameOnly: Bool = false
+    ) {
+        guard let attachments else { return }
+        for attachment in attachments.filter({ $0.contentType == .css }) {
+            let sourceCSS = """
+            var link = document.createElement('link');
+            link.href = '\(attachment.url.absoluteString)';
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+            """
+
+            let script = WKUserScript(
+                source: sourceCSS,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
+            controller.addUserScript(script)
+        }
+    }
+
+    private func _rawInjectJS(
+        to controller: WKUserContentController,
+        rawJS: [TWSRawJS],
+        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        forMainFrameOnly: Bool = false
+    ) {
+        for jvs in rawJS {
+            let value = jvs.value
+                .replacingOccurrences(of: "\n", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let script = WKUserScript(
+                source: value,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
+            controller.addUserScript(script)
+        }
+    }
+
+    private func _urlInjectJS(
+        to controller: WKUserContentController,
+        attachments: [TWSSnippet.Attachment]?,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        forMainFrameOnly: Bool = false
+    ) {
+        guard let attachments else { return }
+        for attachment in attachments.filter({ $0.contentType == .javascript }) {
+            let sourceJS = """
+            var script = document.createElement('script');
+            script.src = '\(attachment.url.absoluteString)';
+            script.type = 'text/javascript';
+            document.head.appendChild(script);
+            """
+
+            let script = WKUserScript(
+                source: sourceJS,
+                injectionTime: injectionTime,
+                forMainFrameOnly: forMainFrameOnly
+            )
+
+            controller.addUserScript(script)
         }
     }
 }

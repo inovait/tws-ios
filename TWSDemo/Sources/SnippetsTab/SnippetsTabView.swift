@@ -46,6 +46,10 @@ struct SnippetsTabView: View {
                 guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
                 selectedId = twsViewModel.snippets.first?.id
             }
+            .onChange(of: twsViewModel.snippets.first?.id) { _, newValue in
+                guard selectedId == nil else { return }
+                selectedId = newValue
+            }
         }
     }
 
