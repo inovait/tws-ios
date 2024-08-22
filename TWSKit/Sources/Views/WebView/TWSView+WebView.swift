@@ -231,7 +231,7 @@ struct WebView: UIViewRepresentable {
         forMainFrameOnly: Bool = false
     ) {
         guard let attachments else { return }
-        for attachment in attachments.filter({ $0.type == .css }) {
+        for attachment in attachments.filter({ $0.contentType == .css }) {
             let sourceCSS = """
             var link = document.createElement('link');
             link.href = '\(attachment.url.absoluteString)';
@@ -277,7 +277,7 @@ struct WebView: UIViewRepresentable {
         forMainFrameOnly: Bool = false
     ) {
         guard let attachments else { return }
-        for attachment in attachments.filter({ $0.type == .javascript }) {
+        for attachment in attachments.filter({ $0.contentType == .javascript }) {
             let sourceJS = """
             var script = document.createElement('script');
             script.src = '\(attachment.url.absoluteString)';

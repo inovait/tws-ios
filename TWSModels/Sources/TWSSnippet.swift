@@ -4,12 +4,12 @@ public struct TWSSnippet: Identifiable, Codable, Equatable {
 
     public let id: UUID
     public var target: URL
-    public var injectUrl: [Attachment]?
+    @LossyCodableList public var dynamicResources: [Attachment]?
 
-    public init(id: UUID, target: URL, injectUrl: [Attachment]? = nil) {
+    public init(id: UUID, target: URL, dynamicResources: [Attachment]? = nil) {
         self.id = id
         self.target = target
-        self.injectUrl = injectUrl
+        self._dynamicResources = .init(elements: dynamicResources)
     }
 }
 
@@ -18,18 +18,20 @@ public extension TWSSnippet {
     struct Attachment: Codable, Equatable {
 
         public let url: URL
-        public let type: `Type`
+        public let contentType: `Type`
 
-        public init(url: URL, type: `Type`) {
+        public init(url: URL, contentType: `Type`) {
             self.url = url
-            self.type = type
+            self.contentType = contentType
         }
     }
 }
 
 public extension TWSSnippet.Attachment {
 
-    enum `Type`: Codable, Equatable {
-        case javascript, css
+    enum `Type`: String, Codable, Equatable {
+
+        case javascript = "text/javascript"
+        case css = "text/css"
     }
 }

@@ -148,7 +148,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             url: snippet.target,
-            attachments: snippet.injectUrl,
+            attachments: snippet.dynamicResources,
             cssOverrides: cssOverrides,
             jsOverrides: jsOverrides,
             displayID: displayID,
