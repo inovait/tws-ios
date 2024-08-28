@@ -55,7 +55,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            guard let location = await bridge?.location() else {
+            guard let location = await bridge?.location(options: message.options) else {
                 await _sendFailed(error: .unavailable)
                 return
             }
@@ -73,7 +73,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            guard let stream = await bridge?.startUpdatingLocation(id: message.id) else { return }
+            guard let stream = await bridge?.startUpdatingLocation(id: message.id, options: message.options) else { return }
             Task {
                 for await location in stream {
                     await _update(location: location, forId: message.id)

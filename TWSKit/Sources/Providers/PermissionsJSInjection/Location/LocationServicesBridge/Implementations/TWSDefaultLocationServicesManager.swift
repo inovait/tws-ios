@@ -69,16 +69,20 @@ public actor TWSDefaultLocationServicesManager: NSObject, LocationServicesBridge
     }
 
     /// Retrieves the most recent known location.
+    /// - Parameters:
+    ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: The last known location, or `nil` if no location is available.
-    public func location() -> CLLocation? {
+    public func location(options _: JSLocationMessageOptions?) -> CLLocation? {
         return locationManager.location // TODO:
         // TODO: on dissapear
     }
 
     /// Begins streaming continuous location updates.
-    /// - Parameter id: A unique identifier for the location update session.
+    /// - Parameters:
+    ///   - id: A unique identifier for the location update session
+    ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: An `AsyncStream` that yields `CLLocation` objects as the device's location updates.
-    public func startUpdatingLocation(id: Double) -> AsyncStream<CLLocation> {
+    public func startUpdatingLocation(id: Double, options _: JSLocationMessageOptions?) -> AsyncStream<CLLocation> {
         let stream = AsyncStream<CLLocation>.makeStream()
         continuations[id] = stream.continuation
         locationManager.startUpdatingLocation()
