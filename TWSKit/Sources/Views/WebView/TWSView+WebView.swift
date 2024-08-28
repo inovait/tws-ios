@@ -20,6 +20,7 @@ struct WebView: UIViewRepresentable {
     let id = UUID().uuidString.suffix(4)
     let url: URL
     let locationServicesBridge: LocationServicesBridge
+    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let attachments: [TWSSnippet.Attachment]?
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
@@ -36,6 +37,7 @@ struct WebView: UIViewRepresentable {
     init(
         url: URL,
         locationServicesBridge: LocationServicesBridge,
+        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         attachments: [TWSSnippet.Attachment]?,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
@@ -56,6 +58,7 @@ struct WebView: UIViewRepresentable {
     ) {
         self.url = url
         self.locationServicesBridge = locationServicesBridge
+        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.attachments = attachments
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
@@ -83,13 +86,14 @@ struct WebView: UIViewRepresentable {
         _urlInjectCSS(to: controller, attachments: attachments)
         _urlInjectJS(to: controller, attachments: attachments)
 
-        // Permissions
+        // Location Permissions
 
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
-        
+
         //
 
         let configuration = WKWebViewConfiguration()
+        configuration.allowsInlineMediaPlayback = true
         configuration.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
@@ -114,7 +118,7 @@ struct WebView: UIViewRepresentable {
             )
         }
 
-        //
+        // Location Permissions
 
         return webView
     }

@@ -18,6 +18,7 @@ public struct TWSView<
     let snippet: TWSSnippet
     let handler: TWSManager
     let locationServicesBridge: LocationServicesBridge
+    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
@@ -32,6 +33,7 @@ public struct TWSView<
     /// - Parameters:
     ///   - snippet: The snippet you want to display
     ///   - locationServicesBridge: Used for providing location services data requested by web browsers
+    ///   - cameraMicrophoneBridge: Used for handling camera/microphone services requested by web browser
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - handler: Pass along the ``TWSManager`` instance that you're using
@@ -45,6 +47,7 @@ public struct TWSView<
     public init(
         snippet: TWSSnippet,
         locationServicesBridge: LocationServicesBridge,
+        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
         using handler: TWSManager,
@@ -58,6 +61,7 @@ public struct TWSView<
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
+        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.handler = handler
@@ -75,6 +79,7 @@ public struct TWSView<
             _TWSView(
                 snippet: snippet,
                 locationServicesBridge: locationServicesBridge,
+                cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
                 cssOverrides: cssOverrides,
                 jsOverrides: jsOverrides,
                 using: handler,
@@ -124,6 +129,7 @@ private struct _TWSView: View {
 
     let snippet: TWSSnippet
     let locationServicesBridge: LocationServicesBridge
+    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let handler: TWSManager
@@ -132,6 +138,7 @@ private struct _TWSView: View {
     init(
         snippet: TWSSnippet,
         locationServicesBridge: LocationServicesBridge,
+        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         using handler: TWSManager,
@@ -143,6 +150,7 @@ private struct _TWSView: View {
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
+        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.handler = handler
@@ -157,6 +165,7 @@ private struct _TWSView: View {
         WebView(
             url: snippet.target,
             locationServicesBridge: locationServicesBridge,
+            cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
             attachments: snippet.dynamicResources,
             cssOverrides: cssOverrides,
             jsOverrides: jsOverrides,
