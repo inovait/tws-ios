@@ -10,7 +10,10 @@ import CoreLocation
 import SwiftUI
 
 // Define an actor class that handles location services and acts as a bridge to your application's logic.
-public actor TWSDefaultLocationServicesManager: NSObject, LocationServicesBridge, Observable, CLLocationManagerDelegate {
+public actor TWSDefaultLocationServicesManager: NSObject,
+        LocationServicesBridge,
+        Observable,
+        CLLocationManagerDelegate {
 
     // MARK: - Properties
 

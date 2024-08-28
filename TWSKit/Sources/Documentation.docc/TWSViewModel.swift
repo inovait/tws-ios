@@ -14,7 +14,7 @@ class TWSViewModel {
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
     }
-    
+
     @MainActor
     func start() async {
         manager.run()

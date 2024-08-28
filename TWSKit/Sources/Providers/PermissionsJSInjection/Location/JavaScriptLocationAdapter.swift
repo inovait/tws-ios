@@ -73,7 +73,13 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            guard let stream = await bridge?.startUpdatingLocation(id: message.id, options: message.options) else { return }
+            guard let stream = await bridge?.startUpdatingLocation(
+                id: message.id,
+                options: message.options
+            ) else {
+                return
+            }
+
             Task {
                 for await location in stream {
                     await _update(location: location, forId: message.id)
@@ -93,13 +99,13 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         let lat = coordinate.latitude
         let lon = coordinate.longitude
         let alt = location.altitude
-        let ha = location.horizontalAccuracy
-        let va = location.verticalAccuracy
-        let hd = location.course
+        let hoa = location.horizontalAccuracy
+        let vea = location.verticalAccuracy
+        let hed = location.course
         let spd = location.speed
 
         _ = try? await webView?.evaluateJavaScript(
-            "navigator.geolocation.iosWatchLocationDidUpdate(\(id),\(lat),\(lon),\(alt),\(ha),\(va),\(hd),\(spd))"
+            "navigator.geolocation.iosWatchLocationDidUpdate(\(id),\(lat),\(lon),\(alt),\(hoa),\(vea),\(hed),\(spd))"
         )
     }
 
@@ -116,13 +122,13 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         let lat = coordinate.latitude
         let lon = coordinate.longitude
         let alt = location.altitude
-        let ha = location.horizontalAccuracy
-        let va = location.verticalAccuracy
-        let hd = location.course
+        let hoa = location.horizontalAccuracy
+        let vea = location.verticalAccuracy
+        let hed = location.course
         let spd = location.speed
 
         _ = try? await webView?.evaluateJavaScript(
-            "navigator.geolocation.iosLastLocation(\(lat),\(lon),\(alt),\(ha),\(va),\(hd),\(spd))"
+            "navigator.geolocation.iosLastLocation(\(lat),\(lon),\(alt),\(hoa),\(vea),\(hed),\(spd))"
         )
     }
 
@@ -133,4 +139,3 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         )
     }
 }
-
