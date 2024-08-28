@@ -1,5 +1,6 @@
 import SwiftUI
 import Firebase
+import TWSKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -17,12 +18,14 @@ struct TWSDemoApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @State private var twsViewModel = TWSViewModel()
+    @State private var locationProvider = TWSDefaultLocationServicesManager()
 
     var body: some Scene {
         WindowGroup {
             if NSClassFromString("XCTestCase") == nil {
                 ContentView()
                     .environment(twsViewModel)
+                    .environment(locationProvider)
                     .task {
                         await twsViewModel.start()
                         await twsViewModel.startupInitTasks()

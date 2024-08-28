@@ -17,6 +17,7 @@ public struct TWSView<
 
     let snippet: TWSSnippet
     let handler: TWSManager
+    let locationServicesBridge: LocationServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
@@ -30,6 +31,7 @@ public struct TWSView<
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
+    ///   - locationServicesBridge: Used for providing location services data requested by web browsers
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - handler: Pass along the ``TWSManager`` instance that you're using
@@ -42,6 +44,7 @@ public struct TWSView<
     ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
+        locationServicesBridge: LocationServicesBridge,
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
         using handler: TWSManager,
@@ -54,6 +57,7 @@ public struct TWSView<
         @ViewBuilder errorView: @escaping (Error) -> ErrorView
     ) {
         self.snippet = snippet
+        self.locationServicesBridge = locationServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.handler = handler
@@ -70,6 +74,7 @@ public struct TWSView<
         ZStack {
             _TWSView(
                 snippet: snippet,
+                locationServicesBridge: locationServicesBridge,
                 cssOverrides: cssOverrides,
                 jsOverrides: jsOverrides,
                 using: handler,
@@ -118,6 +123,7 @@ private struct _TWSView: View {
     @Binding var pageTitle: String
 
     let snippet: TWSSnippet
+    let locationServicesBridge: LocationServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let handler: TWSManager
@@ -125,6 +131,7 @@ private struct _TWSView: View {
 
     init(
         snippet: TWSSnippet,
+        locationServicesBridge: LocationServicesBridge,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         using handler: TWSManager,
@@ -135,6 +142,7 @@ private struct _TWSView: View {
         pageTitle: Binding<String>
     ) {
         self.snippet = snippet
+        self.locationServicesBridge = locationServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.handler = handler
@@ -148,6 +156,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             url: snippet.target,
+            locationServicesBridge: locationServicesBridge,
             attachments: snippet.dynamicResources,
             cssOverrides: cssOverrides,
             jsOverrides: jsOverrides,

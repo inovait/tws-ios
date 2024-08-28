@@ -33,6 +33,7 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
     @State private var loadingState: TWSLoadingState = .idle
     @State private var canGoBack = false
     @State private var canGoForward = false
@@ -67,6 +68,7 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
+                locationServicesBridge: locationHandler,
                 using: twsViewModel.manager,
                 displayID: displayId,
                 canGoBack: $canGoBack,

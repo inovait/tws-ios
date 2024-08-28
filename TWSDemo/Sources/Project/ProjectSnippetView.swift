@@ -17,6 +17,7 @@ struct ProjectSnippetView: View {
     @State private var pageTitle: String = ""
 
     @Environment(\.dismiss) var dismiss
+    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
 
     var body: some View {
         VStack {
@@ -56,6 +57,7 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
+                locationServicesBridge: locationHandler,
                 using: manager,
                 displayID: "\(manager.id.hashValue)",
                 canGoBack: .constant(false),
