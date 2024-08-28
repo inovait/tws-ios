@@ -8,21 +8,21 @@
 
 import Foundation
 
-struct Message: Codable, Sendable {
+struct JSLocationMessage: Codable, Sendable {
 
     let id: Double
     let command: Command
     let options: Options?
 }
 
-extension Message {
+extension JSLocationMessage {
 
     enum Command: String, Codable {
         case getCurrentPosition, watchPosition, clearWatch
     }
 }
 
-extension Message {
+extension JSLocationMessage {
 
     struct Options: Codable {
 

@@ -1,4 +1,8 @@
 //
+// Docs: https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API
+//
+
+//
 // Section 1.: Helper variables
 //
 
@@ -47,7 +51,7 @@ function createPayload(name, id, options) {
 // Section 4.: Call from Swift
 //
 
-// Section 4.1: Watch
+// Section 4.1: Callbacks used when `watchPosition` request is processed
 
 navigator.geolocation.iosWatchLocationDidUpdate = function(id, lat, lon, alt, ha, va, hd, spd) {
     const callbacks = locationWatchCallbacks.get(id);
@@ -82,7 +86,7 @@ navigator.geolocation.iosWatchLocationDidFailed = function(id, code) {
     return null;
 }
 
-// Section 4.2: Single query
+// Section 4.2: Callbacks used when `getCurrentPosition` request is processed
 
 navigator.geolocation.iosLastLocation = function(lat, lon, alt, ha, va, hd, spd) {
     const success = locationCallback.success;

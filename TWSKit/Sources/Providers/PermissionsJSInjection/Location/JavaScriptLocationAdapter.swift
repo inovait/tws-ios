@@ -31,7 +31,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         guard
             let payload = message.body as? String,
             let data = payload.data(using: .utf8),
-            let message = try? JSONDecoder().decode(Message.self, from: data)
+            let message = try? JSONDecoder().decode(JSLocationMessage.self, from: data)
         else {
             assertionFailure("Failed to decode a message")
             return
@@ -42,7 +42,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
 
     // MARK: - Helpers
 
-    private func _handle(message: Message) async {
+    private func _handle(message: JSLocationMessage) async {
         switch message.command {
         case .getCurrentPosition:
             do {
