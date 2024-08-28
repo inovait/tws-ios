@@ -13,6 +13,7 @@ const locationCallback = { success: null, error: null };
 // Section 2.: Overrides
 //
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
 navigator.geolocation.getCurrentPosition = function(success, error, options) {
     const payload = createPayload("getCurrentPosition", 0, options);
     locationCallback.success = success;
@@ -20,6 +21,7 @@ navigator.geolocation.getCurrentPosition = function(success, error, options) {
     window.webkit.messageHandlers.locationHandler.postMessage(payload);
 };
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition
 navigator.geolocation.watchPosition = function(success, error, options) {
     const id = Date.now();
     locationWatchCallbacks.set(id, { success, error })
@@ -29,6 +31,7 @@ navigator.geolocation.watchPosition = function(success, error, options) {
     return id
 };
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/clearWatch
 navigator.geolocation.clearWatch = function(id) {
     locationWatchCallbacks.delete(id);
     const payload = createPayload("clearWatch", id, null);
