@@ -9,7 +9,7 @@
 import Foundation
 import AVFoundation
 
-public actor TWSCameraMicrophoneServiceManager: Observable, CameraMicrophoneServicesBridge {
+public final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicrophoneServicesBridge {
 
     public init() { }
 

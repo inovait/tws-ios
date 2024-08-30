@@ -10,7 +10,7 @@ import CoreLocation
 import SwiftUI
 
 // Define an actor class that handles location services and acts as a bridge to your application's logic.
-public actor TWSDefaultLocationServicesManager: NSObject,
+public final actor TWSDefaultLocationServicesManager: NSObject,
         LocationServicesBridge,
         Observable,
         CLLocationManagerDelegate {
@@ -76,8 +76,7 @@ public actor TWSDefaultLocationServicesManager: NSObject,
     ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: The last known location, or `nil` if no location is available.
     public func location(options _: JSLocationMessageOptions?) -> CLLocation? {
-        return locationManager.location // TODO:
-        // TODO: on dissapear
+        return locationManager.location // TODO: on dissapear
     }
 
     /// Begins streaming continuous location updates.

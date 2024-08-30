@@ -48,19 +48,19 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
             do {
                 try await bridge?.checkPermission()
             } catch let error as LocationServicesError {
-                await _sendFailed(error: error)
+                await _sendFailed(id: message.id, error: error)
                 return
             } catch {
-                await _sendFailed(error: .denied)
+                await _sendFailed(id: message.id, error: .denied)
                 return
             }
 
             guard let location = await bridge?.location(options: message.options) else {
-                await _sendFailed(error: .unavailable)
+                await _sendFailed(id: message.id, error: .unavailable)
                 return
             }
 
-            await _send(location: location)
+            await _send(id: message.id, location: location)
 
         case .watchPosition:
             do {
@@ -117,7 +117,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
     }
 
     @MainActor
-    private func _send(location: CLLocation) async {
+    private func _send(id: Double, location: CLLocation) async {
         let coordinate = location.coordinate
         let lat = coordinate.latitude
         let lon = coordinate.longitude
@@ -133,7 +133,7 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
     }
 
     @MainActor
-    private func _sendFailed(error: LocationServicesError) async {
+    private func _sendFailed(id: Double, error: LocationServicesError) async {
         _ = try? await webView?.evaluateJavaScript(
             "navigator.geolocation.iosLastLocationFailed(\(error.rawValue))"
         )

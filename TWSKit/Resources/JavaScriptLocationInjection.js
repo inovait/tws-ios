@@ -1,45 +1,13 @@
 //
-// Docs: https://developer.mozilla.org/en-US/docs/Web/API/Geolocation
-//
-
-//
 // Section 1.: Helper variables
 //
 
+let idCounter = 0; // ID counter for unique identification ~ JavaScript is single-threaded
 const locationWatchCallbacks = new Map();
-const locationCallback = { success: null, error: null };
+const locationCallbacks = new Map();
 
 //
-// Section 2.: Overrides
-//
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
-navigator.geolocation.getCurrentPosition = function(success, error, options) {
-    const payload = createPayload("getCurrentPosition", 0, options);
-    locationCallback.success = success;
-    locationCallback.error = error;
-    window.webkit.messageHandlers.locationHandler.postMessage(payload);
-};
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition
-navigator.geolocation.watchPosition = function(success, error, options) {
-    const id = Date.now();
-    locationWatchCallbacks.set(id, { success, error })
-
-    const payload = createPayload("watchPosition", id, options);
-    window.webkit.messageHandlers.locationHandler.postMessage(payload);
-    return id
-};
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/clearWatch
-navigator.geolocation.clearWatch = function(id) {
-    locationWatchCallbacks.delete(id);
-    const payload = createPayload("clearWatch", id, null);
-    window.webkit.messageHandlers.locationHandler.postMessage(payload);
-};
-
-//
-// Section 3.: Helpers
+// Section 2.: Helpers
 //
 
 function createPayload(name, id, options) {
@@ -47,19 +15,47 @@ function createPayload(name, id, options) {
         id: id,
         command: name,
         options: options
-    })
+    });
 }
+
+//
+// Section 3.: Overrides
+//
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
+navigator.geolocation.getCurrentPosition = function(success, error, options) {
+    const id = idCounter++;  // Generate a unique ID using the counter
+    locationCallbacks.set(id, { success, error }); // Store the callbacks using the id
+    const payload = createPayload("getCurrentPosition", id, options); // Payload dispatched to iOS
+    window.webkit.messageHandlers.locationHandler.postMessage(payload); // Send command
+};
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition
+navigator.geolocation.watchPosition = function(success, error, options) {
+    const id = idCounter++;  // Generate a unique ID using the counter
+    locationWatchCallbacks.set(id, { success, error }); // Store the callbacks using the id
+    const payload = createPayload("watchPosition", id, options); // Payload dispatched to iOS
+    window.webkit.messageHandlers.locationHandler.postMessage(payload); // Send command
+    return id;
+};
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/clearWatch
+navigator.geolocation.clearWatch = function(id) {
+    locationWatchCallbacks.delete(id); // Remove the callbacks using the id
+    const payload = createPayload("clearWatch", id, null); // Payload dispatched to iOS
+    window.webkit.messageHandlers.locationHandler.postMessage(payload); // Send command
+};
 
 //
 // Section 4.: Call from Swift
 //
 
-// Section 4.1: Callbacks used when `watchPosition` request is processed
+// Section 4.1: Callbacks used when `watchPosition` request is processed in iOS world
 
 navigator.geolocation.iosWatchLocationDidUpdate = function(id, lat, lon, alt, ha, va, hd, spd) {
     const callbacks = locationWatchCallbacks.get(id);
     if (callbacks) {
-        const { success, error } = callbacks;
+        const { success } = callbacks;
         success({
             coords: {
                 latitude: lat,
@@ -79,21 +75,23 @@ navigator.geolocation.iosWatchLocationDidUpdate = function(id, lat, lon, alt, ha
 navigator.geolocation.iosWatchLocationDidFailed = function(id, code) {
     const callbacks = locationWatchCallbacks.get(id);
     if (callbacks) {
-        const { success, error } = callbacks;
+        const { error } = callbacks;
         error({
             code: code,
             message: null
         });
     }
-    navigator.geolocation.clearWatch(id);
+
+    locationWatchCallbacks.delete(id); // Remove the callback after it's used
     return null;
 }
 
-// Section 4.2: Callbacks used when `getCurrentPosition` request is processed
+// Section 4.2: Callbacks used when `getCurrentPosition` request is processed in iOS world
 
-navigator.geolocation.iosLastLocation = function(lat, lon, alt, ha, va, hd, spd) {
-    const success = locationCallback.success;
-    if (success) {
+navigator.geolocation.iosLastLocation = function(id, lat, lon, alt, ha, va, hd, spd) {
+    const callbacks = locationCallbacks.get(id);
+    if (callbacks) {
+        const { success } = callbacks;
         success({
             coords: {
                 latitude: lat,
@@ -106,24 +104,23 @@ navigator.geolocation.iosLastLocation = function(lat, lon, alt, ha, va, hd, spd)
             }
         });
 
-        locationCallback.success = null;
-        locationCallback.error = null;
+        locationCallbacks.delete(id); // Remove the callback after it's used
     }
 
     return null;
 }
 
-navigator.geolocation.iosLastLocationFailed = function(code) {
-    const error = locationCallback.error;
-    if (error) {
+navigator.geolocation.iosLastLocationFailed = function(id, code) {
+    const callbacks = locationCallbacks.get(id);
+    if (callbacks) {
+        const { error } = callbacks;
         error({
             code: code,
             message: null
         });
     }
 
-    locationCallback.success = null;
-    locationCallback.error = null;
+    locationCallbacks.delete(id); // Remove the callback after it's used
 
     return null;
 }
