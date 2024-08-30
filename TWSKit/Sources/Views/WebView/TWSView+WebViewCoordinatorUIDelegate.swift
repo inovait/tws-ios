@@ -134,4 +134,32 @@ extension WebView.Coordinator: WKUIDelegate {
 
         navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil)
     }
+
+    func webView(
+        _ webView: WKWebView,
+        decideMediaCapturePermissionsFor origin: WKSecurityOrigin,
+        initiatedBy frame: WKFrameInfo,
+        type: WKMediaCaptureType
+    ) async -> WKPermissionDecision {
+        do {
+            switch type {
+            case .camera:
+                try await parent.cameraMicrophoneServicesBridge.checkCameraPermission()
+
+            case .microphone:
+                try await parent.cameraMicrophoneServicesBridge.checkMicrophonePermission()
+
+            case .cameraAndMicrophone:
+                try await parent.cameraMicrophoneServicesBridge.checkCameraPermission()
+                try await parent.cameraMicrophoneServicesBridge.checkMicrophonePermission()
+
+            @unknown default:
+                break
+            }
+        } catch {
+            return .deny
+        }
+
+        return .grant
+    }
 }

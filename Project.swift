@@ -67,6 +67,7 @@ let project = Project(
             bundleId: "com.inova.twskit",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSKit/Sources/**"],
+            resources: ["TWSKit/Resources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
@@ -333,7 +334,10 @@ func infoPlist() -> [String: Plist.Value] {
         "UILaunchScreen": [:],
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
+        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location to enhance your experience by providing location-based features while you are using the app.",
+        "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
+        "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app."
     ]
 }
 

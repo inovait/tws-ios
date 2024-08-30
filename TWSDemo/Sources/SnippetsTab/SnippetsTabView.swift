@@ -84,6 +84,8 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
+    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
     @State private var loadingState: TWSLoadingState = .idle
     @State private var canGoBack = false
     @State private var canGoForward = false
@@ -118,6 +120,8 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
+                locationServicesBridge: locationHandler,
+                cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
                 using: twsViewModel.manager,
                 displayID: "tab-\(snippet.id.uuidString)",
                 canGoBack: $canGoBack,

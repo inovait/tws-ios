@@ -19,6 +19,8 @@ struct WebView: UIViewRepresentable {
 
     let id = UUID().uuidString.suffix(4)
     let url: URL
+    let locationServicesBridge: LocationServicesBridge
+    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let attachments: [TWSSnippet.Attachment]?
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
@@ -34,6 +36,8 @@ struct WebView: UIViewRepresentable {
 
     init(
         url: URL,
+        locationServicesBridge: LocationServicesBridge,
+        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         attachments: [TWSSnippet.Attachment]?,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
@@ -53,6 +57,8 @@ struct WebView: UIViewRepresentable {
         loadingState: Binding<TWSLoadingState>
     ) {
         self.url = url
+        self.locationServicesBridge = locationServicesBridge
+        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.attachments = attachments
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
@@ -80,7 +86,14 @@ struct WebView: UIViewRepresentable {
         _urlInjectCSS(to: controller, attachments: attachments)
         _urlInjectJS(to: controller, attachments: attachments)
 
+        // Location Permissions
+
+        let locationPermissionsHandler = _handleLocationPermissions(with: controller)
+
+        //
+
         let configuration = WKWebViewConfiguration()
+        configuration.allowsInlineMediaPlayback = true
         configuration.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
@@ -95,6 +108,18 @@ struct WebView: UIViewRepresentable {
         updateState(for: webView, loadingState: .loading)
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
+
+        // Binding for permissions
+
+        Task {
+            await locationPermissionsHandler.bind(
+                webView: webView,
+                to: locationServicesBridge
+            )
+        }
+
+        // Location Permissions
+
         return webView
     }
 
@@ -293,5 +318,25 @@ struct WebView: UIViewRepresentable {
 
             controller.addUserScript(script)
         }
+    }
+
+    // MARK: - Permissions
+
+    private func _handleLocationPermissions(
+        with controller: WKUserContentController
+    ) -> JavaScriptLocationAdapter {
+        let jsURL = Bundle(for: JavaScriptLocationAdapter.self)
+            .url(forResource: "JavaScriptLocationInjection", withExtension: "js")!
+        // swiftlint:disable:next force_try
+        let jsContent = try! String(contentsOf: jsURL, encoding: .utf8)
+        controller.addUserScript(.init(source: jsContent, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+
+        let jsLocationServices = JavaScriptLocationAdapter()
+        controller.add(
+            jsLocationServices,
+            name: "locationHandler"
+        )
+
+        return jsLocationServices
     }
 }
