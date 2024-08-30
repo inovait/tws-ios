@@ -86,8 +86,6 @@ struct WebView: UIViewRepresentable {
         _urlInjectCSS(to: controller, attachments: attachments)
         _urlInjectJS(to: controller, attachments: attachments)
 
-//        controller.add
-
         // Location Permissions
 
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
@@ -97,7 +95,6 @@ struct WebView: UIViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
         configuration.userContentController = controller
-        configuration.applicationNameForUserAgent = "TheWebSnippet"
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.scrollView.bounces = false
