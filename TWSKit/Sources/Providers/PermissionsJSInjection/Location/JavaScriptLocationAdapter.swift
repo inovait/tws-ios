@@ -26,8 +26,6 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
-        print(message.body)
-
         guard
             let payload = message.body as? String,
             let data = payload.data(using: .utf8),

@@ -174,10 +174,9 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
 
     // MARK: - Location Handling
 
-    /// Sends the most recent location update to the continuation.
+    /// Sends the most recent location update to the continuations.
     /// - Parameter location: The new location to send.
     func send(location: CLLocation) {
-        print("Location did update", location)
         continuations.forEach { $0.value.yield(location) }
 
         if !singleContinuations.isEmpty {
