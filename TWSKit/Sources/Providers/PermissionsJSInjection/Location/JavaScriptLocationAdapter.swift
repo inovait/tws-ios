@@ -55,7 +55,10 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            guard let location = await bridge?.location(options: message.options) else {
+            guard let location = await bridge?.location(
+                id: message.id,
+                options: message.options
+            ) else {
                 await _sendFailed(id: message.id, error: .unavailable)
                 return
             }
@@ -128,14 +131,14 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
         let spd = location.speed
 
         _ = try? await webView?.evaluateJavaScript(
-            "navigator.geolocation.iosLastLocation(\(lat),\(lon),\(alt),\(hoa),\(vea),\(hed),\(spd))"
+            "navigator.geolocation.iosLastLocation(\(id),\(lat),\(lon),\(alt),\(hoa),\(vea),\(hed),\(spd))"
         )
     }
 
     @MainActor
     private func _sendFailed(id: Double, error: LocationServicesError) async {
         _ = try? await webView?.evaluateJavaScript(
-            "navigator.geolocation.iosLastLocationFailed(\(error.rawValue))"
+            "navigator.geolocation.iosLastLocationFailed(\(id),\(error.rawValue))"
         )
     }
 }

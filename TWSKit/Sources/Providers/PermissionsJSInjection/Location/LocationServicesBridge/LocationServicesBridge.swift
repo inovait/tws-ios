@@ -21,11 +21,13 @@ public protocol LocationServicesBridge: Actor {
 
     /// Get a single, last known location
     /// - Parameters:
-    ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
+    ///  - id: The unique identifier for the location update session.
+    ///  - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: The most recent location available, or `nil` if no location data is available.
     func location(
+        id: Double,
         options: JSLocationMessageOptions?
-    ) -> CLLocation?
+    ) async -> CLLocation?
 
     /// Begin continuous location updates using the specified ID
     /// - Parameters:

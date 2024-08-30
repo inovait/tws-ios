@@ -2,7 +2,6 @@
 // Section 1.: Helper variables
 //
 
-let idCounter = 0; // ID counter for unique identification ~ JavaScript is single-threaded
 const locationWatchCallbacks = new Map();
 const locationCallbacks = new Map();
 
@@ -24,7 +23,8 @@ function createPayload(name, id, options) {
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
 navigator.geolocation.getCurrentPosition = function(success, error, options) {
-    const id = idCounter++;  // Generate a unique ID using the counter
+    // Integer ID does not work when multiple webviews are sharing one location provider
+    const id = Date.now();  // Generate a unique ID using the counter
     locationCallbacks.set(id, { success, error }); // Store the callbacks using the id
     const payload = createPayload("getCurrentPosition", id, options); // Payload dispatched to iOS
     window.webkit.messageHandlers.locationHandler.postMessage(payload); // Send command
@@ -32,7 +32,8 @@ navigator.geolocation.getCurrentPosition = function(success, error, options) {
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition
 navigator.geolocation.watchPosition = function(success, error, options) {
-    const id = idCounter++;  // Generate a unique ID using the counter
+    // Integer ID does not work when multiple webviews are sharing one location provider
+    const id = Date.now();  // Generate a unique ID using the counter
     locationWatchCallbacks.set(id, { success, error }); // Store the callbacks using the id
     const payload = createPayload("watchPosition", id, options); // Payload dispatched to iOS
     window.webkit.messageHandlers.locationHandler.postMessage(payload); // Send command

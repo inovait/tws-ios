@@ -8,6 +8,7 @@
 
 import CoreLocation
 import SwiftUI
+import TWSModels
 
 // Define an actor class that handles location services and acts as a bridge to your application's logic.
 public final actor TWSDefaultLocationServicesManager: NSObject,
@@ -21,13 +22,19 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     private let locationManager: CLLocationManager
 
     // Continuation for asynchronously streaming location updates.
-    private var continuations: [Double: AsyncStream<CLLocation>.Continuation?] = [:]
+    private var continuations: [Double: AsyncStream<CLLocation>.Continuation] = [:]
+
+    // Continuation for asynchronously streaming location updates.
+    private var singleContinuations: [Double: CheckedContinuation<CLLocation?, Never>] = [:]
 
     // Continuation for handling permission requests asynchronously.
     private var authorizationContinuation: CheckedContinuation<Void, Error>?
 
     // Keep track of requests
     private var requests = Set<Double>()
+
+    // Identifiers of views who are visible
+    private var visibleViews = Set<String>()
 
     // MARK: - Initializer
 
@@ -73,10 +80,13 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
 
     /// Retrieves the most recent known location.
     /// - Parameters:
+    /// - id: A unique identifier for the location update session
     ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: The last known location, or `nil` if no location is available.
-    public func location(options _: JSLocationMessageOptions?) -> CLLocation? {
-        return locationManager.location // TODO: on dissapear
+    public func location(id: Double, options _: JSLocationMessageOptions?) async -> CLLocation? {
+        return await withCheckedContinuation { continuation in
+            Task { _set(id: id, locationContinuation: continuation)}
+        }
     }
 
     /// Begins streaming continuous location updates.
@@ -95,12 +105,60 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     /// Stops the continuous location updates associated with the specified session ID.
     /// - Parameter id: The unique identifier for the location update session to stop.
     public func stopUpdatingLocation(id: Double) {
-        continuations[id]??.finish()
+        continuations[id]?.finish()
         continuations[id] = nil
         requests.remove(id)
         if requests.isEmpty {
             locationManager.stopUpdatingLocation()
         }
+    }
+
+    // MARK: - Helpers - start location services when views are presented, stop on dismiss
+
+    nonisolated func didAppear(snippet: TWSSnippet, displayID: String) {
+        Task { await _didAppear(snippet: snippet, displayID: displayID) }
+    }
+
+    private func _didAppear(snippet: TWSSnippet, displayID: String) {
+        let id = _id(for: snippet, withDisplayID: displayID)
+        visibleViews.insert(id)
+        if !requests.isEmpty { locationManager.startUpdatingLocation() }
+    }
+
+    nonisolated func didDisappear(snippet: TWSSnippet, displayID: String) {
+        Task { await _didDisappear(snippet: snippet, displayID: displayID) }
+    }
+
+    private func _didDisappear(snippet: TWSSnippet, displayID: String) {
+        let id = _id(for: snippet, withDisplayID: displayID)
+        visibleViews.remove(id)
+        if visibleViews.isEmpty { locationManager.stopUpdatingLocation() }
+    }
+
+    nonisolated func onForegroundTransition() {
+        Task { await _onForegroundTransition() }
+    }
+
+    private func _onForegroundTransition() {
+        guard !requests.isEmpty && !visibleViews.isEmpty
+        else { return }
+        locationManager.startUpdatingLocation()
+    }
+
+    nonisolated func onBackgroundTransition() {
+        Task { await _onBackgroundTransition() }
+    }
+
+    private func _onBackgroundTransition() {
+        locationManager.stopUpdatingLocation()
+    }
+
+    private func _set(
+        id: Double,
+        locationContinuation: CheckedContinuation<CLLocation?, Never>
+    ) {
+        singleContinuations[id] = locationContinuation
+        locationManager.startUpdatingLocation()
     }
 
     // MARK: - Permission Request Helper
@@ -120,7 +178,18 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     /// - Parameter location: The new location to send.
     func send(location: CLLocation) {
         print("Location did update", location)
-        continuations.forEach { $0.value?.yield(location) }
+        continuations.forEach { $0.value.yield(location) }
+
+        if !singleContinuations.isEmpty {
+            for key in singleContinuations.keys {
+                let continuation = singleContinuations.removeValue(forKey: key)
+                continuation?.resume(returning: location)
+            }
+
+            if requests.isEmpty {
+                locationManager.stopUpdatingLocation()
+            }
+        }
     }
 
     /// Handles the result of a location permission request.
@@ -161,5 +230,11 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
         let status = manager.authorizationStatus
         guard status != .notDetermined else { return }
         Task { await proceed(withAuthorization: status) }
+    }
+
+    // MARK: - Helpers
+
+    private func _id(for snippet: TWSSnippet, withDisplayID displayID: String) -> String {
+        "\(snippet.id)-\(displayID)"
     }
 }

@@ -95,6 +95,12 @@ public struct TWSView<
             .id(snippet.target)
             // The internal payload of the target URL has changed ~ redraw is required
             .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+            // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+            .conditionallyActivateDefaultLocationBehavior(
+                locationServicesBridge: locationServicesBridge,
+                snippet: snippet,
+                displayID: displayID
+            )
 
             ZStack {
                 switch loadingState {
