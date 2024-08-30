@@ -97,6 +97,8 @@ struct WebView: UIViewRepresentable {
         configuration.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
+        webView.customUserAgent = agent + " TheWebSnippet"
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
