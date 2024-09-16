@@ -19,6 +19,9 @@ extension WebView.Coordinator: WKDownloadDelegate {
     ) {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         let fileName = documentsURL!.appendingPathComponent(suggestedFilename)
+
+        downloadedFilename = suggestedFilename
+        downloadedLocation = documentsURL?.absoluteString ?? ""
         completionHandler(fileName)
     }
 
@@ -28,9 +31,11 @@ extension WebView.Coordinator: WKDownloadDelegate {
 
     func download(_ download: WKDownload, didFinishDownloadingTo location: URL) {
         logger.info("Download finished: \(location)")
+        downloadCompleted?(downloadedFilename, downloadedLocation)
     }
 
     func downloadDidFinish(_ download: WKDownload) {
         logger.info("Download completed successfully.")
+        downloadCompleted?(downloadedFilename, downloadedLocation)
     }
 }

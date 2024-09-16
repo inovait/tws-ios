@@ -53,6 +53,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg += "error: \(error.localizedDescription)"
 
         logger.debug(msg)
+
+        let nsError = error as NSError
+        // Error code 102: WebKitErrorFrameLoadInterruptedByPolicyChange (expected during downloads)
+        // Important to not show the error screen, because we manually interrupted the loading
+        if nsError.code == 102 || nsError.code == NSURLErrorCancelled {
+            return
+        }
         parent.updateState(for: webView, loadingState: .failed(error))
     }
 

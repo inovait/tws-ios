@@ -24,6 +24,7 @@ public struct TWSView<
     let displayID: String
     let loadingView: () -> LoadingView
     let errorView: (Error) -> ErrorView
+    let downloadCompleted: ((String, String) -> Void)?
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
@@ -57,7 +58,8 @@ public struct TWSView<
         loadingState: Binding<TWSLoadingState>,
         pageTitle: Binding<String> = Binding.constant(""),
         @ViewBuilder loadingView: @escaping () -> LoadingView,
-        @ViewBuilder errorView: @escaping (Error) -> ErrorView
+        @ViewBuilder errorView: @escaping (Error) -> ErrorView,
+        downloadCompleted: ((String, String) -> Void)? = nil
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -72,6 +74,7 @@ public struct TWSView<
         self._pageTitle = pageTitle
         self.loadingView = loadingView
         self.errorView = errorView
+        self.downloadCompleted = downloadCompleted
     }
 
     public var body: some View {
@@ -87,7 +90,8 @@ public struct TWSView<
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,
                 loadingState: $loadingState,
-                pageTitle: $pageTitle
+                pageTitle: $pageTitle,
+                downloadCompleted: downloadCompleted
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
             .id(snippet.id)
@@ -140,6 +144,7 @@ private struct _TWSView: View {
     let jsOverrides: [TWSRawJS]
     let handler: TWSManager
     let displayID: String
+    let downloadCompleted: ((String, String) -> Void)?
 
     init(
         snippet: TWSSnippet,
@@ -152,7 +157,8 @@ private struct _TWSView: View {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
-        pageTitle: Binding<String>
+        pageTitle: Binding<String>,
+        downloadCompleted: ((String, String) -> Void)?
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -165,6 +171,7 @@ private struct _TWSView: View {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self._pageTitle = pageTitle
+        self.downloadCompleted = downloadCompleted
     }
 
     var body: some View {
@@ -198,7 +205,8 @@ private struct _TWSView: View {
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,
-            loadingState: $loadingState
+            loadingState: $loadingState,
+            downloadCompleted: downloadCompleted
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }

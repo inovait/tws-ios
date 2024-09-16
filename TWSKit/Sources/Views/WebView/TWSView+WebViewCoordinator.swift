@@ -20,17 +20,23 @@ extension WebView {
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
+        var downloadedFilename: String = ""
+        var downloadedLocation: String = ""
+        
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
+        let downloadCompleted: ((String, String) -> Void)?
 
         init(
             _ parent: WebView,
             snippetHeightProvider: SnippetHeightProvider,
-            navigationProvider: NavigationProvider
+            navigationProvider: NavigationProvider,
+            downloadCompleted: ((String, String) -> Void)?
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
             self.navigationProvider = navigationProvider
+            self.downloadCompleted = downloadCompleted
             logger.debug("INIT Coordinator for WKWebView \(parent.id)")
         }
 
