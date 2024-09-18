@@ -169,7 +169,7 @@ private struct _TWSView: View {
 
     var body: some View {
         WebView(
-            url: snippet.target,
+            snippet: snippet,
             locationServicesBridge: locationServicesBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
             attachments: snippet.dynamicResources,
