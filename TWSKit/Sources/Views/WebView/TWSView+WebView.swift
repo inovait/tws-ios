@@ -335,7 +335,7 @@ struct WebView: UIViewRepresentable {
 
         let jsLocationServices = JavaScriptLocationAdapter()
         controller.add(
-            jsLocationServices,
+            JavaScriptLocationMessageHandler(adapter: jsLocationServices),
             name: "locationHandler"
         )
 

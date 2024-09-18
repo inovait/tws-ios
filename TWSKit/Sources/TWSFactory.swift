@@ -8,11 +8,11 @@
 
 import Foundation
 import Combine
-@_implementationOnly import TWSCore
-@_implementationOnly import TWSSettings
-@_implementationOnly import TWSSnippets
-@_implementationOnly import TWSSnippet
-@_implementationOnly import ComposableArchitecture
+internal import TWSCore
+internal import TWSSettings
+internal import TWSSnippets
+internal import TWSSnippet
+internal import ComposableArchitecture
 
 /// A class designed to initialize a new ``TWSManager``
 @MainActor

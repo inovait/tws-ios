@@ -7,9 +7,9 @@
 //
 
 import Foundation
-import WebKit
-@_implementationOnly import TWSUniversalLinks
-@_implementationOnly import TWSCommon
+@preconcurrency import WebKit
+internal import TWSUniversalLinks
+internal import TWSCommon
 
 extension WebView.Coordinator: WKNavigationDelegate {
 

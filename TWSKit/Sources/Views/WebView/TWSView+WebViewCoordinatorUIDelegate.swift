@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import WebKit
+@preconcurrency import WebKit
 
 extension WebView.Coordinator: WKUIDelegate {
 

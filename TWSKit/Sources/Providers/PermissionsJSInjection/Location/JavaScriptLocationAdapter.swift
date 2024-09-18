@@ -10,19 +10,18 @@ import Foundation
 import CoreLocation
 import WebKit
 
-actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
+class JavaScriptLocationMessageHandler: NSObject, WKScriptMessageHandler {
 
-    private weak var webView: WKWebView?
-    private weak var bridge: LocationServicesBridge?
+    private let adapter: JavaScriptLocationAdapter
 
-    func bind(webView: WKWebView, to bridge: LocationServicesBridge?) {
-        self.webView = webView
-        self.bridge = bridge
+    init(adapter: JavaScriptLocationAdapter) {
+        self.adapter = adapter
     }
 
     // MARK: - Confirming to `WKScriptMessageHandler`
 
-    nonisolated func userContentController(
+    @MainActor
+    func userContentController(
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
@@ -35,12 +34,23 @@ actor JavaScriptLocationAdapter: NSObject, WKScriptMessageHandler {
             return
         }
 
-        Task { await _handle(message: message) }
+        Task { await adapter._handle(message: message) }
+    }
+}
+
+actor JavaScriptLocationAdapter {
+
+    private weak var webView: WKWebView?
+    private weak var bridge: LocationServicesBridge?
+
+    func bind(webView: WKWebView, to bridge: LocationServicesBridge?) {
+        self.webView = webView
+        self.bridge = bridge
     }
 
     // MARK: - Helpers
 
-    private func _handle(message: JSLocationMessage) async {
+    fileprivate func _handle(message: JSLocationMessage) async {
         switch message.command {
         case .getCurrentPosition:
             do {

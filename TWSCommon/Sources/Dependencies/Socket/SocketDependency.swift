@@ -37,7 +37,7 @@ public enum SocketDependencyKey: DependencyKey {
                 guard let socket = await storage.getValue(forKey: id)
                 else { preconditionFailure("Sending a `connect` message to an invalid object: \(id)") }
                 try await socket.connect()
-                return socket.stream
+                return await socket.stream
             },
             listen: { [storage] id in
                 guard let socket = await storage.getValue(forKey: id)
