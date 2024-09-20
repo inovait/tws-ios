@@ -2,9 +2,9 @@ import Foundation
 import SwiftUI
 import Combine
 @_exported import TWSModels
-@_implementationOnly import TWSCore
-@_implementationOnly import ComposableArchitecture
-@_implementationOnly import TWSLogger
+internal import TWSCore
+internal import ComposableArchitecture
+internal import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
 @MainActor

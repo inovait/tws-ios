@@ -8,6 +8,7 @@
 
 import SwiftUI
 import WebKit
+import TWSModels
 
 struct WebView: UIViewRepresentable {
 
@@ -17,8 +18,9 @@ struct WebView: UIViewRepresentable {
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
 
-    let id = UUID().uuidString.suffix(4)
-    let url: URL
+    var id: UUID { snippet.id }
+    var url: URL { snippet.target }
+    let snippet: TWSSnippet
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let attachments: [TWSSnippet.Attachment]?
@@ -35,7 +37,7 @@ struct WebView: UIViewRepresentable {
     let onUniversalLinkDetected: (URL) -> Void
 
     init(
-        url: URL,
+        snippet: TWSSnippet,
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         attachments: [TWSSnippet.Attachment]?,
@@ -56,7 +58,7 @@ struct WebView: UIViewRepresentable {
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>
     ) {
-        self.url = url
+        self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.attachments = attachments
@@ -98,7 +100,7 @@ struct WebView: UIViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
-        webView.customUserAgent = agent + " TheWebSnippet"
+        webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
         webView.scrollView.bounces = false
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
@@ -119,8 +121,6 @@ struct WebView: UIViewRepresentable {
                 to: locationServicesBridge
             )
         }
-
-        // Location Permissions
 
         return webView
     }
@@ -335,7 +335,7 @@ struct WebView: UIViewRepresentable {
 
         let jsLocationServices = JavaScriptLocationAdapter()
         controller.add(
-            jsLocationServices,
+            JavaScriptLocationMessageHandler(adapter: jsLocationServices),
             name: "locationHandler"
         )
 

@@ -17,7 +17,7 @@ struct SettingsView: View {
     @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(
                     header: Text("Source Selection"),
@@ -40,11 +40,14 @@ struct SettingsView: View {
                             .padding()
                             .border(Color.gray, width: 1)
                             .toolbar {
-                                ToolbarItemGroup(placement: .keyboard) {
+                                ToolbarItemGroup(placement: .automatic) {
                                     HStack {
                                         Spacer()
 
                                         Button("Done") {
+                                            guard viewModel.selection == .localURLs
+                                            else { return }
+
                                             UIApplication.shared.endEditing()
                                             viewModel.validate()
                                             viewModel.setSource(manager: twsViewModel.manager, source: .localURLs)
@@ -52,7 +55,6 @@ struct SettingsView: View {
                                     }
                                 }
                             }
-
                         }
                     }
                 }

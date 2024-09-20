@@ -168,7 +168,7 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     func askForPermission(authorizationContinuation: CheckedContinuation<Void, Error>) {
         self.authorizationContinuation = authorizationContinuation
         Task { @MainActor in
-            locationManager.requestWhenInUseAuthorization()
+            await locationManager.requestWhenInUseAuthorization()
         }
     }
 

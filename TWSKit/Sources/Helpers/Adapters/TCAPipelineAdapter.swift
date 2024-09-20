@@ -8,8 +8,8 @@
 
 import Foundation
 import Combine
-@_implementationOnly import TWSCore
-@_implementationOnly import ComposableArchitecture
+internal import TWSCore
+internal import ComposableArchitecture
 
 protocol MVVMAdapter: Reducer {
 
