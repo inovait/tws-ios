@@ -33,7 +33,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onHeightCalculated: (CGFloat) -> Void
     let onUniversalLinkDetected: (URL) -> Void
-    let downloadCompleted: ((String, String) -> Void)?
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
 
     init(
         url: URL,
@@ -56,7 +56,7 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
-        downloadCompleted: ((String, String) -> Void)?
+        downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.url = url
         self.locationServicesBridge = locationServicesBridge

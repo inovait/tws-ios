@@ -27,15 +27,15 @@ extension WebView.Coordinator: WKDownloadDelegate {
 
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
         logger.warn("Download failed with error: \(error.localizedDescription)")
-    }
-
-    func download(_ download: WKDownload, didFinishDownloadingTo location: URL) {
-        logger.info("Download finished: \(location)")
-        downloadCompleted?(downloadedFilename, downloadedLocation)
+        downloadCompleted?(.failed(error))
+        downloadedFilename = ""
+        downloadedLocation = ""
     }
 
     func downloadDidFinish(_ download: WKDownload) {
-        logger.info("Download completed successfully.")
-        downloadCompleted?(downloadedFilename, downloadedLocation)
+        logger.info("Download completed successfully. File name: \(downloadedFilename) to \(downloadedLocation)")
+        downloadCompleted?(.completed(downloadedFilename, downloadedLocation))
+        downloadedFilename = ""
+        downloadedLocation = ""
     }
 }

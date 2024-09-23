@@ -22,16 +22,16 @@ extension WebView {
         var openURL: URL?
         var downloadedFilename: String = ""
         var downloadedLocation: String = ""
-        
+
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
-        let downloadCompleted: ((String, String) -> Void)?
+        let downloadCompleted: ((TWSDownloadState) -> Void)?
 
         init(
             _ parent: WebView,
             snippetHeightProvider: SnippetHeightProvider,
             navigationProvider: NavigationProvider,
-            downloadCompleted: ((String, String) -> Void)?
+            downloadCompleted: ((TWSDownloadState) -> Void)?
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider

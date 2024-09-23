@@ -24,7 +24,7 @@ public struct TWSView<
     let displayID: String
     let loadingView: () -> LoadingView
     let errorView: (Error) -> ErrorView
-    let downloadCompleted: ((String, String) -> Void)?
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
@@ -45,6 +45,7 @@ public struct TWSView<
     ///   - pageTitle: Once the snippet is loaded, it's title will be set in this variable
     ///   - loadingView: A custom view to display while the snippet is loading
     ///   - errorView: A custom view to display in case the snippet fails to load
+    ///   - downloadCompleted: A callback that let's you know when the download is completed. The first argument is the fileName and the second one is the file location
     public init(
         snippet: TWSSnippet,
         locationServicesBridge: LocationServicesBridge,
@@ -59,7 +60,7 @@ public struct TWSView<
         pageTitle: Binding<String> = Binding.constant(""),
         @ViewBuilder loadingView: @escaping () -> LoadingView,
         @ViewBuilder errorView: @escaping (Error) -> ErrorView,
-        downloadCompleted: ((String, String) -> Void)? = nil
+        downloadCompleted: ((TWSDownloadState) -> Void)? = nil
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -144,7 +145,7 @@ private struct _TWSView: View {
     let jsOverrides: [TWSRawJS]
     let handler: TWSManager
     let displayID: String
-    let downloadCompleted: ((String, String) -> Void)?
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
 
     init(
         snippet: TWSSnippet,
@@ -158,7 +159,7 @@ private struct _TWSView: View {
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
         pageTitle: Binding<String>,
-        downloadCompleted: ((String, String) -> Void)?
+        downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
