@@ -329,7 +329,7 @@ struct WebView: UIViewRepresentable {
             let script = WKUserScript(
                 source: sourceJS,
                 injectionTime: injectionTime,
-                forMainFrameOnly: true
+                forMainFrameOnly: forMainFrameOnly
             )
 
             controller.addUserScript(script)
