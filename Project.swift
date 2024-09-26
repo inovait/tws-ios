@@ -408,9 +408,9 @@ func targetScripts() -> [TargetScript] {
             fi
 
             if which swiftlint > /dev/null; then
-                echo "Mise path: $HOME/.local/bin/mise" >&2;
-                echo "Mise versions: $HOME/.local/bin/mise current" >&2;
-                echo "Swiftlint version: $HOME/.local/bin/mise x -- swiftlint" >&2;
+                echo "warning: Mise path: $HOME/.local/bin/mise";
+                echo "warning: Mise versions: $($HOME/.local/bin/mise current)";
+                echo "warning: SwiftLint version: $($HOME/.local/bin/mise x -- swiftlint --version)";
                 $HOME/.local/bin/mise x -- swiftlint;
             else
                 echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
