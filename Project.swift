@@ -404,13 +404,15 @@ func targetScripts() -> [TargetScript] {
         .pre(
             script: #"""
             if [[ "$(uname -m)" == arm64 ]]; then
-                export PATH="/opt/homebrew/bin:$PATH"
+                export PATH="/opt/homebrew/bin:$PATH";
             fi
 
             if which swiftlint > /dev/null; then
-                $HOME/.local/bin/mise x -- swiftlint
+                $HOME/.local/bin/mise;
+                $HOME/.local/bin/mise current;
+                $HOME/.local/bin/mise x -- swiftlint;
             else
-                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
+                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
             fi
             """#,
             name: "SwiftLint",
