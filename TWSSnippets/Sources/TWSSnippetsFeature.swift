@@ -62,7 +62,7 @@ public struct TWSSnippetsFeature {
         @CasePathable
         public enum BusinessAction {
             case load
-            case projectLoaded(Result<TWSProject, Error>)
+            case projectLoaded(Result<TWSProjectResourcesAggregate, Error>)
             case listenForChanges
             case delayReconnect
             case reconnectTriggered
@@ -113,9 +113,15 @@ public struct TWSSnippetsFeature {
             case let .customURLs(urls):
                 let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
                 let snippets = _generateCustomSnippets(urls: urls)
-                return .send(.business(.projectLoaded(.success(.init(
+                let project = TWSProject(
                     listenOn: dummySocketURL,
                     snippets: snippets
+                )
+
+                return .send(.business(.projectLoaded(.success(.init(
+                    project: project,
+                    jsResources: [:],
+                    cssResources: [:]
                 )))))
 
             @unknown default:
@@ -125,7 +131,12 @@ public struct TWSSnippetsFeature {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
-                    await send(.business(.projectLoaded(.success(project))))
+
+                    await send(.business(.projectLoaded(.success(.init(
+                        project: project,
+                        jsResources: [:], // TODO:
+                        cssResources: [:] // TODO:
+                    )))))
                 } catch {
                     await send(.business(.projectLoaded(.failure(error))))
                 }

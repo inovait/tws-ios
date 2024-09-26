@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TWSRawJS: ExpressibleByStringLiteral {
+public struct TWSRawJS: ExpressibleByStringLiteral, Codable, Equatable {
 
     public let value: String
 
