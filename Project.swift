@@ -403,19 +403,17 @@ func targetScripts() -> [TargetScript] {
     [
         .pre(
             script: #"""
-            # Define the path to your local SwiftLint binary (adjust this if needed)
-            SWIFTLINT_PATH="$HOME/.local/bin/swiftlint"
-
-            # Check if running on an ARM Mac
             if [[ "$(uname -m)" == arm64 ]]; then
-                export PATH="/opt/homebrew/bin:$PATH"
+                export PATH="/opt/homebrew/bin:$PATH";
             fi
 
-            # Check if SwiftLint is available in the local folder
-            if [[ -x "$SWIFTLINT_PATH" ]]; then
-                $HOME/.local/bin/mise x -- "$SWIFTLINT_PATH"
+            if which swiftlint > /dev/null; then
+                echo "Mise path: $HOME/.local/bin/mise" >&2;
+                echo "Mise versions: $HOME/.local/bin/mise current" >&2;
+                echo "Swiftlint version: $HOME/.local/bin/mise x -- swiftlint" >&2;
+                $HOME/.local/bin/mise x -- swiftlint;
             else
-                echo "warning: SwiftLint not installed locally, download from https://github.com/realm/SwiftLint"
+                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
             fi
             """#,
             name: "SwiftLint",
