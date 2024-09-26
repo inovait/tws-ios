@@ -27,7 +27,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: .init(1, 14, 0)
+            exact: .init(1, 15, 0)
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
