@@ -403,7 +403,7 @@ func targetScripts() -> [TargetScript] {
     [
         .pre(
             script: #"""
-            if which swiftlint > /dev/null; then
+            if $HOME/.local/bin/mise x -- which swiftlint > /dev/null; then
                 $HOME/.local/bin/mise x -- swiftlint;
             else
                 echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
