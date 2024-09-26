@@ -9,11 +9,13 @@
 import SwiftUI
 import TWSKit
 import OSLog
+import WebKit
 
 @MainActor
 struct SettingsView: View {
 
     @State var viewModel = SettingsViewModel()
+    @State private var cacheRemoved = false
     @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
@@ -84,6 +86,27 @@ struct SettingsView: View {
                             Text("Get logs")
                         }
                     })
+                }
+
+                Section(header: Text("Development")) {
+                    Button {
+                        WKWebsiteDataStore.default().removeData(
+                            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                            modifiedSince: .init(timeIntervalSince1970: 0),
+                            completionHandler: {
+                                cacheRemoved.toggle()
+                            }
+                        )
+                    } label: {
+                        Text("Remove cache")
+                    }
+                    .alert(
+                        "Cache has been removed.",
+                        isPresented: $cacheRemoved,
+                        actions: {
+                            Button("OK") { }
+                        }
+                    )
                 }
 
                 Section(header: Text("About")) {

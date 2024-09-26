@@ -83,6 +83,14 @@ struct WebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let controller = WKUserContentController()
+
+        #if DEBUG
+        _rawInjectJS(
+            to: controller,
+            rawJS: [interceptConsoleLogs(controller: controller)]
+        )
+        #endif
+
         _rawInjectCSS(to: controller, rawCSS: cssOverrides)
         _rawInjectJS(to: controller, rawJS: jsOverrides)
         _urlInjectCSS(to: controller, attachments: attachments)
@@ -227,7 +235,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectCSS(
         to controller: WKUserContentController,
         rawCSS: [TWSRawCSS],
-        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
         for css in rawCSS {
@@ -238,7 +246,9 @@ struct WebView: UIViewRepresentable {
             let source = """
             var style = document.createElement('style');
             style.innerHTML = '\(value)';
-            document.head.appendChild(style);
+            var D = document;
+            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
+            targ.appendChild(style);
             """
 
             let script = WKUserScript(
@@ -254,7 +264,7 @@ struct WebView: UIViewRepresentable {
     private func _urlInjectCSS(
         to controller: WKUserContentController,
         attachments: [TWSSnippet.Attachment]?,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
         guard let attachments else { return }
@@ -263,7 +273,9 @@ struct WebView: UIViewRepresentable {
             var link = document.createElement('link');
             link.href = '\(attachment.url.absoluteString)';
             link.rel = 'stylesheet';
-            document.head.appendChild(link);
+            var D = document;
+            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
+            targ.appendChild(link);
             """
 
             let script = WKUserScript(
@@ -279,7 +291,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectJS(
         to controller: WKUserContentController,
         rawJS: [TWSRawJS],
-        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
         for jvs in rawJS {
@@ -300,7 +312,7 @@ struct WebView: UIViewRepresentable {
     private func _urlInjectJS(
         to controller: WKUserContentController,
         attachments: [TWSSnippet.Attachment]?,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentEnd,
+        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
         guard let attachments else { return }
@@ -309,13 +321,15 @@ struct WebView: UIViewRepresentable {
             var script = document.createElement('script');
             script.src = '\(attachment.url.absoluteString)';
             script.type = 'text/javascript';
-            document.head.appendChild(script);
+            var D = document;
+            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
+            targ.appendChild(script);
             """
 
             let script = WKUserScript(
                 source: sourceJS,
                 injectionTime: injectionTime,
-                forMainFrameOnly: forMainFrameOnly
+                forMainFrameOnly: true
             )
 
             controller.addUserScript(script)

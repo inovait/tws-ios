@@ -13,4 +13,5 @@ enum NavigationError: Error {
     case parentNotFound
     case viewControllerNotFound
     case presentedViewControllerNotFound
+    case alreadyPresenting
 }

@@ -30,7 +30,7 @@ actor SocketConnector {
         logger.info("DEINIT SocketConnector \(id)")
     }
 
-    func connect() async throws {
+    func connect() async throws(SocketMessageReadError) {
         do {
             let socket = try await withCheckedThrowingContinuation { [url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
@@ -96,7 +96,7 @@ actor SocketConnector {
             let jsonData = try JSONSerialization.jsonObject(with: data) as? [AnyHashable: Any],
             let message = SocketMessage(json: jsonData)
         else {
-            let rawString = String(decoding: data, as: UTF8.self)
+            let rawString = String(data: data, encoding: .utf8) ?? ""
             assertionFailure("Failed to process data: \(rawString)")
             throw SocketMessageReadError.failedToParse(rawString)
         }

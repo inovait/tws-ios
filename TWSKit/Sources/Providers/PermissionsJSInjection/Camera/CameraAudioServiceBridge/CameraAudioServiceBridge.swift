@@ -11,6 +11,6 @@ import Foundation
 /// An camera-microphone service interface used to communicate between the JavaScript world and the iOS world
 public protocol CameraMicrophoneServicesBridge: Actor {
 
-    func checkCameraPermission() async throws
-    func checkMicrophonePermission() async throws
+    func checkCameraPermission() async throws(CameraMicrophoneServicesError)
+    func checkMicrophonePermission() async throws(CameraMicrophoneServicesError)
 }

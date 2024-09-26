@@ -8,4 +8,4 @@
 
 import Foundation
 
-enum LocationServicesError: Int, Error { case denied = 1, unavailable, timeout }
+public enum LocationServicesError: Int, Error { case denied = 1, unavailable, timeout }

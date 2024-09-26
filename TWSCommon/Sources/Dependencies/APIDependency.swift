@@ -12,8 +12,11 @@ import TWSAPI
 import ComposableArchitecture
 
 public struct APIDependency {
-    public var getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
-    public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ snippetId: String) async throws -> TWSSharedSnippet
+    public var getProject: @Sendable (TWSConfiguration) async throws(APIError) -> TWSProject
+    public var getSnippetBySharedId: @Sendable (
+        TWSConfiguration,
+        _ snippetId: String
+    ) async throws(APIError) -> TWSSharedSnippet
 }
 
 public enum APIDependencyKey: DependencyKey {

@@ -16,25 +16,25 @@ protocol NavigationProvider {
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
-    ) throws
+    ) throws(NavigationError)
 
     func present(
         from: WKWebView,
         alert: UIAlertController,
         animated: Bool,
         completion: (() -> Void)?
-    )
+    ) -> Bool
 
     func didClose(
         webView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
-    ) throws
+    ) throws(NavigationError)
 
     func continueNavigation(
         with url: URL,
         from: WKWebView
-    ) throws
+    ) throws(NavigationError)
 }
 
 class NavigationProviderImpl: NavigationProvider {
@@ -46,9 +46,12 @@ class NavigationProviderImpl: NavigationProvider {
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
-    ) throws {
+    ) throws(NavigationError) {
         guard let parent = originWebView.parentViewController()
         else { throw NavigationError.parentNotFound }
+
+        guard parent.presentedViewController == nil
+        else { throw NavigationError.alreadyPresenting }
 
         let newViewController = UIViewController()
         newViewController.view = webView
@@ -66,28 +69,32 @@ class NavigationProviderImpl: NavigationProvider {
         alert: UIAlertController,
         animated: Bool,
         completion: (() -> Void)?
-    ) {
+    ) -> Bool {
         guard let parent = from.parentViewController()
-        else { completion?(); return }
+        else { completion?(); return false }
+        guard parent.presentedViewController == nil
+        else { completion?(); return false }
+
         parent.present(alert, animated: animated, completion: completion)
+        return true
     }
 
     func didClose(
         webView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
-    ) throws {
+    ) throws(NavigationError) {
         guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
-        else { throw NavigationError.viewControllerNotFound }
+        else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
     }
 
     func continueNavigation(
         with url: URL,
         from: WKWebView
-    ) throws {
+    ) throws(NavigationError) {
         guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from })?.presentedWebView
-        else { throw NavigationError.presentedViewControllerNotFound }
+        else { throw .presentedViewControllerNotFound }
         webView.load(URLRequest(url: url))
     }
 }
