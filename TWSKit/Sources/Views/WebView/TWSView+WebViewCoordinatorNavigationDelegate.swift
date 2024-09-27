@@ -53,6 +53,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg += "error: \(error.localizedDescription)"
 
         logger.debug(msg)
+
+        let nsError = error as NSError
+        // Error code 102: WebKitErrorFrameLoadInterruptedByPolicyChange (expected during downloads)
+        // Important to not show the error screen, because we manually interrupted the loading
+        if nsError.code == 102 || nsError.code == NSURLErrorCancelled {
+            return
+        }
         parent.updateState(for: webView, loadingState: .failed(error))
     }
 
@@ -91,7 +98,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
     func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        preferences: WKWebpagePreferences,
+        decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction)")
 
@@ -100,7 +108,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             logger.info("Google OAuth request detected.")
             redirectedToSafari = true
             UIApplication.shared.open(url, options: [:])
-            decisionHandler(.cancel)
+            decisionHandler(.cancel, preferences)
             return
         }
 
@@ -109,11 +117,16 @@ extension WebView.Coordinator: WKNavigationDelegate {
            (try? TWSUniversalLinkRouter.route(for: url)) != nil {
             logger.info("Internal deep link detected: \(url)")
             parent.onUniversalLinkDetected(url)
-            decisionHandler(.cancel)
+            decisionHandler(.cancel, preferences)
             return
         }
 
-        decisionHandler(.allow)
+        if navigationAction.shouldPerformDownload {
+            decisionHandler(.download, preferences)
+            return
+        }
+
+        decisionHandler(.allow, preferences)
     }
 
     func webView(
@@ -122,7 +135,11 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation response: \(navigationResponse)")
-        decisionHandler(.allow)
+        if navigationResponse.canShowMIMEType {
+            decisionHandler(.allow)
+        } else {
+            decisionHandler(.download)
+        }
     }
 
     func webView(
@@ -132,6 +149,14 @@ extension WebView.Coordinator: WKNavigationDelegate {
     ) {
         logger.debug("[Navigation \(webView.hash)] Received authentication challenge")
         completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge
+    }
+
+    func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+        download.delegate = self
+    }
+    
+    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+        download.delegate = self
     }
 
     // MARK: - Helpers

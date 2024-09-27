@@ -35,6 +35,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onHeightCalculated: (CGFloat) -> Void
     let onUniversalLinkDetected: (URL) -> Void
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
 
     init(
         snippet: TWSSnippet,
@@ -56,7 +57,8 @@ struct WebView: UIViewRepresentable {
         onUniversalLinkDetected: @escaping @Sendable (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>
+        loadingState: Binding<TWSLoadingState>,
+        downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -79,6 +81,7 @@ struct WebView: UIViewRepresentable {
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
         self._loadingState = loadingState
+        self.downloadCompleted = downloadCompleted
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -129,7 +132,8 @@ struct WebView: UIViewRepresentable {
         Coordinator(
             self,
             snippetHeightProvider: snippetHeightProvider,
-            navigationProvider: navigationProvider
+            navigationProvider: navigationProvider,
+            downloadCompleted: downloadCompleted
         )
     }
 
