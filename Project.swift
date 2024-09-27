@@ -338,8 +338,7 @@ func infoPlist() -> [String: Plist.Value] {
         "NSLocationWhenInUseUsageDescription": "This app requires access to your location to enhance your experience by providing location-based features while you are using the app.",
         "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
         "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app.",
-        "UIFileSharingEnabled": true,
-        "LSSupportsOpeningDocumentsInPlace": true
+        "UIFileSharingEnabled": true
     ]
 }
 
