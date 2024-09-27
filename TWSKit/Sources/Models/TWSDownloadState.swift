@@ -13,5 +13,5 @@ public enum TWSDownloadState {
     /// The download failed. The first argument is the error
     case failed(Error)
     /// The download finished successfully. The first argument is the fileName and the second one is the location of the file
-    case completed(String, String)
+    case completed(TWSDownloadInfo)
 }

@@ -20,22 +20,20 @@ extension WebView.Coordinator: WKDownloadDelegate {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         let fileName = documentsURL!.appendingPathComponent(suggestedFilename)
 
-        downloadedFilename = suggestedFilename
-        downloadedLocation = documentsURL?.absoluteString ?? ""
+        downloadInfo.downloadedFilename = suggestedFilename
+        downloadInfo.downloadedLocation = documentsURL?.absoluteString ?? ""
         completionHandler(fileName)
     }
 
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
         logger.warn("Download failed with error: \(error.localizedDescription)")
         downloadCompleted?(.failed(error))
-        downloadedFilename = ""
-        downloadedLocation = ""
+        downloadInfo.clearValues()
     }
 
     func downloadDidFinish(_ download: WKDownload) {
-        logger.info("Download completed successfully. File name: \(downloadedFilename) to \(downloadedLocation)")
-        downloadCompleted?(.completed(downloadedFilename, downloadedLocation))
-        downloadedFilename = ""
-        downloadedLocation = ""
+        logger.info("Download completed successfully. File name: \(downloadInfo.downloadedFilename) to \(downloadInfo.downloadedLocation)")
+        downloadCompleted?(.completed(downloadInfo))
+        downloadInfo.clearValues()
     }
 }

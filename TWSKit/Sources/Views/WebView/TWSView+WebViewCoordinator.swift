@@ -20,8 +20,7 @@ extension WebView {
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
-        var downloadedFilename: String = ""
-        var downloadedLocation: String = ""
+        var downloadInfo = TWSDownloadInfo()
 
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
