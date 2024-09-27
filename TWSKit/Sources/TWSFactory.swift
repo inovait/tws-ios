@@ -85,6 +85,7 @@ public class TWSFactory {
 
         let publisher = PassthroughSubject<TWSStreamEvent, Never>()
         let mainReducer = MainReducer(publisher: publisher)
+
         let combinedReducers = CombineReducers {
             mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in

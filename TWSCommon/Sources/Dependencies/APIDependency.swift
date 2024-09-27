@@ -29,8 +29,8 @@ public struct APIDependency {
         throw APIError.local(NSError(domain: "", code: -1))
     }
 
-    public var loadResource: @Sendable (
-        TWSSnippet
+    public var getResource: @Sendable (
+        TWSSnippet.Attachment
     ) async throws(APIError) -> String = { _ throws(APIError) in
         reportIssue("\(Self.self).loadResource")
         throw APIError.local(NSError(domain: "", code: -1))
@@ -45,7 +45,7 @@ public enum APIDependencyKey: DependencyKey {
         return .init(
             getProject: api.getProject,
             getSnippetBySharedId: api.getSnippetBySharedId,
-            loadResource: { _ in fatalError() }
+            getResource: api.getResource
         )
     }
 }

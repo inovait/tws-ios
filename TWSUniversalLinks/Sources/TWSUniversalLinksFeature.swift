@@ -24,6 +24,7 @@ public struct TWSUniversalLinksFeature {
         public enum BusinessAction {
             case onUniversalLink(URL)
             case snippetLoaded(Result<TWSSharedSnippet, Error>)
+            case notifyClient(TWSSharedSnippetResourcesAggregate)
         }
 
         @CasePathable
@@ -67,11 +68,22 @@ public struct TWSUniversalLinksFeature {
 
         case let .business(.snippetLoaded(.success(snippet))):
             logger.info("Universal link: snippet loaded successfully")
-            return .send(.delegate(.snippetLoaded(snippet)))
+            return .run { [api] send in
+                let resources = await preloadResources(for: snippet, using: api)
+                let aggregated = TWSSharedSnippetResourcesAggregate(
+                    sharedSnippet: snippet,
+                    resources: resources
+                )
+
+                await send(.business(.notifyClient(aggregated)))
+            }
 
         case let .business(.snippetLoaded(.failure(error))):
             logger.err("Universal link: load failed: \(error.localizedDescription)")
             return .none
+
+        case let .business(.notifyClient(aggregatedSnippet)):
+            return .send(.delegate(.snippetLoaded(aggregatedSnippet.sharedSnippet)))
 
         case .delegate:
             return .none

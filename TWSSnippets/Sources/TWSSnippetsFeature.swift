@@ -120,8 +120,7 @@ public struct TWSSnippetsFeature {
 
                 return .send(.business(.projectLoaded(.success(.init(
                     project: project,
-                    jsResources: [:],
-                    cssResources: [:]
+                    resources: [:]
                 )))))
 
             @unknown default:
@@ -131,11 +130,11 @@ public struct TWSSnippetsFeature {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
+                    let resources = await preloadResources(for: project, using: api)
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project,
-                        jsResources: [:], // TODO:
-                        cssResources: [:] // TODO:
+                        resources: resources
                     )))))
                 } catch {
                     await send(.business(.projectLoaded(.failure(error))))

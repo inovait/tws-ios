@@ -4,10 +4,13 @@ import TWSModels
 public struct TWSAPI {
 
     public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> TWSProject
+
     public var getSnippetBySharedId: @Sendable (
         TWSConfiguration,
         _ token: String
     ) async throws(APIError) -> TWSSharedSnippet
+
+    public let getResource: @Sendable (TWSSnippet.Attachment) async throws(APIError) -> String
 
     static func live(
         host: String
@@ -51,6 +54,21 @@ public struct TWSAPI {
                 } catch {
                     throw APIError.decode(error)
                 }
+            },
+            getResource: { attachment throws(APIError) in
+                let result = try await Router.make(request: .init(
+                    method: .get,
+                    path: attachment.url.path(),
+                    host: attachment.url.host() ?? "",
+                    queryItems: [],
+                    headers: [:]
+                ))
+
+                if let payload = String(data: result.data, encoding: .utf8) {
+                    return payload
+                }
+
+                throw .decode(NSError(domain: "invalid-string", code: -1))
             }
         )
     }

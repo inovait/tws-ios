@@ -13,17 +13,14 @@ import Foundation
 public struct TWSProjectResourcesAggregate: Codable, Equatable {
 
     public let project: TWSProject
-    public let jsResources: [URL: TWSRawJS]
-    public let cssResources: [URL: TWSRawCSS]
+    public let resources: [TWSSnippet.Attachment: String]
 
     public init(
         project: TWSProject,
-        jsResources: [URL: TWSRawJS],
-        cssResources: [URL: TWSRawCSS]
+        resources: [TWSSnippet.Attachment: String]
     ) {
         self.project = project
-        self.jsResources = jsResources
-        self.cssResources = cssResources
+        self.resources = resources
     }
 
     #if DEBUG
@@ -36,8 +33,7 @@ public struct TWSProjectResourcesAggregate: Codable, Equatable {
             listenOn: listenOn,
             snippets: snippets
         )
-        jsResources = [:]
-        cssResources = [:]
+        resources = [:]
     }
     #endif
 
