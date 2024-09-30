@@ -82,6 +82,7 @@ public struct TWSView<
         ZStack {
             _TWSView(
                 snippet: snippet,
+                preloadedResources: handler.store.snippets.preloadedResources,
                 locationServicesBridge: locationServicesBridge,
                 cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
                 cssOverrides: cssOverrides,
@@ -139,6 +140,7 @@ private struct _TWSView: View {
     @Binding var pageTitle: String
 
     let snippet: TWSSnippet
+    let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
@@ -149,6 +151,7 @@ private struct _TWSView: View {
 
     init(
         snippet: TWSSnippet,
+        preloadedResources: [TWSSnippet.Attachment: String],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
@@ -162,6 +165,7 @@ private struct _TWSView: View {
         downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
+        self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
@@ -178,6 +182,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             snippet: snippet,
+            preloadedResources: preloadedResources,
             locationServicesBridge: locationServicesBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
             attachments: snippet.dynamicResources,

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import WebKit
+@preconcurrency import WebKit
 
 extension WebView.Coordinator: WKDownloadDelegate {
 
@@ -32,7 +32,11 @@ extension WebView.Coordinator: WKDownloadDelegate {
     }
 
     func downloadDidFinish(_ download: WKDownload) {
-        logger.info("Download completed successfully. File name: \(downloadInfo.downloadedFilename) to \(downloadInfo.downloadedLocation)")
+        var log = "Download completed successfully. File name:"
+        log += " \(downloadInfo.downloadedFilename)"
+        log += ", location: \(downloadInfo.downloadedLocation)"
+        logger.info(log)
+
         downloadCompleted?(.completed(downloadInfo))
         downloadInfo.clearValues()
     }

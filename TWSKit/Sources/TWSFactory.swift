@@ -29,7 +29,7 @@ public class TWSFactory {
         _new(
             configuration: configuration,
             snippets: nil,
-            preloadedResources: [:],
+            preloadedResources: nil,
             socketURL: nil
         )
     }
@@ -66,7 +66,7 @@ public class TWSFactory {
     private class func _new(
         configuration: TWSConfiguration,
         snippets: [TWSSnippet]?,
-        preloadedResources: [TWSSnippet.Attachment: String],
+        preloadedResources: [TWSSnippet.Attachment: String]?,
         socketURL: URL?
     ) -> TWSManager {
         if let manager = _instances[configuration]?.box {
@@ -89,6 +89,11 @@ public class TWSFactory {
         let storage = state.snippets.snippets.map(\.snippet)
         logger.info(
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
+        )
+
+        let resourcesCount = state.snippets.preloadedResources.count
+        logger.info(
+            "\(resourcesCount) \(resourcesCount == 1 ? "resource" : "resources")"
         )
 
         let publisher = PassthroughSubject<TWSStreamEvent, Never>()

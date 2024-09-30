@@ -8,7 +8,7 @@
 
 import SwiftUI
 import WebKit
-import TWSModels
+@_spi(InternalLibraries) import TWSModels
 
 struct WebView: UIViewRepresentable {
 
@@ -21,6 +21,7 @@ struct WebView: UIViewRepresentable {
     var id: UUID { snippet.id }
     var url: URL { snippet.target }
     let snippet: TWSSnippet
+    let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let attachments: [TWSSnippet.Attachment]?
@@ -39,6 +40,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
+        preloadedResources: [TWSSnippet.Attachment: String],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         attachments: [TWSSnippet.Attachment]?,
@@ -61,6 +63,7 @@ struct WebView: UIViewRepresentable {
         downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
+        self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.attachments = attachments
@@ -90,14 +93,25 @@ struct WebView: UIViewRepresentable {
         #if DEBUG
         _rawInjectJS(
             to: controller,
-            rawJS: [interceptConsoleLogs(controller: controller)]
+            rawJS: [interceptConsoleLogs(controller: controller)],
+            andPreloadedResources: [:],
+            forSnippet: snippet
         )
         #endif
 
-        _rawInjectCSS(to: controller, rawCSS: cssOverrides)
-        _rawInjectJS(to: controller, rawJS: jsOverrides)
-        _urlInjectCSS(to: controller, attachments: attachments)
-        _urlInjectJS(to: controller, attachments: attachments)
+        _rawInjectCSS(
+            to: controller,
+            rawCSS: cssOverrides,
+            andPreloadedAttachments: preloadedResources,
+            forSnippet: snippet
+        )
+
+        _rawInjectJS(
+            to: controller,
+            rawJS: jsOverrides,
+            andPreloadedResources: preloadedResources,
+            forSnippet: snippet
+        )
 
         // Location Permissions
 
@@ -239,12 +253,21 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectCSS(
         to controller: WKUserContentController,
         rawCSS: [TWSRawCSS],
+        andPreloadedAttachments resources: [TWSSnippet.Attachment: String],
+        forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
-        for css in rawCSS {
+        precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
+
+        let snippetAttachmentsURLs = snippet.dynamicResources?.map(\.url) ?? []
+        let preloaded = resources
+            .filter { $0.key.contentType == .css }
+            .filter { snippetAttachmentsURLs.contains($0.key.url) }
+            .map { TWSRawCSS($0.value) }
+
+        for css in preloaded + rawCSS {
             let value = css.value
-                .replacingOccurrences(of: "\n", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
             let source = """
@@ -265,73 +288,28 @@ struct WebView: UIViewRepresentable {
         }
     }
 
-    private func _urlInjectCSS(
-        to controller: WKUserContentController,
-        attachments: [TWSSnippet.Attachment]?,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
-    ) {
-        guard let attachments else { return }
-        for attachment in attachments.filter({ $0.contentType == .css }) {
-            let sourceCSS = """
-            var link = document.createElement('link');
-            link.href = '\(attachment.url.absoluteString)';
-            link.rel = 'stylesheet';
-            var D = document;
-            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
-            targ.appendChild(link);
-            """
-
-            let script = WKUserScript(
-                source: sourceCSS,
-                injectionTime: injectionTime,
-                forMainFrameOnly: forMainFrameOnly
-            )
-
-            controller.addUserScript(script)
-        }
-    }
-
     private func _rawInjectJS(
         to controller: WKUserContentController,
         rawJS: [TWSRawJS],
+        andPreloadedResources resources: [TWSSnippet.Attachment: String],
+        forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
     ) {
-        for jvs in rawJS {
+        precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
+
+        let snippetAttachmentsURLs = snippet.dynamicResources?.map(\.url) ?? []
+        let preloaded = resources
+            .filter { $0.key.contentType == .javascript }
+            .filter { snippetAttachmentsURLs.contains($0.key.url) }
+            .map { TWSRawJS($0.value) }
+
+        for jvs in preloaded + rawJS {
             let value = jvs.value
-                .replacingOccurrences(of: "\n", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
             let script = WKUserScript(
                 source: value,
-                injectionTime: injectionTime,
-                forMainFrameOnly: forMainFrameOnly
-            )
-
-            controller.addUserScript(script)
-        }
-    }
-
-    private func _urlInjectJS(
-        to controller: WKUserContentController,
-        attachments: [TWSSnippet.Attachment]?,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
-    ) {
-        guard let attachments else { return }
-        for attachment in attachments.filter({ $0.contentType == .javascript }) {
-            let sourceJS = """
-            var script = document.createElement('script');
-            script.src = '\(attachment.url.absoluteString)';
-            script.type = 'text/javascript';
-            var D = document;
-            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
-            targ.appendChild(script);
-            """
-
-            let script = WKUserScript(
-                source: sourceJS,
                 injectionTime: injectionTime,
                 forMainFrameOnly: forMainFrameOnly
             )

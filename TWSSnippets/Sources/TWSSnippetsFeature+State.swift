@@ -25,7 +25,7 @@ extension TWSSnippetsFeature {
         public init(
             configuration: TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
-            preloadedResources: [TWSSnippet.Attachment: String] = [:],
+            preloadedResources: [TWSSnippet.Attachment: String]? = nil,
             socketURL: URL? = nil
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
@@ -39,6 +39,10 @@ extension TWSSnippetsFeature {
 
             if let socketURL {
                 self.socketURL = socketURL
+            }
+
+            if let preloadedResources {
+                self.preloadedResources = preloadedResources
             }
         }
     }
