@@ -265,6 +265,7 @@ struct WebView: UIViewRepresentable {
 
         for css in preloaded + rawCSS {
             let value = css.value
+                .replacingOccurrences(of: "\n", with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
             let source = """
