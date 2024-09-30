@@ -24,7 +24,6 @@ struct WebView: UIViewRepresentable {
     let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
-    let attachments: [TWSSnippet.Attachment]?
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
@@ -43,7 +42,6 @@ struct WebView: UIViewRepresentable {
         preloadedResources: [TWSSnippet.Attachment: String],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
-        attachments: [TWSSnippet.Attachment]?,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID: String,
@@ -66,7 +64,6 @@ struct WebView: UIViewRepresentable {
         self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
-        self.attachments = attachments
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = displayID

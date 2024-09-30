@@ -185,7 +185,6 @@ private struct _TWSView: View {
             preloadedResources: preloadedResources,
             locationServicesBridge: locationServicesBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
-            attachments: snippet.dynamicResources,
             cssOverrides: cssOverrides,
             jsOverrides: jsOverrides,
             displayID: displayID,
