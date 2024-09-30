@@ -24,6 +24,7 @@ public struct TWSView<
     let displayID: String
     let loadingView: () -> LoadingView
     let errorView: (Error) -> ErrorView
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
@@ -44,6 +45,7 @@ public struct TWSView<
     ///   - pageTitle: Once the snippet is loaded, it's title will be set in this variable
     ///   - loadingView: A custom view to display while the snippet is loading
     ///   - errorView: A custom view to display in case the snippet fails to load
+    ///   - downloadCompleted: A callback that let's you know when the download is completed. The first argument is the fileName and the second one is the file location
     public init(
         snippet: TWSSnippet,
         locationServicesBridge: LocationServicesBridge,
@@ -57,7 +59,8 @@ public struct TWSView<
         loadingState: Binding<TWSLoadingState>,
         pageTitle: Binding<String> = Binding.constant(""),
         @ViewBuilder loadingView: @escaping () -> LoadingView,
-        @ViewBuilder errorView: @escaping (Error) -> ErrorView
+        @ViewBuilder errorView: @escaping (Error) -> ErrorView,
+        downloadCompleted: ((TWSDownloadState) -> Void)? = nil
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -72,6 +75,7 @@ public struct TWSView<
         self._pageTitle = pageTitle
         self.loadingView = loadingView
         self.errorView = errorView
+        self.downloadCompleted = downloadCompleted
     }
 
     public var body: some View {
@@ -87,7 +91,8 @@ public struct TWSView<
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,
                 loadingState: $loadingState,
-                pageTitle: $pageTitle
+                pageTitle: $pageTitle,
+                downloadCompleted: downloadCompleted
             )
             .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
             .id(snippet.id)
@@ -140,6 +145,7 @@ private struct _TWSView: View {
     let jsOverrides: [TWSRawJS]
     let handler: TWSManager
     let displayID: String
+    let downloadCompleted: ((TWSDownloadState) -> Void)?
 
     init(
         snippet: TWSSnippet,
@@ -152,7 +158,8 @@ private struct _TWSView: View {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
-        pageTitle: Binding<String>
+        pageTitle: Binding<String>,
+        downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
         self.locationServicesBridge = locationServicesBridge
@@ -165,6 +172,7 @@ private struct _TWSView: View {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self._pageTitle = pageTitle
+        self.downloadCompleted = downloadCompleted
     }
 
     var body: some View {
@@ -198,7 +206,8 @@ private struct _TWSView: View {
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,
-            loadingState: $loadingState
+            loadingState: $loadingState,
+            downloadCompleted: downloadCompleted
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
