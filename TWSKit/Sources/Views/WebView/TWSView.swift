@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import TWSModels
+@_spi(InternalLibraries) import TWSModels
 
 /// The main view to use to display snippets
 public struct TWSView<

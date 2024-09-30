@@ -10,12 +10,12 @@ import Foundation
 
 /// An aggregate of an sharedSnippet and all associated resources
 @dynamicMemberLookup
-public struct TWSSharedSnippetResourcesAggregate: Codable, Equatable {
+public struct TWSSharedSnippetBundle: Codable, Equatable {
 
     public let sharedSnippet: TWSSharedSnippet
-    public let resources: [TWSSnippet.Attachment: String]
+    @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]
 
-    public init(
+    @_spi(InternalLibraries) public init(
         sharedSnippet: TWSSharedSnippet,
         resources: [TWSSnippet.Attachment: String]
     ) {
@@ -27,4 +27,3 @@ public struct TWSSharedSnippetResourcesAggregate: Codable, Equatable {
         sharedSnippet[keyPath: keyPath]
     }
 }
-

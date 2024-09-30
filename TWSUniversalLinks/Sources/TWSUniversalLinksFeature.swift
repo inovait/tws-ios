@@ -8,7 +8,7 @@
 import Foundation
 import ComposableArchitecture
 import TWSCommon
-import TWSModels
+@_spi(InternalLibraries) import TWSModels
 
 @Reducer
 public struct TWSUniversalLinksFeature {
@@ -18,18 +18,19 @@ public struct TWSUniversalLinksFeature {
         public init() { }
     }
 
+    @CasePathable
     public enum Action {
 
         @CasePathable
         public enum BusinessAction {
             case onUniversalLink(URL)
             case snippetLoaded(Result<TWSSharedSnippet, Error>)
-            case notifyClient(TWSSharedSnippetResourcesAggregate)
+            case notifyClient(TWSSharedSnippetBundle)
         }
 
         @CasePathable
         public enum DelegateAction {
-            case snippetLoaded(TWSSharedSnippet)
+            case snippetLoaded(TWSSharedSnippetBundle)
         }
 
         case business(BusinessAction)
@@ -70,7 +71,7 @@ public struct TWSUniversalLinksFeature {
             logger.info("Universal link: snippet loaded successfully")
             return .run { [api] send in
                 let resources = await preloadResources(for: snippet, using: api)
-                let aggregated = TWSSharedSnippetResourcesAggregate(
+                let aggregated = TWSSharedSnippetBundle(
                     sharedSnippet: snippet,
                     resources: resources
                 )
@@ -83,7 +84,7 @@ public struct TWSUniversalLinksFeature {
             return .none
 
         case let .business(.notifyClient(aggregatedSnippet)):
-            return .send(.delegate(.snippetLoaded(aggregatedSnippet.sharedSnippet)))
+            return .send(.delegate(.snippetLoaded(aggregatedSnippet)))
 
         case .delegate:
             return .none

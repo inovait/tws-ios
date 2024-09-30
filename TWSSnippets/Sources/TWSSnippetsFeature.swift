@@ -2,80 +2,14 @@ import Foundation
 import ComposableArchitecture
 import TWSSnippet
 import TWSCommon
-import TWSModels
+@_spi(InternalLibraries) import TWSModels
 
 // swiftlint:disable identifier_name
 private let RECONNECT_TIMEOUT: TimeInterval = 3
 // swiftlint:enable identifier_name
 
 @Reducer
-public struct TWSSnippetsObserverFeature {
-
-    public init() { }
-
-    public var body: some ReducerOf<TWSSnippetsFeature> {
-        TWSSnippetsFeature()
-            .onChange(of: \.socketURL) { oldValue, newValue in
-                Reduce { _, _ in
-                    if oldValue != newValue && newValue != nil {
-                        return .send(.business(.listenForChanges))
-                    } else {
-                        return .none
-                    }
-                }
-            }
-    }
-}
-
-@Reducer
 public struct TWSSnippetsFeature {
-
-    @ObservableState
-    public struct State: Equatable {
-
-        @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
-        @Shared public internal(set) var source: TWSSource
-        public internal(set) var socketURL: URL?
-        public internal(set) var isSocketConnected = false
-
-        public init(
-            configuration: TWSConfiguration,
-            snippets: [TWSSnippet]? = nil,
-            socketURL: URL? = nil
-        ) {
-            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            _source = Shared(wrappedValue: .api, .source(for: configuration))
-
-            if let snippets {
-                let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
-                self.snippets = .init(uniqueElements: state)
-            }
-
-            if let socketURL {
-                self.socketURL = socketURL
-            }
-        }
-    }
-
-    public enum Action {
-
-        @CasePathable
-        public enum BusinessAction {
-            case load
-            case projectLoaded(Result<TWSProjectResourcesAggregate, Error>)
-            case listenForChanges
-            case delayReconnect
-            case reconnectTriggered
-            case stopListeningForChanges
-            case stopReconnecting
-            case isSocketConnected(Bool)
-            case snippets(IdentifiedActionOf<TWSSnippetFeature>)
-            case set(source: TWSSource)
-        }
-
-        case business(BusinessAction)
-
-    }
 
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
@@ -149,6 +83,7 @@ public struct TWSSnippetsFeature {
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
+            state.preloadedResources = project.resources
 
             // Update current or add new
 
@@ -339,64 +274,54 @@ public struct TWSSnippetsFeature {
         stream: AsyncStream<WebSocketEvent>,
         send: Send<TWSSnippetsFeature.Action>
     ) async throws {
-    mainLoop: for await event in stream {
-        switch event {
-        case .didConnect:
-            logger.info("Did connect \(Date.now)")
-            await send(.business(.isSocketConnected(true)))
-            await send(.business(.load))
-
-            do {
-                try await socket.listen(connectionID)
-            } catch {
-                logger.err("Failed to receive a message: \(error)")
-                break mainLoop
-            }
-
-            if Task.isCancelled { break mainLoop }
-
-        case .didDisconnect:
-            logger.info("Did disconnect \(Date())")
-            await send(.business(.isSocketConnected(false)))
-            break mainLoop
-
-        case let .receivedMessage(message):
-            logger.info("Received a message: \(message)")
-
-            switch message.type {
-            case .created, .deleted:
+        mainLoop: for await event in stream {
+            switch event {
+            case .didConnect:
+                logger.info("Did connect \(Date.now)")
+                await send(.business(.isSocketConnected(true)))
                 await send(.business(.load))
 
-            case .updated:
-                await send(
-                    .business(
-                        .snippets(
-                            .element(
-                                id: message.id,
-                                action: .business(.snippetUpdated(target: message.target))
+                do {
+                    try await socket.listen(connectionID)
+                } catch {
+                    logger.err("Failed to receive a message: \(error)")
+                    break mainLoop
+                }
+
+                if Task.isCancelled { break mainLoop }
+
+            case .didDisconnect:
+                logger.info("Did disconnect \(Date())")
+                await send(.business(.isSocketConnected(false)))
+                break mainLoop
+
+            case let .receivedMessage(message):
+                logger.info("Received a message: \(message)")
+
+                switch message.type {
+                case .created, .deleted:
+                    await send(.business(.load))
+
+                case .updated:
+                    await send(
+                        .business(
+                            .snippets(
+                                .element(
+                                    id: message.id,
+                                    action: .business(.snippetUpdated(target: message.target))
+                                )
                             )
                         )
                     )
-                )
-            }
+                }
 
-            do {
-                try await socket.listen(connectionID)
-            } catch {
-                logger.err("Failed to receive a message: \(error)")
-                break mainLoop
+                do {
+                    try await socket.listen(connectionID)
+                } catch {
+                    logger.err("Failed to receive a message: \(error)")
+                    break mainLoop
+                }
             }
         }
-    }
-    }
-}
-
-private extension TWSSnippetsFeature {
-
-    // It is important to further differentiate cancel events with `TWSConfiguration`
-    // This is because TCA uses combine pipelines, which means the same hashable value
-    // could potentially leak to all active stores.
-    enum CancelID: Hashable {
-        case socket(TWSConfiguration), reconnect(TWSConfiguration)
     }
 }

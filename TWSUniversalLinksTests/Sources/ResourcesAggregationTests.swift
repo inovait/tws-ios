@@ -9,7 +9,7 @@
 import XCTest
 @testable import TWSUniversalLinks
 @testable import TWSCommon
-@testable import TWSModels
+@testable @_spi(InternalLibraries) import TWSModels
 @testable import TWSAPI
 @testable import ComposableArchitecture
 
@@ -77,10 +77,17 @@ final class ResourcesAggregationTests: XCTestCase {
 
         await store.send(.business(.onUniversalLink(url))).finish()
         await store.receive(\.business.snippetLoaded.success, sharedSnippet)
-        await store.receive(\.business.notifyClient, .init(
+        await store.receive(\.business.notifyClient, TWSSharedSnippetBundle(
             sharedSnippet: sharedSnippet,
             resources: preloadedAttachments
         ))
-        await store.receive(\.delegate.snippetLoaded, sharedSnippet)
+
+        await store.receive(
+            \.delegate.snippetLoaded,
+            TWSSharedSnippetBundle(
+                sharedSnippet: sharedSnippet,
+                resources: preloadedAttachments
+            )
+        )
     }
 }

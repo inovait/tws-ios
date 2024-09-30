@@ -68,7 +68,7 @@ final class ResourcesAggregationTests: XCTestCase {
             ): "https://www.r4.com"
         ]
 
-        let aggregate = TWSProjectResourcesAggregate(
+        let aggregate = TWSProjectBundle(
             project: project,
             resources: expectedResources
         )
@@ -86,6 +86,7 @@ final class ResourcesAggregationTests: XCTestCase {
         await store.receive(\.business.projectLoaded.success, aggregate) {
             $0.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.preloadedResources = expectedResources
         }
     }
 }
