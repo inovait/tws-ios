@@ -299,13 +299,33 @@ let project = Project(
                     .release(name: "Release")
                 ]
             )
-        )
+        ),
+        .target(
+            name: "TWSUniversalLinksTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsuniversallinksTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSUniversalLinksTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSUniversalLinks")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
+        ),
     ],
     schemes: [
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),
@@ -405,14 +425,10 @@ func targetScripts() -> [TargetScript] {
     [
         .pre(
             script: #"""
-            if [[ "$(uname -m)" == arm64 ]]; then
-                export PATH="/opt/homebrew/bin:$PATH"
-            fi
-
-            if which swiftlint > /dev/null; then
-                $HOME/.local/bin/mise x -- swiftlint
+            if $HOME/.local/bin/mise x -- which swiftlint > /dev/null; then
+                $HOME/.local/bin/mise x -- swiftlint;
             else
-                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
+                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
             fi
             """#,
             name: "SwiftLint",

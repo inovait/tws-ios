@@ -30,6 +30,7 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+
         logger.info("INIT TWSManager \(_id)")
     }
 

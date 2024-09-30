@@ -4,7 +4,7 @@ public struct TWSSnippet: Identifiable, Codable, Equatable {
 
     public let id: UUID
     public var target: URL
-    @LossyCodableList public var dynamicResources: [Attachment]?
+    @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     public init(id: UUID, target: URL, dynamicResources: [Attachment]? = nil) {
         self.id = id
@@ -15,7 +15,7 @@ public struct TWSSnippet: Identifiable, Codable, Equatable {
 
 public extension TWSSnippet {
 
-    struct Attachment: Codable, Equatable {
+    struct Attachment: Codable, Hashable {
 
         public let url: URL
         public let contentType: `Type`
@@ -29,7 +29,7 @@ public extension TWSSnippet {
 
 public extension TWSSnippet.Attachment {
 
-    enum `Type`: String, Codable, Equatable {
+    enum `Type`: String, Codable, Hashable {
 
         case javascript = "text/javascript"
         case css = "text/css"

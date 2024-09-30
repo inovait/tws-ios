@@ -11,9 +11,30 @@ import TWSModels
 import TWSAPI
 import ComposableArchitecture
 
+@DependencyClient
 public struct APIDependency {
-    public var getProject: @Sendable (TWSConfiguration) async throws -> TWSProject
-    public var getSnippetBySharedId: @Sendable (TWSConfiguration, _ snippetId: String) async throws -> TWSSharedSnippet
+
+    public var getProject: @Sendable (
+        TWSConfiguration
+    ) async throws(APIError) -> TWSProject = { _ throws(APIError) in
+        reportIssue("\(Self.self).getProject")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
+
+    public var getSnippetBySharedId: @Sendable (
+        TWSConfiguration,
+        _ snippetId: String
+    ) async throws(APIError) -> TWSSharedSnippet = { _, _ throws(APIError) in
+        reportIssue("\(Self.self).getSnippetBySharedId")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
+
+    public var getResource: @Sendable (
+        TWSSnippet.Attachment
+    ) async throws(APIError) -> String = { _ throws(APIError) in
+        reportIssue("\(Self.self).loadResource")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 }
 
 public enum APIDependencyKey: DependencyKey {
@@ -23,7 +44,8 @@ public enum APIDependencyKey: DependencyKey {
 
         return .init(
             getProject: api.getProject,
-            getSnippetBySharedId: api.getSnippetBySharedId
+            getSnippetBySharedId: api.getSnippetBySharedId,
+            getResource: api.getResource
         )
     }
 }

@@ -15,7 +15,7 @@ public final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicropho
 
     // MARK: - Confirming to `CameraMicrophoneServicesBridge`
 
-    public func checkCameraPermission() async throws {
+    public func checkCameraPermission() async throws(CameraMicrophoneServicesError) {
         // Check the current authorization status
         let status = AVCaptureDevice.authorizationStatus(for: .video)
 
@@ -35,7 +35,7 @@ public final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicropho
         }
     }
 
-    public func checkMicrophonePermission() async throws {
+    public func checkMicrophonePermission() async throws(CameraMicrophoneServicesError) {
         // Check the current authorization status
         let status = AVAudioApplication.shared.recordPermission
 

@@ -29,6 +29,7 @@ public class TWSFactory {
         _new(
             configuration: configuration,
             snippets: nil,
+            preloadedResources: nil,
             socketURL: nil
         )
     }
@@ -37,11 +38,12 @@ public class TWSFactory {
     /// - Parameter shared: Information about the TWSSnippet opened via universal link
     /// - Returns: An instance of ``TWSManager``
     public class func new(
-        with shared: TWSSharedSnippet
+        with shared: TWSSharedSnippetBundle
     ) -> TWSManager {
         return _new(
             configuration: shared.configuration,
             snippets: [shared.snippet],
+            preloadedResources: ExtractResources.from(bundle: shared),
             socketURL: nil
         )
     }
@@ -64,6 +66,7 @@ public class TWSFactory {
     private class func _new(
         configuration: TWSConfiguration,
         snippets: [TWSSnippet]?,
+        preloadedResources: [TWSSnippet.Attachment: String]?,
         socketURL: URL?
     ) -> TWSManager {
         if let manager = _instances[configuration]?.box {
@@ -74,7 +77,12 @@ public class TWSFactory {
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
-            snippets: .init(configuration: configuration, snippets: snippets, socketURL: socketURL),
+            snippets: .init(
+                configuration: configuration,
+                snippets: snippets,
+                preloadedResources: preloadedResources,
+                socketURL: socketURL
+            ),
             universalLinks: .init()
         )
 
@@ -83,8 +91,14 @@ public class TWSFactory {
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
+        let resourcesCount = state.snippets.preloadedResources.count
+        logger.info(
+            "\(resourcesCount) \(resourcesCount == 1 ? "resource" : "resources")"
+        )
+
         let publisher = PassthroughSubject<TWSStreamEvent, Never>()
         let mainReducer = MainReducer(publisher: publisher)
+
         let combinedReducers = CombineReducers {
             mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in

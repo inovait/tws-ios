@@ -13,7 +13,7 @@ import TWSModels
 public struct SocketDependency {
 
     public var get: @Sendable (TWSConfiguration, URL) async -> UUID
-    public var connect: @Sendable (UUID) async throws -> AsyncStream<WebSocketEvent>
+    public var connect: @Sendable (UUID) async throws(SocketMessageReadError) -> AsyncStream<WebSocketEvent>
     public var listen: @Sendable (UUID) async throws -> Void
     public var closeConnection: @Sendable (UUID) async -> Void
     public var abort: @Sendable (TWSConfiguration) async -> Void
@@ -33,7 +33,7 @@ public enum SocketDependencyKey: DependencyKey {
                 await configuration.setValue(id, forKey: config)
                 return id
             },
-            connect: { [storage] id in
+            connect: { [storage] id throws(SocketMessageReadError) in
                 guard let socket = await storage.getValue(forKey: id)
                 else { preconditionFailure("Sending a `connect` message to an invalid object: \(id)") }
                 try await socket.connect()

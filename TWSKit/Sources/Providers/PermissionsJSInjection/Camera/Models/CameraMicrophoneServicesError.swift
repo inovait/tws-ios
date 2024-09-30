@@ -8,4 +8,4 @@
 
 import Foundation
 
-enum CameraMicrophoneServicesError: Int, Error { case cameraNotGranted, microphoneNotGranted }
+public enum CameraMicrophoneServicesError: Int, Error { case cameraNotGranted, microphoneNotGranted }

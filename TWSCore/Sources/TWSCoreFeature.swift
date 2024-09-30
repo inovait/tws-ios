@@ -18,7 +18,8 @@ public struct TWSCoreFeature {
         public init(
             settings: TWSSettingsFeature.State,
             snippets: TWSSnippetsFeature.State,
-            universalLinks: TWSUniversalLinksFeature.State) {
+            universalLinks: TWSUniversalLinksFeature.State
+        ) {
             self.settings = settings
             self.snippets = snippets
             self.universalLinks = universalLinks

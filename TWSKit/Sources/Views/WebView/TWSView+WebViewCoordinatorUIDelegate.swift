@@ -75,7 +75,9 @@ extension WebView.Coordinator: WKUIDelegate {
             preferredStyle: .alert
         )
         alertController.addAction(.init(title: "OK", style: .default, handler: { _ in completionHandler() }))
-        navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil)
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler()
+        }
     }
 
     public func webView(
@@ -96,7 +98,9 @@ extension WebView.Coordinator: WKUIDelegate {
 
         alertController.addAction(.init(title: "OK", style: .default, handler: { _ in completionHandler(true) }))
         alertController.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in completionHandler(false) }))
-        navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil)
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler(false)
+        }
     }
 
     public func webView(
@@ -132,7 +136,9 @@ extension WebView.Coordinator: WKUIDelegate {
             completionHandler(nil)
         }))
 
-        navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil)
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler(nil)
+        }
     }
 
     func webView(

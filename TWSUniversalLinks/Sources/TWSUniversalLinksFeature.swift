@@ -8,7 +8,7 @@
 import Foundation
 import ComposableArchitecture
 import TWSCommon
-import TWSModels
+@_spi(InternalLibraries) import TWSModels
 
 @Reducer
 public struct TWSUniversalLinksFeature {
@@ -18,17 +18,19 @@ public struct TWSUniversalLinksFeature {
         public init() { }
     }
 
+    @CasePathable
     public enum Action {
 
         @CasePathable
         public enum BusinessAction {
             case onUniversalLink(URL)
             case snippetLoaded(Result<TWSSharedSnippet, Error>)
+            case notifyClient(TWSSharedSnippetBundle)
         }
 
         @CasePathable
         public enum DelegateAction {
-            case snippetLoaded(TWSSharedSnippet)
+            case snippetLoaded(TWSSharedSnippetBundle)
         }
 
         case business(BusinessAction)
@@ -67,11 +69,22 @@ public struct TWSUniversalLinksFeature {
 
         case let .business(.snippetLoaded(.success(snippet))):
             logger.info("Universal link: snippet loaded successfully")
-            return .send(.delegate(.snippetLoaded(snippet)))
+            return .run { [api] send in
+                let resources = await preloadResources(for: snippet, using: api)
+                let aggregated = TWSSharedSnippetBundle(
+                    sharedSnippet: snippet,
+                    resources: resources
+                )
+
+                await send(.business(.notifyClient(aggregated)))
+            }
 
         case let .business(.snippetLoaded(.failure(error))):
             logger.err("Universal link: load failed: \(error.localizedDescription)")
             return .none
+
+        case let .business(.notifyClient(aggregatedSnippet)):
+            return .send(.delegate(.snippetLoaded(aggregatedSnippet)))
 
         case .delegate:
             return .none

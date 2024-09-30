@@ -10,7 +10,7 @@ import Foundation
 
 class Router {
 
-    class func make(request: Request) async throws -> APIResult {
+    class func make(request: Request) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = "https"
         components.host = request.host
@@ -60,4 +60,5 @@ public enum APIError: Error {
 
     case local(Error)
     case server(Int, Data)
+    case decode(Error)
 }
