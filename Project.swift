@@ -26,6 +26,7 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
+                .external(name: "Atlantis"),
                 .target(name: "TWSKit")
             ],
             settings: .settings(
@@ -359,7 +360,9 @@ func infoPlist() -> [String: Plist.Value] {
         "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
         "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app.",
         "UIFileSharingEnabled": true,
-        "LSSupportsOpeningDocumentsInPlace": true
+        "LSSupportsOpeningDocumentsInPlace": true,
+        "NSLocalNetworkUsageDescription": "Atlantis would use Bonjour Service to discover Proxyman app from your local network.",
+        "NSBonjourServices": ["_Proxyman._tcp"]
     ]
 }
 

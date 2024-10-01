@@ -32,6 +32,10 @@ let package = Package(
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
             exact: .init(0, 6, 2)
+        ),
+        .package(
+            url: "https://github.com/ProxymanApp/atlantis",
+            exact: .init(1, 25, 1)
         )
     ]
 )

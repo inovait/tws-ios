@@ -1,6 +1,9 @@
 import SwiftUI
 import Firebase
 import TWSKit
+#if DEBUG
+import Atlantis
+#endif
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -9,6 +12,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
+        #if DEBUG
+        Atlantis.start(hostName: "mihas-macbook-pro-6.local.")
+        #endif
         return true
     }
 }
