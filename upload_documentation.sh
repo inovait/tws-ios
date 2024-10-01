@@ -22,14 +22,6 @@ echo "Conversion completed"
 
 #Move to the submodule that hosts the documentation and remove the current one
 cd ../../../../tws-ios-docs
-git checkout main
-git pull
-pwd
-echo "Moved to Docs repository and checked out main branch"
-echo "Removing all the current documentatino content"
-ls
-rm -rf *
-echo "Content removed"
 
 #Copy and commit the updated documentation
 if [ ! -d "$PWD" ]; then
@@ -39,6 +31,16 @@ fi
 
 echo "Derived data path: $DERIVED_DATA_PATH"
 echo "Static web path: $STATIC_WEB_PATH"
+#
+
+git checkout main
+git pull
+pwd
+echo "Moved to Docs repository and checked out main branch"
+echo "Removing all the current documentatino content"
+ls
+rm -rf *
+echo "Content removed"
 
 cp -R ../"$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos/"$STATIC_WEB_PATH"
 git add .
