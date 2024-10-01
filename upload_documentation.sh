@@ -27,9 +27,6 @@ else
     exit 1
 fi
 
-#Move to the folder with .doccarchive
-cd "$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos
-
 #Convert the archive into a static web page
 echo "Starting DocC Archive conversion to a static web app"
 $(xcrun --find docc) process-archive \
@@ -60,6 +57,14 @@ echo "Removing all the current documentatino content"
 ls
 rm -rf *
 echo "Content removed"
+
+echo "Copying from: ../$DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/$STATIC_WEB_PATH"
+if [ -d "../$DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/$STATIC_WEB_PATH" ]; then
+    echo "Directory exists. Copying from directory."
+else
+    echo "Error: Directory does not exist!"
+    exit 1
+fi
 
 cp -R ../"$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos/"$STATIC_WEB_PATH"
 git add .
