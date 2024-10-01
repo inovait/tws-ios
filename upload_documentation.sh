@@ -37,7 +37,13 @@ transform-for-static-hosting "$SCHEME".doccarchive \
 echo "Conversion completed"
 
 #Move to the submodule that hosts the documentation and remove the current one
-cd ../../../../tws-ios-docs
+if [ -d "../../../../tws-ios-docs" ]; then
+    echo "Directory exists. Changing directory."
+    cd ../../../../tws-ios-docs
+else
+    echo "Error: Directory does not exist! (../../../../tws-ios-docs)"
+    exit 1
+fi
 
 #Copy and commit the updated documentation
 if [ ! -d "$PWD" ]; then
