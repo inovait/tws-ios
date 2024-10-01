@@ -6,8 +6,27 @@ DERIVED_DATA_PATH=$4
 HOSTING_BASE_PATH=$5
 STATIC_WEB_PATH=$6
 
+echo "-----------------------"
+echo "SCHEME=$SCHEME"
+echo "WORKSPACE=$WORKSPACE"
+echo "DESTINATION=$DESTINATION"
+echo "DERIVED_DATA_PATH=$DERIVED_DATA_PATH"
+echo "HOSTING_BASE_PATH=$HOSTING_BASE_PATH"
+echo "STATIC_WEB_PATH=$STATIC_WEB_PATH"
+echo "-----------------------"
+
 #Generate documentation
 xcodebuild docbuild -quiet -scheme "$SCHEME" -destination "$DESTINATION" -workspace "$WORKSPACE" -derivedDataPath "$DERIVED_DATA_PATH"
+
+echo "Navigating to: $DERIVED_DATA_PATH/Build/Products/Debug-iphoneos"
+if [ -d "$DERIVED_DATA_PATH/Build/Products/Debug-iphoneos" ]; then
+    echo "Directory exists. Changing directory."
+    cd "$DERIVED_DATA_PATH/Build/Products/Debug-iphoneos"
+else
+    echo "Error: Directory does not exist!"
+    exit 1
+fi
+
 #Move to the folder with .doccarchive
 cd "$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos
 
