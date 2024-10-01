@@ -7,7 +7,7 @@ HOSTING_BASE_PATH=$5
 STATIC_WEB_PATH=$6
 
 #Generate documentation
-xcodebuild docbuild -scheme "$SCHEME" -destination "$DESTINATION" -workspace "$WORKSPACE" -derivedDataPath "$DERIVED_DATA_PATH"
+xcodebuild docbuild -quiet -scheme "$SCHEME" -destination "$DESTINATION" -workspace "$WORKSPACE" -derivedDataPath "$DERIVED_DATA_PATH"
 #Move to the folder with .doccarchive
 cd "$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos
 
@@ -32,6 +32,14 @@ rm -rf *
 echo "Content removed"
 
 #Copy and commit the updated documentation
+if [ ! -d "$PWD" ]; then
+  echo "Error: Current working directory does not exist."
+  exit 1
+fi
+
+echo "Derived data path: $DERIVED_DATA_PATH"
+echo "Static web path: $STATIC_WEB_PATH"
+
 cp -R ../"$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos/"$STATIC_WEB_PATH"
 git add .
 git commit -m "Updated documentation"
