@@ -18,6 +18,7 @@ public final class TWSManager: Identifiable {
 
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
+    private var clearedPopupSnippets: [TWSSnippet] = []
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -40,11 +41,28 @@ public final class TWSManager: Identifiable {
     }
 
     // MARK: - Public
+    public func addClearedPopup(_ snippet: TWSSnippet) {
+        self.clearedPopupSnippets.append(snippet)
+        checkIfPopupsRemain()
+    }
+
+    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
+        return !clearedPopupSnippets.contains(snippet)
+    }
 
     /// A getter for the list of loaded snippets
-    public var snippets: [TWSSnippet] {
-        precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
-        return store.snippets.snippets.elements.map(\.snippet)
+    public var tabSnippets: [TWSSnippet] {
+        precondition(Thread.isMainThread, "`tabSnippets()` can only be called on main thread")
+        return store.snippets.snippets.elements.map(\.snippet).filter { snippet in
+            return TWSSnippet.SnippetType(snippetType: snippet.type) == .tab
+        }
+    }
+
+    public var popupSnippets: [TWSSnippet] {
+        precondition(Thread.isMainThread, "`popupSnippets()` can only be called on main thread")
+        return store.snippets.snippets.elements.map(\.snippet).filter { snippet in
+            return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup && canShowPopupSnippet(snippet)
+        }
     }
 
     /// A function that starts loading snippets and listen for changes
@@ -137,5 +155,20 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
+    }
+
+    // MARK: - Private
+
+    private func checkIfPopupsRemain() {
+        var shouldClear = true
+        popupSnippets.forEach { snippet in
+            if canShowPopupSnippet(snippet) {
+                shouldClear = false
+                return
+            }
+        }
+        if shouldClear {
+            store.send(.allPopupsCleared)
+        }
     }
 }

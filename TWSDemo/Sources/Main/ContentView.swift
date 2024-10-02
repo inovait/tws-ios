@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import TWSKit
+import TWSUI
 
 @MainActor
 struct ContentView: View {
@@ -54,5 +56,8 @@ struct ContentView: View {
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
         }
+        .fullScreenCover(isPresented: $twsViewModel.presentPopups, content: {
+            TWSPopupView(manager: twsViewModel.manager)
+        })
     }
 }

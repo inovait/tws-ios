@@ -18,7 +18,7 @@ struct SnippetsView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsViewModel.snippets) { snippet in
+                    ForEach(twsViewModel.tabSnippets) { snippet in
                         SnippetView(snippet: snippet)
                     }
                 }

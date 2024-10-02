@@ -7,12 +7,13 @@
 //
 
 import Foundation
+import TWSModels
 
 public struct SocketMessage: CustomDebugStringConvertible {
 
     public let id: UUID
     public let type: MessageType
-    public let target: URL?
+    public let snippet: TWSSnippet?
 
     init?(json: [AnyHashable: Any]) {
         guard
@@ -31,15 +32,15 @@ public struct SocketMessage: CustomDebugStringConvertible {
 
         self.id = id
         self.type = type
-        self.target = Self._parseTarget(dataJson)
+        self.snippet = Self._parseSnippet(dataJson)
     }
 
     #if DEBUG
     // periphery:ignore - Used in unit tests
-    init(id: UUID, type: MessageType, target: URL? = nil) {
+    init(id: UUID, type: MessageType, snippet: TWSSnippet? = nil) {
         self.id = id
         self.type = type
-        self.target = target
+        self.snippet = snippet
     }
     #endif
 
@@ -49,10 +50,15 @@ public struct SocketMessage: CustomDebugStringConvertible {
         """
     }
 
-    private static func _parseTarget(_ json: [AnyHashable: Any]) -> URL? {
-        guard let urlString = json["target"] as? String
-        else { return nil }
-        return URL(string: urlString)
+    private static func _parseSnippet(_ json: [AnyHashable: Any]) -> TWSSnippet? {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+            let snippet = try JSONDecoder().decode(TWSSnippet.self, from: jsonData)
+            return snippet
+        } catch {
+            logger.err("Failed to parse snippet from socket: \(error.localizedDescription)")
+            return nil
+        }
     }
 }
 

@@ -15,13 +15,17 @@ class ProjectViewModel {
 
     private let _id = UUID().uuidString.suffix(4)
     let manager: TWSManager
-    private(set) var snippets: [TWSSnippet]
+    private(set) var tabSnippets: [TWSSnippet]
+    private(set) var popupSnippets: [TWSSnippet]
     let destinationID = UUID()
     var universalLinkLoadedProject: LoadedProjectInfo?
+    var presentPopups: Bool = false
 
     init(manager: TWSManager) {
-        self.snippets = manager.snippets
+        self.tabSnippets = manager.tabSnippets
+        self.popupSnippets = manager.popupSnippets
         self.manager = manager
+        self.presentPopups = !manager.popupSnippets.isEmpty
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
@@ -51,9 +55,18 @@ class ProjectViewModel {
                     selectedID: project.snippet.id
                 )
 
-            case let .snippetsUpdated(updatedSnippets):
+            case .snippetsUpdated(let snippets):
                 print("->", _id, "Received event: snippets updated")
-                self.snippets = updatedSnippets
+                self.tabSnippets = snippets.filter({ snippet in
+                    return TWSSnippet.SnippetType(snippetType: snippet.type) == .tab
+                })
+                self.popupSnippets = snippets.filter({ snippet in
+                    return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup && self.manager.canShowPopupSnippet(snippet)
+                })
+                self.presentPopups = !self.popupSnippets.isEmpty
+
+            case .allPopupsCleared:
+                self.presentPopups = false
 
             @unknown default:
                 break
@@ -61,7 +74,7 @@ class ProjectViewModel {
         }
 
         print("->", _id, "Stopped listening")
-        snippets = []
+        tabSnippets = []
         universalLinkLoadedProject = nil
     }
 }

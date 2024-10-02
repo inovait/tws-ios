@@ -17,4 +17,7 @@ public enum TWSStreamEvent {
     /// This event is sent when there are new snippets available
     /// - Parameter TWSSnippets A list of new snippets
     case snippetsUpdated([TWSSnippet])
+    
+    /// This event is sent when all popup snippets were cleared and no more are available
+    case allPopupsCleared
 }

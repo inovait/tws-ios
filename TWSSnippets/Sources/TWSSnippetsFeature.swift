@@ -97,7 +97,7 @@ public struct TWSSnippetsFeature {
                                     .snippets(
                                         .element(
                                             id: snippet.id,
-                                            action: .business(.snippetUpdated(target: snippet.target))
+                                            action: .business(.snippetUpdated(snippet: snippet))
                                         )
                                     )
                                 )
@@ -264,7 +264,9 @@ public struct TWSSnippetsFeature {
         return urls.map {
             .init(
                 id: uuidGenerator(),
-                target: $0
+                target: $0,
+                type: "tab",
+                status: "enabled"
             )
         }
     }
@@ -308,7 +310,7 @@ public struct TWSSnippetsFeature {
                             .snippets(
                                 .element(
                                     id: message.id,
-                                    action: .business(.snippetUpdated(target: message.target))
+                                    action: .business(.snippetUpdated(snippet: message.snippet))
                                 )
                             )
                         )

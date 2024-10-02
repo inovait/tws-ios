@@ -99,7 +99,10 @@ public class TWSFactory {
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
                         let newSnippets = newValue.map(\.snippet)
-                        return .send(.snippetsDidChange(newSnippets))
+                        let onlyEnabledSnippets = newSnippets.filter { snippet in
+                            return TWSSnippet.SnippetStatus(snippetStatus: snippet.status) == .enabled
+                        }
+                        return .send(.snippetsDidChange(onlyEnabledSnippets))
                     }
                 }
         }
