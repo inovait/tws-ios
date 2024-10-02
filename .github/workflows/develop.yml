@@ -22,11 +22,9 @@ jobs:
                 exit 1
             fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - uses: jdx/mise-action@v2
         with:
