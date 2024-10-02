@@ -74,5 +74,5 @@ fi
 
 cp -R ../"$DERIVED_DATA_PATH"/Build/Products/Debug-iphoneos/"$STATIC_WEB_PATH"
 git add .
-git commit -m "Updated documentation"
+git commit -m "Updated documentation (CI)"
 git push origin main
