@@ -81,15 +81,15 @@ platform :ios do
   lane :build_staging do |options|
     setup_keychain
     download_provision_profiles
-    gym(
-        workspace: "./TheWebSnippet.xcworkspace",
-        clean: true,
-        output_directory: "./Archive",
-        scheme: "TWSDemo",
-        output_name: "TWSDemo.ipa",
-        configuration: "Staging",
-        export_method: "ad-hoc"
-    )
+    # gym(
+    #     workspace: "./TheWebSnippet.xcworkspace",
+    #     clean: true,
+    #     output_directory: "./Archive",
+    #     scheme: "TWSDemo",
+    #     output_name: "TWSDemo.ipa",
+    #     configuration: "Staging",
+    #     export_method: "ad-hoc"
+    # )
     setup_delete_keychain
   end
 
