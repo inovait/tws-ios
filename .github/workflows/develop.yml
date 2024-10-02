@@ -26,7 +26,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-          submodule-fetch-depth: 0
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - uses: jdx/mise-action@v2
