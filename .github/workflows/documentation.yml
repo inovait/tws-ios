@@ -4,7 +4,7 @@ on:
     workflows: ["Develop Build"]
     types:
       - completed  # Trigger when the develop pipeline completes
-	workflow_dispatch:  # Allow manual runs
+  workflow_dispatch:  # Allow manual runs
 
 concurrency:
   group: ${{ docs-${{ github.ref }} }}
