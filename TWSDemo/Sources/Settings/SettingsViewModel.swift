@@ -9,6 +9,7 @@
 import Foundation
 import TWSKit
 
+@MainActor
 @Observable
 class SettingsViewModel {
 

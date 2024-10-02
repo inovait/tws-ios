@@ -20,22 +20,29 @@ extension WebView {
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
+        var downloadInfo = TWSDownloadInfo()
+
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
+        let downloadCompleted: ((TWSDownloadState) -> Void)?
 
         init(
             _ parent: WebView,
             snippetHeightProvider: SnippetHeightProvider,
-            navigationProvider: NavigationProvider
+            navigationProvider: NavigationProvider,
+            downloadCompleted: ((TWSDownloadState) -> Void)?
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
             self.navigationProvider = navigationProvider
+            self.downloadCompleted = downloadCompleted
+            logger.debug("INIT Coordinator for WKWebView \(parent.id)")
         }
 
         deinit {
             heightObserver?.invalidate()
             heightObserver = nil
+            logger.debug("DEINIT Coordinator for WKWebView \(parent.id)")
         }
 
         // MARK: - Internals

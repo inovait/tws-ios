@@ -9,63 +9,9 @@ This documentation will guide you through implementing TWSKit into your own app
 
 ![The WebSnippet Logo](appIcon-200x200)
 
-### Getting started
+### Quick tutorial
 
-
-This will be a quick tutorial on how to quickly set up your app using ``TWSKit``.
-1. Use the ``TWSFactory`` to create a new instance of ``TWSManager``. This instance will be your main point of accessing your snippets. Link up the manager's snippets with your local snippets array and call run() on the manager to start loading the snippets.
-``` swift
-@Observable
-class TWSViewModel {
-
-    let manager = TWSFactory.new()
-    var snippets: [TWSSnippet]
-
-    init() {
-        snippets = manager.snippets
-        manager.run(listenForChanges: true)
-    }
-}
-```
-
-2. Start listening to the manager's events to be notified of changes of snippets
-``` swift
-for await snippetEvent in self.manager.events {
-    switch snippetEvent {
-    case .snippetsUpdated(let snippets):
-        self.snippets = snippets
-    default:
-        print("Unhandled stream event")
-    }
-}
-```
-
-3. Display your snippet using ``TWSView``. Pass along the @State variables if you want to be notified of snippet data
-``` swift
-@State private var twsViewModel = TWSViewModel()
-@State private var pageTitle: String = ""
-@State private var loadingState: TWSLoadingState = .idle
-@State private var canGoBack = false
-@State private var canGoForward = false
-
-var body: some View {
-    TWSView(
-        snippet: snippet,
-        using: twsViewModel.manager,
-        displayID: displayId,
-        canGoBack: $canGoBack,
-        canGoForward: $canGoForward,
-        loadingState: $loadingState,
-        pageTitle: $pageTitle,
-        loadingView: {
-            WebViewLoadingView()
-        },
-        errorView: { error in
-            WebViewErrorView(error: error)
-        }
-    )
-}
-```
+- [Getting started](<doc:Tutorial-Table-of-Contents>)
 
 ### Setting up the project with CLI
 
@@ -75,5 +21,10 @@ var body: some View {
 
 - [Handling Google Login](<doc:GoogleLogin>)
 
-## Topics
+### Downloading files
 
+If you download a file through the ``TWSView``, the file will be stored in the app's documents directory. By default that folder is private and you have 2 options available to you:
+
+**1 - Make your documents public:** In your info.plist make sure you've set the "UIFileSharingEnabled" to true. If you have used our project generator it will be already set to true.
+
+**2 - Check the download completed callback:** On a successful download you'll receive an instance of ``TWSDownloadInfo``. This will include the full path to the downloaded file and you can use this URL to move the file to the location of your choosing.

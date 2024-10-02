@@ -1,28 +1,42 @@
 import Foundation
 import SwiftUI
+import Combine
 @_exported import TWSModels
-@_implementationOnly import TWSCore
-@_implementationOnly import ComposableArchitecture
-@_implementationOnly import TWSLogger
+internal import TWSCore
+internal import ComposableArchitecture
+internal import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
-public class TWSManager {
+@MainActor
+public final class TWSManager: Identifiable {
 
-    private let initDate: Date
+    let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
-    public let events: AsyncStream<TWSStreamEvent>
+    let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
+    private let initDate: Date
+    private let _id = UUID().uuidString.suffix(4)
+
     init(
         store: StoreOf<TWSCoreFeature>,
-        events: AsyncStream<TWSStreamEvent>
+        observer: AnyPublisher<TWSStreamEvent, Never>,
+        configuration: TWSConfiguration
     ) {
         self.store = store
-        self.events = events
+        self.observer = observer.share().eraseToAnyPublisher()
+        self.configuration = configuration
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+
+        logger.info("INIT TWSManager \(_id)")
+    }
+
+    deinit {
+        logger.info("DEINIT TWSManager \(_id)")
+        MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
     // MARK: - Public
@@ -33,18 +47,22 @@ public class TWSManager {
         return store.snippets.snippets.elements.map(\.snippet)
     }
 
-    /// A function that starts loading snippets
-    /// - Parameter listenForChanges: A flag that enables real time updates when any of the snippets change on the server
-    public func run(listenForChanges: Bool) {
-        precondition(Thread.isMainThread, "`run(listenForChanges:)` can only be called on main thread")
+    /// A function that starts loading snippets and listen for changes
+    public func run() {
+        precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         store.send(.snippets(.business(.load)))
-
-        if listenForChanges {
-            store.send(.snippets(.business(.listenForChanges)))
-        }
     }
 
-    /// A function that load the previous snippet in the list
+    /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
+    /// It is automatically canceled when the parent task is cancelled.
+    /// - Parameter onEvent: A callback triggered for every update
+    public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
+        precondition(Thread.isMainThread, "`observe` can only be called on main thread")
+        let adapter = CombineToAsyncStreamAdapter(upstream: observer)
+        await adapter.listen(onEvent: onEvent)
+    }
+
+    /// A function that invokes the browser's back functionality
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
     ///   - displayID: The displayID you've set in your ``TWSView``
@@ -56,7 +74,7 @@ public class TWSManager {
         )
     }
 
-    /// A function that load the next snippet in the list
+    /// A function that invokes the browser's forward functionality
     /// - Parameters:
     ///   - snippet: The snippet that is currently showing
     ///   - displayID: The displayID you've set in your ``TWSView``

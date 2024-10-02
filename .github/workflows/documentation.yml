@@ -1,0 +1,22 @@
+name: Documentation
+on:
+  workflow_run:
+    workflows: ["Develop Build"]
+    types:
+      - completed  # Trigger when the develop pipeline completes
+  workflow_dispatch:  # Allow manual runs
+
+concurrency:
+  group: ${{ docs-${{ github.ref }} }}
+  cancel-in-progress: true
+
+jobs:
+  build_documentation:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
+    runs-on: "self-hosted-mac"
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}

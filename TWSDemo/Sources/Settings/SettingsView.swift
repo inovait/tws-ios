@@ -9,14 +9,17 @@
 import SwiftUI
 import TWSKit
 import OSLog
+import WebKit
 
+@MainActor
 struct SettingsView: View {
 
     @State var viewModel = SettingsViewModel()
+    @State private var cacheRemoved = false
     @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(
                     header: Text("Source Selection"),
@@ -39,11 +42,14 @@ struct SettingsView: View {
                             .padding()
                             .border(Color.gray, width: 1)
                             .toolbar {
-                                ToolbarItemGroup(placement: .keyboard) {
+                                ToolbarItemGroup(placement: .automatic) {
                                     HStack {
                                         Spacer()
 
                                         Button("Done") {
+                                            guard viewModel.selection == .localURLs
+                                            else { return }
+
                                             UIApplication.shared.endEditing()
                                             viewModel.validate()
                                             viewModel.setSource(manager: twsViewModel.manager, source: .localURLs)
@@ -51,7 +57,6 @@ struct SettingsView: View {
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -81,6 +86,27 @@ struct SettingsView: View {
                             Text("Get logs")
                         }
                     })
+                }
+
+                Section(header: Text("Development")) {
+                    Button {
+                        WKWebsiteDataStore.default().removeData(
+                            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                            modifiedSince: .init(timeIntervalSince1970: 0),
+                            completionHandler: {
+                                cacheRemoved.toggle()
+                            }
+                        )
+                    } label: {
+                        Text("Remove cache")
+                    }
+                    .alert(
+                        "Cache has been removed.",
+                        isPresented: $cacheRemoved,
+                        actions: {
+                            Button("OK") { }
+                        }
+                    )
                 }
 
                 Section(header: Text("About")) {

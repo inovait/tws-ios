@@ -26,6 +26,7 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
+                .external(name: "Atlantis"),
                 .target(name: "TWSKit")
             ],
             settings: .settings(
@@ -67,6 +68,7 @@ let project = Project(
             bundleId: "com.inova.twskit",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSKit/Sources/**"],
+            resources: ["TWSKit/Resources/**"],
             dependencies: [
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
@@ -298,13 +300,33 @@ let project = Project(
                     .release(name: "Release")
                 ]
             )
-        )
+        ),
+        .target(
+            name: "TWSUniversalLinksTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsuniversallinksTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSUniversalLinksTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSUniversalLinks")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
+        ),
     ],
     schemes: [
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),
@@ -333,7 +355,14 @@ func infoPlist() -> [String: Plist.Value] {
         "UILaunchScreen": [:],
         "CFBundleDisplayName": "The Web Snippet",
         "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}"
+        "CFBundleVersion": "${CURRENT_PROJECT_VERSION}",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location to enhance your experience by providing location-based features while you are using the app.",
+        "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
+        "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app.",
+        "UIFileSharingEnabled": true,
+        "LSSupportsOpeningDocumentsInPlace": true,
+        "NSLocalNetworkUsageDescription": "Atlantis would use Bonjour Service to discover Proxyman app from your local network.",
+        "NSBonjourServices": ["_Proxyman._tcp"]
     ]
 }
 
@@ -399,14 +428,10 @@ func targetScripts() -> [TargetScript] {
     [
         .pre(
             script: #"""
-            if [[ "$(uname -m)" == arm64 ]]; then
-                export PATH="/opt/homebrew/bin:$PATH"
-            fi
-
-            if which swiftlint > /dev/null; then
-                $HOME/.local/bin/mise x -- swiftlint
+            if $HOME/.local/bin/mise x -- which swiftlint > /dev/null; then
+                $HOME/.local/bin/mise x -- swiftlint;
             else
-                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
+                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
             fi
             """#,
             name: "SwiftLint",

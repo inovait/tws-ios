@@ -12,6 +12,7 @@ public struct SocketMessage: CustomDebugStringConvertible {
 
     public let id: UUID
     public let type: MessageType
+    public let target: URL?
 
     init?(json: [AnyHashable: Any]) {
         guard
@@ -30,13 +31,15 @@ public struct SocketMessage: CustomDebugStringConvertible {
 
         self.id = id
         self.type = type
+        self.target = Self._parseTarget(dataJson)
     }
 
     #if DEBUG
     // periphery:ignore - Used in unit tests
-    init(id: UUID, type: MessageType) {
+    init(id: UUID, type: MessageType, target: URL? = nil) {
         self.id = id
         self.type = type
+        self.target = target
     }
     #endif
 
@@ -44,6 +47,12 @@ public struct SocketMessage: CustomDebugStringConvertible {
         """
         \(type) snippet: \(id)
         """
+    }
+
+    private static func _parseTarget(_ json: [AnyHashable: Any]) -> URL? {
+        guard let urlString = json["target"] as? String
+        else { return nil }
+        return URL(string: urlString)
     }
 }
 

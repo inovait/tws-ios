@@ -10,14 +10,21 @@ import UIKit
 
 class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
 
-    let continuation: CheckedContinuation<URLSessionWebSocketTask, Error>
-    var isSetup = false
-    var socket: URLSessionWebSocketTask?
+    private let id = UUID().uuidString.suffix(4)
+    private var continuation: CheckedContinuation<URLSessionWebSocketTask, Error>?
+    private var isSetup = false
+    private var socket: URLSessionWebSocketTask?
+    private weak var session: URLSession?
 
     init(
         continuation: CheckedContinuation<URLSessionWebSocketTask, Error>
     ) {
         self.continuation = continuation
+        logger.info("INIT SocketEventObserver \(id)")
+    }
+
+    deinit {
+        print("DEINIT SocketEventObserver \(id)")
     }
 
     // MARK: - Helpers
@@ -31,9 +38,14 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
             delegate: self,
             delegateQueue: operationQueue
         )
+        self.session = session
 
         socket = session.webSocketTask(with: url)
         socket?.resume()
+    }
+
+    func invalidate() {
+        session?.invalidateAndCancel()
     }
 
     // MARK: - URLSessionWebSocketDelegate
@@ -45,8 +57,10 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
     ) {
         guard !isSetup else { return }
         isSetup = true
+        assert(socket === webSocketTask)
         socket = nil
-        continuation.resume(returning: webSocketTask)
+        continuation?.resume(returning: webSocketTask)
+        continuation = nil
     }
 
     func urlSession(
@@ -57,7 +71,9 @@ class SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
     ) {
         guard !isSetup else { return }
         isSetup = true
+        assert(socket === webSocketTask)
         socket = nil
-        continuation.resume(throwing: WebSocketError.didClose)
+        continuation?.resume(throwing: WebSocketError.didClose)
+        continuation = nil
     }
 }

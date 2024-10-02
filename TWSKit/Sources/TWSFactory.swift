@@ -7,22 +7,82 @@
 //
 
 import Foundation
-@_implementationOnly import TWSCore
-@_implementationOnly import TWSSettings
-@_implementationOnly import TWSSnippets
-@_implementationOnly import TWSSnippet
-@_implementationOnly import ComposableArchitecture
+import Combine
+internal import TWSCore
+internal import TWSSettings
+internal import TWSSnippets
+internal import TWSSnippet
+internal import ComposableArchitecture
 
 /// A class designed to initialize a new ``TWSManager``
+@MainActor
 public class TWSFactory {
 
-    /// Sets up the app's reducers and main store
+    private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
+
+    /// Creates and returns a new instance of ``TWSManager``
+    /// - Parameter configuration: Configuration of a project you would like to show
+    /// - Returns: An instance of ``TWSManager
+    public class func new(
+        with configuration: TWSConfiguration
+    ) -> TWSManager {
+        _new(
+            configuration: configuration,
+            snippets: nil,
+            preloadedResources: nil,
+            socketURL: nil
+        )
+    }
+
+    /// Sets up the TWS manager
+    /// - Parameter shared: Information about the TWSSnippet opened via universal link
     /// - Returns: An instance of ``TWSManager``
-    public class func new() -> TWSManager {
+    public class func new(
+        with shared: TWSSharedSnippetBundle
+    ) -> TWSManager {
+        return _new(
+            configuration: shared.configuration,
+            snippets: [shared.snippet],
+            preloadedResources: ExtractResources.from(bundle: shared),
+            socketURL: nil
+        )
+    }
+
+    // MARK: - Internal
+
+    class func destroy(
+        configuration: TWSConfiguration
+    ) {
+        _instances.removeValue(forKey: configuration)
+
+        Task { @MainActor in
+            @Dependency(\.socket) var socket
+            await socket.abort(configuration)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private class func _new(
+        configuration: TWSConfiguration,
+        snippets: [TWSSnippet]?,
+        preloadedResources: [TWSSnippet.Attachment: String]?,
+        socketURL: URL?
+    ) -> TWSManager {
+        if let manager = _instances[configuration]?.box {
+            logger.info("Reusing TWSManager for configuration: \(configuration)")
+            return manager
+        }
+
         let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
-            snippets: .init(),
+            snippets: .init(
+                configuration: configuration,
+                snippets: snippets,
+                preloadedResources: preloadedResources,
+                socketURL: socketURL
+            ),
             universalLinks: .init()
         )
 
@@ -31,27 +91,25 @@ public class TWSFactory {
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
         )
 
+        let resourcesCount = state.snippets.preloadedResources.count
+        logger.info(
+            "\(resourcesCount) \(resourcesCount == 1 ? "resource" : "resources")"
+        )
+
+        let publisher = PassthroughSubject<TWSStreamEvent, Never>()
+        let mainReducer = MainReducer(publisher: publisher)
+
         let combinedReducers = CombineReducers {
-            Reduce<TWSCoreFeature.State, TWSCoreFeature.Action> { _, action in
-                switch action {
-                case let .universalLinks(.delegate(.snippetLoaded(snippet))):
-                    events.continuation.yield(.universalLinkSnippetLoaded(snippet))
-                    return .none
-                default:
-                    return .none
-                }
-            }
-            TWSCoreFeature()
+            mainReducer
                 .onChange(of: \.snippets.snippets) { _, newValue in
                     Reduce { _, _ in
-                        let newSnippets = newValue.filter({ snippetState in
-                            !snippetState.isPrivate
-                        }).map(\.snippet)
-                        events.continuation.yield(.snippetsUpdated(newSnippets))
-                        return .none
+                        let newSnippets = newValue.map(\.snippet)
+                        return .send(.snippetsDidChange(newSnippets))
                     }
                 }
         }
+        // Set the environment
+        .dependency(\.configuration.configuration, { configuration })
 
         let store = Store(
             initialState: state,
@@ -60,6 +118,9 @@ public class TWSFactory {
 
         events.continuation.yield(.snippetsUpdated(storage))
 
-        return TWSManager(store: store, events: events.stream)
+        let manager = TWSManager(store: store, observer: publisher.eraseToAnyPublisher(), configuration: configuration)
+        logger.info("Created a new TWSManager for configuration: \(configuration)")
+        _instances[configuration] = WeakBox(manager)
+        return manager
     }
 }

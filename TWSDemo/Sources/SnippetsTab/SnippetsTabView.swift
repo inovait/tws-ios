@@ -10,6 +10,7 @@ import SwiftUI
 import TWSKit
 import TWSModels
 
+@MainActor
 struct SnippetsTabView: View {
 
     @Environment(TWSViewModel.self) private var twsViewModel
@@ -45,6 +46,10 @@ struct SnippetsTabView: View {
                 guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
                 selectedId = twsViewModel.snippets.first?.id
             }
+            .onChange(of: twsViewModel.snippets.first?.id) { _, newValue in
+                guard selectedId == nil else { return }
+                selectedId = newValue
+            }
         }
     }
 
@@ -79,6 +84,8 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
+    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
     @State private var loadingState: TWSLoadingState = .idle
     @State private var canGoBack = false
     @State private var canGoForward = false
@@ -113,6 +120,8 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
+                locationServicesBridge: locationHandler,
+                cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
                 using: twsViewModel.manager,
                 displayID: "tab-\(snippet.id.uuidString)",
                 canGoBack: $canGoBack,

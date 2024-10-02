@@ -10,9 +10,9 @@ import TWSModels
 
 /// Events that are sent to ``TWSManager`` regarding updates
 public enum TWSStreamEvent {
-    /// This event is sent when snippet from the universal link is processed
-    /// - Parameter TWSSnippet: An instance of TWSSnippet
-    case universalLinkSnippetLoaded(TWSSnippet)
+    /// This event is sent when a project from the universal link is processed
+    /// - Parameter TWSSharedSnippetBundle: A snippet that should be preselected (opened) along with organization and project info
+    case universalLinkSnippetLoaded(TWSSharedSnippetBundle)
 
     /// This event is sent when there are new snippets available
     /// - Parameter TWSSnippets A list of new snippets

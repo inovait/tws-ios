@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import WebKit
+@preconcurrency import WebKit
 
 extension WebView.Coordinator: WKUIDelegate {
 
@@ -67,9 +67,17 @@ extension WebView.Coordinator: WKUIDelegate {
     ) {
         var msg = "[UI \(webView.hash)] Run JavaScript alert panel with message: \(message), "
         msg += "initiated by frame: \(frame)"
-
         logger.debug(msg)
-        completionHandler()
+
+        let alertController = UIAlertController(
+            title: nil,
+            message: message,
+            preferredStyle: .alert
+        )
+        alertController.addAction(.init(title: "OK", style: .default, handler: { _ in completionHandler() }))
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler()
+        }
     }
 
     public func webView(
@@ -80,9 +88,19 @@ extension WebView.Coordinator: WKUIDelegate {
     ) {
         var msg = "[UI \(webView.hash)] Run JavaScript confirm panel with message: \(message), "
         msg += "initiated by frame: \(frame)"
-
         logger.debug(msg)
-        completionHandler(true)
+
+        let alertController = UIAlertController(
+            title: nil,
+            message: message,
+            preferredStyle: .alert
+        )
+
+        alertController.addAction(.init(title: "OK", style: .default, handler: { _ in completionHandler(true) }))
+        alertController.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in completionHandler(false) }))
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler(false)
+        }
     }
 
     public func webView(
@@ -95,6 +113,59 @@ extension WebView.Coordinator: WKUIDelegate {
         var msg = "[UI \(webView.hash)] Run JavaScript text input panel with prompt: \(prompt)"
         msg += ", default text: \(String(describing: defaultText)), initiated by frame: \(frame)"
         logger.debug(msg)
-        completionHandler(defaultText)
+
+        let alertController = UIAlertController(
+            title: nil,
+            message: prompt,
+            preferredStyle: .alert
+        )
+
+        alertController.addTextField { textField in
+            textField.text = defaultText
+        }
+
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            if let text = alertController.textFields?.first?.text {
+                completionHandler(text)
+            } else {
+                completionHandler(defaultText)
+            }
+        }))
+
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            completionHandler(nil)
+        }))
+
+        if !navigationProvider.present(from: webView, alert: alertController, animated: true, completion: nil) {
+            completionHandler(nil)
+        }
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        decideMediaCapturePermissionsFor origin: WKSecurityOrigin,
+        initiatedBy frame: WKFrameInfo,
+        type: WKMediaCaptureType
+    ) async -> WKPermissionDecision {
+        do {
+            switch type {
+            case .camera:
+                try await parent.cameraMicrophoneServicesBridge.checkCameraPermission()
+
+            case .microphone:
+                try await parent.cameraMicrophoneServicesBridge.checkMicrophonePermission()
+
+            case .cameraAndMicrophone:
+                try await parent.cameraMicrophoneServicesBridge.checkCameraPermission()
+                try await parent.cameraMicrophoneServicesBridge.checkMicrophonePermission()
+
+            @unknown default:
+                break
+            }
+        } catch {
+            return .deny
+        }
+
+        return .grant
     }
 }

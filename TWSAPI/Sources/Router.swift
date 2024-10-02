@@ -10,7 +10,7 @@ import Foundation
 
 class Router {
 
-    class func make(request: Request) async throws -> APIResult {
+    class func make(request: Request) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = "https"
         components.host = request.host
@@ -26,6 +26,9 @@ class Router {
 
         var urlRequest = URLRequest(url: url, timeoutInterval: 60)
         urlRequest.httpMethod = request.method.rawValue.uppercased()
+        for header in request.headers {
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        }
 
         do {
             let result = try await URLSession.shared.data(for: urlRequest)
@@ -57,4 +60,5 @@ public enum APIError: Error {
 
     case local(Error)
     case server(Int, Data)
+    case decode(Error)
 }

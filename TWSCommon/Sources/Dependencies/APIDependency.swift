@@ -11,10 +11,30 @@ import TWSModels
 import TWSAPI
 import ComposableArchitecture
 
+@DependencyClient
 public struct APIDependency {
-    public var getSnippets: @Sendable () async throws -> [TWSSnippet]
-    public var getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
+
+    public var getProject: @Sendable (
+        TWSConfiguration
+    ) async throws(APIError) -> TWSProject = { _ throws(APIError) in
+        reportIssue("\(Self.self).getProject")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
+
+    public var getSnippetBySharedId: @Sendable (
+        TWSConfiguration,
+        _ snippetId: String
+    ) async throws(APIError) -> TWSSharedSnippet = { _, _ throws(APIError) in
+        reportIssue("\(Self.self).getSnippetBySharedId")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
+
+    public var getResource: @Sendable (
+        TWSSnippet.Attachment
+    ) async throws(APIError) -> String = { _ throws(APIError) in
+        reportIssue("\(Self.self).loadResource")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 }
 
 public enum APIDependencyKey: DependencyKey {
@@ -23,9 +43,9 @@ public enum APIDependencyKey: DependencyKey {
         let api = TWSAPIFactory.new(host: "api.thewebsnippet.dev")
 
         return .init(
-            getSnippets: api.getSnippets,
-            getSocket: api.getSocket,
-            getSnippetById: api.getSnippetById
+            getProject: api.getProject,
+            getSnippetBySharedId: api.getSnippetBySharedId,
+            getResource: api.getResource
         )
     }
 }

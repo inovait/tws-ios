@@ -3,59 +3,72 @@ import TWSModels
 
 public struct TWSAPI {
 
-    private static let _tmpAPIKey = "8281fd90d96b862ba9d76583007ec4b89691b39884a01aa90da5cbb3ad365690"
+    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> TWSProject
 
-    public let getSnippets: @Sendable () async throws -> [TWSSnippet]
-    public let getSocket: @Sendable () async throws -> URL
-    public var getSnippetById: @Sendable (_ snippetId: UUID) async throws -> TWSSnippet
+    public var getSnippetBySharedId: @Sendable (
+        TWSConfiguration,
+        _ token: String
+    ) async throws(APIError) -> TWSSharedSnippet
+
+    public let getResource: @Sendable (TWSSnippet.Attachment) async throws(APIError) -> String
 
     static func live(
         host: String
     ) -> Self {
         .init(
-            getSnippets: {
+            getProject: { configuration throws(APIError) in
+                // Need to transform to lowercased, otherwise server returns 404
+                let organizationID = configuration.organizationID.uuidString.lowercased()
+                let projectID = configuration.projectID.uuidString.lowercased()
+                let result = try await Router.make(request: .init(
+                        method: .get,
+                        path: "/organizations/\(organizationID)/projects/\(projectID)/register",
+                        host: host,
+                        queryItems: [
+                            .init(name: "apiKey", value: "abc123")
+                        ],
+                        headers: [:]
+                    ))
+
+                do {
+                    return try JSONDecoder().decode(TWSProject.self, from: result.data)
+                } catch {
+                    throw APIError.decode(error)
+                }
+            },
+            getSnippetBySharedId: { _, token throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/organizations/register",
+                    path: "/shared/\(token)",
                     host: host,
                     queryItems: [
-                        .init(name: "apiKey", value: Self._tmpAPIKey)
+                        .init(name: "apiKey", value: "abc123")
+                    ],
+                    headers: [
+                        "Accept": "application/json"
                     ]
                 ))
 
-                return try JSONDecoder().decode([TWSSnippet].self, from: result.data)
+                do {
+                    return try JSONDecoder().decode(TWSSharedSnippet.self, from: result.data)
+                } catch {
+                    throw APIError.decode(error)
+                }
             },
-            getSocket: {
+            getResource: { attachment throws(APIError) in
                 let result = try await Router.make(request: .init(
-                    method: .post,
-                    path: "/negotiate",
-                    host: host,
-                    queryItems: [
-                        .init(name: "apiKey", value: TWSAPI._tmpAPIKey),
-                        .init(name: "userId", value: "abc123")
-                    ]
+                    method: .get,
+                    path: attachment.url.path(),
+                    host: attachment.url.host() ?? "",
+                    queryItems: [],
+                    headers: [:]
                 ))
 
-                let urlStr = String(decoding: result.data, as: UTF8.self)
-
-                guard let url = URL(string: urlStr)
-                else {
-                    throw APIError.local(NSError(domain: "invalidSocketUrl", code: 0))
+                if let payload = String(data: result.data, encoding: .utf8) {
+                    return payload
                 }
 
-                return url
-            },
-            getSnippetById: { snippetId in
-                let result = try await Router.make(request: .init(
-                    method: .get,
-                    path: "organizations/snippets/\(snippetId.uuidString)",
-                    host: host,
-                    queryItems: [
-                        .init(name: "apiKey", value: "true")
-                    ]
-                ))
-
-                return try JSONDecoder().decode(TWSSnippet.self, from: result.data)
+                throw .decode(NSError(domain: "invalid-string", code: -1))
             }
         )
     }
