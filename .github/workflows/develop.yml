@@ -48,9 +48,9 @@ jobs:
             tuist install
             tuist generate --no-open
 
-      # - name: Run Tests
-      #   run: |
-      #     fastlane do_tests
+      - name: Run Tests
+        run: |
+          fastlane do_tests
 
       - name: "Instal certificates and provision profiles, Build staging"
         env:
