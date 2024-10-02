@@ -1,0 +1,20 @@
+name: Documentation
+on:
+  workflow_run:
+    workflows: [ "Develop Build" ]
+    types:
+      - completed
+    workflow_dispatch:
+
+concurrency:
+  group: ${{ docs-${{ github.ref }} }}
+  cancel-in-progress: true
+
+jobs:
+  build_documentation:
+    runs-on: "self-hosted-mac"
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}

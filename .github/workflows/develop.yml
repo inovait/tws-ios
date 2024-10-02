@@ -67,50 +67,37 @@ jobs:
 
           fastlane build_staging
 
-      # - name: "Generate XCFrameworks"
-      #   run: |
-      #       ./xcframeworks_create.sh TWSKit TWSModels
-
-      # - name: "Generate changelog"
-      #   uses: pmuraus/spotlight-changelog-generator-action@main
-      #   with:
-      #     jiraBaseUrl: https://inova-it.atlassian.net/
-
-      # - name: Upload build
-      #   uses: pmuraus/spotlight-upload-action@main
-      #   with:
-      #     buildName: "iOS Development"
-      #     buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-      #     files: "./Archive/TWSDemo.ipa,./Archive/TWSDemo.app.dSYM.zip,./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
-      #     apiKey: ${{secrets.SPOTLIGHT_KEY}}
-
-      # - name: Tag build
-      #   env:
-      #     TAG_BUILD: "build_${{env.MARK_VERSION}}"
-      #   run: |
-      #     git tag ${{env.TAG_BUILD}}
-      #     git push origin ${{env.TAG_BUILD}}
-
-      # - name: Update JIRA
-      #   uses: pmuraus/jira-ticket-transition-action@main
-      #   with:
-      #     sourceTransition: "In Review"
-      #     targetTransition: "Ready for QA"
-      #     message: "Build available in develop ${{ env.MARK_VERSION }}"
-      #     jiraBaseUrl: "inova-it.atlassian.net"
-      #     jiraEmail: "hudson@inova.si"
-      #     jiraToken: ${{secrets.JIRA_TOKEN}}
-      #     githubToken: ${{secrets.GITHUB_TOKEN}}
-
-      - name: "Build And Upload Documentation"
-        env:
-          SCHEME: "TWSKit"
-          WORKSPACE: "TheWebSnippet.xcworkspace"
-          DESTINATION: "'generic/platform=iOS'"
-          DERIVED_DATA_PATH: "documentationFolder"
-          HOSTING_BASE_PATH: "tws-ios-docs"
-          STATIC_WEB_PATH: "./staticWeb"
+      - name: "Generate XCFrameworks"
         run: |
-            chmod +x upload_documentation.sh
-            ./upload_documentation.sh ${{env.SCHEME}} ${{env.WORKSPACE}} ${{env.DESTINATION}} ${{env.DERIVED_DATA_PATH}} ${{env.HOSTING_BASE_PATH}} ${{env.STATIC_WEB_PATH}}
+            ./xcframeworks_create.sh TWSKit TWSModels
 
+      - name: "Generate changelog"
+        uses: pmuraus/spotlight-changelog-generator-action@main
+        with:
+          jiraBaseUrl: https://inova-it.atlassian.net/
+
+      - name: Upload build
+        uses: pmuraus/spotlight-upload-action@main
+        with:
+          buildName: "iOS Development"
+          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
+          files: "./Archive/TWSDemo.ipa,./Archive/TWSDemo.app.dSYM.zip,./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
+          apiKey: ${{secrets.SPOTLIGHT_KEY}}
+
+      - name: Tag build
+        env:
+          TAG_BUILD: "build_${{env.MARK_VERSION}}"
+        run: |
+          git tag ${{env.TAG_BUILD}}
+          git push origin ${{env.TAG_BUILD}}
+
+      - name: Update JIRA
+        uses: pmuraus/jira-ticket-transition-action@main
+        with:
+          sourceTransition: "In Review"
+          targetTransition: "Ready for QA"
+          message: "Build available in develop ${{ env.MARK_VERSION }}"
+          jiraBaseUrl: "inova-it.atlassian.net"
+          jiraEmail: "hudson@inova.si"
+          jiraToken: ${{secrets.JIRA_TOKEN}}
+          githubToken: ${{secrets.GITHUB_TOKEN}}
