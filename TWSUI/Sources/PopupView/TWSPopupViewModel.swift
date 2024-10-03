@@ -11,8 +11,17 @@ import TWSKit
 
 @Observable
 class TWSPopupViewModel {
-    var navigation: [TWSNavigationType]
+    var navigation: [TWSNavigationType] {
+        didSet {
+            if let topNavigation = navigation.last,
+            let pendingIndex = pendingNavigationRemoval.firstIndex(of: topNavigation) {
+                pendingNavigationRemoval.remove(at: pendingIndex)
+                navigation.removeLast()
+            }
+        }
+    }
     let manager: TWSManager
+    private var pendingNavigationRemoval: [TWSNavigationType] = []
 
     init(manager: TWSManager) {
         self.manager = manager
@@ -31,11 +40,17 @@ class TWSPopupViewModel {
             switch event {
             case .snippetsUpdated(let snippets):
                 let updatedPopupSnippets = snippets.filter({ snippet in
-                    return self.manager.canShowPopupSnippet(snippet) && TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
+                    return self.manager.canShowPopupSnippet(snippet) &&
+                        TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
                 })
                 updatedPopupSnippets.forEach { snippet in
                     if self.isPopupMissingFromTheNavigationQueue(snippet) {
                         self.addNavigationToQueue(.snippetPopup(snippet))
+                    }
+                }
+                self.navigation.forEach { navigation in
+                    if self.isNavigationMissingFromReceivedPopups(updatedPopupSnippets, navigation) {
+                        self.removeNavigationFromQueue(navigation)
                     }
                 }
 
@@ -44,10 +59,14 @@ class TWSPopupViewModel {
             }
         }
     }
-    
+
     func removeNavigationFromQueue(_ navigation: TWSNavigationType) {
         if let index = self.navigation.firstIndex(of: navigation) {
-            self.navigation.remove(at: index)
+            if index == self.navigation.endIndex - 1 {
+                self.navigation.remove(at: index)
+            } else {
+                pendingNavigationRemoval.append(navigation)
+            }
         }
     }
 
@@ -56,8 +75,21 @@ class TWSPopupViewModel {
     }
 
     private func isPopupMissingFromTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
-        if let _ = self.navigation.firstIndex(of: .snippetPopup(snippet)) {
+        if self.navigation.firstIndex(of: .snippetPopup(snippet)) != nil {
             return false
+        }
+        return true
+    }
+
+    private func isNavigationMissingFromReceivedPopups(
+        _ receivedSnippets: [TWSSnippet],
+        _ navigation: TWSNavigationType
+    ) -> Bool {
+        switch navigation {
+        case .snippetPopup(let navigationSnippet):
+            if receivedSnippets.firstIndex(of: navigationSnippet) != nil {
+                return false
+            }
         }
         return true
     }
