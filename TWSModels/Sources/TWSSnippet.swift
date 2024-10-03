@@ -51,11 +51,11 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
     ) {
         self.id = id
         self.target = target
-        self.type = type// SnippetType(snippetType: type)
+        self.type = type // SnippetType(snippetType: type)
         self.status = status // SnippetStatus(snippetStatus: status)
         self._dynamicResources = .init(elements: dynamicResources)
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(type)
