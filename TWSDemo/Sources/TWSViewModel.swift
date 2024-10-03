@@ -58,10 +58,11 @@ class TWSViewModel {
                     return TWSSnippet.SnippetType(snippetType: snippet.type) == .tab
                 })
                 self.popupSnippets = snippets.filter({ snippet in
-                    return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup && self.manager.canShowPopupSnippet(snippet)
+                    return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup &&
+                    self.manager.canShowPopupSnippet(snippet)
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
-                
+
             case .allPopupsCleared:
                 self.presentPopups = false
 
