@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build_documentation:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
+    #if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
     runs-on: "self-hosted-mac"
     steps:
     - uses: actions/checkout@v4
@@ -20,3 +20,4 @@ jobs:
         fetch-depth: 0
         submodules: recursive
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
