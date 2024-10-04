@@ -11,10 +11,20 @@ public struct TWSSnippetFeature {
         public var snippet: TWSSnippet
         public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
+        public var showIn: DateComponents?
+        public var hideIn: DateComponents?
 
-        public init(snippet: TWSSnippet) {
+        public init(snippet: TWSSnippet, serverDate: Date? = nil) {
             self.snippet = snippet
             self.displayInfo = .init()
+            if let serverDate {
+                if let fromDate = snippet.visibility?.fromUtc, fromDate > serverDate {
+                    self.showIn = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: serverDate, to: fromDate)
+                }
+                if let untilDate = snippet.visibility?.untilUtc, untilDate > serverDate {
+                    self.hideIn = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: serverDate, to: untilDate)
+                }
+            }
         }
     }
 

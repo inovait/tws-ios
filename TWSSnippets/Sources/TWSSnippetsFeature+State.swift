@@ -21,6 +21,7 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
+        public var serverDate: Date?
 
         public init(
             configuration: TWSConfiguration,

@@ -55,7 +55,7 @@ public struct TWSSnippetsFeature {
                 return .send(.business(.projectLoaded(.success(.init(
                     project: project,
                     resources: [:]
-                )))))
+                )), nil)))
 
             @unknown default:
                 break
@@ -64,18 +64,18 @@ public struct TWSSnippetsFeature {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
-                    let resources = await preloadResources(for: project, using: api)
+                    let resources = await preloadResources(for: project.0, using: api)
 
                     await send(.business(.projectLoaded(.success(.init(
-                        project: project,
+                        project: project.0,
                         resources: resources
-                    )))))
+                    )), project.1)))
                 } catch {
-                    await send(.business(.projectLoaded(.failure(error))))
+                    await send(.business(.projectLoaded(.failure(error), nil)))
                 }
             }
 
-        case let .projectLoaded(.success(project)):
+        case let .projectLoaded(.success(project), date):
             logger.info("Snippets loaded.")
 
             var effects = [Effect<Action>]()
@@ -84,12 +84,13 @@ public struct TWSSnippetsFeature {
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
             state.preloadedResources = project.resources
+            state.serverDate = date
 
             // Update current or add new
 
             for snippet in snippets {
                 if currentOrder.contains(snippet.id) {
-                    if state.snippets[id: snippet.id]?.snippet.target != snippet.target {
+                    if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed
                         effects.append(
                             .send(
@@ -127,7 +128,7 @@ public struct TWSSnippetsFeature {
 
             return .none
 
-        case let .projectLoaded(.failure(error)):
+        case let .projectLoaded(.failure(error), _):
             if let error = error as? DecodingError {
                 logger.err(
                     "Failed to decode snippets: \(error)"
@@ -266,7 +267,8 @@ public struct TWSSnippetsFeature {
                 id: uuidGenerator(),
                 target: $0,
                 type: "tab",
-                status: "enabled"
+                status: "enabled",
+                visibilty: nil
             )
         }
     }

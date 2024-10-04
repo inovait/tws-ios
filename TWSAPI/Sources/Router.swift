@@ -39,8 +39,18 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
+                var serverDate: Date?
+                if let responseHeaders = httpResult.allHeaderFields as? [String: String],
+                   let serverDateHeader = responseHeaders["Date"] {
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+                    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+                    serverDate = dateFormatter.date(from: serverDateHeader)
+                }
                 return .init(
-                    data: result.0
+                    data: result.0,
+                    dateOfResponse: serverDate
                 )
             } else {
                 throw APIError.server(httpResult.statusCode, result.0)
@@ -54,6 +64,7 @@ class Router {
 struct APIResult {
 
     let data: Data
+    let dateOfResponse: Date?
 }
 
 public enum APIError: Error {

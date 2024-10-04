@@ -3,7 +3,7 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> TWSProject
+    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> (TWSProject, Date?)
 
     public var getSnippetBySharedId: @Sendable (
         TWSConfiguration,
@@ -31,7 +31,7 @@ public struct TWSAPI {
                     ))
 
                 do {
-                    return try JSONDecoder().decode(TWSProject.self, from: result.data)
+                    return (try JSONDecoder().decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
                 }

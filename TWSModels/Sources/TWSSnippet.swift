@@ -40,6 +40,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
     public let type: String
     public let status: String
     public var target: URL
+    public let visibility: SnippetVisibility?
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     public init(
@@ -47,13 +48,15 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
         target: URL,
         dynamicResources: [Attachment]? = nil,
         type: String,
-        status: String
+        status: String,
+        visibilty: SnippetVisibility?
     ) {
         self.id = id
         self.target = target
         self.type = type // SnippetType(snippetType: type)
         self.status = status // SnippetStatus(snippetStatus: status)
         self._dynamicResources = .init(elements: dynamicResources)
+        self.visibility = visibilty
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -61,6 +64,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
         hasher.combine(type)
         hasher.combine(status)
         hasher.combine(target)
+        hasher.combine(visibility)
     }
 }
 
@@ -75,6 +79,11 @@ public extension TWSSnippet {
             self.url = url
             self.contentType = contentType
         }
+    }
+
+    struct SnippetVisibility: Codable, Hashable {
+        public let fromUtc: Date?
+        public let untilUtc: Date?
     }
 }
 

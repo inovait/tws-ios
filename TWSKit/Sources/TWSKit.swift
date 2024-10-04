@@ -19,6 +19,7 @@ public final class TWSManager: Identifiable {
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
     private var clearedPopupSnippets: [TWSSnippet] = []
+    private var hiddenSnippets: [TWSSnippet] = []
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -52,21 +53,40 @@ public final class TWSManager: Identifiable {
     /// A getter for the list of loaded snippets
     public var tabSnippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`tabSnippets()` can only be called on main thread")
-        return store.snippets.snippets.elements.map(\.snippet).filter { snippet in
+        var tabSnippets = store.snippets.snippets.elements.map(\.snippet).filter { snippet in
             return TWSSnippet.SnippetType(snippetType: snippet.type) == .tab
+        }
+        if let serverTime = store.snippets.serverDate {
+            tabSnippets.forEach { snippet in
+                setupVisibilityTimer(serverTime: serverTime, snippet: snippet)
+            }
+        }
+
+        return tabSnippets.filter { snippet in
+            return !hiddenSnippets.contains(snippet)
         }
     }
 
     public var popupSnippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`popupSnippets()` can only be called on main thread")
-        return store.snippets.snippets.elements.map(\.snippet).filter { snippet in
+        let popupSnippets = store.snippets.snippets.elements.map(\.snippet).filter { snippet in
             return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup && canShowPopupSnippet(snippet)
+        }
+        if let serverTime = store.snippets.serverDate {
+            popupSnippets.forEach { snippet in
+                setupVisibilityTimer(serverTime: serverTime, snippet: snippet)
+            }
+        }
+
+        return popupSnippets.filter { snippet in
+            return !hiddenSnippets.contains(snippet)
         }
     }
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
         precondition(Thread.isMainThread, "`run()` can only be called on main thread")
+        hiddenSnippets = []
         store.send(.snippets(.business(.load)))
     }
 
@@ -154,5 +174,60 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
+    }
+
+    // MARK: - Private
+
+    private func hideSnippet(_ snippet: TWSSnippet) {
+        if let index = hiddenSnippets.firstIndex(of: snippet) {
+            logger.err("Trying to hide a snippet that is already in the hidden snippets list.")
+        } else {
+            hiddenSnippets.append(snippet)
+        }
+    }
+
+    private func showSnippet(_ snippet: TWSSnippet) {
+        if let index = hiddenSnippets.firstIndex(of: snippet) {
+            hiddenSnippets.remove(at: index)
+        } else {
+            logger.err("Trying to show a snippet that is not in the hidden snippets list.")
+        }
+    }
+
+    private func setupVisibilityTimer(serverTime: Date, snippet: TWSSnippet) {
+        if let snippetVisibility = snippet.visibility {
+            if let fromUtc = snippetVisibility.fromUtc {
+                if serverTime < fromUtc {
+                    hideSnippet(snippet)
+                } else {
+                    let duration = fromUtc.timeIntervalSince(serverTime)
+                    let timerTask = SnippetVisibiltyTimer()
+                    Task {
+                        await timerTask.startTimer(queueLabel: "from-\(snippet.id)", duration: duration) { [weak self] in
+                            self?.showSnippet(snippet)
+                        }
+
+                        await timerTask.shutdown()
+                    }
+                }
+            }
+            if let untilUtc = snippetVisibility.untilUtc {
+                if serverTime > untilUtc {
+                    hideSnippet(snippet)
+                } else {
+                    let duration = serverTime.timeIntervalSince(untilUtc)
+                    let timerTask = SnippetVisibiltyTimer()
+                    Task {
+                        await timerTask.startTimer(queueLabel: "until-\(snippet.id)", duration: duration) { [weak self] in
+                            self?.hideSnippet(snippet)
+                        }
+
+                        await timerTask.shutdown()
+                    }
+                }
+            }
+        } else {
+            return
+        }
     }
 }
