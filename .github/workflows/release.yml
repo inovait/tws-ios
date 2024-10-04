@@ -78,7 +78,7 @@ jobs:
 
       - name: Tag build
         env:
-          TAG_BUILD: "{{env.MARK_VERSION}}"
+          TAG_BUILD: "${{env.MARK_VERSION}}"
         run: |
           git tag ${{env.TAG_BUILD}}
           git push origin ${{env.TAG_BUILD}}
