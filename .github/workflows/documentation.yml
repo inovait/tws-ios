@@ -1,7 +1,7 @@
 name: Documentation
 on:
   workflow_run:
-    workflows: ["Develop Build"]
+    workflows: ["Release build"]
     types:
       - completed  # Trigger when the develop pipeline completes
   workflow_dispatch:  # Allow manual runs
@@ -33,3 +33,6 @@ jobs:
             exit 1
           fi
 
+    - name: Build documentation
+      run: >
+        rm -rf docs-out 
