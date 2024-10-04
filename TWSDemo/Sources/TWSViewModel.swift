@@ -63,9 +63,6 @@ class TWSViewModel {
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 
-            case .allPopupsCleared:
-                self.presentPopups = false
-
             default:
                 assertionFailure("Unhandled stream event")
             }

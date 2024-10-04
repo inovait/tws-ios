@@ -43,7 +43,6 @@ public final class TWSManager: Identifiable {
     // MARK: - Public
     public func addClearedPopup(_ snippet: TWSSnippet) {
         self.clearedPopupSnippets.append(snippet)
-        checkIfPopupsRemain()
     }
 
     public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
@@ -155,20 +154,5 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
-    }
-
-    // MARK: - Private
-
-    private func checkIfPopupsRemain() {
-        var shouldClear = true
-        popupSnippets.forEach { snippet in
-            if canShowPopupSnippet(snippet) {
-                shouldClear = false
-                return
-            }
-        }
-        if shouldClear {
-            store.send(.allPopupsCleared)
-        }
     }
 }

@@ -33,7 +33,6 @@ public struct TWSCoreFeature {
         case snippets(TWSSnippetsFeature.Action)
         case snippetsDidChange([TWSSnippet])
         case universalLinks(TWSUniversalLinksFeature.Action)
-        case allPopupsCleared
     }
 
     public var body: some ReducerOf<Self> {

@@ -8,6 +8,7 @@
 import Foundation
 import TWSModels
 import TWSKit
+import SwiftUI
 
 @Observable
 class TWSPopupViewModel {
@@ -18,14 +19,23 @@ class TWSPopupViewModel {
                 pendingNavigationRemoval.remove(at: pendingIndex)
                 navigation.removeLast()
             }
+            if navigation.isEmpty {
+                onNavigationCleared?()
+            }
         }
     }
     let manager: TWSManager
+    var onNavigationCleared: (() -> Void)? = nil
+    
     private var pendingNavigationRemoval: [TWSNavigationType] = []
 
     init(manager: TWSManager) {
         self.manager = manager
         self.navigation = []
+    }
+    
+    func addOnNavigationCleared(onNavigationCleared: @escaping (() -> Void)) {
+        self.onNavigationCleared = onNavigationCleared
     }
 
     @MainActor

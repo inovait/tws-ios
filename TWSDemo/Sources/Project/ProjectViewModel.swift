@@ -66,9 +66,6 @@ class ProjectViewModel {
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 
-            case .allPopupsCleared:
-                self.presentPopups = false
-
             @unknown default:
                 break
             }

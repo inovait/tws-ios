@@ -43,9 +43,6 @@ extension AnyCasePath {
 
                 case let .snippetsDidChange(snippets):
                     return .snippetsUpdated(snippets)
-                    
-                case .allPopupsCleared:
-                    return .allPopupsCleared
 
                 default:
                     return nil

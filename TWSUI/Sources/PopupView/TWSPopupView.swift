@@ -12,10 +12,12 @@ import TWSKit
 
 public struct TWSPopupView: View {
     @State private var viewModel: TWSPopupViewModel
+    @Binding var isPresented: Bool
 
     @MainActor
-    public init(manager: TWSManager) {
-        viewModel = TWSPopupViewModel(manager: manager)
+    public init(isPresented: Binding<Bool>, manager: TWSManager) {
+        self._isPresented = isPresented
+        self.viewModel = TWSPopupViewModel(manager: manager)
     }
 
     public var body: some View {
@@ -33,6 +35,9 @@ public struct TWSPopupView: View {
                 }
         }
         .onAppear {
+            viewModel.addOnNavigationCleared {
+                self.isPresented = false
+            }
             viewModel.fillInitialNavigation()
         }
         .task {
