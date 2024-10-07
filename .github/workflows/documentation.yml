@@ -15,12 +15,6 @@ jobs:
     #if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
     runs-on: "self-hosted-mac"
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: recursive
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
     - name: Validate Xcode version
       run: |
           echo ${XCODE_VERSION}
@@ -34,6 +28,57 @@ jobs:
             exit 1
           fi
 
+    - name: Checkout package
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate Project (Tuist)
+      run: |
+          tuist clean
+          tuist install
+          tuist generate --no-open
+
+    - name: Checkout gh-pages Branch
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: docs-out
+
     - name: Build documentation
       run: >
-        rm -rf docs-out 
+        rm -rf docs-out/.git;
+        rm -rf docs-out/main;
+        git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
+
+        for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+          do
+            if [ -d "docs-out/$tag/data/documentation/tws-ios" ] 
+            then 
+              echo "✅ Documentation for "$tag" already exists.";
+            else 
+              echo "⏳ Generating documentation for TWS @ "$tag" release.";
+              rm -rf "docs-out/$tag";
+              git checkout .;
+              git checkout "$tag";
+              swift package \
+                --allow-writing-to-directory docs-out/"$tag" \
+                generate-documentation \
+                --target TWSKit \
+                --output-path docs-out/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /tws-ios/"$tag" \
+                && echo "✅ Documentation generated for TWS @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
+            fi;
+          done
+
+    - name: Fix permissions
+        run: 'sudo chown -R $USER docs-out'
+
+    - name: Publish documentation to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.7
+      with:
+        branch: gh-pages
+        folder: docs-out
+        single-commit: true
