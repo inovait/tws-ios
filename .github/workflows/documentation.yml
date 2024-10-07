@@ -66,7 +66,18 @@ jobs:
                 -quiet \ 
                 -scheme TWSKit \
                 -workspace TheWebSnippet.xcworkspace \
-                -destination 'generic/platform=iOS' \
+                -destinationPath 'generic/platform=iOS' \
+
+
+              swift package \
+                --allow-writing-to-directory docs-out/"$tag" \
+                generate-documentation \
+                --target TWSKit \
+                --output-path docs-out/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /tws-ios/"$tag" \
+                && echo "✅ Documentation generated for TWS @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
                 -derivedData docs-out/"$tag"
 
               # Transform the documentation for static hosting
