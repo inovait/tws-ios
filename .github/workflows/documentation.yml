@@ -67,9 +67,9 @@ jobs:
 
               # Generate documentation using xcodebuild and DocC
               xcodebuild \
-                -workspace TheWebSnippet.xcworkspace \  
-                -scheme TWSKit \                    
-                -destination 'generic/platform=iOS' \   
+                -workspace TheWebSnippet.xcworkspace \ 
+                -scheme TWSKit \ 
+                -destination 'generic/platform=iOS' \ 
                 docbuild \
                 -derivedDataPath docs-out/"$tag" \
                 -quiet
