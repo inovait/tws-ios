@@ -64,27 +64,24 @@ jobs:
               tuist generate --no-open
 
               # Generate documentation using xcodebuild and DocC
-              echo "🔨 Build Started"
+              echo "🔨 Build Started";
               xcodebuild \
                 -workspace TheWebSnippet.xcworkspace \
                 -scheme TWSKit \
                 -destination 'generic/platform=iOS' \
                 docbuild \
-                -derivedDataPath docs-out/"$tag" \
-                -quiet
+                -derivedDataPath _build"
 
               # Transform the documentation for static hosting
-              echo "⚙️  Transforming to static webpage"
+              echo "⚙️  Transforming to static webpage: $tag";
               $(xcrun --find docc) process-archive \
-                transform-for-static-hosting docs-out/"$tag"/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
+                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
                 --output-path docs-out/"$tag" \
-                --hosting-base-path /tws-ios/"$tag"
+                --hosting-base-path /tws-ios/"$tag" \
+                && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
 
-              if [ $? -eq 0 ]; then
-                  echo "✅ Documentation generated for TWS @ $tag release."
-              else
-                  echo "⚠️ Documentation skipped for TWS @ $tag."
-              fi
+              rm -rf _build/
             fi;
           done
 
