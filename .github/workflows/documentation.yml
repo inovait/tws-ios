@@ -81,7 +81,8 @@ jobs:
                 && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
                 || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
 
-              rm -rf _build/
+              # Remove build folder
+              rm -rf _build
             fi;
           done
 
