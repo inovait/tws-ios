@@ -33,9 +33,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Generate Project (Tuist)
-      run: |
-
     - name: Checkout gh-pages Branch
       uses: actions/checkout@v4
       with:
@@ -67,6 +64,7 @@ jobs:
               tuist generate --no-open
 
               # Generate documentation using xcodebuild and DocC
+              echo "🔨 Build Started"
               xcodebuild \
                 -workspace TheWebSnippet.xcworkspace \
                 -scheme TWSKit \
@@ -76,6 +74,7 @@ jobs:
                 -quiet
 
               # Transform the documentation for static hosting
+              echo "⚙️  Transforming to static webpage"
               $(xcrun --find docc) process-archive \
                 transform-for-static-hosting docs-out/"$tag"/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
                 --output-path docs-out/"$tag" \
