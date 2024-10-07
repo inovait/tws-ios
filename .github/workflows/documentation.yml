@@ -70,7 +70,7 @@ jobs:
                 -scheme TWSKit \
                 -destination 'generic/platform=iOS' \
                 docbuild \
-                -derivedDataPath _build"
+                -derivedDataPath _build
 
               # Transform the documentation for static hosting
               echo "⚙️  Transforming to static webpage: $tag";
