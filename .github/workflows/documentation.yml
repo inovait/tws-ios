@@ -62,26 +62,18 @@ jobs:
               git checkout .;
               git checkout "$tag";
 
-              xcodebuild docbuild \
-                -quiet \ 
-                -scheme TWSKit \
-                -workspace TheWebSnippet.xcworkspace \
-                -destinationPath 'generic/platform=iOS' \
-
-
-              swift package \
-                --allow-writing-to-directory docs-out/"$tag" \
-                generate-documentation \
-                --target TWSKit \
-                --output-path docs-out/"$tag" \
-                --transform-for-static-hosting \
-                --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for TWS @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
-                -derivedData docs-out/"$tag"
+              # Generate documentation using xcodebuild and DocC
+              xcodebuild \
+                -workspace TWSSnippet.xcworkspace \  
+                -scheme TWSKit \                    
+                -destination 'generic/platform=iOS' \   
+                docbuild \
+                -derivedDataPath docs-out/"$tag" \
+                -quiet
 
               # Transform the documentation for static hosting
-              $(xcrun --find docc) process-archive \ transform-for-static-hosting docs-out/"$tag"/Build/Products/Debug-iphoneos/YourScheme.doccarchive \
+              $(xcrun --find docc) process-archive \
+                transform-for-static-hosting docs-out/"$tag"/Build/Products/Debug-iphoneos/YourScheme.doccarchive \
                 --output-path docs-out/"$tag" \
                 --hosting-base-path /tws-ios/"$tag"
 
