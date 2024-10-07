@@ -61,15 +61,24 @@ jobs:
               rm -rf "docs-out/$tag";
               git checkout .;
               git checkout "$tag";
-              swift package \
-                --allow-writing-to-directory docs-out/"$tag" \
-                generate-documentation \
-                --target TWSKit \
+
+              xcodebuild docbuild \
+                -quiet \ 
+                -scheme TWSKit \
+                -workspace TheWebSnippet.xcworkspace \
+                -destination 'generic/platform=iOS' \
+                -derivedData docs-out/"$tag"
+
+              # Transform the documentation for static hosting
+              $(xcrun --find docc) process-archive \ transform-for-static-hosting docs-out/"$tag"/Build/Products/Debug-iphoneos/YourScheme.doccarchive \
                 --output-path docs-out/"$tag" \
-                --transform-for-static-hosting \
-                --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for TWS @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
+                --hosting-base-path /tws-ios/"$tag"
+
+              if [ $? -eq 0 ]; then
+                  echo "✅ Documentation generated for TWS @ $tag release."
+              else
+                  echo "⚠️ Documentation skipped for TWS @ $tag."
+              fi
             fi;
           done
 
