@@ -43,17 +43,12 @@ jobs:
       run: >
         rm -rf docs-out/.git;
         rm -rf docs-out/main;
-        git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
-
-        # Print the tags that will be processed
-        echo "Processing the following tags:"
-        git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6
-        echo "-----------------------------"  
+        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +6 | xargs -I {} rm -rf {};
 
         # Store the tags in a variable and then iterate over them
-        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6)
+        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -6);
 
-        echo "Tags being processed: $TAGS"
+        echo "Tags being processed: $TAGS";
 
         for tag in $TAGS;
           do
