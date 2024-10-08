@@ -41,5 +41,4 @@ struct TWSDemoApp: App {
             }
         }
     }
-    
 }
