@@ -82,8 +82,8 @@ jobs:
                 transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
                 --output-path docs-out/"$tag" \
                 --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
+                && echo "✅ Documentation generated for TWSKit @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for TWSKit @ "$tag".";
 
               # Remove build folder
               rm -rf _build
