@@ -48,7 +48,7 @@ jobs:
 
         echo "Tags being processed: ${TAGS[@]}";
 
-        for tag in "${TAGS[@]}";
+        for tag in TAGS;
           do
             if [ -d "docs-out/$tag/data/documentation/tws-ios" ] 
             then 
