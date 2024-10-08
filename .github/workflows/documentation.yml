@@ -50,7 +50,12 @@ jobs:
         git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6
         echo "-----------------------------"  
 
-        for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+        # Store the tags in a variable and then iterate over them
+        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6)
+
+        echo "Tags being processed: $TAGS"
+
+        for tag in $TAGS;
           do
             if [ -d "docs-out/$tag/data/documentation/tws-ios" ] 
             then 
@@ -75,7 +80,8 @@ jobs:
                 -scheme TWSKit \
                 -destination 'generic/platform=iOS' \
                 docbuild \
-                -derivedDataPath _build
+                -derivedDataPath _build \
+                -quiet
 
               # Transform the documentation for static hosting
               echo "⚙️  Transforming to static webpage: $tag";
