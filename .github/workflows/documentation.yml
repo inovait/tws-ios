@@ -48,9 +48,9 @@ jobs:
         # Store the tags in a variable and then iterate over them
         TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -6);
 
-        echo "Tags being processed: $TAGS";
+        echo "Tags being processed: ${TAGS[@]}";
 
-        for tag in $TAGS;
+        for tag in "${TAGS[@]}";
           do
             if [ -d "docs-out/$tag/data/documentation/tws-ios" ] 
             then 
