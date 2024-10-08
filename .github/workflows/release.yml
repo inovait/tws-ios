@@ -1,12 +1,12 @@
-name: Develop Build
+name: Release Build
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
   workflow_dispatch:
 jobs:
-  build_develop:
+  build_release:
     concurrency:
-      group: ${{ github.ref }}
+      group: release-${{ github.ref }}
     name: Build
     runs-on: "self-hosted-mac"
     steps:
@@ -46,10 +46,6 @@ jobs:
             tuist install
             tuist generate --no-open
 
-      - name: Run Tests
-        run: |
-          fastlane do_tests
-
       - name: "Instal certificates and provision profiles, Build staging"
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
@@ -63,8 +59,6 @@ jobs:
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 
-          fastlane build_staging
-
       - name: "Generate XCFrameworks"
         run: |
             ./xcframeworks_create.sh TWSKit TWSModels
@@ -77,25 +71,14 @@ jobs:
       - name: Upload build
         uses: pmuraus/spotlight-upload-action@main
         with:
-          buildName: "iOS Development"
+          buildName: "iOS Release"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Archive/TWSDemo.ipa,./Archive/TWSDemo.app.dSYM.zip,./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
+          files: "./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build
         env:
-          TAG_BUILD: "build_${{env.MARK_VERSION}}"
+          TAG_BUILD: "${{env.MARK_VERSION}}"
         run: |
           git tag ${{env.TAG_BUILD}}
           git push origin ${{env.TAG_BUILD}}
-
-      - name: Update JIRA
-        uses: pmuraus/jira-ticket-transition-action@main
-        with:
-          sourceTransition: "In Review"
-          targetTransition: "Ready for QA"
-          message: "Build available in develop ${{ env.MARK_VERSION }}"
-          jiraBaseUrl: "inova-it.atlassian.net"
-          jiraEmail: "hudson@inova.si"
-          jiraToken: ${{secrets.JIRA_TOKEN}}
-          githubToken: ${{secrets.GITHUB_TOKEN}}
