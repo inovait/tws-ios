@@ -50,7 +50,7 @@ jobs:
 
         for tag in $TAGS;
           do
-            if [ -d "docs-out/$tag/data/documentation/tws-ios" ] 
+            if [ -d "docs-out/$tag/data/documentation/twskit" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
