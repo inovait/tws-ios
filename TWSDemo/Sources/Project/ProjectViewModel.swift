@@ -21,11 +21,18 @@ class ProjectViewModel {
     var universalLinkLoadedProject: LoadedProjectInfo?
     var presentPopups: Bool = false
 
+    private var clearedPopupSnippets: [TWSSnippet] = []
+
     init(manager: TWSManager) {
-        self.tabSnippets = manager.tabSnippets
-        self.popupSnippets = manager.popupSnippets
+        let snippets = manager.snippets
+        self.tabSnippets = snippets.filter { snippet in
+            return TWSSnippet.SnippetType(snippetType: snippet.type) == .tab
+        }
+        self.popupSnippets = snippets.filter { snippet in
+            return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
+        }
         self.manager = manager
-        self.presentPopups = !manager.popupSnippets.isEmpty
+        self.presentPopups = !popupSnippets.isEmpty
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
@@ -62,7 +69,7 @@ class ProjectViewModel {
                 })
                 self.popupSnippets = snippets.filter({ snippet in
                     return TWSSnippet.SnippetType(snippetType: snippet.type) ==
-                        .popup && self.manager.canShowPopupSnippet(snippet)
+                        .popup && self.canShowPopupSnippet(snippet)
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 
@@ -75,5 +82,13 @@ class ProjectViewModel {
         tabSnippets = []
         popupSnippets = []
         universalLinkLoadedProject = nil
+    }
+
+    public func addClearedPopup(_ snippet: TWSSnippet) {
+        self.clearedPopupSnippets.append(snippet)
+    }
+
+    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
+        return !clearedPopupSnippets.contains(snippet)
     }
 }

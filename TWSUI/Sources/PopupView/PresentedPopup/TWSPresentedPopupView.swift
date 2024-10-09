@@ -12,24 +12,23 @@ import TWSKit
 
 struct TWSPresentedPopupView: View {
 
-    @State var popupViewModel: TWSPresentedPopupViewModel
     @State var snippet: TWSSnippet
+    let manager: TWSManager
     let onClose: ((TWSSnippet) -> Void)
 
-    public init(manager: TWSManager, snippet: TWSSnippet, onClose:@escaping ((TWSSnippet) -> Void)) {
+    public init(manager: TWSManager, snippet: TWSSnippet, onClose: @escaping ((TWSSnippet) -> Void)) {
         self.snippet = snippet
         self.onClose = onClose
-        self.popupViewModel = TWSPresentedPopupViewModel(manager: manager)
+        self.manager = manager
     }
 
     public var body: some View {
         ZStack {
-            PopupSnippetView(snippet: snippet, manager: popupViewModel.manager)
+            PopupSnippetView(snippet: snippet, manager: manager)
             VStack {
                 HStack {
                     Spacer()
                     Button(action: {
-                        popupViewModel.onSnippetClosed(snippet: snippet)
                         onClose(snippet)
                     }, label: {
                         Image(systemName: "xmark")

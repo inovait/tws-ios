@@ -10,6 +10,7 @@ import TWSModels
 import TWSKit
 import SwiftUI
 
+@MainActor
 @Observable
 class TWSPopupViewModel {
     var navigation: [TWSNavigationType] {
@@ -25,22 +26,25 @@ class TWSPopupViewModel {
         }
     }
     let manager: TWSManager
-    var onNavigationCleared: (() -> Void)? = nil
-    
+    var onNavigationCleared: (() -> Void)?
+
+    private var clearedPopupSnippets: [TWSSnippet] = []
     private var pendingNavigationRemoval: [TWSNavigationType] = []
 
     init(manager: TWSManager) {
         self.manager = manager
         self.navigation = []
     }
-    
+
     func addOnNavigationCleared(onNavigationCleared: @escaping (() -> Void)) {
         self.onNavigationCleared = onNavigationCleared
     }
 
-    @MainActor
     func fillInitialNavigation() {
-        self.navigation = manager.popupSnippets.map { .snippetPopup($0) }
+        let popupSnippets = manager.snippets.filter { snippet in
+            return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
+        }
+        self.navigation = popupSnippets.map { .snippetPopup($0) }
     }
 
     func startListeningForEvents() async {
@@ -50,7 +54,7 @@ class TWSPopupViewModel {
             switch event {
             case .snippetsUpdated(let snippets):
                 let updatedPopupSnippets = snippets.filter({ snippet in
-                    return self.manager.canShowPopupSnippet(snippet) &&
+                    return self.canShowPopupSnippet(snippet) &&
                         TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
                 })
                 updatedPopupSnippets.forEach { snippet in
@@ -68,6 +72,14 @@ class TWSPopupViewModel {
                 return
             }
         }
+    }
+
+    public func addClearedPopup(_ snippet: TWSSnippet) {
+        self.clearedPopupSnippets.append(snippet)
+    }
+
+    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
+        return !clearedPopupSnippets.contains(snippet)
     }
 
     func removeNavigationFromQueue(_ navigation: TWSNavigationType) {

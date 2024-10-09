@@ -27,6 +27,7 @@ public struct TWSPopupView: View {
                     switch navigation {
                     case .snippetPopup(let snippet):
                         TWSPresentedPopupView(manager: viewModel.manager, snippet: snippet, onClose: { snippet in
+                            viewModel.addClearedPopup(snippet)
                             viewModel.removeNavigationFromQueue(.snippetPopup(snippet))
                         })
                             .navigationBarHidden(true)

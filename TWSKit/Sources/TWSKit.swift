@@ -18,8 +18,6 @@ public final class TWSManager: Identifiable {
 
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
-    private var clearedPopupSnippets: [TWSSnippet] = []
-    private var hiddenSnippets: [TWSSnippet] = []
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -42,14 +40,6 @@ public final class TWSManager: Identifiable {
     }
 
     // MARK: - Public
-    public func addClearedPopup(_ snippet: TWSSnippet) {
-        self.clearedPopupSnippets.append(snippet)
-    }
-
-    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
-        return !clearedPopupSnippets.contains(snippet)
-    }
-
     /// A getter for the list of loaded snippets
     public var tabSnippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`tabSnippets()` can only be called on main thread")
@@ -81,6 +71,9 @@ public final class TWSManager: Identifiable {
         return popupSnippets.filter { snippet in
             return !hiddenSnippets.contains(snippet)
         }
+    public var snippets: [TWSSnippet] {
+        precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
+        return store.snippets.snippets.elements.map(\.snippet)
     }
 
     /// A function that starts loading snippets and listen for changes
