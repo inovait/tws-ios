@@ -43,8 +43,9 @@ jobs:
       run: >
         rm -rf docs-out/.git;
         rm -rf docs-out/main;
+        KEEP_LAST_VERSIONS=4;
 
-        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +4 | while read -r tag; do
+        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +$((KEEP_LAST_VERSIONS + 1)) | while read -r tag; do
           if [ -d "docs-out/$tag" ]; then
             echo "Deleting old version: docs-out/$tag";
             rm -rf "docs-out/$tag";
@@ -53,7 +54,7 @@ jobs:
           fi;
         done;
         
-        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -4);
+        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -$KEEP_LAST_VERSIONS);
         echo "Tags being processed: ${TAGS[@]}";
 
         for tag in $TAGS;
