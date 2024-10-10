@@ -43,7 +43,7 @@ jobs:
       run: >
         rm -rf docs-out/.git;
         rm -rf docs-out/main;
-        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +6 | xargs -I {} rm -rf {};
+        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +6 | xargs -I {} echo "Deleting: {}";
         TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -6);
 
         echo "Tags being processed: ${TAGS[@]}";
