@@ -86,7 +86,7 @@ let project = Project(
         .target(
             name: "TWSUI",
             destinations: .iOS,
-            product: .staticFramework,
+            product: .framework,
             bundleId: "com.inova.twsui",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSUI/Sources/**"],

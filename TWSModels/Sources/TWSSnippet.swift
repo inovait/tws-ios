@@ -2,43 +2,37 @@ import Foundation
 
 public struct TWSSnippet: Identifiable, Codable, Hashable {
 
-    public enum SnippetType: Codable {
+    public enum SnippetType: String, ExpressibleByStringLiteral, Codable {
         case tab
         case popup
         case unknown
 
-        public init(snippetType: String) {
-            switch snippetType {
-            case "popup", "Popup":
-                self = .popup
-            case "tab", "Tab":
-                self = .tab
-            default:
+        public init(stringLiteral value: String) {
+            if let option = SnippetType(rawValue: value.lowercased()) {
+                self = option
+            } else {
                 self = .unknown
             }
         }
     }
 
-    public enum SnippetStatus: String, Codable {
+    public enum SnippetStatus: String, ExpressibleByStringLiteral, Codable {
         case enabled
         case disabled
         case unknown
 
-        public init(snippetStatus: String) {
-            switch snippetStatus {
-            case "Enabled", "enabled":
-                self = .enabled
-            case "Disabled", "disabled":
-                self = .disabled
-            default:
+        public init(stringLiteral value: String) {
+            if let option = SnippetStatus(rawValue: value.lowercased()) {
+                self = option
+            } else {
                 self = .unknown
             }
         }
     }
 
     public let id: UUID
-    public let type: String
-    public let status: String
+    public let type: SnippetType
+    public let status: SnippetStatus
     public var target: URL
     public let visibility: SnippetVisibility?
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
@@ -47,14 +41,14 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
         id: UUID,
         target: URL,
         dynamicResources: [Attachment]? = nil,
-        type: String,
-        status: String,
+        type: SnippetType = .tab,
+        status: SnippetStatus = .enabled,
         visibilty: SnippetVisibility?
     ) {
         self.id = id
         self.target = target
-        self.type = type // SnippetType(snippetType: type)
-        self.status = status // SnippetStatus(snippetStatus: status)
+        self.type = type
+        self.status = status
         self._dynamicResources = .init(elements: dynamicResources)
         self.visibility = visibilty
     }
