@@ -42,7 +42,7 @@ class TWSPopupViewModel {
 
     func fillInitialNavigation() {
         let popupSnippets = manager.snippets.filter { snippet in
-            return TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
+            return snippet.type == .popup
         }
         self.navigation = popupSnippets.map { .snippetPopup($0) }
     }
@@ -54,8 +54,7 @@ class TWSPopupViewModel {
             switch event {
             case .snippetsUpdated(let snippets):
                 let updatedPopupSnippets = snippets.filter({ snippet in
-                    return self.canShowPopupSnippet(snippet) &&
-                        TWSSnippet.SnippetType(snippetType: snippet.type) == .popup
+                    return self.canShowPopupSnippet(snippet) && snippet.type == .popup
                 })
                 updatedPopupSnippets.forEach { snippet in
                     if self.isPopupMissingFromTheNavigationQueue(snippet) {
