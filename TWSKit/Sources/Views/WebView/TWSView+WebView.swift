@@ -128,7 +128,15 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        webView.load(URLRequest(url: self.url))
+
+        let key = TWSSnippet.Attachment(url: url, contentType: .html)
+        if let preloaded = preloadedResources[key] {
+            logger.debug("Load from raw HTML: \(url.absoluteString)")
+            webView.loadHTMLString(preloaded, baseURL: self.url)
+        } else {
+            logger.debug("Load from url: \(url.absoluteString)")
+            webView.load(URLRequest(url: self.url))
+        }
 
         context.coordinator.observe(heightOf: webView)
         updateState(for: webView, loadingState: .loading)

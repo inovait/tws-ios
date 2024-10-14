@@ -33,5 +33,6 @@ public extension TWSSnippet.Attachment {
 
         case javascript = "text/javascript"
         case css = "text/css"
+        case html = "text/html"
     }
 }
