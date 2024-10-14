@@ -36,9 +36,9 @@ final class SnippetsTests: XCTestCase {
         let s3ID = UUID()
 
         let snippets: [TWSSnippet] = [
-            .init(id: s1ID, target: URL(string: "https://www.google.com")!, type: "tab", status: "enabled"),
-            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!, type: "tab", status: "enabled"),
-            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!, type: "tab", status: "enabled")
+            .init(id: s1ID, target: URL(string: "https://www.google.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!),
+            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
         let state = TWSSnippetsFeature.State(configuration: configuration)
@@ -117,9 +117,9 @@ final class SnippetsTests: XCTestCase {
         let s3ID = UUID()
 
         let snippets: [TWSSnippet] = [
-            .init(id: s1ID, target: URL(string: "https://www.google.com")!, type: "tab", status: "enabled"),
-            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!, type: "tab", status: "enabled"),
-            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!, type: "tab", status: "enabled")
+            .init(id: s1ID, target: URL(string: "https://www.google.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!),
+            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
         let store = TestStore(
@@ -156,9 +156,9 @@ final class SnippetsTests: XCTestCase {
         let s3ID = UUID()
 
         let snippets: [TWSSnippet] = [
-            .init(id: s1ID, target: URL(string: "https://www.google.com")!, type: "tab", status: "enabled"),
-            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!, type: "tab", status: "enabled"),
-            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!, type: "tab", status: "enabled")
+            .init(id: s1ID, target: URL(string: "https://www.google.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!),
+            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
         let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
@@ -199,10 +199,10 @@ final class SnippetsTests: XCTestCase {
         let s4ID = UUID()
 
         let snippets: [TWSSnippet] = [
-            .init(id: s1ID, target: URL(string: "https://www.google.com")!, type: "tab", status: "enabled"),
-            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!, type: "tab", status: "enabled"),
-            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!, type: "tab", status: "enabled"),
-            .init(id: s4ID, target: URL(string: "https://news.ycombinato2.com")!, type: "tab", status: "enabled")
+            .init(id: s1ID, target: URL(string: "https://www.google.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.24ur.com")!),
+            .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!),
+            .init(id: s4ID, target: URL(string: "https://news.ycombinato2.com")!)
         ]
 
         let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
