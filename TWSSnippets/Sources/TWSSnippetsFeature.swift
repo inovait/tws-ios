@@ -84,11 +84,10 @@ public struct TWSSnippetsFeature {
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
             state.preloadedResources = project.resources
-            state.serverDate = date
 
             // Update current or add new
-
             for snippet in snippets {
+                state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date ?? Date())
                 if currentOrder.contains(snippet.id) {
                     if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed
@@ -307,6 +306,7 @@ public struct TWSSnippetsFeature {
                     await send(.business(.load))
 
                 case .updated:
+
                     await send(
                         .business(
                             .snippets(

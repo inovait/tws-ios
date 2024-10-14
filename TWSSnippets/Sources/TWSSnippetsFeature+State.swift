@@ -19,22 +19,28 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        public var snippetDates: [UUID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
-        public var serverDate: Date?
 
         public init(
             configuration: TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
             preloadedResources: [TWSSnippet.Attachment: String]? = nil,
-            socketURL: URL? = nil
+            socketURL: URL? = nil,
+            serverTime: Date
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
+            snippetDates = [:]
 
             if let snippets {
-                let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
+                var state = [TWSSnippetFeature.State]()
+                snippets.forEach { snippet in
+                    snippetDates[snippet.id] = SnippetDateInfo(serverTime: serverTime)
+                    state.append(TWSSnippetFeature.State.init(snippet: snippet))
+                }
                 self.snippets = .init(uniqueElements: state)
             }
 
@@ -46,5 +52,22 @@ extension TWSSnippetsFeature {
                 self.preloadedResources = preloadedResources
             }
         }
+    }
+    
+    public struct SnippetDateInfo: Equatable {
+        let serverTime: Date
+        let phoneTime: Date
+
+        init(serverTime: Date) {
+            @Dependency(\.date) var date
+            self.serverTime = serverTime
+            self.phoneTime = date.now
+        }
+
+        public func getElapsedSecondsSinceLastUpdate() -> TimeInterval {
+            @Dependency(\.date) var date
+            return date.now.timeIntervalSince(phoneTime)
+        }
+        
     }
 }

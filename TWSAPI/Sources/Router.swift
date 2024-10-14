@@ -43,7 +43,7 @@ class Router {
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
                     let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+                    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
                     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
                     serverDate = dateFormatter.date(from: serverDateHeader)

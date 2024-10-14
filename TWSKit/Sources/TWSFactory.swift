@@ -81,7 +81,8 @@ public class TWSFactory {
                 configuration: configuration,
                 snippets: snippets,
                 preloadedResources: preloadedResources,
-                socketURL: socketURL
+                socketURL: socketURL,
+                serverTime: Date()
             ),
             universalLinks: .init()
         )

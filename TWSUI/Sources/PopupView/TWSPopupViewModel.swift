@@ -42,7 +42,7 @@ class TWSPopupViewModel {
 
     func fillInitialNavigation() {
         let popupSnippets = manager.snippets.filter { snippet in
-            return snippet.type == .popup
+            return snippet.type == .popup  && snippet.isVisible != false
         }
         self.navigation = popupSnippets.map { .snippetPopup($0) }
     }
@@ -54,10 +54,10 @@ class TWSPopupViewModel {
             switch event {
             case .snippetsUpdated(let snippets):
                 let updatedPopupSnippets = snippets.filter({ snippet in
-                    return self.canShowPopupSnippet(snippet) && snippet.type == .popup
+                    return self.canShowPopupSnippet(snippet) && snippet.type == .popup && snippet.isVisible != false
                 })
                 updatedPopupSnippets.forEach { snippet in
-                    if self.isPopupMissingFromTheNavigationQueue(snippet) {
+                    if !self.isPopupPresentInTheNavigationQueue(snippet) {
                         self.addNavigationToQueue(.snippetPopup(snippet))
                     }
                 }
@@ -95,23 +95,32 @@ class TWSPopupViewModel {
         self.navigation.append(navigation)
     }
 
-    private func isPopupMissingFromTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
-        if self.navigation.firstIndex(of: .snippetPopup(snippet)) != nil {
-            return false
+    private func isPopupPresentInTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
+        var isPresent: Bool = false
+        self.navigation.forEach { nav in
+            switch nav {
+            case .snippetPopup(let navigationSnippet):
+                if navigationSnippet.id == snippet.id {
+                    isPresent = true
+                }
+            }
         }
-        return true
+        return isPresent
     }
 
     private func isNavigationMissingFromReceivedPopups(
         _ receivedSnippets: [TWSSnippet],
         _ navigation: TWSNavigationType
     ) -> Bool {
+        var isMissing = true
         switch navigation {
         case .snippetPopup(let navigationSnippet):
-            if receivedSnippets.firstIndex(of: navigationSnippet) != nil {
-                return false
+            receivedSnippets.forEach { snippet in
+                if snippet.id == navigationSnippet.id {
+                    isMissing = false
+                }
             }
         }
-        return true
+        return isMissing
     }
 }

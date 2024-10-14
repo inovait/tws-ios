@@ -8,32 +8,18 @@
 
 import Foundation
 
-actor SnippetVisibiltyTimer {
-    private var timer: DispatchSourceTimer?
+class SnippetVisibiltyTimer {
+    private var timer: Timer?
 
-    func startTimer(queueLabel: String, duration: TimeInterval, action: @escaping () -> Void) async {
-        cancelTimer()
-
-        let queue = DispatchQueue(label: queueLabel, attributes: .concurrent)
-        timer = DispatchSource.makeTimerSource(queue: queue)
-
-        timer?.schedule(deadline: .now() + duration)
-        timer?.setEventHandler { [weak self] in
+    func startTimer(duration: TimeInterval, action: @escaping () -> Void) {
+        timer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { timer in
             action()
-            Task {
-                await self?.cancelTimer()
-            }
+            timer.invalidate()
         }
-
-        timer?.resume()
     }
 
     func cancelTimer() {
-        timer?.cancel()
+        timer?.invalidate()
         timer = nil
-    }
-
-    func shutdown() async {
-        cancelTimer()
     }
 }

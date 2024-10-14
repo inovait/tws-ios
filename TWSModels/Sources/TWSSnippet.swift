@@ -35,6 +35,8 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
     public let status: SnippetStatus
     public var target: URL
     public let visibility: SnippetVisibility?
+    public var date: Date?
+    public var isVisible: Bool? = true
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     public init(
@@ -76,8 +78,8 @@ public extension TWSSnippet {
     }
 
     struct SnippetVisibility: Codable, Hashable {
-        public let fromUtc: Date?
-        public let untilUtc: Date?
+        public let fromUtc: String?
+        public let untilUtc: String?
     }
 }
 
