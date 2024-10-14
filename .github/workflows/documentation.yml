@@ -1,22 +1,107 @@
 name: Documentation
 on:
   workflow_run:
-    workflows: ["Develop Build"]
+    workflows: ["Release build"]
     types:
       - completed  # Trigger when the develop pipeline completes
   workflow_dispatch:  # Allow manual runs
 
 concurrency:
-  group: ${{ docs-${{ github.ref }} }}
+  group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build_documentation:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
+    #if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
     runs-on: "self-hosted-mac"
     steps:
-    - uses: actions/checkout@v4
+    - name: Validate Xcode version
+      run: |
+          echo ${XCODE_VERSION}
+          XCODE_VERSION=$(/usr/bin/xcodebuild -version 2>/dev/null | head -1)
+          echo ${XCODE_VERSION}
+          if [ "$XCODE_VERSION" == "Xcode 16.0"  ]
+          then
+            echo "Version up to date"
+          else
+            echo "Wrong version"
+            exit 1
+          fi
+
+    - name: Checkout package
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        submodules: recursive
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Checkout gh-pages Branch
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: docs-out
+
+    - name: Build documentation
+      run: >
+        rm -rf docs-out/.git;
+        rm -rf docs-out/main;
+        KEEP_LAST_VERSIONS=4;
+
+        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +$((KEEP_LAST_VERSIONS + 1)) | while read -r tag; do
+          if [ -d "docs-out/$tag" ]; then
+            echo "Deleting old version: docs-out/$tag";
+            rm -rf "docs-out/$tag";
+          else
+            echo "Directory docs-out/$tag does not exist";
+          fi;
+        done;
+        
+        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -$KEEP_LAST_VERSIONS);
+        echo "Tags being processed: ${TAGS[@]}";
+
+        for tag in $TAGS;
+          do
+            if [ -d "docs-out/$tag/data/documentation/twskit" ] 
+            then 
+              echo "✅ Documentation for "$tag" already exists.";
+            else 
+              echo "⏳ Generating documentation for TWS @ "$tag" release.";
+              rm -rf "docs-out/$tag";
+              git checkout .;
+              git checkout "$tag";
+
+              echo "Current directory: $(pwd)";
+              echo "Files in directory: $(ls -la)";
+
+              tuist clean
+              tuist install
+              tuist generate --no-open
+
+              # Generate documentation using xcodebuild and DocC
+              echo "🔨 Build Started";
+              xcodebuild \
+                -workspace TheWebSnippet.xcworkspace \
+                -scheme TWSKit \
+                -destination 'generic/platform=iOS' \
+                docbuild \
+                -derivedDataPath _build \
+                -quiet
+
+              # Transform the documentation for static hosting
+              echo "⚙️  Transforming to static webpage: $tag";
+              $(xcrun --find docc) process-archive \
+                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
+                --output-path docs-out/"$tag" \
+                --hosting-base-path /tws-ios/"$tag" \
+                && echo "✅ Documentation generated for TWSKit @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for TWSKit @ "$tag".";
+
+              # Remove build folder
+              rm -rf _build
+            fi;
+          done
+
+    - name: Publish documentation to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.7
+      with:
+        branch: gh-pages
+        folder: docs-out
+        single-commit: true
