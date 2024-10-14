@@ -40,7 +40,6 @@ public final class TWSManager: Identifiable {
     }
 
     // MARK: - Public
-
     /// A getter for the list of loaded snippets
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")

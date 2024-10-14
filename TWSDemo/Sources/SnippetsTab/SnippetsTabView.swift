@@ -21,12 +21,12 @@ struct SnippetsTabView: View {
             VStack {
                 ZStack {
                     ForEach(
-                        Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
+                        Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
                             SnippetView(snippet: snippet)
-                                .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
+                                .zIndex(Double(selectedId == snippet.id ? twsViewModel.tabSnippets.count : idx))
                                 .opacity(selectedId != snippet.id ? 0 : 1)
                         }
                     }
@@ -43,10 +43,10 @@ struct SnippetsTabView: View {
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 // Safe to force cast, because of the first segment
-                guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
-                selectedId = twsViewModel.snippets.first?.id
+                guard selectedId == nil || !twsViewModel.tabSnippets.map(\.id).contains(selectedId!) else { return }
+                selectedId = twsViewModel.tabSnippets.first?.id
             }
-            .onChange(of: twsViewModel.snippets.first?.id) { _, newValue in
+            .onChange(of: twsViewModel.tabSnippets.first?.id) { _, newValue in
                 guard selectedId == nil else { return }
                 selectedId = newValue
             }
@@ -55,9 +55,9 @@ struct SnippetsTabView: View {
 
     @ViewBuilder
     private func _selectionView() -> some View {
-        if twsViewModel.snippets.count > 1 {
+        if twsViewModel.tabSnippets.count > 1 {
             HStack(spacing: 1) {
-                ForEach(Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)), id: \.1.id) { idx, item in
+                ForEach(Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)), id: \.1.id) { idx, item in
                     Button {
                         selectedId = item.id
                     } label: {

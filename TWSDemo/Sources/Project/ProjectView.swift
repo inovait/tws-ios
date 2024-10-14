@@ -8,6 +8,7 @@
 
 import SwiftUI
 import TWSKit
+import TWSUI
 
 @MainActor
 struct ProjectView: View {
@@ -22,7 +23,7 @@ struct ProjectView: View {
 
     var body: some View {
         TabView(selection: $selectedID) {
-            ForEach(viewModel.snippets) { snippet in
+            ForEach(viewModel.tabSnippets) { snippet in
                 ProjectSnippetView(
                     snippet: snippet,
                     manager: viewModel.manager
@@ -39,5 +40,8 @@ struct ProjectView: View {
         .sheet(item: $viewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
         }
+        .fullScreenCover(isPresented: $viewModel.presentPopups, content: {
+            TWSPopupView(isPresented: $viewModel.presentPopups, manager: viewModel.manager)
+        })
     }
 }

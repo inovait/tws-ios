@@ -23,7 +23,7 @@ public struct TWSSnippetFeature {
         @CasePathable
         public enum Business {
             case update(height: CGFloat, forId: String)
-            case snippetUpdated(target: URL?)
+            case snippetUpdated(snippet: TWSSnippet?)
         }
 
         case business(Business)
@@ -45,10 +45,10 @@ public struct TWSSnippetFeature {
 
             return .none
 
-        case let .business(.snippetUpdated(target)):
-            if let target, target != state.snippet.target {
-                logger.info("Snippet changed URL from \(state.snippet.target) to \(target).")
-                state.snippet.target = target
+        case let .business(.snippetUpdated(snippet)):
+            if let snippet, snippet != state.snippet {
+                logger.info("Snippet updated from \(state.snippet) to \(snippet).")
+                state.snippet = snippet
             } else {
                 logger.info("Snippet's payload changed")
                 state.updateCount += 1
