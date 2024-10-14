@@ -61,7 +61,9 @@ final class ResourcesAggregationTests: XCTestCase {
             snippet: .init(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
                 target: url,
-                dynamicResources: attachments
+                dynamicResources: attachments,
+                type: "tab",
+                status: "enabled"
             )
         )
 

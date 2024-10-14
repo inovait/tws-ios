@@ -18,11 +18,22 @@ class TWSViewModel {
         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
     ))
     let destinationID = UUID()
-    var snippets: [TWSSnippet]
+    var tabSnippets: [TWSSnippet]
+    var popupSnippets: [TWSSnippet]
     var universalLinkLoadedProject: LoadedProjectInfo?
+    var presentPopups: Bool = false
+
+    private var clearedPopupSnippets: [TWSSnippet] = []
 
     init() {
-        snippets = manager.snippets
+        let snippets = manager.snippets
+        self.tabSnippets = snippets.filter { snippet in
+            return snippet.type == .tab
+        }
+        self.popupSnippets = snippets.filter { snippet in
+            return snippet.type == .popup
+        }
+        self.presentPopups = !popupSnippets.isEmpty
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
         // Therefore, the initializer should be free of any business logic.
         // Calling `run` here will trigger a refresh, potentially causing excessive updates.
@@ -50,11 +61,25 @@ class TWSViewModel {
                 )
 
             case .snippetsUpdated(let snippets):
-                self.snippets = snippets
+                self.tabSnippets = snippets.filter({ snippet in
+                    return snippet.type == .tab
+                })
+                self.popupSnippets = snippets.filter({ snippet in
+                    return snippet.type == .popup && self.canShowPopupSnippet(snippet)
+                })
+                self.presentPopups = !self.popupSnippets.isEmpty
 
             default:
                 assertionFailure("Unhandled stream event")
             }
         }
+    }
+
+    public func addClearedPopup(_ snippet: TWSSnippet) {
+        self.clearedPopupSnippets.append(snippet)
+    }
+
+    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
+        return !clearedPopupSnippets.contains(snippet)
     }
 }

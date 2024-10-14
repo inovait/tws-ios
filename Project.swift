@@ -26,8 +26,9 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
-                .external(name: "Atlantis"),
-                .target(name: "TWSKit")
+                .target(name: "TWSKit"),
+                .target(name: "TWSUI"),
+                .external(name: "Atlantis")
             ],
             settings: .settings(
                 configurations: [
@@ -79,6 +80,24 @@ let project = Project(
                     .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
                     .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
                     .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+                ]
+            )
+        ),
+        .target(
+            name: "TWSUI",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.inova.twsui",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSUI/Sources/**"],
+            dependencies: [
+                .target(name: "TWSKit")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug"),
+                    .release(name: "Staging"),
+                    .release(name: "Release")
                 ]
             )
         ),
@@ -383,6 +402,12 @@ func loggerInfoPlist() -> [String: Plist.Value] {
                     ]
                 ],
                 "TWSCore": [
+                    "Level": [
+                        "Enable": "Debug",
+                        "Persist": "Debug"
+                    ]
+                ],
+                "TWSUI": [
                     "Level": [
                         "Enable": "Debug",
                         "Persist": "Debug"
