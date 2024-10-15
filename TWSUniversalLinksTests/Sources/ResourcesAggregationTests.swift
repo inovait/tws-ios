@@ -44,12 +44,17 @@ final class ResourcesAggregationTests: XCTestCase {
             )
         ]
 
-        let preloadedAttachments = Dictionary(
+        var preloadedAttachments = Dictionary(
             uniqueKeysWithValues:
                 attachments.map {
                     ($0, $0.url.absoluteString)
                 }
         )
+
+        preloadedAttachments[.init(
+            url: url,
+            contentType: .html
+        )] = url.absoluteString
 
         let sharedSnippet = TWSSharedSnippet(
             organization: .init(
@@ -67,7 +72,7 @@ final class ResourcesAggregationTests: XCTestCase {
             )
         )
 
-        let store = TestStore(
+        let store = await TestStore(
             initialState: .init(),
             reducer: { TWSUniversalLinksFeature() }
             ,
