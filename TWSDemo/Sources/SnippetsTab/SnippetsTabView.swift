@@ -57,7 +57,9 @@ struct SnippetsTabView: View {
     private func _selectionView() -> some View {
         if twsViewModel.tabSnippets.count > 1 {
             HStack(spacing: 1) {
-                ForEach(Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)), id: \.1.id) { idx, item in
+                ForEach(
+                    Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)), id: \.1.id
+                ) { idx, item in
                     Button {
                         selectedId = item.id
                     } label: {
