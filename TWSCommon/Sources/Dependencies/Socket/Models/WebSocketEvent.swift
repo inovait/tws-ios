@@ -8,6 +8,6 @@
 
 import Foundation
 
-public enum WebSocketEvent {
+public enum WebSocketEvent: Sendable {
     case didConnect, didDisconnect, receivedMessage(SocketMessage)
 }

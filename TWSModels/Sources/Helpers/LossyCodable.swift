@@ -9,7 +9,7 @@
 import Foundation
 
 @propertyWrapper
-@_spi(InternalLibraries) public struct LossyCodableList<Element> {
+@_spi(InternalLibraries) public struct LossyCodableList<Element: Sendable>: Sendable {
 
     private var elements: [Element]?
 

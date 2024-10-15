@@ -10,7 +10,7 @@ import Foundation
 
 /// An aggregate of an sharedSnippet and all associated resources
 @dynamicMemberLookup
-public struct TWSSharedSnippetBundle: Codable, Equatable {
+public struct TWSSharedSnippetBundle: Codable, Equatable, Sendable {
 
     public let sharedSnippet: TWSSharedSnippet
     @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]

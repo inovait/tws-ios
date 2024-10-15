@@ -10,14 +10,14 @@ import Foundation
 import OSLog
 import TWSModels
 
-public struct LogReporter {
+public struct LogReporter: Sendable {
 
     public init() {}
 
     public func generateReport(
         bundleId: String,
         date: Date,
-        reportFiltering: (OSLogEntryLog) -> String
+        reportFiltering: @Sendable (OSLogEntryLog) -> String
     ) async throws -> URL? {
         let fileURL = try await openFile(fileName: "TWS-Logs.txt")
         if let fileURL {
@@ -47,7 +47,7 @@ public struct LogReporter {
 
     func parseLogsAndWriteToFile(
         _ logEntries: [OSLogEntryLog],
-        _ reportFiltering: (OSLogEntryLog) -> String,
+        _ reportFiltering: @Sendable (OSLogEntryLog) -> String,
         _ fileURL: URL
     ) throws {
         if let fileHandle = FileHandle(forUpdatingAtPath: fileURL.path()) {
