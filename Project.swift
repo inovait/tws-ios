@@ -95,9 +95,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
                 ]
             )
         ),
