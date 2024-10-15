@@ -67,12 +67,12 @@ final class ResourcesAggregationTests: XCTestCase {
             )
         )
 
-        let store = TestStore(
+        let store = await TestStore(
             initialState: .init(),
             reducer: { TWSUniversalLinksFeature() }
             ,
             withDependencies: {
-                $0.api.getSnippetBySharedId = { _, _ in return sharedSnippet }
+                $0.api.getSnippetBySharedId = { @Sendable _, _ in return sharedSnippet }
                 $0.api.getResource = { attachment in return attachment.url.absoluteString }
             }
         )

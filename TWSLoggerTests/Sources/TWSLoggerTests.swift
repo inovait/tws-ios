@@ -24,10 +24,6 @@ final class TWSLoggerTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    private func logFiltering(entry: OSLogEntry) -> String {
-        return entry.composedMessage
-    }
-
     func testLogs() async {
         let initDate = Date()
 
@@ -56,7 +52,7 @@ final class TWSLoggerTests: XCTestCase {
             let fileURL = try await logReporter.generateReport(
                 bundleId: "com.apple.dt.xctest.tool",
                 date: initDate,
-                reportFiltering: logFiltering
+                reportFiltering: { $0.composedMessage }
             )
             XCTAssertNotNil(fileURL)
 
