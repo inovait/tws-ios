@@ -1,7 +1,8 @@
 import OSLog
 import TWSModels
 
-public struct TWSLog {
+public struct TWSLog: Sendable {
+
     private let logger: os.Logger
 
     public init(category: String) {

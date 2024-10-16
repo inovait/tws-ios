@@ -34,7 +34,7 @@ actor SocketConnector {
         do {
             let socket = try await withCheckedThrowingContinuation { [url] continuation in
                 let observer = SocketEventObserver(continuation: continuation)
-                observer.resume(url: url)
+                observer.start(with: url)
                 self._observer = observer
             }
 

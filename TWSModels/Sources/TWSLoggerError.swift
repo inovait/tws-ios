@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LoggerError: Error {
+public enum LoggerError: Error, Sendable {
     case bundleIdNotAvailable
     case unableToGetLogs
     case unableToCreateLogFile

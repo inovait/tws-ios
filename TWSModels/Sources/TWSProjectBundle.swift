@@ -10,7 +10,7 @@ import Foundation
 
 /// An aggregate of an project and all associated resources
 @dynamicMemberLookup
-public struct TWSProjectBundle: Codable, Equatable {
+public struct TWSProjectBundle: Codable, Equatable, Sendable {
 
     public let project: TWSProject
     @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]

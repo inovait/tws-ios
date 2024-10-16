@@ -77,7 +77,7 @@ final class ResourcesAggregationTests: XCTestCase {
             reducer: { TWSUniversalLinksFeature() }
             ,
             withDependencies: {
-                $0.api.getSnippetBySharedId = { _, _ in return sharedSnippet }
+                $0.api.getSnippetBySharedId = { @Sendable _, _ in return sharedSnippet }
                 $0.api.getResource = { attachment in return attachment.url.absoluteString }
             }
         )

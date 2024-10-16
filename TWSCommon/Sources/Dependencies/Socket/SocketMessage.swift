@@ -9,7 +9,7 @@
 import Foundation
 import TWSModels
 
-public struct SocketMessage: CustomDebugStringConvertible {
+public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
     public let id: UUID
     public let type: MessageType
@@ -64,7 +64,7 @@ public struct SocketMessage: CustomDebugStringConvertible {
 
 public extension SocketMessage {
 
-    enum MessageType: String {
+    enum MessageType: String, Sendable {
 
         case created = "SNIPPET_CREATED"
         case updated = "SNIPPET_UPDATED"

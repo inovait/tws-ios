@@ -9,7 +9,7 @@ private let RECONNECT_TIMEOUT: TimeInterval = 3
 // swiftlint:enable identifier_name
 
 @Reducer
-public struct TWSSnippetsFeature {
+public struct TWSSnippetsFeature: Sendable {
 
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
@@ -201,7 +201,7 @@ public struct TWSSnippetsFeature {
             return .none
 
         case .delayReconnect:
-            return .run { send in
+            return .run { [clock] send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     guard !Task.isCancelled else { return }

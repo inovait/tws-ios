@@ -10,7 +10,7 @@ import Foundation
 import TWSModels
 import ComposableArchitecture
 
-public struct ConfigDependency {
+public struct ConfigDependency: Sendable {
 
     public var configuration: @Sendable () -> TWSConfiguration
 
