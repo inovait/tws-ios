@@ -62,8 +62,9 @@ class ProjectViewModel {
                     selectedID: project.snippet.id
                 )
 
-            case .snippetsUpdated(let snippets):
+            case .snippetsUpdated:
                 print("->", _id, "Received event: snippets updated")
+                let snippets = manager.snippets
                 self.tabSnippets = snippets.filter({ snippet in
                     return snippet.type == .tab
                 })

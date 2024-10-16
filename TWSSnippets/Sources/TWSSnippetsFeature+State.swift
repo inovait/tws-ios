@@ -19,7 +19,7 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
-        public var snippetDates: [UUID: SnippetDateInfo]
+        @Shared public var snippetDates: [UUID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
 
@@ -33,7 +33,7 @@ extension TWSSnippetsFeature {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
-            snippetDates = [:]
+            _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
                 var state = [TWSSnippetFeature.State]()
@@ -53,21 +53,25 @@ extension TWSSnippetsFeature {
             }
         }
     }
-    
-    public struct SnippetDateInfo: Equatable {
-        let serverTime: Date
-        let phoneTime: Date
+}
 
-        init(serverTime: Date) {
-            @Dependency(\.date) var date
-            self.serverTime = serverTime
-            self.phoneTime = date.now
+public struct SnippetDateInfo: Equatable, Codable {
+    let serverTime: Date
+    let phoneTime: Date
+    public var adaptedTime: Date {
+        get {
+            return serverTime.addingTimeInterval(getElapsedSecondsSinceLastUpdate())
         }
+    }
 
-        public func getElapsedSecondsSinceLastUpdate() -> TimeInterval {
-            @Dependency(\.date) var date
-            return date.now.timeIntervalSince(phoneTime)
-        }
-        
+    init(serverTime: Date) {
+        @Dependency(\.date) var date
+        self.serverTime = serverTime
+        self.phoneTime = date.now
+    }
+
+    private func getElapsedSecondsSinceLastUpdate() -> TimeInterval {
+        @Dependency(\.date) var date
+        return date.now.timeIntervalSince(phoneTime)
     }
 }

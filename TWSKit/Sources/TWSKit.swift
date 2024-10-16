@@ -5,6 +5,7 @@ import Combine
 internal import TWSCore
 internal import ComposableArchitecture
 internal import TWSLogger
+internal import TWSSnippets
 
 /// A class that handles all the communication between your app and the SDK's functionalities
 @MainActor
@@ -45,14 +46,18 @@ public final class TWSManager: Identifiable {
 
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
-        let snippets = store.snippets.snippets.elements.map(\.snippet)
+        let shownSnippets = store.snippets.snippets.elements.filter { snippet in
+            return snippet.isVisible
+        }
+        let snippets = shownSnippets.map(\.snippet)
+        let snippetTimes = store.snippets.snippetDates
         self.activeTimers.forEach { timer in
             timer.cancelTimer()
         }
         self.activeTimers = []
         snippets.forEach { snippet in
-            if let serverTime = snippet.date {
-                setupVisibilityTimer(serverTime: serverTime, snippet: snippet)
+            if let snippetDateInfo = snippetTimes[snippet.id] {
+                setupVisibilityTimer(snippetDateInfo: snippetDateInfo, snippet: snippet)
             }
         }
         return snippets
@@ -164,16 +169,16 @@ public final class TWSManager: Identifiable {
         )))
     }
 
-    private func setupVisibilityTimer(serverTime: Date, snippet: TWSSnippet) {
+    private func setupVisibilityTimer(snippetDateInfo: SnippetDateInfo, snippet: TWSSnippet) {
         if let snippetVisibility = snippet.visibility {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
             dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
             if let fromUtcString = snippetVisibility.fromUtc,
                let fromUtc = dateFormatter.date(from: fromUtcString) {
-                if serverTime < fromUtc {
+                if snippetDateInfo.adaptedTime < fromUtc {
                     hideSnippet(snippet)
-                    let duration = serverTime.timeIntervalSince(fromUtc)
+                    let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
                     let timerTask = SnippetVisibiltyTimer()
                     timerTask.startTimer(duration: duration) { [weak self] in
                         self?.showSnippet(snippet)
@@ -182,10 +187,10 @@ public final class TWSManager: Identifiable {
             }
             if let untilUtcString = snippetVisibility.untilUtc,
                let untilUtc = dateFormatter.date(from: untilUtcString) {
-                if serverTime > untilUtc {
+                if snippetDateInfo.adaptedTime > untilUtc {
                     hideSnippet(snippet)
                 } else {
-                    let duration = untilUtc.timeIntervalSince(serverTime)
+                    let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
                     let timerTask = SnippetVisibiltyTimer()
                     timerTask.startTimer(duration: duration) { [weak self] in
                         self?.hideSnippet(snippet)

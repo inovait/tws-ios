@@ -125,7 +125,7 @@ public struct TWSSnippetsFeature {
             // Keep sorted
             _sort(basedOn: newOrder, &state)
 
-            return .none
+            return .concatenate(effects)
 
         case let .projectLoaded(.failure(error), _):
             if let error = error as? DecodingError {

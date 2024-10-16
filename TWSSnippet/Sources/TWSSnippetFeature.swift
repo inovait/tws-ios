@@ -11,6 +11,7 @@ public struct TWSSnippetFeature {
         public var snippet: TWSSnippet
         public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
+        public var isVisible = true
 
         public init(snippet: TWSSnippet) {
             self.snippet = snippet
@@ -60,11 +61,11 @@ public struct TWSSnippetFeature {
             return .none
 
         case .business(.hideSnippet):
-            state.snippet.isVisible = false
+            state.isVisible = false
             return .none
 
         case .business(.showSnippet):
-            state.snippet.isVisible = true
+            state.isVisible = true
             return .none
         }
     }

@@ -79,48 +79,50 @@ public struct TWSView<
     }
 
     public var body: some View {
-        ZStack {
-            _TWSView(
-                snippet: snippet,
-                preloadedResources: handler.store.snippets.preloadedResources,
-                locationServicesBridge: locationServicesBridge,
-                cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
-                cssOverrides: cssOverrides,
-                jsOverrides: jsOverrides,
-                using: handler,
-                displayID: displayID,
-                canGoBack: $canGoBack,
-                canGoForward: $canGoForward,
-                loadingState: $loadingState,
-                pageTitle: $pageTitle,
-                downloadCompleted: downloadCompleted
-            )
-            .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
-            .id(snippet.id)
-            // The actual URL changed for the same Snippet ~ redraw is required
-            .id(snippet.target)
-            // The internal payload of the target URL has changed ~ redraw is required
-            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
-            // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-            .conditionallyActivateDefaultLocationBehavior(
-                locationServicesBridge: locationServicesBridge,
-                snippet: snippet,
-                displayID: displayID
-            )
-
+        if handler.store.snippets.snippets[id: snippet.id]?.isVisible ?? false {
             ZStack {
-                switch loadingState {
-                case .idle, .loading:
-                    loadingView()
+                _TWSView(
+                    snippet: snippet,
+                    preloadedResources: handler.store.snippets.preloadedResources,
+                    locationServicesBridge: locationServicesBridge,
+                    cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
+                    cssOverrides: cssOverrides,
+                    jsOverrides: jsOverrides,
+                    using: handler,
+                    displayID: displayID,
+                    canGoBack: $canGoBack,
+                    canGoForward: $canGoForward,
+                    loadingState: $loadingState,
+                    pageTitle: $pageTitle,
+                    downloadCompleted: downloadCompleted
+                )
+                .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
+                .id(snippet.id)
+                // The actual URL changed for the same Snippet ~ redraw is required
+                .id(snippet.target)
+                // The internal payload of the target URL has changed ~ redraw is required
+                .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+                // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                .conditionallyActivateDefaultLocationBehavior(
+                    locationServicesBridge: locationServicesBridge,
+                    snippet: snippet,
+                    displayID: displayID
+                )
 
-                case .loaded:
-                    EmptyView()
+                ZStack {
+                    switch loadingState {
+                    case .idle, .loading:
+                        loadingView()
 
-                case let .failed(error):
-                    errorView(error)
+                    case .loaded:
+                        EmptyView()
+
+                    case let .failed(error):
+                        errorView(error)
+                    }
                 }
+                .frame(width: loadingState.showView ? 0 : nil, height: loadingState.showView ? 0 : nil)
             }
-            .frame(width: loadingState.showView ? 0 : nil, height: loadingState.showView ? 0 : nil)
         }
     }
 }
