@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import URLRouting
+@preconcurrency import URLRouting
 
 private let universalLinksRouter = OneOf {
     Route(.case(UniversalLinkRoute.snippet(id:))) {

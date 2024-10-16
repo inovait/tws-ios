@@ -15,7 +15,7 @@ extension WebView.Coordinator: WKDownloadDelegate {
         _ download: WKDownload,
         decideDestinationUsing response: URLResponse,
         suggestedFilename: String,
-        completionHandler: @escaping (URL?) -> Void
+        completionHandler: @escaping @MainActor @Sendable  (URL?) -> Void
     ) {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         let fileName = documentsURL!.appendingPathComponent(suggestedFilename)

@@ -11,7 +11,7 @@ import TWSCommon
 @_spi(InternalLibraries) import TWSModels
 
 @Reducer
-public struct TWSUniversalLinksFeature {
+public struct TWSUniversalLinksFeature: Sendable {
 
     @ObservableState
     public struct State: Equatable {
@@ -52,7 +52,7 @@ public struct TWSUniversalLinksFeature {
             do {
                 switch try TWSUniversalLinkRouter.route(for: url) {
                 case let .snippet(id):
-                    return .run { [api] send in
+                    return .run { [api, configuration] send in
                         do {
                             let snippet = try await api.getSnippetBySharedId(configuration(), id)
                             await send(.business(.snippetLoaded(.success(snippet))))

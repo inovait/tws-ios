@@ -13,10 +13,12 @@ import TWSKit
 @Observable
 class TWSViewModel {
 
-    let manager = TWSFactory.new(with: .init(
-        organizationID: "357b24f6-4714-42b1-9e15-0b07cae2fcd6",
-        projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
-    ))
+    let manager = TWSFactory.new(
+        with: .init(
+            organizationID: "e7e74ac1-786e-4439-bdcc-69e11685693c",
+            projectID: "9b992e03-a3ab-4d5a-9abb-4364bcc86559"
+        )
+    )
     let destinationID = UUID()
     var tabSnippets: [TWSSnippet]
     var popupSnippets: [TWSSnippet]
@@ -66,7 +68,8 @@ class TWSViewModel {
                     return snippet.type == .tab
                 })
                 self.popupSnippets = snippets.filter({ snippet in
-                    return snippet.type == .popup && self.canShowPopupSnippet(snippet)
+                    return snippet.type == .popup
+                        && self.canShowPopupSnippet(snippet)
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 

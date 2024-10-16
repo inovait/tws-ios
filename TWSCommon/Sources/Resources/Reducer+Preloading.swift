@@ -21,7 +21,16 @@ public extension Reducer {
             .flatMap { $0 }
 
         guard !attachments.isEmpty else { return [:] }
-        return await _preloadResources(resources: attachments, using: api)
+
+        return await _preloadResources(
+            homepages: project.snippets.map {
+                TWSSnippet.Attachment(
+                    url: $0.target,
+                    contentType: .html)
+            },
+            resources: attachments,
+            using: api
+        )
     }
 
     func preloadResources(
@@ -30,10 +39,18 @@ public extension Reducer {
     ) async -> [TWSSnippet.Attachment: String] {
         let attachments = sharedSnippet.snippet.dynamicResources ?? []
         guard !attachments.isEmpty else { return [:] }
-        return await _preloadResources(resources: attachments, using: api)
+        return await _preloadResources(
+            homepages: [.init(
+                url: sharedSnippet.snippet.target,
+                contentType: .html
+            )],
+            resources: attachments,
+            using: api
+        )
     }
 
     private func _preloadResources(
+        homepages: [TWSSnippet.Attachment],
         resources: [TWSSnippet.Attachment],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
@@ -41,7 +58,8 @@ public extension Reducer {
             of: (TWSSnippet.Attachment, String)?.self,
             returning: [TWSSnippet.Attachment: String].self
         ) { [api] group in
-            for resource in resources {
+            // Use a set to download each resource only once, even if it is used in multiple snippets
+            for resource in Set(homepages + resources) {
                 group.addTask { [resource] in
                     do {
                         let payload = try await api.getResource(resource)

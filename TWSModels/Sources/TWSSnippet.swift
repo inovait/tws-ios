@@ -1,8 +1,8 @@
 import Foundation
 
-public struct TWSSnippet: Identifiable, Codable, Hashable {
+public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
 
-    public enum SnippetType: String, ExpressibleByStringLiteral, Codable {
+    public enum SnippetType: String, ExpressibleByStringLiteral, Codable, Sendable {
         case tab
         case popup
         case unknown
@@ -16,7 +16,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
         }
     }
 
-    public enum SnippetStatus: String, ExpressibleByStringLiteral, Codable {
+    public enum SnippetStatus: String, ExpressibleByStringLiteral, Codable, Sendable {
         case enabled
         case disabled
         case unknown
@@ -64,7 +64,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable {
 
 public extension TWSSnippet {
 
-    struct Attachment: Codable, Hashable {
+    struct Attachment: Codable, Hashable, Sendable {
 
         public let url: URL
         public let contentType: `Type`
@@ -83,9 +83,10 @@ public extension TWSSnippet {
 
 public extension TWSSnippet.Attachment {
 
-    enum `Type`: String, Codable, Hashable {
+    enum `Type`: String, Codable, Hashable, Sendable {
 
         case javascript = "text/javascript"
         case css = "text/css"
+        case html = "text/html"
     }
 }

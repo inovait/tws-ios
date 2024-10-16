@@ -11,6 +11,7 @@ import WebKit
 
 extension WebView {
 
+    @MainActor
     class Coordinator: NSObject {
 
         var parent: WebView
@@ -22,6 +23,7 @@ extension WebView {
         var openURL: URL?
         var downloadInfo = TWSDownloadInfo()
 
+        let id = UUID().uuidString.suffix(4)
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
         let downloadCompleted: ((TWSDownloadState) -> Void)?
@@ -36,13 +38,13 @@ extension WebView {
             self.snippetHeightProvider = snippetHeightProvider
             self.navigationProvider = navigationProvider
             self.downloadCompleted = downloadCompleted
-            logger.debug("INIT Coordinator for WKWebView \(parent.id)")
+            logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
 
         deinit {
             heightObserver?.invalidate()
             heightObserver = nil
-            logger.debug("DEINIT Coordinator for WKWebView \(parent.id)")
+            logger.debug("DEINIT Coordinator for WKWebView \(id)")
         }
 
         // MARK: - Internals
@@ -51,32 +53,36 @@ extension WebView {
             var prevHeight: CGFloat = .zero
             let displayID = parent.displayID
 
-            heightObserver = webView.scrollView.observe(\.contentSize, options: [.new]) { [weak self] _, change in
-                assert(Thread.isMainThread)
-                guard
-                    let self = self,
-                    let newHeight = change.newValue?.height,
-                    newHeight != prevHeight
-                else { return }
+            heightObserver = webView.scrollView.observe(
+                \.contentSize,
+                options: [.new]
+            ) { [weak self, parent] _, change in
+                MainActor.assumeIsolated {
+                    guard
+                        let self = self,
+                        let newHeight = change.newValue?.height,
+                        newHeight != prevHeight
+                    else { return }
 
-                prevHeight = newHeight
-                if let currentPage = webView.url {
-                    let hash = WebPageDescription(currentPage)
-                    self.snippetHeightProvider.set(
-                        height: newHeight,
-                        for: hash,
-                        displayID: self.parent.displayID
-                    )
+                    prevHeight = newHeight
+                    if let currentPage = webView.url {
+                        let hash = WebPageDescription(currentPage)
+                        self.snippetHeightProvider.set(
+                            height: newHeight,
+                            for: hash,
+                            displayID: self.parent.displayID
+                        )
 
-                    if hash == WebPageDescription(self.parent.url) {
-                        assert(displayID == parent.displayID)
-                        self.parent.onHeightCalculated(newHeight)
+                        if hash == WebPageDescription(self.parent.url) {
+                            assert(displayID == parent.displayID)
+                            self.parent.onHeightCalculated(newHeight)
+                        }
                     }
-                }
 
-                // Mandatory to hop the thread, because of UI layout change
-                DispatchQueue.main.async { [weak self] in
-                    self?.parent.dynamicHeight = newHeight
+                    // Mandatory to hop the thread, because of UI layout change
+                    DispatchQueue.main.async { [weak self] in
+                        self?.parent.dynamicHeight = newHeight
+                    }
                 }
             }
         }

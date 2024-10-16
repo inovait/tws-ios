@@ -10,7 +10,7 @@ import Foundation
 
 /// Information provided when a snippet is opened via universal link. It contains everything needed,
 /// to start a new, separate, TWS flow
-public struct TWSSharedSnippet: Codable, Equatable, Identifiable {
+public struct TWSSharedSnippet: Codable, Equatable, Identifiable, Sendable {
 
     /// Identifiable conformance
     public var id: String {
@@ -38,14 +38,14 @@ public struct TWSSharedSnippet: Codable, Equatable, Identifiable {
 public extension TWSSharedSnippet {
 
     /// TWS project's information
-    struct Project: Codable, Equatable {
+    struct Project: Codable, Equatable, Sendable {
 
         /// The ID of the TWS project
         public let id: String
     }
 
     /// TWS organization's information
-    struct Organization: Codable, Equatable {
+    struct Organization: Codable, Equatable, Sendable {
 
         /// The ID of the TWS organization
         public let id: String

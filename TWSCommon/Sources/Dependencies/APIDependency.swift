@@ -12,7 +12,7 @@ import TWSAPI
 import ComposableArchitecture
 
 @DependencyClient
-public struct APIDependency {
+public struct APIDependency: Sendable {
 
     public var getProject: @Sendable (
         TWSConfiguration

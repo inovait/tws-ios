@@ -8,6 +8,7 @@
 
 import XCTest
 import OSLog
+import ComposableArchitecture
 @testable import TWSLogger
 
 final class TWSLoggerTests: XCTestCase {
@@ -24,10 +25,6 @@ final class TWSLoggerTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    private func logFiltering(entry: OSLogEntry) -> String {
-        return entry.composedMessage
-    }
-
     func testLogs() async {
         let initDate = Date()
 
@@ -36,11 +33,11 @@ final class TWSLoggerTests: XCTestCase {
         logManager.warn("This is a warning", functionName: "Function 1")
         logManager.info("This is an info")
 
-        let exepectedLogResult =
-            "This is an error [Class 1, l34]\n" +
+        let expectedLogResult =
+            "This is an error [Class 1, l31]\n" +
             "This is a message [TWSLoggerTests/TWSLoggerTests.swift, l13]\n" +
-            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l36]\n" +
-            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l37]\n"
+            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l33]\n" +
+            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l34]\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
@@ -56,14 +53,19 @@ final class TWSLoggerTests: XCTestCase {
             let fileURL = try await logReporter.generateReport(
                 bundleId: "com.apple.dt.xctest.tool",
                 date: initDate,
-                reportFiltering: logFiltering
+                reportFiltering: { $0.composedMessage }
             )
             XCTAssertNotNil(fileURL)
 
             if let fileURL = fileURL {
                 do {
                     let fileContent = try String(contentsOf: fileURL)
-                    XCTAssertEqual(fileContent, exepectedLogResult)
+
+                    XCTAssertEqual(
+                        fileContent,
+                        expectedLogResult,
+                        diff(fileContent.description, expectedLogResult.description) ?? ""
+                    )
                 } catch {
                     XCTFail("Failed to read file content: \(error)")
                 }

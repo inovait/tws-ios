@@ -53,6 +53,10 @@ final class ResourcesAggregationTests: XCTestCase {
 
         let expectedResources: [TWSSnippet.Attachment: String] = [
             .init(
+                url: snippets[0].target,
+                contentType: .html
+            ): snippets[0].target.absoluteString,
+            .init(
                 url: URL(string: "https://www.r1.com")!,
                 contentType: .javascript
             ): "https://www.r1.com",
@@ -85,10 +89,10 @@ final class ResourcesAggregationTests: XCTestCase {
         )
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.projectLoaded.success, aggregate) {
-            $0.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
-            $0.socketURL = self.socketURL
-            $0.preloadedResources = expectedResources
+        await store.receive(\.business.projectLoaded.success, aggregate) { [socketURL] state in
+            state.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
+            state.socketURL = socketURL
+            state.preloadedResources = expectedResources
         }
     }
 }

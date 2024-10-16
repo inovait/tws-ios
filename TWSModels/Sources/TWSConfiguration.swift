@@ -9,7 +9,7 @@
 import Foundation
 
 /// A struct used to provided all information for a TWSKit manager to receive snippets and connect to the socket for updats
-public struct TWSConfiguration: Hashable {
+public struct TWSConfiguration: Hashable, Sendable {
 
     /// The ID of the TWS organization
     public let organizationID: UUID

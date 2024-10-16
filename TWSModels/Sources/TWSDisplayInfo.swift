@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TWSDisplayInfo: Codable, Equatable {
+public struct TWSDisplayInfo: Codable, Equatable, Sendable {
 
     public var displays: [String: Info]
 
@@ -19,7 +19,7 @@ public struct TWSDisplayInfo: Codable, Equatable {
 
 extension TWSDisplayInfo {
 
-    public struct Info: Codable, Equatable {
+    public struct Info: Codable, Equatable, Sendable {
 
         public let id: String
         public let height: CGFloat
