@@ -32,9 +32,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
                 ],
                 defaultSettings: .recommended(excluding: [
                     "CODE_SIGN_IDENTITY",
@@ -106,9 +106,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
                 ]
             )
         ),
@@ -149,9 +149,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
                 ]
             )
         ),
@@ -200,9 +200,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
                 ]
             )
         ),
@@ -220,9 +220,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
                 ]
             )
         ),
@@ -347,9 +347,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Staging"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
                 ]
             )
         ),
