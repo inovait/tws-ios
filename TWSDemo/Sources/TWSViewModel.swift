@@ -56,7 +56,8 @@ class TWSViewModel {
             switch event {
             case let .universalLinkSnippetLoaded(project):
                 self.universalLinkLoadedProject = .init(
-                    viewID: destinationID, configuration: project.configuration,
+                    viewID: destinationID,
+                    configuration: project.configuration,
                     viewModel: .init(manager: TWSFactory.new(with: project)),
                     selectedID: project.snippet.id
                 )
