@@ -11,10 +11,10 @@ import Foundation
 class SnippetVisibiltyTimer {
     private var timer: Timer?
 
-    func startTimer(duration: TimeInterval, action: @escaping () -> Void) {
+    func startTimer(duration: TimeInterval, action: @escaping @Sendable () -> Void) {
+        cancelTimer()
         timer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { timer in
             action()
-            timer.invalidate()
         }
     }
 

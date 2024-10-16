@@ -55,13 +55,11 @@ extension TWSSnippetsFeature {
     }
 }
 
-public struct SnippetDateInfo: Equatable, Codable {
+public struct SnippetDateInfo: Equatable, Codable, Sendable {
     let serverTime: Date
     let phoneTime: Date
     public var adaptedTime: Date {
-        get {
-            return serverTime.addingTimeInterval(getElapsedSecondsSinceLastUpdate())
-        }
+        serverTime.addingTimeInterval(getElapsedSecondsSinceLastUpdate())
     }
 
     init(serverTime: Date) {

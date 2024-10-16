@@ -181,7 +181,9 @@ public final class TWSManager: Identifiable {
                     let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
                     let timerTask = SnippetVisibiltyTimer()
                     timerTask.startTimer(duration: duration) { [weak self] in
-                        self?.showSnippet(snippet)
+                        Task { @MainActor in
+                            self?.showSnippet(snippet)
+                        }
                     }
                 }
             }
@@ -193,7 +195,9 @@ public final class TWSManager: Identifiable {
                     let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
                     let timerTask = SnippetVisibiltyTimer()
                     timerTask.startTimer(duration: duration) { [weak self] in
-                        self?.hideSnippet(snippet)
+                        Task { @MainActor in
+                            self?.showSnippet(snippet)
+                        }
                     }
                 }
             }
