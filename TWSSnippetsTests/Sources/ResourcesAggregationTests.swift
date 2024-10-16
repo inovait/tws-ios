@@ -84,7 +84,7 @@ final class ResourcesAggregationTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { _ in return (project, Date()) }
+                $0.api.getProject = { _ in return (project, nil) }
                 $0.api.getResource = { attachment in return attachment.url.absoluteString }
             }
         )

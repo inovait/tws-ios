@@ -89,7 +89,9 @@ public struct TWSSnippetsFeature: Sendable {
 
             // Update current or add new
             for snippet in snippets {
-                state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: project.serverDate ?? Date())
+                if let date = project.serverDate {
+                    state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date)
+                }
                 if currentOrder.contains(snippet.id) {
                     if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed

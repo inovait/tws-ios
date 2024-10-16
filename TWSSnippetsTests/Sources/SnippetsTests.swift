@@ -47,7 +47,7 @@ final class SnippetsTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), Date())}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
             }
         )
 
@@ -86,7 +86,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), Date())}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
             }
         )
 
@@ -101,7 +101,7 @@ final class SnippetsTests: XCTestCase {
         // Send for the second time without one element. Snippet should be removed from state
 
         store.dependencies.api.getProject = { [socketURL] _ in
-            (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2]]), Date())
+            (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2]]), nil)
         }
 
         await store.send(.business(.load)).finish()
@@ -127,7 +127,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in
-                    (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2]]), Date())
+                    (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2]]), nil)
                 }
             }
         )
@@ -142,7 +142,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send for the second time with new element. Snippet should be added in right order
         store.dependencies.api.getProject = { [socketURL] _ in
-            (TWSProject(listenOn: socketURL, snippets: snippets), Date())
+            (TWSProject(listenOn: socketURL, snippets: snippets), nil)
         }
 
         await store.send(.business(.load)).finish()
@@ -169,7 +169,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), Date())}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
             }
         )
 
@@ -184,7 +184,7 @@ final class SnippetsTests: XCTestCase {
         // Send response for the second time but change the order
 
         store.dependencies.api.getProject = { [socketURL] _ in
-            (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2], snippets[0]]), Date())
+            (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2], snippets[0]]), nil)
         }
 
         await store.send(.business(.load)).finish()
@@ -214,7 +214,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in
-                    (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[1], snippets[2]]), Date())
+                    (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[1], snippets[2]]), nil)
                 }
             }
         )
@@ -225,12 +225,13 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
             $0.socketURL = self.socketURL
+            $0.snippetDates = [:]
         }
 
         // Send response for the second time but remove some and add some
 
         store.dependencies.api.getProject = { [socketURL] _ in
-            (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2], snippets[3]]), Date())
+            (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2], snippets[3]]), nil)
         }
 
         await store.send(.business(.load)).finish()
@@ -246,7 +247,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (.init(listenOn: socketURL, snippets: []), Date())}
+                $0.api.getProject = { [socketURL] _ in (.init(listenOn: socketURL, snippets: []), nil)}
                 $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in .makeStream().stream }
                 $0.socket.closeConnection = { _ in }
@@ -277,7 +278,7 @@ final class SnippetsTests: XCTestCase {
             initialState: TWSSnippetsFeature.State(configuration: configuration),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: []), Date())}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: []), nil)}
             }
         )
 
