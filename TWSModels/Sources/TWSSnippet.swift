@@ -43,7 +43,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         dynamicResources: [Attachment]? = nil,
         type: SnippetType = .tab,
         status: SnippetStatus = .enabled,
-        visibilty: SnippetVisibility?
+        visibilty: SnippetVisibility? = nil
     ) {
         self.id = id
         self.target = target
@@ -75,7 +75,7 @@ public extension TWSSnippet {
         }
     }
 
-    struct SnippetVisibility: Codable, Hashable {
+    struct SnippetVisibility: Codable, Hashable, Sendable {
         public let fromUtc: String?
         public let untilUtc: String?
     }

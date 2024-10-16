@@ -28,7 +28,7 @@ extension TWSSnippetsFeature {
             snippets: [TWSSnippet]? = nil,
             preloadedResources: [TWSSnippet.Attachment: String]? = nil,
             socketURL: URL? = nil,
-            serverTime: Date
+            serverTime: Date = Date()
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))

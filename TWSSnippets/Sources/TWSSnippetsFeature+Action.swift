@@ -19,7 +19,7 @@ extension TWSSnippetsFeature {
         @CasePathable
         public enum BusinessAction {
             case load
-            case projectLoaded(Result<TWSProjectBundle, Error>, Date?)
+            case projectLoaded(Result<TWSProjectBundle, Error>)
             case listenForChanges
             case delayReconnect
             case reconnectTriggered

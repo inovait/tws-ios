@@ -54,8 +54,9 @@ public struct TWSSnippetsFeature: Sendable {
 
                 return .send(.business(.projectLoaded(.success(.init(
                     project: project,
-                    resources: [:]
-                )), nil)))
+                    resources: [:],
+                    serverDate: nil
+                )))))
 
             @unknown default:
                 break
@@ -68,14 +69,15 @@ public struct TWSSnippetsFeature: Sendable {
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project.0,
-                        resources: resources
-                    )), project.1)))
+                        resources: resources,
+                        serverDate: project.1
+                    )))))
                 } catch {
-                    await send(.business(.projectLoaded(.failure(error), nil)))
+                    await send(.business(.projectLoaded(.failure(error))))
                 }
             }
 
-        case let .projectLoaded(.success(project), date):
+        case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
 
             var effects = [Effect<Action>]()
@@ -87,7 +89,7 @@ public struct TWSSnippetsFeature: Sendable {
 
             // Update current or add new
             for snippet in snippets {
-                state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date ?? Date())
+                state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: project.serverDate ?? Date())
                 if currentOrder.contains(snippet.id) {
                     if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed
@@ -127,7 +129,7 @@ public struct TWSSnippetsFeature: Sendable {
 
             return .concatenate(effects)
 
-        case let .projectLoaded(.failure(error), _):
+        case let .projectLoaded(.failure(error)):
             if let error = error as? DecodingError {
                 logger.err(
                     "Failed to decode snippets: \(error)"
