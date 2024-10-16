@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class ThreadSafeDictionary<U: Hashable, V> {
+public class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @unchecked Sendable {
     private let queue = DispatchQueue(label: "ThreadSafeDictionaryQueue", attributes: .concurrent)
     private var _value = [U: V]()
 
@@ -47,7 +47,7 @@ public class ThreadSafeDictionary<U: Hashable, V> {
         return result
     }
 
-    public func removeValue(forKey key: U, completion: ((V?) -> Void)? = nil) {
+    public func removeValue(forKey key: U, completion: (@Sendable (V?) -> Void)? = nil) {
         queue.async(flags: .barrier) {
             let result = self._value.removeValue(forKey: key)
 

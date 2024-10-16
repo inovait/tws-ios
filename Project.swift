@@ -88,9 +88,9 @@ let project = Project(
             ],
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Staging", xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Release", xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
                 ]
             )
         ),
