@@ -8,10 +8,13 @@
 
 import Foundation
 
+@MainActor
 final class WeakBox<T: AnyObject> {
-    weak var box: T?
+    weak private(set) var box: T?
 
     init(_ box: T) {
         self.box = box
     }
 }
+
+extension WeakBox: @unchecked Sendable where T: Sendable { }

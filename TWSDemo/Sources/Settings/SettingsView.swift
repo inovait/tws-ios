@@ -94,7 +94,9 @@ struct SettingsView: View {
                             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
                             modifiedSince: .init(timeIntervalSince1970: 0),
                             completionHandler: {
-                                cacheRemoved.toggle()
+                                Task { @MainActor in
+                                    cacheRemoved.toggle()
+                                }
                             }
                         )
                     } label: {
