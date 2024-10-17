@@ -20,6 +20,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation \(webView.hash)] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
 
+        _ = pullToRefresh.verifyForRefresh(navigation: navigation)
         _updateHeight(webView: webView)
 
         // Mandatory to hop the thread, because of UI layout change
