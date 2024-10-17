@@ -123,11 +123,13 @@ struct WebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
         webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
-        webView.scrollView.bounces = false
+        webView.scrollView.bounces = true
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+
+        context.coordinator.pullToRefresh.enable(on: webView)
 
         let key = TWSSnippet.Attachment(url: url, contentType: .html)
         if let preloaded = preloadedResources[key] {
