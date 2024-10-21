@@ -3,6 +3,7 @@ import Foundation
 public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
 
     public enum SnippetType: String, ExpressibleByStringLiteral, Codable, Sendable {
+
         case tab
         case popup
         case unknown
@@ -17,6 +18,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     }
 
     public enum SnippetStatus: String, ExpressibleByStringLiteral, Codable, Sendable {
+
         case enabled
         case disabled
         case unknown
@@ -34,6 +36,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public let type: SnippetType
     public let status: SnippetStatus
     public var target: URL
+    private let props: Props
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     public init(
@@ -41,20 +44,15 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         target: URL,
         dynamicResources: [Attachment]? = nil,
         type: SnippetType = .tab,
-        status: SnippetStatus = .enabled
+        status: SnippetStatus = .enabled,
+        props: Props = .dictionary([:])
     ) {
         self.id = id
         self.target = target
         self.type = type
         self.status = status
         self._dynamicResources = .init(elements: dynamicResources)
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(type)
-        hasher.combine(status)
-        hasher.combine(target)
+        self.props = props
     }
 }
 
