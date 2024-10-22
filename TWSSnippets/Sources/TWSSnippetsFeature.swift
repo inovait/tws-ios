@@ -265,7 +265,6 @@ public struct TWSSnippetsFeature: Sendable {
             .init(
                 id: uuidGenerator(),
                 target: $0,
-                type: "tab",
                 status: "enabled"
             )
         }

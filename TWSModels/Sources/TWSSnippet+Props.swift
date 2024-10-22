@@ -134,7 +134,8 @@ public extension TWSSnippet {
             }
 
             required public init?(intValue: Int) {
-                fatalError() // TODO:
+                self.stringValue = "\(intValue)"
+                self.intValue = intValue
             }
         }
 
@@ -184,13 +185,13 @@ public extension TWSSnippet {
 
         // MARK: - Subscript helper
 
-        subscript(_ key: String) -> Props? {
+        public subscript(_ key: String) -> Props? {
             guard case let .dictionary(dict) = self
             else { assertionFailure(); return nil }
             return dict[key]
         }
 
-        subscript<T>(_ key: String, as keyPath: KeyPath<Self, T?>) -> T? {
+        public subscript<T>(_ key: String, as keyPath: KeyPath<Self, T?>) -> T? {
             guard let value = self[key]
             else { return nil }
             return value[keyPath: keyPath]
