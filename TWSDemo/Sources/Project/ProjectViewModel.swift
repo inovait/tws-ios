@@ -26,10 +26,13 @@ class ProjectViewModel {
     init(manager: TWSManager) {
         let snippets = manager.snippets
         self.tabSnippets = snippets.filter { snippet in
-            return snippet.type == .tab
+            snippet.props?[.tabName, as: \.string] != nil
         }
-        self.popupSnippets = snippets.filter { snippet in
-            return snippet.type == .popup
+        self.popupSnippets = snippets.filter { _ in
+            // As of now, because `type` needs to be removed with TWS-212,
+            // We have no way to detect pop-ups (Check TWSPopUpViewModel too)
+            // Before: return snippet.type == .popup
+            return false
         }
         self.manager = manager
         self.presentPopups = !popupSnippets.isEmpty
@@ -65,10 +68,13 @@ class ProjectViewModel {
             case .snippetsUpdated(let snippets):
                 print("->", _id, "Received event: snippets updated")
                 self.tabSnippets = snippets.filter({ snippet in
-                    return snippet.type == .tab
+                    return snippet.props?[.tabName, as: \.string] != nil
                 })
-                self.popupSnippets = snippets.filter({ snippet in
-                    return snippet.type == .popup && self.canShowPopupSnippet(snippet)
+                self.popupSnippets = snippets.filter({ _ in
+                    // As of now, because `type` needs to be removed with TWS-212,
+                    // We have no way to detect pop-ups (Check TWSPopUpViewModel too)
+                    // Before: snippet.type == .popup && self.canShowPopupSnippet(snippet)
+                    return false
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 

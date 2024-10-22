@@ -30,10 +30,13 @@ class TWSViewModel {
     init() {
         let snippets = manager.snippets
         self.tabSnippets = snippets.filter { snippet in
-            return snippet.type == .tab
+            return snippet.props?[.tabName, as: \.string] != nil
         }
-        self.popupSnippets = snippets.filter { snippet in
-            return snippet.type == .popup
+        self.popupSnippets = snippets.filter { _ in
+            // As of now, because `type` needs to be removed with TWS-212,
+            // We have no way to detect pop-ups (Check TWSPopUpViewModel too)
+            // Before: return snippet.type == .popup
+            return false
         }
         self.presentPopups = !popupSnippets.isEmpty
         // Do not call `.run()` in the initializer! SwiftUI views can recreate multiple instances of the same view.
@@ -64,11 +67,15 @@ class TWSViewModel {
 
             case .snippetsUpdated(let snippets):
                 self.tabSnippets = snippets.filter({ snippet in
-                    return snippet.type == .tab
+                    return snippet.props?[.tabName, as: \.string] != nil
                 })
-                self.popupSnippets = snippets.filter({ snippet in
-                    return snippet.type == .popup
-                        && self.canShowPopupSnippet(snippet)
+                self.popupSnippets = snippets.filter({ _ in
+                    // As of now, because `type` needs to be removed with TWS-212,
+                    // We have no way to detect pop-ups (Check TWSPopUpViewModel too)
+                    // Before: return snippet.type == .popup
+                    //    && self.canShowPopupSnippet(snippet)
+
+                    return false
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 

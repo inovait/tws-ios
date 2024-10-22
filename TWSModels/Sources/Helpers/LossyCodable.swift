@@ -27,6 +27,8 @@ import Foundation
 
 extension LossyCodableList: Equatable where Element: Equatable { }
 
+extension LossyCodableList: Hashable where Element: Hashable { }
+
 extension LossyCodableList: Decodable where Element: Decodable {
 
     private struct ElementWrapper: Decodable {

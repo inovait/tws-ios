@@ -2,59 +2,68 @@ import Foundation
 
 public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
 
-    public enum SnippetType: String, ExpressibleByStringLiteral, Codable, Sendable {
-        case tab
-        case popup
-        case unknown
+    public enum SnippetStatus: ExpressibleByStringLiteral, Hashable, Codable, Sendable {
 
-        public init(stringLiteral value: String) {
-            if let option = SnippetType(rawValue: value.lowercased()) {
-                self = option
-            } else {
-                self = .unknown
-            }
-        }
-    }
-
-    public enum SnippetStatus: String, ExpressibleByStringLiteral, Codable, Sendable {
         case enabled
         case disabled
-        case unknown
+        case other(String)
 
         public init(stringLiteral value: String) {
-            if let option = SnippetStatus(rawValue: value.lowercased()) {
-                self = option
-            } else {
-                self = .unknown
+            let value = value.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            switch value {
+            case "enabled":
+                self = .enabled
+
+            case "disabled":
+                self = .disabled
+
+            default:
+                self = .other(value)
             }
+        }
+
+        public var rawValue: String {
+            switch self {
+            case .enabled: "enabled"
+            case .disabled: "disabled"
+            case .other(let string): string
+            }
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let value = try container.decode(String.self)
+            self = .init(stringLiteral: value)
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(rawValue)
         }
     }
 
     public let id: UUID
-    public let type: SnippetType
     public let status: SnippetStatus
     public var target: URL
+    public let props: Props?
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, status, target, props, dynamicResources
+    }
 
     public init(
         id: UUID,
         target: URL,
         dynamicResources: [Attachment]? = nil,
-        type: SnippetType = .tab,
-        status: SnippetStatus = .enabled
+        status: SnippetStatus = .enabled,
+        props: Props = .dictionary([:])
     ) {
         self.id = id
         self.target = target
-        self.type = type
         self.status = status
         self._dynamicResources = .init(elements: dynamicResources)
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(type)
-        hasher.combine(status)
-        hasher.combine(target)
+        self.props = props
     }
 }
 
