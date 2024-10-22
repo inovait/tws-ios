@@ -15,14 +15,10 @@ struct PopupSnippetView: View {
     let snippet: TWSSnippet
     let manager: TWSManager
     @State private var loadingState: TWSLoadingState = .idle
-    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
-    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
 
     var body: some View {
         TWSView(
             snippet: snippet,
-            locationServicesBridge: locationHandler,
-            cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
             displayID: "popup-\(snippet.id.uuidString)",
             canGoBack: .constant(false),
             canGoForward: .constant(false),

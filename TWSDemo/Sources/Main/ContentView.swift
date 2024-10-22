@@ -26,7 +26,7 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                     .tag(ContentViewModel.Tab.fullscreenSnippets)
-                    .enableTWS(using: twsViewModel.manager)
+                    .twsEnable(using: twsViewModel.manager)
 
                 SnippetsView()
                     .tabItem {
@@ -34,7 +34,7 @@ struct ContentView: View {
                         Image(systemName: "list.bullet")
                     }
                     .tag(ContentViewModel.Tab.snippets)
-                    .enableTWS(using: twsViewModel.manager)
+                    .twsEnable(using: twsViewModel.manager)
 
                 SettingsView()
                     .tabItem {
@@ -56,11 +56,11 @@ struct ContentView: View {
         })
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
-                .enableTWS(using: twsViewModel.manager)
+                .twsEnable(using: twsViewModel.manager)
         }
         .fullScreenCover(isPresented: $twsViewModel.presentPopups, content: {
             TWSPopupView(isPresented: $twsViewModel.presentPopups, manager: twsViewModel.manager)
-                .enableTWS(using: twsViewModel.manager)
+                .twsEnable(using: twsViewModel.manager)
         })
     }
 }

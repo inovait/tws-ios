@@ -49,9 +49,9 @@ private struct DefaultLocationServiceModifier: ViewModifier {
 
     }
 
-    private func _unbox() -> TWSDefaultLocationServicesManager? {
+    private func _unbox() -> DefaultLocationServicesManager? {
         guard
-            let locationServicesBridge = locationServicesBridge as? TWSDefaultLocationServicesManager
+            let locationServicesBridge = locationServicesBridge as? DefaultLocationServicesManager
         else {
             return nil
         }

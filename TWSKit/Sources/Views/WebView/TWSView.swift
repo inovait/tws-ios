@@ -16,10 +16,10 @@ public struct TWSView<
 >: View {
 
     @Environment(TWSManager.self) private var manager
+    @Environment(\.locationServiceBridge) private var locationServicesBridge
+    @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServicesBridge
 
     let snippet: TWSSnippet
-    let locationServicesBridge: LocationServicesBridge
-    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
@@ -34,8 +34,6 @@ public struct TWSView<
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
-    ///   - locationServicesBridge: Used for providing location services data requested by web browsers
-    ///   - cameraMicrophoneBridge: Used for handling camera/microphone services requested by web browser
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - id: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the autoheight to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
@@ -48,8 +46,6 @@ public struct TWSView<
     ///   - downloadCompleted: A callback that let's you know when the download is completed. The first argument is the fileName and the second one is the file location
     public init(
         snippet: TWSSnippet,
-        locationServicesBridge: LocationServicesBridge,
-        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
         displayID id: String,
@@ -62,8 +58,6 @@ public struct TWSView<
         downloadCompleted: ((TWSDownloadState) -> Void)? = nil
     ) {
         self.snippet = snippet
-        self.locationServicesBridge = locationServicesBridge
-        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id
@@ -80,8 +74,6 @@ public struct TWSView<
         ZStack {
             _TWSView(
                 snippet: snippet,
-                locationServicesBridge: locationServicesBridge,
-                cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
                 cssOverrides: cssOverrides,
                 jsOverrides: jsOverrides,
                 displayID: displayID,
@@ -125,6 +117,8 @@ public struct TWSView<
 private struct _TWSView: View {
 
     @Environment(TWSManager.self) private var manager
+    @Environment(\.locationServiceBridge) private var locationServiceBridge
+    @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
 
     @State var height: CGFloat = 16
     @State private var backCommandID = UUID()
@@ -138,8 +132,6 @@ private struct _TWSView: View {
     @Binding var pageTitle: String
 
     let snippet: TWSSnippet
-    let locationServicesBridge: LocationServicesBridge
-    let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
@@ -147,8 +139,6 @@ private struct _TWSView: View {
 
     init(
         snippet: TWSSnippet,
-        locationServicesBridge: LocationServicesBridge,
-        cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID id: String,
@@ -159,8 +149,6 @@ private struct _TWSView: View {
         downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
-        self.locationServicesBridge = locationServicesBridge
-        self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -175,8 +163,8 @@ private struct _TWSView: View {
         WebView(
             snippet: snippet,
             preloadedResources: manager.store.snippets.preloadedResources,
-            locationServicesBridge: locationServicesBridge,
-            cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
+            locationServicesBridge: locationServiceBridge,
+            cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
             cssOverrides: cssOverrides,
             jsOverrides: jsOverrides,
             displayID: displayID,

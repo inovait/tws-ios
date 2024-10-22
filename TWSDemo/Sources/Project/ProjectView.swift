@@ -44,11 +44,11 @@ struct ProjectView: View {
         }
         .sheet(item: $viewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
-                .enableTWS(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
+                .twsEnable(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
         }
         .fullScreenCover(isPresented: $viewModel.presentPopups, content: {
             TWSPopupView(isPresented: $viewModel.presentPopups, manager: viewModel.manager)
-                .enableTWS(using: viewModel.manager)
+                .twsEnable(using: viewModel.manager)
         })
     }
 }
