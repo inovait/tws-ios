@@ -6,7 +6,7 @@ let project = Project(
     organizationName: "Inova IT, d.o.o.",
     settings: .settings(
         configurations: [
-            .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
+            .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWSDebug.xcconfig")),
             .release(name: "Staging", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
             .release(name: "Release", xcconfig: .relativeToRoot("config/TWS.xcconfig"))
         ]
@@ -244,6 +244,37 @@ let project = Project(
             )
         ),
         .target(
+            name: "TWSModelsTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.inova.twsModelsTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSModelsTests/Sources/**"],
+            dependencies: [
+                .target(name: "TWSModels")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        settings: ["SWIFT_VERSION": "6.0"],
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    ),
+                    .release(
+                        name: "Staging",
+                        settings: ["SWIFT_VERSION": "6.0"],
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    ),
+                    .release(
+                        name: "Release",
+                        settings: ["SWIFT_VERSION": "6.0"],
+                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+                    )
+                ]
+            )
+        ),
+        .target(
             name: "TWSAPI",
             destinations: .iOS,
             product: .staticFramework,
@@ -389,7 +420,7 @@ let project = Project(
         .scheme(
             name: "TWSDemo",
             buildAction: .buildAction(targets: ["TWSDemo"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"]),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "TWSDemo"),
             profileAction: .profileAction(),

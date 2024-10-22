@@ -59,13 +59,17 @@ struct SnippetsTabView: View {
             HStack(spacing: 1) {
                 ForEach(
                     Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)), id: \.1.id
-                ) { idx, item in
+                ) { _, item in
                     Button {
                         selectedId = item.id
                     } label: {
                         VStack {
-                            Text("\(idx + 1)")
-                                .font(.title)
+                            if let icon = item.props?[.tabIcon, as: \.string] {
+                                Image(systemName: icon)
+                                    .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            }
+
+                            Text("\(item.props?[.tabName, as: \.string] ?? "")")
                                 .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
 
                             Rectangle()

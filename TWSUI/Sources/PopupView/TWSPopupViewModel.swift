@@ -41,8 +41,11 @@ class TWSPopupViewModel {
     }
 
     func fillInitialNavigation() {
-        let popupSnippets = manager.snippets.filter { snippet in
-            return snippet.type == .popup
+        let popupSnippets = manager.snippets.filter { _ in
+            // As of now, because `type` needs to be removed with TWS-212,
+            // We have no way to detect pop-ups (Check below too)
+            // Before: return snippet.type == .popup
+            return false
         }
         self.navigation = popupSnippets.map { .snippetPopup($0) }
     }
@@ -55,8 +58,9 @@ class TWSPopupViewModel {
             case .snippetsUpdated:
                 let snippets = manager.snippets
                 let updatedPopupSnippets = snippets.filter({ snippet in
-                    return self.canShowPopupSnippet(snippet) && snippet.type == .popup
+                    return false
                 })
+
                 updatedPopupSnippets.forEach { snippet in
                     if !self.isPopupPresentInTheNavigationQueue(snippet) {
                         self.addNavigationToQueue(.snippetPopup(snippet))

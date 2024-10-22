@@ -28,7 +28,12 @@ struct ProjectView: View {
                     snippet: snippet,
                     manager: viewModel.manager
                 )
-                .tabItem { Text("\(snippet.id.uuidString.suffix(4))") }
+                .tabItem {
+                    Text("\(snippet.props?[.tabName, as: \.string] ?? "")")
+                    if let icon = snippet.props?[.tabIcon, as: \.string] {
+                        Image(systemName: icon)
+                    }
+                }
                 .tag(snippet.id)
             }
         }
