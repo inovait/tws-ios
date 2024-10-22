@@ -6,7 +6,7 @@ let project = Project(
     organizationName: "Inova IT, d.o.o.",
     settings: .settings(
         configurations: [
-            .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
+            .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWSDebug.xcconfig")),
             .release(name: "Staging", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
             .release(name: "Release", xcconfig: .relativeToRoot("config/TWS.xcconfig"))
         ]
