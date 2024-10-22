@@ -128,7 +128,6 @@ private struct SnippetView: View {
                 snippet: snippet,
                 locationServicesBridge: locationHandler,
                 cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: twsViewModel.manager,
                 displayID: "tab-\(snippet.id.uuidString)",
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,

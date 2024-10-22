@@ -8,6 +8,7 @@ internal import TWSLogger
 
 /// A class that handles all the communication between your app and the SDK's functionalities
 @MainActor
+@Observable
 public final class TWSManager: Identifiable {
 
     let observer: AnyPublisher<TWSStreamEvent, Never>

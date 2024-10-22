@@ -15,8 +15,9 @@ public struct TWSView<
     ErrorView: View
 >: View {
 
+    @Environment(TWSManager.self) private var manager
+
     let snippet: TWSSnippet
-    let handler: TWSManager
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
@@ -37,7 +38,6 @@ public struct TWSView<
     ///   - cameraMicrophoneBridge: Used for handling camera/microphone services requested by web browser
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
-    ///   - handler: Pass along the ``TWSManager`` instance that you're using
     ///   - id: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the autoheight to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
     ///   - canGoBack: Used for lists, when you want to load the previous snippet
     ///   - canGoForward: Used for lists, when you want to load the next snippet
@@ -52,7 +52,6 @@ public struct TWSView<
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
-        using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
@@ -67,7 +66,6 @@ public struct TWSView<
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
-        self.handler = handler
         self.displayID = id
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
@@ -82,12 +80,10 @@ public struct TWSView<
         ZStack {
             _TWSView(
                 snippet: snippet,
-                preloadedResources: handler.store.snippets.preloadedResources,
                 locationServicesBridge: locationServicesBridge,
                 cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
                 cssOverrides: cssOverrides,
                 jsOverrides: jsOverrides,
-                using: handler,
                 displayID: displayID,
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,
@@ -100,7 +96,7 @@ public struct TWSView<
             // The actual URL changed for the same Snippet ~ redraw is required
             .id(snippet.target)
             // The internal payload of the target URL has changed ~ redraw is required
-            .id(handler.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+            .id(manager.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
             // Only for default location provider; starting on appear/foreground; stopping on disappear/background
             .conditionallyActivateDefaultLocationBehavior(
                 locationServicesBridge: locationServicesBridge,
@@ -128,6 +124,8 @@ public struct TWSView<
 @MainActor
 private struct _TWSView: View {
 
+    @Environment(TWSManager.self) private var manager
+
     @State var height: CGFloat = 16
     @State private var backCommandID = UUID()
     @State private var forwardCommandID = UUID()
@@ -140,23 +138,19 @@ private struct _TWSView: View {
     @Binding var pageTitle: String
 
     let snippet: TWSSnippet
-    let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
-    let handler: TWSManager
     let displayID: String
     let downloadCompleted: ((TWSDownloadState) -> Void)?
 
     init(
         snippet: TWSSnippet,
-        preloadedResources: [TWSSnippet.Attachment: String],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
-        using handler: TWSManager,
         displayID id: String,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
@@ -165,12 +159,10 @@ private struct _TWSView: View {
         downloadCompleted: ((TWSDownloadState) -> Void)?
     ) {
         self.snippet = snippet
-        self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
-        self.handler = handler
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
@@ -182,7 +174,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             snippet: snippet,
-            preloadedResources: preloadedResources,
+            preloadedResources: manager.store.snippets.preloadedResources,
             locationServicesBridge: locationServicesBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServicesBridge,
             cssOverrides: cssOverrides,
@@ -194,19 +186,15 @@ private struct _TWSView: View {
             openURL: openURL,
             backCommandId: backCommandID,
             forwardCommandID: forwardCommandID,
-            snippetHeightProvider: handler.snippetHeightProvider,
-            navigationProvider: handler.navigationProvider,
-            onHeightCalculated: { height in
-                Task { @MainActor [weak handler] in
-                    assert(Thread.isMainThread)
-                    handler?.set(height: height, for: snippet, displayID: displayID)
-                }
+            snippetHeightProvider: manager.snippetHeightProvider,
+            navigationProvider: manager.navigationProvider,
+            onHeightCalculated: { [weak manager] height in
+                assert(Thread.isMainThread)
+                manager?.set(height: height, for: snippet, displayID: displayID)
             },
-            onUniversalLinkDetected: { url in
-                Task { @MainActor [weak handler] in
-                    assert(Thread.isMainThread)
-                    handler?.handleIncomingUrl(url)
-                }
+            onUniversalLinkDetected: { [weak manager] url in
+                assert(Thread.isMainThread)
+                manager?.handleIncomingUrl(url)
             },
             canGoBack: $canGoBack,
             canGoForward: $canGoForward,

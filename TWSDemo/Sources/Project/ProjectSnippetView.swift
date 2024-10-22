@@ -60,7 +60,6 @@ struct ProjectSnippetView: View {
                 snippet: snippet,
                 locationServicesBridge: locationHandler,
                 cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: manager,
                 displayID: "\(manager.id.hashValue)",
                 canGoBack: .constant(false),
                 canGoForward: .constant(false),

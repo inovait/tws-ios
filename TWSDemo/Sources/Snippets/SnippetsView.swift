@@ -71,7 +71,6 @@ private struct SnippetView: View {
                 snippet: snippet,
                 locationServicesBridge: locationHandler,
                 cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: twsViewModel.manager,
                 displayID: displayId,
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,

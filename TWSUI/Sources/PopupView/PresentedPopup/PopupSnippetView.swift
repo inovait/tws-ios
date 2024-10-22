@@ -23,14 +23,13 @@ struct PopupSnippetView: View {
             snippet: snippet,
             locationServicesBridge: locationHandler,
             cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-            using: manager,
             displayID: "popup-\(snippet.id.uuidString)",
             canGoBack: .constant(false),
             canGoForward: .constant(false),
             loadingState: $loadingState,
             loadingView: {},
             errorView: { _ in
-}
+            }
         )
     }
 }
