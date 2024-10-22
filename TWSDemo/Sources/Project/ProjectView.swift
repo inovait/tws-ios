@@ -29,8 +29,8 @@ struct ProjectView: View {
                     manager: viewModel.manager
                 )
                 .tabItem {
-                    Text("\(snippet.props?["tabName", as: \.string] ?? "")")
-                    if let icon = snippet.props?["tabIcon", as: \.string] {
+                    Text("\(snippet.props?[.tabName, as: \.string] ?? "")")
+                    if let icon = snippet.props?[.tabIcon, as: \.string] {
                         Image(systemName: icon)
                     }
                 }

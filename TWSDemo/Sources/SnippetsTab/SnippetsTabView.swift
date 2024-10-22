@@ -64,12 +64,12 @@ struct SnippetsTabView: View {
                         selectedId = item.id
                     } label: {
                         VStack {
-                            if let icon = item.props?["tabIcon", as: \.string] {
+                            if let icon = item.props?[.tabIcon, as: \.string] {
                                 Image(systemName: icon)
                                     .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
                             }
 
-                            Text("\(item.props?["tabName", as: \.string] ?? "")")
+                            Text("\(item.props?[.tabName, as: \.string] ?? "")")
                                 .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
 
                             Rectangle()

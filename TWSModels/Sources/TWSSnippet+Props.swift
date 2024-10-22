@@ -185,10 +185,22 @@ public extension TWSSnippet {
 
         // MARK: - Subscript helper
 
+        public enum KnownKeys: String {
+            case tabName, tabIcon
+        }
+
+        public subscript(_ key: KnownKeys) -> Props? {
+            self[key.rawValue]
+        }
+
         public subscript(_ key: String) -> Props? {
             guard case let .dictionary(dict) = self
             else { assertionFailure(); return nil }
             return dict[key]
+        }
+
+        public subscript<T>(_ key: KnownKeys, as keyPath: KeyPath<Self, T?>) -> T? {
+            self[key.rawValue, as: keyPath]
         }
 
         public subscript<T>(_ key: String, as keyPath: KeyPath<Self, T?>) -> T? {

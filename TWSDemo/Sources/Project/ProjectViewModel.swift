@@ -26,7 +26,7 @@ class ProjectViewModel {
     init(manager: TWSManager) {
         let snippets = manager.snippets
         self.tabSnippets = snippets.filter { snippet in
-            snippet.props?["tabName", as: \.string] != nil
+            snippet.props?[.tabName, as: \.string] != nil
         }
         self.popupSnippets = snippets.filter { _ in
             // As of now, because `type` needs to be removed with TWS-212,
@@ -68,7 +68,7 @@ class ProjectViewModel {
             case .snippetsUpdated(let snippets):
                 print("->", _id, "Received event: snippets updated")
                 self.tabSnippets = snippets.filter({ snippet in
-                    return snippet.props?["tabName", as: \.string] != nil
+                    return snippet.props?[.tabName, as: \.string] != nil
                 })
                 self.popupSnippets = snippets.filter({ _ in
                     // As of now, because `type` needs to be removed with TWS-212,
