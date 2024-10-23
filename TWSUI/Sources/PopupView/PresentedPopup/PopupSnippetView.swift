@@ -14,15 +14,15 @@ struct PopupSnippetView: View {
 
     let snippet: TWSSnippet
     let manager: TWSManager
-    @State private var loadingState: TWSLoadingState = .idle
+    @State private var info = TWSViewInfo()
 
     var body: some View {
+        @Bindable var info = info
+
         TWSView(
             snippet: snippet,
             displayID: "popup-\(snippet.id.uuidString)",
-            canGoBack: .constant(false),
-            canGoForward: .constant(false),
-            loadingState: $loadingState,
+            info: $info,
             loadingView: {},
             errorView: { _ in
             }

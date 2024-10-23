@@ -26,7 +26,7 @@ struct ProjectView: View {
             ForEach(viewModel.tabSnippets) { snippet in
                 ProjectSnippetView(
                     snippet: snippet,
-                    manager: viewModel.manager
+                    organizationID: "\(viewModel.manager.id.hashValue)"
                 )
                 .tabItem {
                     Text("\(snippet.props?[.tabName, as: \.string] ?? "")")

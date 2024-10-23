@@ -168,8 +168,8 @@ final actor DefaultLocationServicesManager: NSObject,
     /// - Parameter authorizationContinuation: A continuation that will be resumed once the user responds to the permission request.
     func askForPermission(authorizationContinuation: CheckedContinuation<Void, Error>) {
         self.authorizationContinuation = authorizationContinuation
-        Task { @MainActor in
-            await locationManager.requestWhenInUseAuthorization()
+        Task { @MainActor [locationManager] in
+            locationManager.requestWhenInUseAuthorization()
         }
     }
 

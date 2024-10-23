@@ -18,6 +18,7 @@ public struct TWSView<
     @Environment(TWSManager.self) private var manager
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServicesBridge
+    @Bindable var info: TWSViewInfo
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -25,32 +26,22 @@ public struct TWSView<
     let displayID: String
     let loadingView: () -> LoadingView
     let errorView: (Error) -> ErrorView
-    @Binding var canGoBack: Bool
-    @Binding var canGoForward: Bool
-    @Binding var loadingState: TWSLoadingState
-    @Binding var pageTitle: String
 
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
+    ///   - displayID: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the auto height to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
+    ///   - info: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
-    ///   - id: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the autoheight to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
-    ///   - canGoBack: Used for lists, when you want to load the previous snippet
-    ///   - canGoForward: Used for lists, when you want to load the next snippet
-    ///   - loadingState: An instance of ``TWSLoadingState`` that tells you the state of the snippet
-    ///   - pageTitle: Once the snippet is loaded, it's title will be set in this variable
     ///   - loadingView: A custom view to display while the snippet is loading
     ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
+        displayID id: String,
+        info: Bindable<TWSViewInfo> = .init(.init()),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
-        displayID id: String,
-        canGoBack: Binding<Bool>,
-        canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>,
-        pageTitle: Binding<String> = Binding.constant(""),
         @ViewBuilder loadingView: @escaping () -> LoadingView,
         @ViewBuilder errorView: @escaping (Error) -> ErrorView
     ) {
@@ -58,10 +49,7 @@ public struct TWSView<
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id
-        self._canGoBack = canGoBack
-        self._canGoForward = canGoForward
-        self._loadingState = loadingState
-        self._pageTitle = pageTitle
+        self._info = info
         self.loadingView = loadingView
         self.errorView = errorView
     }
@@ -73,12 +61,9 @@ public struct TWSView<
                 cssOverrides: cssOverrides,
                 jsOverrides: jsOverrides,
                 displayID: displayID,
-                canGoBack: $canGoBack,
-                canGoForward: $canGoForward,
-                loadingState: $loadingState,
-                pageTitle: $pageTitle
+                info: $info
             )
-            .frame(width: loadingState.showView ? nil : 0, height: loadingState.showView ? nil : 0)
+            .frame(width: info.loadingState.showView ? nil : 0, height: info.loadingState.showView ? nil : 0)
             .id(snippet.id)
             // The actual URL changed for the same Snippet ~ redraw is required
             .id(snippet.target)
@@ -92,7 +77,7 @@ public struct TWSView<
             )
 
             ZStack {
-                switch loadingState {
+                switch info.loadingState {
                 case .idle, .loading:
                     loadingView()
 
@@ -103,7 +88,7 @@ public struct TWSView<
                     errorView(error)
                 }
             }
-            .frame(width: loadingState.showView ? 0 : nil, height: loadingState.showView ? 0 : nil)
+            .frame(width: info.loadingState.showView ? 0 : nil, height: info.loadingState.showView ? 0 : nil)
         }
     }
 }
@@ -115,17 +100,13 @@ private struct _TWSView: View {
     @Environment(\.locationServiceBridge) private var locationServiceBridge
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
+    @Bindable var info: TWSViewInfo
 
     @State var height: CGFloat = 16
     @State private var backCommandID = UUID()
     @State private var forwardCommandID = UUID()
     @State private var networkObserver = NetworkMonitor()
     @State private var openURL: URL?
-
-    @Binding var canGoBack: Bool
-    @Binding var canGoForward: Bool
-    @Binding var loadingState: TWSLoadingState
-    @Binding var pageTitle: String
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -137,19 +118,13 @@ private struct _TWSView: View {
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID id: String,
-        canGoBack: Binding<Bool>,
-        canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>,
-        pageTitle: Binding<String>
+        info: Bindable<TWSViewInfo>
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
-        self._canGoBack = canGoBack
-        self._canGoForward = canGoForward
-        self._loadingState = loadingState
-        self._pageTitle = pageTitle
+        self._info = info
     }
 
     var body: some View {
@@ -163,7 +138,7 @@ private struct _TWSView: View {
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
-            pageTitle: $pageTitle,
+            pageTitle: $info.title,
             openURL: openURL,
             backCommandId: backCommandID,
             forwardCommandID: forwardCommandID,
@@ -177,9 +152,9 @@ private struct _TWSView: View {
                 assert(Thread.isMainThread)
                 manager?.handleIncomingUrl(url)
             },
-            canGoBack: $canGoBack,
-            canGoForward: $canGoForward,
-            loadingState: $loadingState,
+            canGoBack: $info.canGoBack,
+            canGoForward: $info.canGoForward,
+            loadingState: $info.loadingState,
             downloadCompleted: onDownloadCompleted
         )
         // Used for Authentication via Safari

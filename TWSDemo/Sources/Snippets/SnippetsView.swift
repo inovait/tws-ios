@@ -33,11 +33,10 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var canGoBack = false
-    @State private var canGoForward = false
+    @State private var info = TWSViewInfo()
 
     var body: some View {
+        @Bindable var info = info
         let displayId = "list-\(snippet.id.uuidString)"
 
         VStack(alignment: .leading) {
@@ -50,7 +49,7 @@ private struct SnippetView: View {
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!canGoBack)
+                .disabled(!info.canGoBack)
 
                 Button {
                     twsViewModel.manager.goForward(
@@ -60,7 +59,7 @@ private struct SnippetView: View {
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!canGoForward)
+                .disabled(!info.canGoForward)
             }
 
             Divider()
@@ -68,9 +67,7 @@ private struct SnippetView: View {
             TWSView(
                 snippet: snippet,
                 displayID: displayId,
-                canGoBack: $canGoBack,
-                canGoForward: $canGoForward,
-                loadingState: $loadingState,
+                info: $info,
                 loadingView: {
                     WebViewLoadingView()
                 },

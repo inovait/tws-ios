@@ -11,15 +11,18 @@ import TWSKit
 
 struct ProjectSnippetView: View {
 
+    @State private var info: TWSViewInfo = .init()
     let snippet: TWSSnippet
-    let manager: TWSManager
+    let organizationID: String
+
     @State private var loadingState: TWSLoadingState = .idle
-    @State private var pageTitle: String = ""
 
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        VStack {
+        @Bindable var info = info
+
+        return VStack {
             HStack {
                 Button(
                     action: {
@@ -28,7 +31,7 @@ struct ProjectSnippetView: View {
                         }
                     },
                     label: {
-                        Text("TWS - \($pageTitle.wrappedValue)")
+                        Text("TWS - \(info.title)")
                             .lineLimit(1)
                             .foregroundColor(.black)
                     }
@@ -56,11 +59,8 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: "\(manager.id.hashValue)",
-                canGoBack: .constant(false),
-                canGoForward: .constant(false),
-                loadingState: $loadingState,
-                pageTitle: $pageTitle,
+                displayID: "\(organizationID)",
+                info: $info,
                 loadingView: { WebViewLoadingView() },
                 errorView: { WebViewErrorView(error: $0) }
             )
