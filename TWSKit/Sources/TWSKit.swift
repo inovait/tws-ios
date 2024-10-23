@@ -5,6 +5,8 @@ import Combine
 internal import TWSCore
 internal import ComposableArchitecture
 internal import TWSLogger
+internal import TWSSnippets
+internal import TWSSnippet
 
 /// A class that handles all the communication between your app and the SDK's functionalities
 @MainActor
@@ -19,6 +21,7 @@ public final class TWSManager: Identifiable {
 
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
+    private var _stateSync: AnyCancellable?
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -31,8 +34,10 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
+        self.snippets = store.snippets.snippets.elements.map(\.snippet)
 
         logger.info("INIT TWSManager \(_id)")
+        _syncState()
     }
 
     deinit {
@@ -40,12 +45,24 @@ public final class TWSManager: Identifiable {
         MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
+    private func _syncState() {
+        _stateSync = observer
+            .compactMap {
+                switch $0 {
+                case let .snippetsUpdated(snippets): return snippets
+                case .universalLinkSnippetLoaded: return nil
+                }
+            }
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                guard let weakSelf = self else { return }
+                weakSelf.snippets = weakSelf.store.snippets.snippets.elements.map(\.snippet)
+            })
+    }
+
     // MARK: - Public
     /// A getter for the list of loaded snippets
-    public var snippets: [TWSSnippet] {
-        precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
-        return store.snippets.snippets.elements.map(\.snippet)
-    }
+    public internal(set) var snippets: [TWSSnippet]
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
@@ -134,8 +151,21 @@ public final class TWSManager: Identifiable {
         else {
             return
         }
-        store.send(.snippets(.business(
-            .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
-        )))
+
+        let snippetAction: TWSSnippetFeature.Action = .business(.update(
+            height: height,
+            forId: displayID
+        ))
+
+        let snippetsAction: TWSSnippetsFeature.Action = .business(
+            .snippets(
+                .element(
+                    id: snippet.id,
+                    action: snippetAction
+                )
+            )
+        )
+
+        store.send(.snippets(snippetsAction))
     }
 }

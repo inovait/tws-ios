@@ -13,7 +13,7 @@ import TWSModels
 @MainActor
 struct SnippetsTabView: View {
 
-    @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSManager.self) var twsManager
     @State private var selectedId: UUID?
 
     var body: some View {
@@ -21,12 +21,12 @@ struct SnippetsTabView: View {
             VStack {
                 ZStack {
                     ForEach(
-                        Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)),
+                        Array(zip(twsManager.snippets.indices, twsManager.snippets)),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
                             SnippetView(snippet: snippet)
-                                .zIndex(Double(selectedId == snippet.id ? twsViewModel.tabSnippets.count : idx))
+                                .zIndex(Double(selectedId == snippet.id ? twsManager.snippets.count : idx))
                                 .opacity(selectedId != snippet.id ? 0 : 1)
                         }
                     }
@@ -43,10 +43,10 @@ struct SnippetsTabView: View {
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 // Safe to force cast, because of the first segment
-                guard selectedId == nil || !twsViewModel.tabSnippets.map(\.id).contains(selectedId!) else { return }
-                selectedId = twsViewModel.tabSnippets.first?.id
+                guard selectedId == nil || !twsManager.snippets.map(\.id).contains(selectedId!) else { return }
+                selectedId = twsManager.snippets.first?.id
             }
-            .onChange(of: twsViewModel.tabSnippets.first?.id) { _, newValue in
+            .onChange(of: twsManager.snippets.first?.id) { _, newValue in
                 guard selectedId == nil else { return }
                 selectedId = newValue
             }
@@ -55,10 +55,10 @@ struct SnippetsTabView: View {
 
     @ViewBuilder
     private func _selectionView() -> some View {
-        if twsViewModel.tabSnippets.count > 1 {
+        if twsManager.snippets.count > 1 {
             HStack(spacing: 1) {
                 ForEach(
-                    Array(zip(twsViewModel.tabSnippets.indices, twsViewModel.tabSnippets)), id: \.1.id
+                    Array(zip(twsManager.snippets.indices, twsManager.snippets)), id: \.1.id
                 ) { _, item in
                     Button {
                         selectedId = item.id
