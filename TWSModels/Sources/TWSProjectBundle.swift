@@ -14,7 +14,7 @@ public struct TWSProjectBundle: Codable, Equatable, Sendable {
 
     public let project: TWSProject
     @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]
-    public let serverDate: Date?
+    @_spi(InternalLibraries) public let serverDate: Date?
 
     public init(
         project: TWSProject,

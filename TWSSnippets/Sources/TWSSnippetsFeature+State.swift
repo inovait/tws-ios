@@ -19,7 +19,7 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
-        @Shared public var snippetDates: [UUID: SnippetDateInfo]
+        @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
 

@@ -81,8 +81,7 @@ public class TWSFactory {
                 configuration: configuration,
                 snippets: snippets,
                 preloadedResources: preloadedResources,
-                socketURL: socketURL,
-                serverTime: Date()
+                socketURL: socketURL
             ),
             universalLinks: .init()
         )
@@ -102,7 +101,7 @@ public class TWSFactory {
 
         let combinedReducers = CombineReducers {
             mainReducer
-                .onChange(of: \.snippets.snippets) { _, newValue in
+                .onChange(of: \.snippets.snippets) { _, _ in
                     Reduce { _, _ in
                         return .send(.snippetsDidChange)
                     }

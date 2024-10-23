@@ -50,14 +50,13 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, target, props, dynamicResources
+        case id, status, target, visibility, props, dynamicResources
     }
 
     public init(
         id: UUID,
         target: URL,
         dynamicResources: [Attachment]? = nil,
-        type: SnippetType = .tab,
         status: SnippetStatus = .enabled,
         visibilty: SnippetVisibility? = nil,
         props: Props = .dictionary([:])
@@ -72,7 +71,6 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
-        hasher.combine(type)
         hasher.combine(status)
         hasher.combine(target)
         hasher.combine(visibility)

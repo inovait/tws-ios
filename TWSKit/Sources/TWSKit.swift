@@ -19,7 +19,6 @@ public final class TWSManager: Identifiable {
 
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
-    private var activeTimers: [SnippetVisibiltyTimer] = []
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -49,18 +48,8 @@ public final class TWSManager: Identifiable {
         let shownSnippets = store.snippets.snippets.elements.filter { snippet in
             return snippet.isVisible
         }
-        let snippets = shownSnippets.map(\.snippet)
-        let snippetTimes = store.snippets.snippetDates
-        self.activeTimers.forEach { timer in
-            timer.cancelTimer()
-        }
-        self.activeTimers = []
-        snippets.forEach { snippet in
-            if let snippetDateInfo = snippetTimes[snippet.id] {
-                setupVisibilityTimer(snippetDateInfo: snippetDateInfo, snippet: snippet)
-            }
-        }
-        return snippets
+
+        return shownSnippets.map(\.snippet)
     }
 
     /// A function that starts loading snippets and listen for changes
@@ -153,54 +142,5 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(
             .snippets(.element(id: snippet.id, action: .business(.update(height: height, forId: displayID))))
         )))
-    }
-
-    // MARK: - Private
-
-    private func hideSnippet(_ snippet: TWSSnippet) {
-        store.send(.snippets(.business(
-            .snippets(.element(id: snippet.id, action: .business(.hideSnippet)))
-        )))
-    }
-
-    private func showSnippet(_ snippet: TWSSnippet) {
-        store.send(.snippets(.business(
-            .snippets(.element(id: snippet.id, action: .business(.showSnippet)))
-        )))
-    }
-
-    private func setupVisibilityTimer(snippetDateInfo: SnippetDateInfo, snippet: TWSSnippet) {
-        if let snippetVisibility = snippet.visibility {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-            if let fromUtcString = snippetVisibility.fromUtc,
-               let fromUtc = dateFormatter.date(from: fromUtcString) {
-                if snippetDateInfo.adaptedTime < fromUtc {
-                    hideSnippet(snippet)
-                    let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
-                    let timerTask = SnippetVisibiltyTimer()
-                    timerTask.startTimer(duration: duration) { [weak self] in
-                        Task { @MainActor in
-                            self?.showSnippet(snippet)
-                        }
-                    }
-                }
-            }
-            if let untilUtcString = snippetVisibility.untilUtc,
-               let untilUtc = dateFormatter.date(from: untilUtcString) {
-                if snippetDateInfo.adaptedTime > untilUtc {
-                    hideSnippet(snippet)
-                } else {
-                    let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
-                    let timerTask = SnippetVisibiltyTimer()
-                    timerTask.startTimer(duration: duration) { [weak self] in
-                        Task { @MainActor in
-                            self?.showSnippet(snippet)
-                        }
-                    }
-                }
-            }
-        }
     }
 }

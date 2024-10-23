@@ -16,7 +16,14 @@ public struct TWSSnippetsFeature: Sendable {
     @Dependency(\.continuousClock) var clock
     @Dependency(\.configuration) var configuration
 
-    public init() { }
+    private let dateFormatter: DateFormatter
+
+    public init() {
+        dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    }
 
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -66,11 +73,15 @@ public struct TWSSnippetsFeature: Sendable {
                 do {
                     let project = try await api.getProject(configuration())
                     let resources = await preloadResources(for: project.0, using: api)
+                    var serverDate: Date?
+                    if let serverHeaderDate = project.1 {
+                        serverDate = dateFormatter.date(from: serverHeaderDate)
+                    }
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project.0,
                         resources: resources,
-                        serverDate: project.1
+                        serverDate: serverDate
                     )))))
                 } catch {
                     await send(.business(.projectLoaded(.failure(error))))
@@ -86,6 +97,39 @@ public struct TWSSnippetsFeature: Sendable {
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
             state.preloadedResources = project.resources
+
+            let snippetTimes = state.snippetDates
+            snippets.forEach { snippet in
+                if let snippetDateInfo = snippetTimes[snippet.id] {
+                    if let snippetVisibility = snippet.visibility {
+                        if let fromUtcString = snippetVisibility.fromUtc,
+                           let fromUtc = dateFormatter.date(from: fromUtcString),
+                           snippetDateInfo.adaptedTime < fromUtc {
+                            let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
+                            effects.append(
+                                .run { send in
+                                    try? await clock.sleep(for: .seconds(duration))
+                                    await send(.business(.showSnippet(snippetId: snippet.id)))
+                                }
+                                    .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
+                            )
+
+                        }
+                        if let untilUtcString = snippetVisibility.untilUtc,
+                           let untilUtc = dateFormatter.date(from: untilUtcString),
+                           snippetDateInfo.adaptedTime < untilUtc {
+                            let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
+                            effects.append(
+                                .run { send in
+                                    try? await clock.sleep(for: .seconds(duration))
+                                    await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                }
+                                    .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
+                            )
+                        }
+                    }
+                }
+            }
 
             // Update current or add new
             for snippet in snippets {
@@ -245,6 +289,14 @@ public struct TWSSnippetsFeature: Sendable {
 
         case .snippets:
             return .none
+
+        case .showSnippet(snippetId: let snippetId):
+            state.snippets[id: snippetId]?.isVisible = true
+            return .none
+
+        case .hideSnippet(snippetId: let snippetId):
+            state.snippets[id: snippetId]?.isVisible = false
+            return .none
         }
     }
 
@@ -269,7 +321,6 @@ public struct TWSSnippetsFeature: Sendable {
             .init(
                 id: uuidGenerator(),
                 target: $0,
-                type: "tab",
                 status: "enabled",
                 visibilty: nil
             )

@@ -57,7 +57,7 @@ class TWSPopupViewModel {
             switch event {
             case .snippetsUpdated:
                 let snippets = manager.snippets
-                let updatedPopupSnippets = snippets.filter({ snippet in
+                let updatedPopupSnippets = snippets.filter({ _ in
                     return false
                 })
 
