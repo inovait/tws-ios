@@ -15,8 +15,6 @@ struct ProjectSnippetView: View {
     let snippet: TWSSnippet
     let organizationID: String
 
-    @State private var loadingState: TWSLoadingState = .idle
-
     @Environment(\.dismiss) var dismiss
 
     var body: some View {

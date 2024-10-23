@@ -1,6 +1,5 @@
 import SwiftUI
 import Firebase
-import TWSKit
 #if DEBUG
 import Atlantis
 #endif

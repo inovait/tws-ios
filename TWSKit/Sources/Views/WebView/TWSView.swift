@@ -17,7 +17,6 @@ public struct TWSView<
 
     @Environment(TWSManager.self) private var manager
     @Environment(\.locationServiceBridge) private var locationServicesBridge
-    @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServicesBridge
     @Bindable var info: TWSViewInfo
 
     let snippet: TWSSnippet
