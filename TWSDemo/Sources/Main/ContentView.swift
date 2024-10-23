@@ -20,28 +20,28 @@ struct ContentView: View {
         return TabView(
             selection: $viewModel.tab,
             content: {
-                SnippetsTabView()
-                    .tabItem {
-                        Text("Tab")
-                        Image(systemName: "house")
-                    }
-                    .tag(ContentViewModel.Tab.fullscreenSnippets)
-                    .twsEnable(using: twsViewModel.manager)
+                Group {
+                    SnippetsTabView()
+                        .tabItem {
+                            Text("Tab")
+                            Image(systemName: "house")
+                        }
+                        .tag(ContentViewModel.Tab.fullscreenSnippets)
 
-                SnippetsView()
-                    .tabItem {
-                        Text("List")
-                        Image(systemName: "list.bullet")
-                    }
-                    .tag(ContentViewModel.Tab.snippets)
-                    .twsEnable(using: twsViewModel.manager)
+                    SnippetsView()
+                        .tabItem {
+                            Text("List")
+                            Image(systemName: "list.bullet")
+                        }
+                        .tag(ContentViewModel.Tab.snippets)
 
-                SettingsView()
-                    .tabItem {
-                        Text("Settings")
-                        Image(systemName: "gear")
-                    }
-                    .tag(ContentViewModel.Tab.settings)
+                    SettingsView()
+                        .tabItem {
+                            Text("Settings")
+                            Image(systemName: "gear")
+                        }
+                        .tag(ContentViewModel.Tab.settings)
+                }
             }
         )
         .onOpenURL(perform: { url in

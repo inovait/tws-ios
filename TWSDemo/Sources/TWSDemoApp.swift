@@ -1,5 +1,6 @@
 import SwiftUI
 import Firebase
+import TWSKit
 #if DEBUG
 import Atlantis
 #endif
@@ -28,6 +29,10 @@ struct TWSDemoApp: App {
         WindowGroup {
             if NSClassFromString("XCTestCase") == nil {
                 ContentView()
+                    .twsEnable(configuration: .init(
+                        organizationID: "e7e74ac1-786e-4439-bdcc-69e11685693c",
+                        projectID: "9b992e03-a3ab-4d5a-9abb-4364bcc86559"
+                    ))
                     .environment(twsViewModel)
                     .task {
                         await twsViewModel.start()

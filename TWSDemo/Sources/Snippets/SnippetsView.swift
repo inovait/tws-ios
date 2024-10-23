@@ -12,13 +12,13 @@ import TWSKit
 
 struct SnippetsView: View {
 
-    @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSManager.self) var twsManager
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsViewModel.tabSnippets) { snippet in
+                    ForEach(twsManager.snippets.filter(\.isTab)) { snippet in
                         SnippetView(snippet: snippet)
                     }
                 }
@@ -32,7 +32,7 @@ struct SnippetsView: View {
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSManager.self) var twsManager
     @State private var info = TWSViewInfo()
 
     var body: some View {
@@ -42,7 +42,7 @@ private struct SnippetView: View {
         VStack(alignment: .leading) {
             HStack {
                 Button {
-                    twsViewModel.manager.goBack(
+                    twsManager.goBack(
                         snippet: snippet,
                         displayID: displayId
                     )
@@ -52,7 +52,7 @@ private struct SnippetView: View {
                 .disabled(!info.canGoBack)
 
                 Button {
-                    twsViewModel.manager.goForward(
+                    twsManager.goForward(
                         snippet: snippet,
                         displayID: displayId
                     )

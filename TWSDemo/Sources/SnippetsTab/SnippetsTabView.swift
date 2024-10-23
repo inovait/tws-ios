@@ -21,7 +21,10 @@ struct SnippetsTabView: View {
             VStack {
                 ZStack {
                     ForEach(
-                        Array(zip(twsManager.snippets.indices, twsManager.snippets)),
+                        Array(zip(
+                            twsManager.snippets.filter(\.isTab).indices,
+                            twsManager.snippets.filter(\.isTab)
+                        )),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
