@@ -10,6 +10,14 @@ import Foundation
 
 class Router {
 
+    private static let dateFormatter = {
+        let newDateFormatter = DateFormatter()
+        newDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
+        newDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        newDateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        return newDateFormatter
+    }()
+
     class func make(request: Request) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = "https"
@@ -39,10 +47,10 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
-                var serverDate: String?
+                var serverDate: Date?
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
-                    serverDate = serverDateHeader
+                    serverDate = dateFormatter.date(from: serverDateHeader)
                 }
                 return .init(
                     data: result.0,
@@ -60,7 +68,7 @@ class Router {
 struct APIResult {
 
     let data: Data
-    let dateOfResponse: String?
+    let dateOfResponse: Date?
 }
 
 public enum APIError: Error {

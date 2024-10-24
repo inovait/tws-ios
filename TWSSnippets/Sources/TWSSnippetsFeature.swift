@@ -16,15 +16,6 @@ public struct TWSSnippetsFeature: Sendable {
     @Dependency(\.continuousClock) var clock
     @Dependency(\.configuration) var configuration
 
-    private let dateFormatter: DateFormatter
-
-    public init() {
-        dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-    }
-
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
@@ -73,10 +64,7 @@ public struct TWSSnippetsFeature: Sendable {
                 do {
                     let project = try await api.getProject(configuration())
                     let resources = await preloadResources(for: project.0, using: api)
-                    var serverDate: Date?
-                    if let serverHeaderDate = project.1 {
-                        serverDate = dateFormatter.date(from: serverHeaderDate)
-                    }
+                    var serverDate = project.1
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project.0,

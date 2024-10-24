@@ -3,7 +3,7 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> (TWSProject, String?)
+    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> (TWSProject, Date?)
 
     public var getSnippetBySharedId: @Sendable (
         TWSConfiguration,
