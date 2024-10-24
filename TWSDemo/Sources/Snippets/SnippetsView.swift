@@ -67,13 +67,7 @@ private struct SnippetView: View {
             TWSView(
                 snippet: snippet,
                 displayID: displayId,
-                info: $info,
-                loadingView: {
-                    WebViewLoadingView()
-                },
-                errorView: { error in
-                    WebViewErrorView(error: error)
-                }
+                info: $info
             )
             .border(Color.black)
         }

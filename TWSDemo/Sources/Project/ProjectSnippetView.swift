@@ -58,9 +58,7 @@ struct ProjectSnippetView: View {
             TWSView(
                 snippet: snippet,
                 displayID: "\(organizationID)",
-                info: $info,
-                loadingView: { WebViewLoadingView() },
-                errorView: { WebViewErrorView(error: $0) }
+                info: $info
             )
             .frame(maxHeight: .infinity, alignment: .top)
         }

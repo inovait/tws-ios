@@ -10,21 +10,18 @@ import SwiftUI
 @_spi(InternalLibraries) import TWSModels
 
 /// The main view to use to display snippets
-public struct TWSView<
-    LoadingView: View,
-    ErrorView: View
->: View {
+public struct TWSView: View {
 
     @Environment(TWSManager.self) private var manager
     @Environment(\.locationServiceBridge) private var locationServicesBridge
+    @Environment(\.loadingView) private var loadingView
+    @Environment(\.errorView) private var errorView
     @Bindable var info: TWSViewInfo
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
-    let loadingView: () -> LoadingView
-    let errorView: (Error) -> ErrorView
 
     /// Main contructor
     /// - Parameters:
@@ -40,17 +37,13 @@ public struct TWSView<
         displayID id: String,
         info: Bindable<TWSViewInfo> = .init(.init()),
         cssOverrides: [TWSRawCSS] = [],
-        jsOverrides: [TWSRawJS] = [],
-        @ViewBuilder loadingView: @escaping () -> LoadingView,
-        @ViewBuilder errorView: @escaping (Error) -> ErrorView
+        jsOverrides: [TWSRawJS] = []
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id
         self._info = info
-        self.loadingView = loadingView
-        self.errorView = errorView
     }
 
     public var body: some View {

@@ -128,13 +128,7 @@ private struct SnippetView: View {
             TWSView(
                 snippet: snippet,
                 displayID: "tab-\(snippet.id.uuidString)",
-                info: $info,
-                loadingView: {
-                    WebViewLoadingView()
-                },
-                errorView: { error in
-                    WebViewErrorView(error: error)
-                }
+                info: $info
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .border(Color.black)
