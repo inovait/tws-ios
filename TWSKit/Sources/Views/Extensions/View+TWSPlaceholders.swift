@@ -19,7 +19,7 @@ public extension View {
     ///
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
-    func tws(
+    func twsBind(
         loadingView: @Sendable @MainActor @escaping () -> AnyView
     ) -> some View {
         ModifiedContent(
@@ -37,7 +37,7 @@ public extension View {
     ///
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
-    func tws(
+    func twsBind(
         errorView: @Sendable @MainActor @escaping (Error) -> AnyView
     ) -> some View {
         ModifiedContent(
