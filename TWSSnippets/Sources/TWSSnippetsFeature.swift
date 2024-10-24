@@ -102,8 +102,7 @@ public struct TWSSnippetsFeature: Sendable {
             snippets.forEach { snippet in
                 if let snippetDateInfo = snippetTimes[snippet.id] {
                     if let snippetVisibility = snippet.visibility {
-                        if let fromUtcString = snippetVisibility.fromUtc,
-                           let fromUtc = dateFormatter.date(from: fromUtcString),
+                        if let fromUtc = snippetVisibility.fromUtc,
                            snippetDateInfo.adaptedTime < fromUtc {
                             let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
                             effects.append(
@@ -115,8 +114,7 @@ public struct TWSSnippetsFeature: Sendable {
                             )
 
                         }
-                        if let untilUtcString = snippetVisibility.untilUtc,
-                           let untilUtc = dateFormatter.date(from: untilUtcString),
+                        if let untilUtc = snippetVisibility.untilUtc,
                            snippetDateInfo.adaptedTime < untilUtc {
                             let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
                             effects.append(
@@ -302,8 +300,8 @@ public struct TWSSnippetsFeature: Sendable {
 
     // MARK: - Helpers
 
-    private func _sort(basedOn orderedIDs: [UUID], _ state: inout State) {
-        var orderDict = [UUID: Int]()
+    private func _sort(basedOn orderedIDs: [TWSSnippet.ID], _ state: inout State) {
+        var orderDict = [TWSSnippet.ID: Int]()
         for (index, id) in orderedIDs.enumerated() {
             orderDict[id] = index
         }
@@ -366,7 +364,7 @@ public struct TWSSnippetsFeature: Sendable {
                         .business(
                             .snippets(
                                 .element(
-                                    id: message.id,
+                                    id: message.id.uuidString,
                                     action: .business(.snippetUpdated(snippet: message.snippet))
                                 )
                             )

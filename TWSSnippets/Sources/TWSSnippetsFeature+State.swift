@@ -36,12 +36,11 @@ extension TWSSnippetsFeature {
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
-                var state = [TWSSnippetFeature.State]()
+                let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
                 snippets.forEach { snippet in
                     if let serverTime {
                         snippetDates[snippet.id] = SnippetDateInfo(serverTime: serverTime)
                     }
-                    state.append(TWSSnippetFeature.State.init(snippet: snippet))
                 }
                 self.snippets = .init(uniqueElements: state)
             }

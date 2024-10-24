@@ -12,11 +12,11 @@ class IncrementingUUIDGenerator: @unchecked Sendable {
 
     private var sequence = 0
 
-    func callAsFunction() -> UUID {
+    func callAsFunction() -> String {
         defer {
             self.sequence += 1
         }
 
-        return UUID(self.sequence)
+        return String(self.sequence)
     }
 }

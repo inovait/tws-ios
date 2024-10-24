@@ -18,8 +18,8 @@ public struct TWSAPI {
         .init(
             getProject: { configuration throws(APIError) in
                 // Need to transform to lowercased, otherwise server returns 404
-                let organizationID = configuration.organizationID.uuidString.lowercased()
-                let projectID = configuration.projectID.uuidString.lowercased()
+                let organizationID = configuration.organizationID
+                let projectID = configuration.projectID
                 let result = try await Router.make(request: .init(
                         method: .get,
                         path: "/organizations/\(organizationID)/projects/\(projectID)/register",
@@ -31,7 +31,9 @@ public struct TWSAPI {
                     ))
 
                 do {
-                    return (try JSONDecoder().decode(TWSProject.self, from: result.data), result.dateOfResponse)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    return (try decoder.decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
                 }

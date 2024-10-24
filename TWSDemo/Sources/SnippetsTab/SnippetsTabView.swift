@@ -14,7 +14,7 @@ import TWSModels
 struct SnippetsTabView: View {
 
     @Environment(TWSViewModel.self) private var twsViewModel
-    @State private var selectedId: UUID?
+    @State private var selectedId: TWSSnippet.ID?
 
     var body: some View {
         NavigationStack {
@@ -98,7 +98,7 @@ private struct SnippetView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            let displayId = "tab-\(snippet.id.uuidString)"
+            let displayId = "tab-\(snippet.id)"
 
             HStack {
                 Button {
@@ -129,7 +129,7 @@ private struct SnippetView: View {
                 locationServicesBridge: locationHandler,
                 cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
                 using: twsViewModel.manager,
-                displayID: "tab-\(snippet.id.uuidString)",
+                displayID: "tab-\(snippet.id)",
                 canGoBack: $canGoBack,
                 canGoForward: $canGoForward,
                 loadingState: $loadingState,

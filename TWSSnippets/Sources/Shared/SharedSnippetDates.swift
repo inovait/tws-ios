@@ -17,7 +17,7 @@ private extension URL {
     }
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<[UUID: SnippetDateInfo]> {
+extension PersistenceReaderKey where Self == FileStorageKey<[TWSSnippet.ID: SnippetDateInfo]> {
     static func snippetDates(for config: TWSConfiguration) -> Self {
         .fileStorage(.snippetDates(for: config))
     }

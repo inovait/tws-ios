@@ -42,7 +42,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         }
     }
 
-    public let id: UUID
+    public let id: String
     public let status: SnippetStatus
     public var target: URL
     public let visibility: SnippetVisibility?
@@ -54,7 +54,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     }
 
     public init(
-        id: UUID,
+        id: String,
         target: URL,
         dynamicResources: [Attachment]? = nil,
         status: SnippetStatus = .enabled,
@@ -92,8 +92,8 @@ public extension TWSSnippet {
     }
 
     struct SnippetVisibility: Codable, Hashable, Sendable {
-        public let fromUtc: String?
-        public let untilUtc: String?
+        public let fromUtc: Date?
+        public let untilUtc: Date?
     }
 }
 

@@ -101,31 +101,29 @@ class TWSPopupViewModel {
     }
 
     private func isPopupPresentInTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
-        var isPresent: Bool = false
-        self.navigation.forEach { nav in
+        for nav in self.navigation {
             switch nav {
             case .snippetPopup(let navigationSnippet):
                 if navigationSnippet.id == snippet.id {
-                    isPresent = true
+                    return true
                 }
             }
         }
-        return isPresent
+        return false
     }
 
     private func isNavigationMissingFromReceivedPopups(
         _ receivedSnippets: [TWSSnippet],
         _ navigation: TWSNavigationType
     ) -> Bool {
-        var isMissing = true
         switch navigation {
         case .snippetPopup(let navigationSnippet):
-            receivedSnippets.forEach { snippet in
+            for snippet in receivedSnippets {
                 if snippet.id == navigationSnippet.id {
-                    isMissing = false
+                    return false
                 }
             }
         }
-        return isMissing
+        return true
     }
 }

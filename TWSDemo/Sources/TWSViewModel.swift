@@ -15,8 +15,8 @@ class TWSViewModel {
 
     let manager = TWSFactory.new(
         with: .init(
-            organizationID: "e7e74ac1-786e-4439-bdcc-69e11685693c",
-            projectID: "9b992e03-a3ab-4d5a-9abb-4364bcc86559"
+            organizationID: "inova.tws",
+            projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
         )
     )
     let destinationID = UUID()
