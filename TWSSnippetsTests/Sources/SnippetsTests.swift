@@ -31,9 +31,9 @@ final class SnippetsTests: XCTestCase {
 
     @MainActor
     func testAPIShouldNotOverrideState() async {
-        let s1ID = UUID()
-        let s2ID = UUID()
-        let s3ID = UUID()
+        let s1ID = "1"
+        let s2ID = "2"
+        let s3ID = "3"
 
         let snippets: [TWSSnippet] = [
             .init(id: s1ID, target: URL(string: "https://www.google.com")!),
@@ -72,9 +72,9 @@ final class SnippetsTests: XCTestCase {
 
     @MainActor
     func testAPIShouldRemoveFromStateOnceNotReturned() async {
-        let s1ID = UUID()
-        let s2ID = UUID()
-        let s3ID = UUID()
+        let s1ID = "1"
+        let s2ID = "2"
+        let s3ID = "3"
 
         let snippets: [TWSSnippet] = [
             .init(id: s1ID, target: URL(string: "https://www.google.com")!),
@@ -112,9 +112,9 @@ final class SnippetsTests: XCTestCase {
 
     @MainActor
     func testAPIShouldAddNewWhenReturned() async {
-        let s1ID = UUID()
-        let s2ID = UUID()
-        let s3ID = UUID()
+        let s1ID = "1"
+        let s2ID = "2"
+        let s3ID = "3"
 
         let snippets: [TWSSnippet] = [
             .init(id: s1ID, target: URL(string: "https://www.google.com")!),
@@ -153,9 +153,9 @@ final class SnippetsTests: XCTestCase {
 
     @MainActor
     func testAPIOrderChange() async {
-        let s1ID = UUID()
-        let s2ID = UUID()
-        let s3ID = UUID()
+        let s1ID = "1"
+        let s2ID = "2"
+        let s3ID = "3"
 
         let snippets: [TWSSnippet] = [
             .init(id: s1ID, target: URL(string: "https://www.google.com")!),
@@ -195,10 +195,10 @@ final class SnippetsTests: XCTestCase {
 
     @MainActor
     func testAddingAndRemoving() async {
-        let s1ID = UUID()
-        let s2ID = UUID()
-        let s3ID = UUID()
-        let s4ID = UUID()
+        let s1ID = "1"
+        let s2ID = "2"
+        let s3ID = "3"
+        let s4ID = "4"
 
         let snippets: [TWSSnippet] = [
             .init(id: s1ID, target: URL(string: "https://www.google.com")!),
