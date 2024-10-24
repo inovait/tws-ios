@@ -58,6 +58,9 @@ class TWSPopupViewModel {
             case .snippetsUpdated:
                 let snippets = manager.snippets
                 let updatedPopupSnippets = snippets.filter({ _ in
+                    // As of now, because `type` needs to be removed with TWS-212,
+                    // We have no way to detect pop-ups (Check above too)
+                    // return self.canShowPopupSnippet(snippet) && snippet.type == .popup
                     return false
                 })
 

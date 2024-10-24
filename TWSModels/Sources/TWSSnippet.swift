@@ -68,14 +68,6 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         self.visibility = visibilty
         self.props = props
     }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(status)
-        hasher.combine(target)
-        hasher.combine(visibility)
-        hasher.combine(props)
-    }
 }
 
 public extension TWSSnippet {

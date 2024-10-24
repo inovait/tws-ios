@@ -37,8 +37,8 @@ extension TWSSnippetsFeature {
 
             if let snippets {
                 let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
-                snippets.forEach { snippet in
-                    if let serverTime {
+                if let serverTime {
+                    snippets.forEach { snippet in
                         snippetDates[snippet.id] = SnippetDateInfo(serverTime: serverTime)
                     }
                 }
@@ -53,24 +53,5 @@ extension TWSSnippetsFeature {
                 self.preloadedResources = preloadedResources
             }
         }
-    }
-}
-
-public struct SnippetDateInfo: Equatable, Codable, Sendable {
-    let serverTime: Date
-    let phoneTime: Date
-    public var adaptedTime: Date {
-        serverTime.addingTimeInterval(getElapsedSecondsSinceLastUpdate())
-    }
-
-    init(serverTime: Date) {
-        @Dependency(\.date) var date
-        self.serverTime = serverTime
-        self.phoneTime = date.now
-    }
-
-    private func getElapsedSecondsSinceLastUpdate() -> TimeInterval {
-        @Dependency(\.date) var date
-        return date.now.timeIntervalSince(phoneTime)
     }
 }
