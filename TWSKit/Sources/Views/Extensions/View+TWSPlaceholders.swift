@@ -10,6 +10,15 @@ import SwiftUI
 
 public extension View {
 
+    /// Installs a loading view to be displayed while the ``TWSView`` is loading a webpage.
+    ///
+    /// - Parameter loadingView: A closure that returns the view to be displayed during the loading process.
+    /// - Returns: A view that wraps the current view and includes the loading view.
+    ///
+    /// ## Usage of ``AnyView``
+    ///
+    /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
+    /// The performance impact is minimal since the view being loaded is simple and lightweight.
     func tws(
         loadingView: @Sendable @MainActor @escaping () -> AnyView
     ) -> some View {
@@ -19,6 +28,15 @@ public extension View {
         )
     }
 
+    /// Installs an error view to be displayed in case ``TWSView`` fails to load a webpage.
+    ///
+    /// - Parameter errorView: A closure that returns the view to be displayed for an error
+    /// - Returns: A view that wraps the current view and includes the error view.
+    ///
+    /// ## Usage of ``AnyView``
+    ///
+    /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
+    /// The performance impact is minimal since the view being loaded is simple and lightweight.
     func tws(
         errorView: @Sendable @MainActor @escaping (Error) -> AnyView
     ) -> some View {
@@ -51,6 +69,7 @@ private struct AttachErrorView: ViewModifier {
 
 extension EnvironmentValues {
 
+    // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var loadingView: @Sendable @MainActor () -> AnyView = {
         AnyView(
             HStack {
@@ -64,6 +83,7 @@ extension EnvironmentValues {
         )
     }
 
+    // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
     @Entry var errorView: @Sendable @MainActor (Error) -> AnyView = { error in
         AnyView(
             HStack {
