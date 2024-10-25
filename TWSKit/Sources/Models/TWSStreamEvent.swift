@@ -17,5 +17,5 @@ public enum TWSStreamEvent: Sendable {
 
     /// This event is sent when there are new snippets available
     /// - Parameter TWSSnippets A list of new snippets
-    case snippetsUpdated([TWSSnippet])
+    case snippetsUpdated
 }

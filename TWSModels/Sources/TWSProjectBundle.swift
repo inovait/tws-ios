@@ -14,26 +14,31 @@ public struct TWSProjectBundle: Codable, Equatable, Sendable {
 
     public let project: TWSProject
     @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]
+    @_spi(InternalLibraries) public let serverDate: Date?
 
     public init(
         project: TWSProject,
-        resources: [TWSSnippet.Attachment: String]
+        resources: [TWSSnippet.Attachment: String],
+        serverDate: Date? = nil
     ) {
         self.project = project
         self.resources = resources
+        self.serverDate = serverDate
     }
 
     #if DEBUG
     // Used in test
     public init(
         listenOn: URL,
-        snippets: [TWSSnippet]
+        snippets: [TWSSnippet],
+        date: Date? = nil
     ) {
         project = .init(
             listenOn: listenOn,
             snippets: snippets
         )
         resources = [:]
+        serverDate = date
     }
     #endif
 

@@ -42,27 +42,30 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         }
     }
 
-    public let id: UUID
+    public let id: String
     public let status: SnippetStatus
     public var target: URL
+    public let visibility: SnippetVisibility?
     public let props: Props?
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, target, props, dynamicResources
+        case id, status, target, visibility, props, dynamicResources
     }
 
     public init(
-        id: UUID,
+        id: String,
         target: URL,
         dynamicResources: [Attachment]? = nil,
         status: SnippetStatus = .enabled,
+        visibilty: SnippetVisibility? = nil,
         props: Props = .dictionary([:])
     ) {
         self.id = id
         self.target = target
         self.status = status
         self._dynamicResources = .init(elements: dynamicResources)
+        self.visibility = visibilty
         self.props = props
     }
 }
@@ -78,6 +81,11 @@ public extension TWSSnippet {
             self.url = url
             self.contentType = contentType
         }
+    }
+
+    struct SnippetVisibility: Codable, Hashable, Sendable {
+        public let fromUtc: Date?
+        public let untilUtc: Date?
     }
 }
 

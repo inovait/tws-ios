@@ -40,7 +40,7 @@ private struct SnippetView: View {
     @State private var canGoForward = false
 
     var body: some View {
-        let displayId = "list-\(snippet.id.uuidString)"
+        let displayId = "list-\(snippet.id)"
 
         VStack(alignment: .leading) {
             HStack {

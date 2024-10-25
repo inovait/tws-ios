@@ -24,7 +24,7 @@ struct PopupSnippetView: View {
             locationServicesBridge: locationHandler,
             cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
             using: manager,
-            displayID: "popup-\(snippet.id.uuidString)",
+            displayID: "popup-\(snippet.id)",
             canGoBack: .constant(false),
             canGoForward: .constant(false),
             loadingState: $loadingState,

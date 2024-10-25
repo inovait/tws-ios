@@ -5,6 +5,7 @@ import Combine
 internal import TWSCore
 internal import ComposableArchitecture
 internal import TWSLogger
+internal import TWSSnippets
 
 /// A class that handles all the communication between your app and the SDK's functionalities
 @MainActor
@@ -41,9 +42,14 @@ public final class TWSManager: Identifiable {
 
     // MARK: - Public
     /// A getter for the list of loaded snippets
+
     public var snippets: [TWSSnippet] {
         precondition(Thread.isMainThread, "`snippets()` can only be called on main thread")
-        return store.snippets.snippets.elements.map(\.snippet)
+        let shownSnippets = store.snippets.snippets.elements.filter { snippet in
+            return snippet.isVisible
+        }
+
+        return shownSnippets.map(\.snippet)
     }
 
     /// A function that starts loading snippets and listen for changes

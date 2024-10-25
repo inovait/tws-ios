@@ -55,7 +55,8 @@ class TWSPopupViewModel {
             guard let self else { return }
 
             switch event {
-            case .snippetsUpdated(let snippets):
+            case .snippetsUpdated:
+                let snippets = manager.snippets
                 let updatedPopupSnippets = snippets.filter({ _ in
                     // As of now, because `type` needs to be removed with TWS-212,
                     // We have no way to detect pop-ups (Check above too)
@@ -64,7 +65,7 @@ class TWSPopupViewModel {
                 })
 
                 updatedPopupSnippets.forEach { snippet in
-                    if self.isPopupMissingFromTheNavigationQueue(snippet) {
+                    if !self.isPopupPresentInTheNavigationQueue(snippet) {
                         self.addNavigationToQueue(.snippetPopup(snippet))
                     }
                 }
@@ -102,11 +103,16 @@ class TWSPopupViewModel {
         self.navigation.append(navigation)
     }
 
-    private func isPopupMissingFromTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
-        if self.navigation.firstIndex(of: .snippetPopup(snippet)) != nil {
-            return false
+    private func isPopupPresentInTheNavigationQueue(_ snippet: TWSSnippet) -> Bool {
+        for nav in self.navigation {
+            switch nav {
+            case .snippetPopup(let navigationSnippet):
+                if navigationSnippet.id == snippet.id {
+                    return true
+                }
+            }
         }
-        return true
+        return false
     }
 
     private func isNavigationMissingFromReceivedPopups(
@@ -115,8 +121,10 @@ class TWSPopupViewModel {
     ) -> Bool {
         switch navigation {
         case .snippetPopup(let navigationSnippet):
-            if receivedSnippets.firstIndex(of: navigationSnippet) != nil {
-                return false
+            for snippet in receivedSnippets {
+                if snippet.id == navigationSnippet.id {
+                    return false
+                }
             }
         }
         return true
