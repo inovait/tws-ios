@@ -6,11 +6,19 @@
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
-import TWSModels
+import TWSKit
 
 extension TWSSnippet {
 
     public var isTab: Bool {
-        props?[.tabName, as: \.string] != nil
+        props?[.tabName, as: \.string] != nil || props?[.tabIcon, as: \.string] != nil
+    }
+
+}
+
+extension TWSManager {
+
+    var tabs: [TWSSnippet] {
+        self.snippets.filter(\.isTab)
     }
 }

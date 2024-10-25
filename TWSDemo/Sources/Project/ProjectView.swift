@@ -29,7 +29,10 @@ struct ProjectView: View {
                     organizationID: "\(viewModel.manager.id.hashValue)"
                 )
                 .tabItem {
-                    Text("\(snippet.props?[.tabName, as: \.string] ?? "")")
+                    if let tabName = snippet.props?[.tabName, as: \.string] {
+                        Text(tabName)
+                    }
+
                     if let icon = snippet.props?[.tabIcon, as: \.string] {
                         Image(systemName: icon)
                     }

@@ -18,7 +18,7 @@ struct SnippetsView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsManager.snippets.filter(\.isTab)) { snippet in
+                    ForEach(twsManager.snippets) { snippet in
                         SnippetView(snippet: snippet)
                     }
                 }

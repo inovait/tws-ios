@@ -22,14 +22,14 @@ struct SnippetsTabView: View {
                 ZStack {
                     ForEach(
                         Array(zip(
-                            twsManager.snippets.filter(\.isTab).indices,
-                            twsManager.snippets.filter(\.isTab)
+                            twsManager.tabs.indices,
+                            twsManager.tabs
                         )),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
                             SnippetView(snippet: snippet)
-                                .zIndex(Double(selectedId == snippet.id ? twsManager.snippets.count : idx))
+                                .zIndex(Double(selectedId == snippet.id ? twsManager.tabs.count : idx))
                                 .opacity(selectedId != snippet.id ? 0 : 1)
                         }
                     }
@@ -46,10 +46,10 @@ struct SnippetsTabView: View {
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 // Safe to force cast, because of the first segment
-                guard selectedId == nil || !twsManager.snippets.map(\.id).contains(selectedId!) else { return }
-                selectedId = twsManager.snippets.first?.id
+                guard selectedId == nil || !twsManager.tabs.map(\.id).contains(selectedId!) else { return }
+                selectedId = twsManager.tabs.first?.id
             }
-            .onChange(of: twsManager.snippets.first?.id) { _, newValue in
+            .onChange(of: twsManager.tabs.first?.id) { _, newValue in
                 guard selectedId == nil else { return }
                 selectedId = newValue
             }
@@ -58,10 +58,14 @@ struct SnippetsTabView: View {
 
     @ViewBuilder
     private func _selectionView() -> some View {
-        if twsManager.snippets.count > 1 {
+        if twsManager.tabs.count > 1 {
             HStack(spacing: 1) {
                 ForEach(
-                    Array(zip(twsManager.snippets.indices, twsManager.snippets)), id: \.1.id
+                    Array(zip(
+                        twsManager.tabs.indices,
+                        twsManager.tabs
+                    )),
+                    id: \.1.id
                 ) { _, item in
                     Button {
                         selectedId = item.id
@@ -72,8 +76,10 @@ struct SnippetsTabView: View {
                                     .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
                             }
 
-                            Text("\(item.props?[.tabName, as: \.string] ?? "")")
-                                .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            if let tabName = item.props?[.tabName, as: \.string] {
+                                Text(tabName)
+                                    .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            }
 
                             Rectangle()
                                 .fill(Color.accentColor)
