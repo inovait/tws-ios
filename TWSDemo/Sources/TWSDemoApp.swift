@@ -24,16 +24,16 @@ struct TWSDemoApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @State private var twsViewModel = TWSViewModel()
-    @State private var locationProvider = TWSDefaultLocationServicesManager()
-    @State private var cameraMicrophoneProvider = TWSCameraMicrophoneServiceManager()
 
     var body: some Scene {
         WindowGroup {
             if NSClassFromString("XCTestCase") == nil {
                 ContentView()
+                    .twsEnable(configuration: .init(
+                        organizationID: "inova.tws",
+                        projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
+                    ))
                     .environment(twsViewModel)
-                    .environment(locationProvider)
-                    .environment(cameraMicrophoneProvider)
                     .task {
                         await twsViewModel.start()
                         await twsViewModel.startupInitTasks()

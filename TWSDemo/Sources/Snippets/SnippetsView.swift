@@ -12,13 +12,13 @@ import TWSKit
 
 struct SnippetsView: View {
 
-    @Environment(TWSViewModel.self) private var twsViewModel
+    @Environment(TWSManager.self) var twsManager
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsViewModel.tabSnippets) { snippet in
+                    ForEach(twsManager.snippets) { snippet in
                         SnippetView(snippet: snippet)
                     }
                 }
@@ -32,56 +32,42 @@ struct SnippetsView: View {
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSViewModel.self) private var twsViewModel
-    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
-    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var canGoBack = false
-    @State private var canGoForward = false
+    @Environment(TWSManager.self) var twsManager
+    @State private var info = TWSViewInfo()
 
     var body: some View {
+        @Bindable var info = info
         let displayId = "list-\(snippet.id)"
 
         VStack(alignment: .leading) {
             HStack {
                 Button {
-                    twsViewModel.manager.goBack(
+                    twsManager.goBack(
                         snippet: snippet,
                         displayID: displayId
                     )
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!canGoBack)
+                .disabled(!info.canGoBack)
 
                 Button {
-                    twsViewModel.manager.goForward(
+                    twsManager.goForward(
                         snippet: snippet,
                         displayID: displayId
                     )
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!canGoForward)
+                .disabled(!info.canGoForward)
             }
 
             Divider()
 
             TWSView(
                 snippet: snippet,
-                locationServicesBridge: locationHandler,
-                cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: twsViewModel.manager,
                 displayID: displayId,
-                canGoBack: $canGoBack,
-                canGoForward: $canGoForward,
-                loadingState: $loadingState,
-                loadingView: {
-                    WebViewLoadingView()
-                },
-                errorView: { error in
-                    WebViewErrorView(error: error)
-                }
+                info: $info
             )
             .border(Color.black)
         }

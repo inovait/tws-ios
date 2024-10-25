@@ -26,10 +26,13 @@ struct ProjectView: View {
             ForEach(viewModel.tabSnippets) { snippet in
                 ProjectSnippetView(
                     snippet: snippet,
-                    manager: viewModel.manager
+                    organizationID: "\(viewModel.manager.id.hashValue)"
                 )
                 .tabItem {
-                    Text("\(snippet.props?[.tabName, as: \.string] ?? "")")
+                    if let tabName = snippet.props?[.tabName, as: \.string] {
+                        Text(tabName)
+                    }
+
                     if let icon = snippet.props?[.tabIcon, as: \.string] {
                         Image(systemName: icon)
                     }
@@ -44,9 +47,11 @@ struct ProjectView: View {
         }
         .sheet(item: $viewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
+                .twsEnable(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
         }
         .fullScreenCover(isPresented: $viewModel.presentPopups, content: {
             TWSPopupView(isPresented: $viewModel.presentPopups, manager: viewModel.manager)
+                .twsEnable(using: viewModel.manager)
         })
     }
 }

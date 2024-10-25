@@ -121,12 +121,11 @@ class TWSPopupViewModel {
     ) -> Bool {
         switch navigation {
         case .snippetPopup(let navigationSnippet):
-            for snippet in receivedSnippets {
-                if snippet.id == navigationSnippet.id {
-                    return false
-                }
+            for snippet in receivedSnippets where snippet.id == navigationSnippet.id {
+                return false
             }
         }
+
         return true
     }
 }

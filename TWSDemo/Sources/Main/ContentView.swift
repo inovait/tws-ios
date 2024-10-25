@@ -20,26 +20,28 @@ struct ContentView: View {
         return TabView(
             selection: $viewModel.tab,
             content: {
-                SnippetsTabView()
-                    .tabItem {
-                        Text("Tab")
-                        Image(systemName: "house")
-                    }
-                    .tag(ContentViewModel.Tab.fullscreenSnippets)
+                Group {
+                    SnippetsTabView()
+                        .tabItem {
+                            Text("Tab")
+                            Image(systemName: "house")
+                        }
+                        .tag(ContentViewModel.Tab.fullscreenSnippets)
 
-                SnippetsView()
-                    .tabItem {
-                        Text("List")
-                        Image(systemName: "list.bullet")
-                    }
-                    .tag(ContentViewModel.Tab.snippets)
+                    SnippetsView()
+                        .tabItem {
+                            Text("List")
+                            Image(systemName: "list.bullet")
+                        }
+                        .tag(ContentViewModel.Tab.snippets)
 
-                SettingsView()
-                    .tabItem {
-                        Text("Settings")
-                        Image(systemName: "gear")
-                    }
-                    .tag(ContentViewModel.Tab.settings)
+                    SettingsView()
+                        .tabItem {
+                            Text("Settings")
+                            Image(systemName: "gear")
+                        }
+                        .tag(ContentViewModel.Tab.settings)
+                }
             }
         )
         .onOpenURL(perform: { url in
@@ -54,9 +56,11 @@ struct ContentView: View {
         })
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
+                .twsEnable(using: $0.viewModel.manager)
         }
         .fullScreenCover(isPresented: $twsViewModel.presentPopups, content: {
             TWSPopupView(isPresented: $twsViewModel.presentPopups, manager: twsViewModel.manager)
+                .twsEnable(using: twsViewModel.manager)
         })
     }
 }

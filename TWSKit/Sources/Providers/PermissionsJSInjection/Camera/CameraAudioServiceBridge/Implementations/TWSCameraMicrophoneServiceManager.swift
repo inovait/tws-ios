@@ -9,13 +9,13 @@
 import Foundation
 import AVFoundation
 
-public final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicrophoneServicesBridge {
+final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicrophoneServicesBridge {
 
-    public init() { }
+    init() { }
 
     // MARK: - Confirming to `CameraMicrophoneServicesBridge`
 
-    public func checkCameraPermission() async throws(CameraMicrophoneServicesError) {
+    func checkCameraPermission() async throws(CameraMicrophoneServicesError) {
         // Check the current authorization status
         let status = AVCaptureDevice.authorizationStatus(for: .video)
 
@@ -35,7 +35,7 @@ public final actor TWSCameraMicrophoneServiceManager: Observable, CameraMicropho
         }
     }
 
-    public func checkMicrophonePermission() async throws(CameraMicrophoneServicesError) {
+    func checkMicrophonePermission() async throws(CameraMicrophoneServicesError) {
         // Check the current authorization status
         let status = AVAudioApplication.shared.recordPermission
 

@@ -11,7 +11,7 @@ import SwiftUI
 import TWSModels
 
 // Define an actor class that handles location services and acts as a bridge to your application's logic.
-public final actor TWSDefaultLocationServicesManager: NSObject,
+final actor DefaultLocationServicesManager: NSObject,
         LocationServicesBridge,
         Observable,
         CLLocationManagerDelegate {
@@ -40,9 +40,10 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
 
     /// Initializes a new instance of DefaultLocationServicesBridge.
     /// - Parameter locationManager: A custom CLLocationManager instance, defaulting to a new instance if not provided.
-    public init(
+    init(
         locationManager: CLLocationManager = .init()
     ) {
+        logger.debug("INIT LocationManager @ \(Date())")
         self.locationManager = locationManager
         super.init()
 
@@ -54,7 +55,7 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
 
     /// Checks and requests location permissions as needed.
     /// Throws an error if the user denies or restricts access to location services.
-    public func checkPermission() async throws {
+    func checkPermission() async throws {
         switch locationManager.authorizationStatus {
         case .notDetermined:
             // If permission status is not determined, request permission asynchronously.
@@ -83,7 +84,7 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     /// - id: A unique identifier for the location update session
     ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: The last known location, or `nil` if no location is available.
-    public func location(id: Double, options _: JSLocationMessageOptions?) async -> CLLocation? {
+    func location(id: Double, options _: JSLocationMessageOptions?) async -> CLLocation? {
         return await withCheckedContinuation { continuation in
             Task { _set(id: id, locationContinuation: continuation)}
         }
@@ -94,7 +95,7 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     ///   - id: A unique identifier for the location update session
     ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
     /// - Returns: An `AsyncStream` that yields `CLLocation` objects as the device's location updates.
-    public func startUpdatingLocation(id: Double, options _: JSLocationMessageOptions?) -> AsyncStream<CLLocation> {
+    func startUpdatingLocation(id: Double, options _: JSLocationMessageOptions?) -> AsyncStream<CLLocation> {
         let stream = AsyncStream<CLLocation>.makeStream()
         continuations[id] = stream.continuation
         locationManager.startUpdatingLocation()
@@ -104,7 +105,7 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
 
     /// Stops the continuous location updates associated with the specified session ID.
     /// - Parameter id: The unique identifier for the location update session to stop.
-    public func stopUpdatingLocation(id: Double) {
+    func stopUpdatingLocation(id: Double) {
         continuations[id]?.finish()
         continuations[id] = nil
         requests.remove(id)
@@ -167,8 +168,8 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     /// - Parameter authorizationContinuation: A continuation that will be resumed once the user responds to the permission request.
     func askForPermission(authorizationContinuation: CheckedContinuation<Void, Error>) {
         self.authorizationContinuation = authorizationContinuation
-        Task { @MainActor in
-            await locationManager.requestWhenInUseAuthorization()
+        Task { @MainActor [locationManager] in
+            locationManager.requestWhenInUseAuthorization()
         }
     }
 
@@ -218,14 +219,14 @@ public final actor TWSDefaultLocationServicesManager: NSObject,
     /// Delegate method that is called when the location manager receives new location data.
     /// - Parameter manager: The CLLocationManager object that generated the event.
     /// - Parameter locations: An array of CLLocation objects containing the location data.
-    public nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         Task { await send(location: location) }
     }
 
     /// Delegate method that is called when the authorization status for the app changes.
     /// - Parameter manager: The CLLocationManager object that generated the event.
-    public nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         guard status != .notDetermined else { return }
         Task { await proceed(withAuthorization: status) }

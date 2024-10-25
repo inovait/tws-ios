@@ -64,7 +64,7 @@ public struct TWSSnippetsFeature: Sendable {
                 do {
                     let project = try await api.getProject(configuration())
                     let resources = await preloadResources(for: project.0, using: api)
-                    var serverDate = project.1
+                    let serverDate = project.1
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project.0,
