@@ -14,7 +14,7 @@ import TWSModels
 struct SnippetsTabView: View {
 
     @Environment(TWSManager.self) var twsManager
-    @State private var selectedId: UUID?
+    @State private var selectedId: TWSSnippet.ID?
 
     var body: some View {
         NavigationStack {
@@ -99,7 +99,7 @@ private struct SnippetView: View {
         @Bindable var info = info
 
         VStack(alignment: .leading) {
-            let displayId = "tab-\(snippet.id.uuidString)"
+            let displayId = "tab-\(snippet.id)"
 
             HStack {
                 Button {
@@ -127,7 +127,7 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: "tab-\(snippet.id.uuidString)",
+                displayID: "tab-\(snippet.id)",
                 info: $info
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)

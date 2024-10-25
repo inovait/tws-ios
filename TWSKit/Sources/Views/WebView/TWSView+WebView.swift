@@ -18,7 +18,7 @@ struct WebView: UIViewRepresentable {
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
 
-    var id: UUID { snippet.id }
+    var id: String { snippet.id }
     var url: URL { snippet.target }
     let snippet: TWSSnippet
     let preloadedResources: [TWSSnippet.Attachment: String]

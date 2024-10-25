@@ -37,7 +37,7 @@ private struct SnippetView: View {
 
     var body: some View {
         @Bindable var info = info
-        let displayId = "list-\(snippet.id.uuidString)"
+        let displayId = "list-\(snippet.id)"
 
         VStack(alignment: .leading) {
             HStack {

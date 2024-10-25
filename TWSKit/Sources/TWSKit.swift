@@ -49,11 +49,10 @@ public final class TWSManager: Identifiable {
         _stateSync = observer
             .compactMap {
                 switch $0 {
-                case let .snippetsUpdated(snippets): return snippets
+                case .snippetsUpdated: return ()
                 case .universalLinkSnippetLoaded: return nil
                 }
             }
-            .removeDuplicates()
             .sink(receiveValue: { [weak self] _ in
                 guard let weakSelf = self else { return }
                 weakSelf.snippets = weakSelf.store.snippets.snippets.elements.map(\.snippet)

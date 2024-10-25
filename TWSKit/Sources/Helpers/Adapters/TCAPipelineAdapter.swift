@@ -41,8 +41,8 @@ extension AnyCasePath {
                 case let .universalLinks(.delegate(.snippetLoaded(snippet))):
                     return .universalLinkSnippetLoaded(snippet)
 
-                case let .snippetsDidChange(snippets):
-                    return .snippetsUpdated(snippets)
+                case .snippetsDidChange:
+                    return .snippetsUpdated
 
                 default:
                     return nil

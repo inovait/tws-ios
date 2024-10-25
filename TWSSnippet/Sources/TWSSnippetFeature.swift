@@ -11,6 +11,7 @@ public struct TWSSnippetFeature {
         public var snippet: TWSSnippet
         public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
+        public var isVisible = true
 
         public init(snippet: TWSSnippet) {
             self.snippet = snippet
@@ -24,6 +25,8 @@ public struct TWSSnippetFeature {
         public enum Business {
             case update(height: CGFloat, forId: String)
             case snippetUpdated(snippet: TWSSnippet?)
+            case showSnippet
+            case hideSnippet
         }
 
         case business(Business)
@@ -46,14 +49,23 @@ public struct TWSSnippetFeature {
             return .none
 
         case let .business(.snippetUpdated(snippet)):
-            if let snippet, snippet != state.snippet {
-                logger.info("Snippet updated from \(state.snippet) to \(snippet).")
+            if let snippet {
                 state.snippet = snippet
-            } else {
-                logger.info("Snippet's payload changed")
-                state.updateCount += 1
+                if snippet != state.snippet {
+                    logger.info("Snippet updated from \(state.snippet) to \(snippet).")
+                } else {
+                    logger.info("Snippet's payload changed")
+                    state.updateCount += 1
+                }
             }
+            return .none
 
+        case .business(.hideSnippet):
+            state.isVisible = false
+            return .none
+
+        case .business(.showSnippet):
+            state.isVisible = true
             return .none
         }
     }

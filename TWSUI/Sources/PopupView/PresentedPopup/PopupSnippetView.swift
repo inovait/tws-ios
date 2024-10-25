@@ -21,7 +21,7 @@ struct PopupSnippetView: View {
 
         TWSView(
             snippet: snippet,
-            displayID: "popup-\(snippet.id.uuidString)",
+            displayID: "popup-\(snippet.id)",
             info: $info
         )
     }

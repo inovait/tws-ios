@@ -39,7 +39,7 @@ final class SocketTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in TWSProject(listenOn: socketURL, snippets: [])}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: []), nil)}
                 $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
                 $0.socket.closeConnection = { _ in }
@@ -77,7 +77,7 @@ final class SocketTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in TWSProject(listenOn: socketURL, snippets: [])}
+                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: []), nil)}
                 $0.continuousClock = clock
                 $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
@@ -145,7 +145,7 @@ final class SocketTests: XCTestCase {
             initialState: state,
             reducer: { TWSSnippetsObserverFeature() },
             withDependencies: {
-                $0.api.getProject = { _ in TWSProject(listenOn: socketURL, snippets: [])}
+                $0.api.getProject = { _ in (TWSProject(listenOn: socketURL, snippets: []), nil)}
                 $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
                 $0.socket.closeConnection = { _ in }

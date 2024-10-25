@@ -101,13 +101,9 @@ public class TWSFactory {
 
         let combinedReducers = CombineReducers {
             mainReducer
-                .onChange(of: \.snippets.snippets) { _, newValue in
+                .onChange(of: \.snippets.snippets) { _, _ in
                     Reduce { _, _ in
-                        let newSnippets = newValue.map(\.snippet)
-                        let onlyEnabledSnippets = newSnippets.filter { snippet in
-                            return snippet.status == .enabled
-                        }
-                        return .send(.snippetsDidChange(onlyEnabledSnippets))
+                        return .send(.snippetsDidChange)
                     }
                 }
         }
@@ -119,7 +115,7 @@ public class TWSFactory {
             reducer: { combinedReducers }
         )
 
-        events.continuation.yield(.snippetsUpdated(storage))
+        events.continuation.yield(.snippetsUpdated)
 
         let manager = TWSManager(store: store, observer: publisher.eraseToAnyPublisher(), configuration: configuration)
         logger.info("Created a new TWSManager for configuration: \(configuration)")

@@ -19,6 +19,7 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
 
@@ -26,14 +27,21 @@ extension TWSSnippetsFeature {
             configuration: TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
             preloadedResources: [TWSSnippet.Attachment: String]? = nil,
-            socketURL: URL? = nil
+            socketURL: URL? = nil,
+            serverTime: Date? = nil
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _source = Shared(wrappedValue: .api, .source(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
+            _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
                 let state = snippets.map({ TWSSnippetFeature.State.init(snippet: $0) })
+                if let serverTime {
+                    snippets.forEach { snippet in
+                        snippetDates[snippet.id] = SnippetDateInfo(serverTime: serverTime)
+                    }
+                }
                 self.snippets = .init(uniqueElements: state)
             }
 

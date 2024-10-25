@@ -14,7 +14,7 @@ struct LoadedProjectInfo: Identifiable {
     let viewID: UUID
     let configuration: TWSConfiguration
     let viewModel: ProjectViewModel
-    let selectedID: UUID
+    let selectedID: TWSSnippet.ID
 
     var id: String {
         "\(viewID)~\(configuration.organizationID)~\(configuration.projectID)"

@@ -14,9 +14,9 @@ import TWSUI
 struct ProjectView: View {
 
     @State private var viewModel: ProjectViewModel
-    @State private var selectedID: UUID
+    @State private var selectedID: TWSSnippet.ID
 
-    init(viewModel: ProjectViewModel, selectedID: UUID) {
+    init(viewModel: ProjectViewModel, selectedID: TWSSnippet.ID) {
         _viewModel = .init(initialValue: viewModel)
         _selectedID = .init(initialValue: selectedID)
     }

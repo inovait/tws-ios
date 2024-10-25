@@ -28,6 +28,8 @@ extension TWSSnippetsFeature {
             case isSocketConnected(Bool)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case set(source: TWSSource)
+            case showSnippet(snippetId: TWSSnippet.ID)
+            case hideSnippet(snippetId: TWSSnippet.ID)
         }
 
         case business(BusinessAction)

@@ -47,40 +47,42 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        ZStack {
-            _TWSView(
-                snippet: snippet,
-                cssOverrides: cssOverrides,
-                jsOverrides: jsOverrides,
-                displayID: displayID,
-                info: $info
-            )
-            .frame(width: info.loadingState.showView ? nil : 0, height: info.loadingState.showView ? nil : 0)
-            .id(snippet.id)
-            // The actual URL changed for the same Snippet ~ redraw is required
-            .id(snippet.target)
-            // The internal payload of the target URL has changed ~ redraw is required
-            .id(manager.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
-            // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-            .conditionallyActivateDefaultLocationBehavior(
-                locationServicesBridge: locationServicesBridge,
-                snippet: snippet,
-                displayID: displayID
-            )
-
+        if manager.store.snippets.snippets[id: snippet.id]?.isVisible ?? false {
             ZStack {
-                switch info.loadingState {
-                case .idle, .loading:
-                    loadingView()
+                _TWSView(
+                    snippet: snippet,
+                    cssOverrides: cssOverrides,
+                    jsOverrides: jsOverrides,
+                    displayID: displayID,
+                    info: $info
+                )
+                .frame(width: info.loadingState.showView ? nil : 0, height: info.loadingState.showView ? nil : 0)
+                .id(snippet.id)
+                // The actual URL changed for the same Snippet ~ redraw is required
+                .id(snippet.target)
+                // The internal payload of the target URL has changed ~ redraw is required
+                .id(manager.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+                // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                .conditionallyActivateDefaultLocationBehavior(
+                    locationServicesBridge: locationServicesBridge,
+                    snippet: snippet,
+                    displayID: displayID
+                )
 
-                case .loaded:
-                    EmptyView()
+                ZStack {
+                    switch info.loadingState {
+                    case .idle, .loading:
+                        loadingView()
 
-                case let .failed(error):
-                    errorView(error)
+                    case .loaded:
+                        EmptyView()
+
+                    case let .failed(error):
+                        errorView(error)
+                    }
                 }
+                .frame(width: info.loadingState.showView ? 0 : nil, height: info.loadingState.showView ? 0 : nil)
             }
-            .frame(width: info.loadingState.showView ? 0 : nil, height: info.loadingState.showView ? 0 : nil)
         }
     }
 }
