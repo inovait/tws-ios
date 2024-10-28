@@ -46,10 +46,6 @@ class TWSViewModel {
         manager.handleIncomingUrl(url)
     }
 
-    func start() async {
-        manager.run()
-    }
-
     func startupInitTasks() async {
         await manager.observe { [weak self] event in
             guard let self else { return }
