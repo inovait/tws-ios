@@ -60,6 +60,7 @@ public final class TWSManager: Identifiable {
     }
 
     // MARK: - Public
+
     /// A getter for the list of loaded snippets
     public internal(set) var snippets: [TWSSnippet]
 
@@ -112,6 +113,15 @@ public final class TWSManager: Identifiable {
 
         // Send to store
         store.send(.snippets(.business(.set(source: source))))
+    }
+
+    /// Defines a custom set of local properties that will be injected into the ``TWSView``.
+    /// - Parameters:
+    ///   - localProps: A dictionary containing the local properties to inject.
+    ///   - id: The identifier of the snippet to associate with this dictionary.
+    public func set(localProps: [String: TWSSnippet.Props], to id: TWSSnippet.ID) {
+        precondition(Thread.isMainThread, "`set(customProps:,to:)` can only be called on main thread")
+        store.send(.snippets(.business(.setLocalProps(props: (id, localProps)))))
     }
 
     /// An async function that gathers all the logs in the current session

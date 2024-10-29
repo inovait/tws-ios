@@ -273,6 +273,12 @@ public struct TWSSnippetsFeature: Sendable {
                 return .send(.business(.load))
             }
 
+        case let .setLocalProps(props):
+            let id = props.0
+            let localProps = props.1
+            state.snippets[id: id]?.localProps = .dictionary(localProps)
+            return .none
+
         case .snippets:
             return .none
 
