@@ -11,7 +11,7 @@ import TWSModels
 
 public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
-    public let id: UUID
+    public let id: TWSSnippet.ID
     public let type: MessageType
     public let snippet: TWSSnippet?
 
@@ -19,8 +19,7 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
         guard
             let typeStr = json["type"] as? String,
             let dataJson = json["data"] as? [AnyHashable: Any],
-            let idStr = dataJson["id"] as? String,
-            let id = UUID(uuidString: idStr),
+            let id = dataJson["id"] as? TWSSnippet.ID,
             let type = MessageType(
                 rawValue: typeStr
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -37,7 +36,7 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
     #if DEBUG
     // periphery:ignore - Used in unit tests
-    init(id: UUID, type: MessageType, snippet: TWSSnippet? = nil) {
+    init(id: TWSSnippet.ID, type: MessageType, snippet: TWSSnippet? = nil) {
         self.id = id
         self.type = type
         self.snippet = snippet
@@ -56,7 +55,7 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
             let snippet = try JSONDecoder().decode(TWSSnippet.self, from: jsonData)
             return snippet
         } catch {
-            logger.err("Failed to parse snippet from socket: \(error.localizedDescription)")
+            logger.warn("Failed to parse snippet from socket: \(error.localizedDescription)")
             return nil
         }
     }
