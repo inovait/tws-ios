@@ -38,6 +38,8 @@ class Router {
             urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         }
 
+        logger.info(urlRequest.debugDescription)
+
         do {
             let result = try await URLSession.shared.data(for: urlRequest)
             guard
@@ -57,6 +59,7 @@ class Router {
                     dateOfResponse: serverDate
                 )
             } else {
+                logger.err(String(data: result.0, encoding: .utf8) ?? "null")
                 throw APIError.server(httpResult.statusCode, result.0)
             }
         } catch {

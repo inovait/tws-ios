@@ -42,7 +42,6 @@ struct ProjectView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .task {
-            await viewModel.start()
             await viewModel.startupInitTasks()
         }
         .sheet(item: $viewModel.universalLinkLoadedProject) {

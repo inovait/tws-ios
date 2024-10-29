@@ -15,6 +15,9 @@ public extension View {
     ) -> some View {
         self
             .environment(manager)
+            .task {
+                manager.run()
+            }
     }
 
     func twsEnable(
@@ -51,5 +54,8 @@ private struct _TWSPlaceholder: ViewModifier {
     func body(content: Content) -> some View {
         content
             .twsEnable(using: manager)
+            .task {
+                manager.run()
+            }
     }
 }

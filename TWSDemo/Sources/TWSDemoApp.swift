@@ -35,7 +35,6 @@ struct TWSDemoApp: App {
                     ))
                     .environment(twsViewModel)
                     .task {
-                        await twsViewModel.start()
                         await twsViewModel.startupInitTasks()
                     }
             }
