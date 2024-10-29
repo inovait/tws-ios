@@ -273,6 +273,13 @@ public struct TWSSnippetsFeature: Sendable {
                 return .send(.business(.load))
             }
 
+        case let .snippets(.element(_, action: .delegate(delegateAction))):
+            switch delegateAction {
+            case let .resourcesUpdated(resources):
+                resources.forEach { state.preloadedResources[$0.key] = $0.value }
+                return .none
+            }
+
         case .snippets:
             return .none
 
@@ -352,7 +359,7 @@ public struct TWSSnippetsFeature: Sendable {
                         .business(
                             .snippets(
                                 .element(
-                                    id: message.id.uuidString,
+                                    id: message.id,
                                     action: .business(.snippetUpdated(snippet: message.snippet))
                                 )
                             )

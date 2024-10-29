@@ -3,14 +3,18 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> (TWSProject, Date?)
+    public let getProject: @Sendable (
+        TWSConfiguration
+    ) async throws(APIError) -> (TWSProject, Date?)
 
     public var getSnippetBySharedId: @Sendable (
         TWSConfiguration,
         _ token: String
     ) async throws(APIError) -> TWSSharedSnippet
 
-    public let getResource: @Sendable (TWSSnippet.Attachment) async throws(APIError) -> String
+    public let getResource: @Sendable (
+        TWSSnippet.Attachment
+    ) async throws(APIError) -> String
 
     static func live(
         host: String
