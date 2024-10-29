@@ -46,7 +46,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public let status: SnippetStatus
     public var target: URL
     public let visibility: SnippetVisibility?
-    public let props: Props?
+    public var props: Props?
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
