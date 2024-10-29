@@ -60,6 +60,8 @@ public struct TWSView: View {
                 .id(snippet.id)
                 // The actual URL changed for the same Snippet ~ redraw is required
                 .id(snippet.target)
+                // The payload of dynamic resources can change
+                .id(_resourcesHash(resources: manager.store.snippets.preloadedResources, of: snippet))
                 // The internal payload of the target URL has changed ~ redraw is required
                 .id(manager.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
                 // Only for default location provider; starting on appear/foreground; stopping on disappear/background
@@ -84,6 +86,15 @@ public struct TWSView: View {
                 .frame(width: info.loadingState.showView ? 0 : nil, height: info.loadingState.showView ? 0 : nil)
             }
         }
+    }
+
+    private func _resourcesHash(
+        resources: [TWSSnippet.Attachment: String],
+        of snippet: TWSSnippet
+    ) -> Int {
+        var hasher = Hasher()
+        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]) }
+        return hasher.finalize()
     }
 }
 

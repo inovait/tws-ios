@@ -13,6 +13,23 @@ import ComposableArchitecture
 public extension Reducer {
 
     func preloadResources(
+        for snippet: TWSSnippet,
+        using api: APIDependency
+    ) async -> [TWSSnippet.Attachment: String] {
+        let attachments = snippet.dynamicResources ?? []
+        guard !attachments.isEmpty else { return [:] }
+
+        return await _preloadResources(
+            homepages: [.init(
+                url: snippet.target,
+                contentType: .html
+            )],
+            resources: attachments,
+            using: api
+        )
+    }
+
+    func preloadResources(
         for project: TWSProject,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
