@@ -142,6 +142,7 @@ let project = Project(
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSSnippets/Sources/**"],
             dependencies: [
+                .external(name: "Mustache"),
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSSnippet"),
