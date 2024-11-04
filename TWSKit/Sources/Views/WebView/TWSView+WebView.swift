@@ -136,9 +136,9 @@ struct WebView: UIViewRepresentable {
             logger.debug("Load from raw HTML: \(url.absoluteString)")
             var htmlToLoad = preloaded
             if snippet.engine == .mustache {
-                let mustacheRendered = MustacheRenderer()
-                let convertedProps = mustacheRendered.convertDictPropsToData(snippet.props)
-                htmlToLoad = mustacheRendered.renderMustache(preloaded, convertedProps, addDefaultValues: true)
+                let mustacheRenderer = MustacheRenderer()
+                let convertedProps = mustacheRenderer.convertDictPropsToData(snippet.props)
+                htmlToLoad = mustacheRenderer.renderMustache(preloaded, convertedProps, addDefaultValues: true)
             }
             webView.loadHTMLString(htmlToLoad, baseURL: self.url)
         } else {

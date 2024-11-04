@@ -78,7 +78,8 @@ public extension Reducer {
                 group.addTask { [resource] in
                     do {
                         let payload = try await api.getResource(resource)
-                        return (resource, payload)
+                        if !payload.isEmpty { return (resource, payload) }
+                        return nil
                     } catch {
                         return nil
                     }

@@ -21,11 +21,11 @@ class MustacheRenderer {
                     } else if case .string(let value) = prop.value {
                         mustacheProps[prop.key] = value
                     } else if case .int(let value) = prop.value {
-                        mustacheProps[prop.key] = String(value)
+                        mustacheProps[prop.key] = value
                     } else if case .double(let value) = prop.value {
-                        mustacheProps[prop.key] = String(value)
+                        mustacheProps[prop.key] = value
                     } else if case .bool(let value) = prop.value {
-                        mustacheProps[prop.key] = String(value)
+                        mustacheProps[prop.key] = value
                     } else if case .array(let value) = prop.value {
                         var arrayOfConverted: [Any] = []
                         value.forEach { arrayProp in
@@ -34,11 +34,11 @@ class MustacheRenderer {
                             } else if case .string(let value) = arrayProp {
                                 arrayOfConverted.append(value)
                             } else if case .int(let value) = arrayProp {
-                                arrayOfConverted.append(String(value))
+                                arrayOfConverted.append(value)
                             } else if case .double(let value) = arrayProp {
-                                arrayOfConverted.append(String(value))
+                                arrayOfConverted.append(value)
                             } else if case .bool(let value) = arrayProp {
-                                arrayOfConverted.append(String(value))
+                                arrayOfConverted.append(value)
                             } else if case .array = arrayProp {
                                 arrayOfConverted.append(convertDictPropsToData(arrayProp))
                             }
