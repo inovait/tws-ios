@@ -54,8 +54,5 @@ private struct _TWSPlaceholder: ViewModifier {
     func body(content: Content) -> some View {
         content
             .twsEnable(using: manager)
-            .task {
-                manager.run()
-            }
     }
 }
