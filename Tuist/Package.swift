@@ -36,6 +36,10 @@ let package = Package(
         .package(
             url: "https://github.com/ProxymanApp/atlantis",
             exact: .init(1, 25, 1)
+        ),
+        .package(
+            url: "https://github.com/groue/GRMustache.swift",
+            exact: .init(6, 0, 0)
         )
     ]
 )

@@ -37,8 +37,6 @@ public extension Reducer {
             .compactMap(\.dynamicResources)
             .flatMap { $0 }
 
-        guard !attachments.isEmpty else { return [:] }
-
         return await _preloadResources(
             homepages: project.snippets.map {
                 TWSSnippet.Attachment(
@@ -80,7 +78,8 @@ public extension Reducer {
                 group.addTask { [resource] in
                     do {
                         let payload = try await api.getResource(resource)
-                        return (resource, payload)
+                        if !payload.isEmpty { return (resource, payload) }
+                        return nil
                     } catch {
                         return nil
                     }

@@ -82,6 +82,7 @@ let project = Project(
             sources: ["TWSKit/Sources/**"],
             resources: ["TWSKit/Resources/**"],
             dependencies: [
+                .external(name: "Mustache"),
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger")
