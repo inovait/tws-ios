@@ -1,11 +1,11 @@
 import Foundation
 
 public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
-    
+
     public enum SnippetEngine: ExpressibleByStringLiteral, Hashable, Codable, Sendable {
         case mustache
         case other(String)
-        
+
         public init(stringLiteral value: String) {
             let value = value.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
             switch value {
@@ -85,7 +85,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, target, visibility, props, dynamicResources
+        case id, status, target, visibility, props, dynamicResources, engine
     }
 
     public init(

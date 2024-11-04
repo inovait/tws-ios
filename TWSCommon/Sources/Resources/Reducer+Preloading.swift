@@ -37,8 +37,6 @@ public extension Reducer {
             .compactMap(\.dynamicResources)
             .flatMap { $0 }
 
-        guard !attachments.isEmpty else { return [:] }
-
         return await _preloadResources(
             homepages: project.snippets.map {
                 TWSSnippet.Attachment(

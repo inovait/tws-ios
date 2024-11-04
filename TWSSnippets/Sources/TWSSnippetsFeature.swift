@@ -2,7 +2,6 @@ import Foundation
 import ComposableArchitecture
 import TWSSnippet
 import TWSCommon
-import Mustache
 @_spi(InternalLibraries) import TWSModels
 
 // swiftlint:disable identifier_name
@@ -119,20 +118,10 @@ public struct TWSSnippetsFeature: Sendable {
             }
 
             // Update current or add new
-            for var snippet in snippets {
+            for snippet in snippets {
                 if let date = project.serverDate {
                     state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date)
                 }
-                /*if snippet.engine == .mustache {
-                    do {
-                        let template = try Template(URL: snippet.target)
-                        //let data = snippet.props.map(\.data)
-                        let rendering = try template.render(data)
-                        
-                    } catch {
-                        
-                    }
-                }*/
                 if currentOrder.contains(snippet.id) {
                     if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed
