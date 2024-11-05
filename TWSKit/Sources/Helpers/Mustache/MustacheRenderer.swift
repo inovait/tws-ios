@@ -53,7 +53,9 @@ class MustacheRenderer {
 
     func renderMustache(_ html: String, _ data: [String: Any], addDefaultValues: Bool) -> String {
         do {
-            let template = try Template(string: html)
+            var mustacheConfiguration = Configuration()
+            mustacheConfiguration.contentType = .text
+            let template = try Template(string: html, configuration: mustacheConfiguration)
             var mustacheValues: [String: Any] = [:]
             if addDefaultValues {
                 let defaultMustacheValues = DefaultMustacheProps().props
@@ -61,7 +63,6 @@ class MustacheRenderer {
             } else {
                 mustacheValues = data
             }
-
             return try template.render(mustacheValues)
         } catch {
             logger.err("Mustache render failed: \(error)")
