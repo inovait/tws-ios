@@ -13,6 +13,7 @@ import ComposableArchitecture
 private extension URL {
     static func snippetDates(for config: TWSConfiguration) -> URL {
         .documentsDirectory
+        .appendingPathComponent(cacheFolder)
         .appending(component: "\(config.organizationID)_\(config.projectID)_snippets_dates.json")
     }
 }
