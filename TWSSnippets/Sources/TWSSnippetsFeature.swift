@@ -76,19 +76,15 @@ public struct TWSSnippetsFeature: Sendable {
                 }
             }
 
-        case let .projectLoaded(.success(project)):
-            logger.info("Snippets loaded.")
-
+        case .startVisibilityTimers(let snippets):
             var effects = [Effect<Action>]()
-            let snippets = project.snippets
-            let newOrder = snippets.map(\.id)
-            let currentOrder = state.snippets.ids
-            state.socketURL = project.listenOn
-            state.preloadedResources = project.resources
-
             let snippetTimes = state.snippetDates
             snippets.forEach { snippet in
-                if let snippetDateInfo = snippetTimes[snippet.id] {
+                var snippetDateInfo = snippetTimes[snippet.id]
+                if snippetDateInfo == nil {
+                    snippetDateInfo = .init(serverTime: Date())
+                }
+                if let snippetDateInfo {
                     if let snippetVisibility = snippet.visibility {
                         if let fromUtc = snippetVisibility.fromUtc,
                            snippetDateInfo.adaptedTime < fromUtc {
@@ -116,6 +112,19 @@ public struct TWSSnippetsFeature: Sendable {
                     }
                 }
             }
+            return .concatenate(effects)
+
+        case let .projectLoaded(.success(project)):
+            logger.info("Snippets loaded.")
+
+            var effects = [Effect<Action>]()
+            let snippets = project.snippets
+            let newOrder = snippets.map(\.id)
+            let currentOrder = state.snippets.ids
+            state.socketURL = project.listenOn
+            state.preloadedResources = project.resources
+
+            effects.append(.send(.business(.startVisibilityTimers(snippets))))
 
             // Update current or add new
             for snippet in snippets {
@@ -361,16 +370,19 @@ public struct TWSSnippetsFeature: Sendable {
 
                 case .updated:
 
-                    await send(
-                        .business(
-                            .snippets(
-                                .element(
-                                    id: message.id,
-                                    action: .business(.snippetUpdated(snippet: message.snippet))
+                    if let snippet = message.snippet {
+                        await send(
+                            .business(
+                                .snippets(
+                                    .element(
+                                        id: message.id,
+                                        action: .business(.snippetUpdated(snippet: snippet))
+                                    )
                                 )
                             )
                         )
-                    )
+                        await send(.business(.startVisibilityTimers([snippet])))
+                    }
                 }
 
                 do {

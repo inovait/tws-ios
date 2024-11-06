@@ -8,6 +8,7 @@
 
 import Foundation
 import TWSModels
+import TWSAPI
 
 public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
@@ -52,8 +53,11 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
     private static func _parseSnippet(_ json: [AnyHashable: Any]) -> TWSSnippet? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-            let snippet = try JSONDecoder().decode(TWSSnippet.self, from: jsonData)
-            return snippet
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = isoDateDecoder
+
+            return try decoder.decode(TWSSnippet.self, from: jsonData)
         } catch {
             logger.warn("Failed to parse snippet from socket: \(error.localizedDescription)")
             return nil
