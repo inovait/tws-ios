@@ -125,7 +125,8 @@ let project = Project(
                 .target(name: "TWSSnippets"),
                 .target(name: "TWSSettings"),
                 .target(name: "TWSUniversalLinks"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSFormatters")
             ],
             settings: .settings(
                 configurations: [
@@ -148,6 +149,21 @@ let project = Project(
                 .target(name: "TWSSnippet"),
                 .target(name: "TWSLogger")
             ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
+                ]
+            )
+        ),
+        .target(
+            name: "TWSFormatters",
+            destinations: .iOS,
+            product: .staticFramework,
+            bundleId: "com.inova.twsformatters",
+            deploymentTargets: .iOS(deploymentTarget()),
+            sources: ["TWSFormatters/Sources/**"],
             settings: .settings(
                 configurations: [
                     .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
@@ -284,7 +300,8 @@ let project = Project(
             sources: ["TWSAPI/Sources/**"],
             dependencies: [
                 .target(name: "TWSModels"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSFormatters")
             ],
             settings: .settings(
                 configurations: [

@@ -1,5 +1,6 @@
 import Foundation
 import TWSModels
+import TWSFormatters
 
 public struct TWSAPI {
 

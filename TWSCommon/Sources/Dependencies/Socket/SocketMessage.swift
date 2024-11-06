@@ -8,7 +8,7 @@
 
 import Foundation
 import TWSModels
-import TWSAPI
+import TWSFormatters
 
 public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
