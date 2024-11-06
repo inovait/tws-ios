@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import TWSDemo
+@testable import Playground
 
 final class TWSDemoTests: XCTestCase {
 
