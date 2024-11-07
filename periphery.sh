@@ -14,7 +14,7 @@ if [ -n "$1" ]; then
     index_store_path=$1
 else
     index_store_path="periphery/DerivedData"
-    xcodebuild -workspace TheWebSnippet.xcworkspace -scheme TWSDemo -derivedDataPath "$index_store_path" -destination 'generic/platform=iOS'
+    xcodebuild -workspace TheWebSnippet.xcworkspace -scheme Playground -derivedDataPath "$index_store_path" -destination 'generic/platform=iOS'
 
     if [ $? -ne 0 ]; then
         echo "xcodebuild failed"

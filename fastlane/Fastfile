@@ -72,7 +72,7 @@ platform :ios do
   lane :do_tests do |options|
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
-      scheme: "TWSDemo",
+      scheme: "Playground",
       derived_data_path: derived_data_path
     )
   end
@@ -85,7 +85,7 @@ platform :ios do
         workspace: "./TheWebSnippet.xcworkspace",
         clean: true,
         output_directory: "./Archive",
-        scheme: "TWSDemo",
+        scheme: "Playground",
         output_name: "TWSDemo.ipa",
         configuration: "Staging",
         export_method: "ad-hoc"
