@@ -9,7 +9,7 @@
 import Foundation
 
 @propertyWrapper
-@_spi(InternalLibraries) public struct LossyCodableList<Element> {
+@_spi(InternalLibraries) public struct LossyCodableList<Element: Sendable>: Sendable {
 
     private var elements: [Element]?
 
@@ -26,6 +26,8 @@ import Foundation
 // MARK: - Conditional conformances
 
 extension LossyCodableList: Equatable where Element: Equatable { }
+
+extension LossyCodableList: Hashable where Element: Hashable { }
 
 extension LossyCodableList: Decodable where Element: Decodable {
 

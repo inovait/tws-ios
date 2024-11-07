@@ -9,6 +9,7 @@
 import UIKit
 import WebKit
 
+@MainActor
 protocol NavigationProvider {
 
     func present(

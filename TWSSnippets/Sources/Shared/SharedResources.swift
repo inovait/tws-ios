@@ -14,6 +14,7 @@ private extension URL {
 
     static func resources(for config: TWSConfiguration) -> URL {
         .documentsDirectory
+        .appendingPathComponent(cacheFolder)
         .appending(component: "\(config.organizationID)_\(config.projectID)_resources.json")
     }
 }

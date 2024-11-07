@@ -36,7 +36,7 @@ class NotificationBuilder {
     ) -> Bool {
         guard
             let userInfo = notification.userInfo,
-            userInfo[kSnippetID] as? UUID == snippet.id,
+            userInfo[kSnippetID] as? String == snippet.id,
             userInfo[kDisplayID] as? String == displayID
         else {
             return false

@@ -13,20 +13,23 @@ import TWSModels
 @MainActor
 struct SnippetsTabView: View {
 
-    @Environment(TWSViewModel.self) private var twsViewModel
-    @State private var selectedId: UUID?
+    @Environment(TWSManager.self) var twsManager
+    @State private var selectedId: TWSSnippet.ID?
 
     var body: some View {
         NavigationStack {
             VStack {
                 ZStack {
                     ForEach(
-                        Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)),
+                        Array(zip(
+                            twsManager.tabs.indices,
+                            twsManager.tabs
+                        )),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
                             SnippetView(snippet: snippet)
-                                .zIndex(Double(selectedId == snippet.id ? twsViewModel.snippets.count : idx))
+                                .zIndex(Double(selectedId == snippet.id ? twsManager.tabs.count : idx))
                                 .opacity(selectedId != snippet.id ? 0 : 1)
                         }
                     }
@@ -43,10 +46,10 @@ struct SnippetsTabView: View {
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 // Safe to force cast, because of the first segment
-                guard selectedId == nil || !twsViewModel.snippets.map(\.id).contains(selectedId!) else { return }
-                selectedId = twsViewModel.snippets.first?.id
+                guard selectedId == nil || !twsManager.tabs.map(\.id).contains(selectedId!) else { return }
+                selectedId = twsManager.tabs.first?.id
             }
-            .onChange(of: twsViewModel.snippets.first?.id) { _, newValue in
+            .onChange(of: twsManager.tabs.first?.id) { _, newValue in
                 guard selectedId == nil else { return }
                 selectedId = newValue
             }
@@ -55,16 +58,36 @@ struct SnippetsTabView: View {
 
     @ViewBuilder
     private func _selectionView() -> some View {
-        if twsViewModel.snippets.count > 1 {
+        if twsManager.tabs.count > 1 {
             HStack(spacing: 1) {
-                ForEach(Array(zip(twsViewModel.snippets.indices, twsViewModel.snippets)), id: \.1.id) { idx, item in
+                ForEach(
+                    Array(zip(
+                        twsManager.tabs.indices,
+                        twsManager.tabs
+                    )),
+                    id: \.1.id
+                ) { _, item in
                     Button {
                         selectedId = item.id
                     } label: {
                         VStack {
-                            Text("\(idx + 1)")
-                                .font(.title)
+                            if let icon = item.props?[.tabIcon, as: \.string] {
+                                Group {
+                                    if UIImage(named: icon) != nil {
+                                        Image(icon)
+                                    } else if UIImage(systemName: icon) != nil {
+                                        Image(systemName: icon)
+                                    } else {
+                                        Image("broken_image")
+                                    }
+                                }
                                 .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            }
+
+                            if let tabName = item.props?[.tabName, as: \.string] {
+                                Text(tabName)
+                                    .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            }
 
                             Rectangle()
                                 .fill(Color.accentColor)
@@ -84,15 +107,13 @@ private struct SnippetView: View {
 
     let snippet: TWSSnippet
     @Environment(TWSViewModel.self) private var twsViewModel
-    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
-    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var canGoBack = false
-    @State private var canGoForward = false
+    @State private var info = TWSViewInfo()
 
     var body: some View {
+        @Bindable var info = info
+
         VStack(alignment: .leading) {
-            let displayId = "tab-\(snippet.id.uuidString)"
+            let displayId = "tab-\(snippet.id)"
 
             HStack {
                 Button {
@@ -103,7 +124,7 @@ private struct SnippetView: View {
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!canGoBack)
+                .disabled(!info.canGoBack)
 
                 Button {
                     twsViewModel.manager.goForward(
@@ -113,26 +134,15 @@ private struct SnippetView: View {
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!canGoForward)
+                .disabled(!info.canGoForward)
             }
 
             Divider()
 
             TWSView(
                 snippet: snippet,
-                locationServicesBridge: locationHandler,
-                cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: twsViewModel.manager,
-                displayID: "tab-\(snippet.id.uuidString)",
-                canGoBack: $canGoBack,
-                canGoForward: $canGoForward,
-                loadingState: $loadingState,
-                loadingView: {
-                    WebViewLoadingView()
-                },
-                errorView: { error in
-                    WebViewErrorView(error: error)
-                }
+                displayID: "tab-\(snippet.id)",
+                info: $info
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .border(Color.black)

@@ -9,13 +9,13 @@
 import Foundation
 
 /// A struct used to provided all information for a TWSKit manager to receive snippets and connect to the socket for updats
-public struct TWSConfiguration: Hashable {
+public struct TWSConfiguration: Hashable, Sendable {
 
     /// The ID of the TWS organization
-    public let organizationID: UUID
+    public let organizationID: String
 
     /// The ID of the TWS project
-    public let projectID: UUID
+    public let projectID: String
 
     /// Initializes a new configuration
     /// - Parameters:
@@ -25,16 +25,6 @@ public struct TWSConfiguration: Hashable {
         organizationID: String,
         projectID: String
     ) {
-        guard let organizationID = UUID(uuidString: organizationID)
-        else { preconditionFailure(
-            "Invalid `organization ID`. It should be a valid UUID. Received: \(organizationID)"
-        )}
-
-        guard let projectID = UUID(uuidString: projectID)
-        else { preconditionFailure(
-            "Invalid `organization ID`. It should be a valid UUID. Received: \(projectID)"
-        )}
-
         self.organizationID = organizationID
         self.projectID = projectID
     }

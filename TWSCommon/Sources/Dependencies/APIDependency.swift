@@ -12,11 +12,11 @@ import TWSAPI
 import ComposableArchitecture
 
 @DependencyClient
-public struct APIDependency {
+public struct APIDependency: Sendable {
 
     public var getProject: @Sendable (
         TWSConfiguration
-    ) async throws(APIError) -> TWSProject = { _ throws(APIError) in
+    ) async throws(APIError) -> (TWSProject, Date?) = { _ throws(APIError) in
         reportIssue("\(Self.self).getProject")
         throw APIError.local(NSError(domain: "", code: -1))
     }

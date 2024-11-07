@@ -63,7 +63,7 @@ extension WebView.Coordinator: WKUIDelegate {
         _ webView: WKWebView,
         runJavaScriptAlertPanelWithMessage message: String,
         initiatedByFrame frame: WKFrameInfo,
-        completionHandler: @escaping () -> Void
+        completionHandler: @escaping @MainActor @Sendable () -> Void
     ) {
         var msg = "[UI \(webView.hash)] Run JavaScript alert panel with message: \(message), "
         msg += "initiated by frame: \(frame)"
@@ -84,7 +84,7 @@ extension WebView.Coordinator: WKUIDelegate {
         _ webView: WKWebView,
         runJavaScriptConfirmPanelWithMessage message: String,
         initiatedByFrame frame: WKFrameInfo,
-        completionHandler: @escaping (Bool) -> Void
+        completionHandler: @escaping @MainActor @Sendable (Bool) -> Void
     ) {
         var msg = "[UI \(webView.hash)] Run JavaScript confirm panel with message: \(message), "
         msg += "initiated by frame: \(frame)"
@@ -108,7 +108,7 @@ extension WebView.Coordinator: WKUIDelegate {
         runJavaScriptTextInputPanelWithPrompt prompt: String,
         defaultText: String?,
         initiatedByFrame frame: WKFrameInfo,
-        completionHandler: @escaping (String?) -> Void
+        completionHandler: @escaping @MainActor @Sendable (String?) -> Void
     ) {
         var msg = "[UI \(webView.hash)] Run JavaScript text input panel with prompt: \(prompt)"
         msg += ", default text: \(String(describing: defaultText)), initiated by frame: \(frame)"

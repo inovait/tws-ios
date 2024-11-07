@@ -15,13 +15,33 @@ extension WebView.Coordinator: WKDownloadDelegate {
         _ download: WKDownload,
         decideDestinationUsing response: URLResponse,
         suggestedFilename: String,
-        completionHandler: @escaping (URL?) -> Void
+        completionHandler: @escaping @MainActor @Sendable  (URL?) -> Void
     ) {
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = documentsURL!.appendingPathComponent(suggestedFilename)
+        guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            logger.err("Can't find documents directory")
+            completionHandler(nil)
+            return
+        }
+
+        let downloadsFolderURL = documentsURL.appendingPathComponent("Downloads")
+
+        if !FileManager.default.fileExists(atPath: downloadsFolderURL.path) {
+            do {
+                try FileManager.default.createDirectory(
+                    at: downloadsFolderURL,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+            } catch {
+                logger.err("Failed to create downloads folder: \(error)")
+                completionHandler(nil)
+                return
+            }
+        }
+        let fileName = downloadsFolderURL.appendingPathComponent(suggestedFilename)
 
         downloadInfo.downloadedFilename = suggestedFilename
-        downloadInfo.downloadedLocation = documentsURL?.absoluteString ?? ""
+        downloadInfo.downloadedLocation = downloadsFolderURL.absoluteString
         completionHandler(fileName)
     }
 

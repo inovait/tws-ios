@@ -11,17 +11,16 @@ import TWSKit
 
 struct ProjectSnippetView: View {
 
+    @State private var info: TWSViewInfo = .init()
     let snippet: TWSSnippet
-    let manager: TWSManager
-    @State private var loadingState: TWSLoadingState = .idle
-    @State private var pageTitle: String = ""
+    let organizationID: String
 
     @Environment(\.dismiss) var dismiss
-    @Environment(TWSDefaultLocationServicesManager.self) private var locationHandler
-    @Environment(TWSCameraMicrophoneServiceManager.self) private var cameraMicrophoneHandler
 
     var body: some View {
-        VStack {
+        @Bindable var info = info
+
+        return VStack {
             HStack {
                 Button(
                     action: {
@@ -30,7 +29,7 @@ struct ProjectSnippetView: View {
                         }
                     },
                     label: {
-                        Text("TWS - \($pageTitle.wrappedValue)")
+                        Text("TWS - \(info.title)")
                             .lineLimit(1)
                             .foregroundColor(.black)
                     }
@@ -58,16 +57,8 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                locationServicesBridge: locationHandler,
-                cameraMicrophoneServicesBridge: cameraMicrophoneHandler,
-                using: manager,
-                displayID: "\(manager.id.hashValue)",
-                canGoBack: .constant(false),
-                canGoForward: .constant(false),
-                loadingState: $loadingState,
-                pageTitle: $pageTitle,
-                loadingView: { WebViewLoadingView() },
-                errorView: { WebViewErrorView(error: $0) }
+                displayID: "\(organizationID)",
+                info: $info
             )
             .frame(maxHeight: .infinity, alignment: .top)
         }

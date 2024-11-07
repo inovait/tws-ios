@@ -94,7 +94,9 @@ struct SettingsView: View {
                             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
                             modifiedSince: .init(timeIntervalSince1970: 0),
                             completionHandler: {
-                                cacheRemoved.toggle()
+                                Task { @MainActor in
+                                    cacheRemoved.toggle()
+                                }
                             }
                         )
                     } label: {
@@ -119,21 +121,21 @@ struct SettingsView: View {
             viewModel.setSource(manager: twsViewModel.manager, source: newValue)
         }
     }
-}
 
-private func shareLogsReport(_ reportUrl: URL?) {
-    if let reportUrl {
-        let activityVC = UIActivityViewController(activityItems: [reportUrl], applicationActivities: nil)
-        activityVC.completionWithItemsHandler = { (_, _, _, _) in
-            do {
-                try FileManager.default.removeItem(atPath: reportUrl.path())
-            } catch {
-                print("Unable to delete the logs file after sharing")
+    private func shareLogsReport(_ reportUrl: URL?) {
+        if let reportUrl {
+            let activityVC = UIActivityViewController(activityItems: [reportUrl], applicationActivities: nil)
+            activityVC.completionWithItemsHandler = { (_, _, _, _) in
+                do {
+                    try FileManager.default.removeItem(atPath: reportUrl.path())
+                } catch {
+                    print("Unable to delete the logs file after sharing")
+                }
             }
-        }
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true, completion: nil)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                rootVC.present(activityVC, animated: true, completion: nil)
+            }
         }
     }
 }

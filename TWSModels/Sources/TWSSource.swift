@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum TWSSource: Codable, Equatable {
+public enum TWSSource: Codable, Equatable, Sendable {
 
     case api
     case customURLs([URL])

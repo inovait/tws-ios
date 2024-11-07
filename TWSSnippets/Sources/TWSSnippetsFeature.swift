@@ -9,14 +9,12 @@ private let RECONNECT_TIMEOUT: TimeInterval = 3
 // swiftlint:enable identifier_name
 
 @Reducer
-public struct TWSSnippetsFeature {
+public struct TWSSnippetsFeature: Sendable {
 
     @Dependency(\.api) var api
     @Dependency(\.socket) var socket
     @Dependency(\.continuousClock) var clock
     @Dependency(\.configuration) var configuration
-
-    public init() { }
 
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -54,7 +52,8 @@ public struct TWSSnippetsFeature {
 
                 return .send(.business(.projectLoaded(.success(.init(
                     project: project,
-                    resources: [:]
+                    resources: [:],
+                    serverDate: nil
                 )))))
 
             @unknown default:
@@ -64,11 +63,13 @@ public struct TWSSnippetsFeature {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
-                    let resources = await preloadResources(for: project, using: api)
+                    let resources = await preloadResources(for: project.0, using: api)
+                    let serverDate = project.1
 
                     await send(.business(.projectLoaded(.success(.init(
-                        project: project,
-                        resources: resources
+                        project: project.0,
+                        resources: resources,
+                        serverDate: serverDate
                     )))))
                 } catch {
                     await send(.business(.projectLoaded(.failure(error))))
@@ -85,11 +86,44 @@ public struct TWSSnippetsFeature {
             state.socketURL = project.listenOn
             state.preloadedResources = project.resources
 
-            // Update current or add new
+            let snippetTimes = state.snippetDates
+            snippets.forEach { snippet in
+                if let snippetDateInfo = snippetTimes[snippet.id] {
+                    if let snippetVisibility = snippet.visibility {
+                        if let fromUtc = snippetVisibility.fromUtc,
+                           snippetDateInfo.adaptedTime < fromUtc {
+                            let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
+                            effects.append(
+                                .run { send in
+                                    try? await clock.sleep(for: .seconds(duration))
+                                    await send(.business(.showSnippet(snippetId: snippet.id)))
+                                }
+                                    .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
+                            )
 
+                        }
+                        if let untilUtc = snippetVisibility.untilUtc,
+                           snippetDateInfo.adaptedTime < untilUtc {
+                            let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
+                            effects.append(
+                                .run { send in
+                                    try? await clock.sleep(for: .seconds(duration))
+                                    await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                }
+                                    .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Update current or add new
             for snippet in snippets {
+                if let date = project.serverDate {
+                    state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date)
+                }
                 if currentOrder.contains(snippet.id) {
-                    if state.snippets[id: snippet.id]?.snippet.target != snippet.target {
+                    if state.snippets[id: snippet.id]?.snippet != snippet {
                         // View needs to be forced refreshed
                         effects.append(
                             .send(
@@ -97,7 +131,7 @@ public struct TWSSnippetsFeature {
                                     .snippets(
                                         .element(
                                             id: snippet.id,
-                                            action: .business(.snippetUpdated(target: snippet.target))
+                                            action: .business(.snippetUpdated(snippet: snippet))
                                         )
                                     )
                                 )
@@ -125,7 +159,7 @@ public struct TWSSnippetsFeature {
             // Keep sorted
             _sort(basedOn: newOrder, &state)
 
-            return .none
+            return .concatenate(effects)
 
         case let .projectLoaded(.failure(error)):
             if let error = error as? DecodingError {
@@ -201,7 +235,7 @@ public struct TWSSnippetsFeature {
             return .none
 
         case .delayReconnect:
-            return .run { send in
+            return .run { [clock] send in
                 do {
                     try await clock.sleep(for: .seconds(RECONNECT_TIMEOUT))
                     guard !Task.isCancelled else { return }
@@ -239,15 +273,36 @@ public struct TWSSnippetsFeature {
                 return .send(.business(.load))
             }
 
+        case let .setLocalProps(props):
+            let id = props.0
+            let localProps = props.1
+            state.snippets[id: id]?.localProps = .dictionary(localProps)
+            return .none
+
+        case let .snippets(.element(_, action: .delegate(delegateAction))):
+            switch delegateAction {
+            case let .resourcesUpdated(resources):
+                resources.forEach { state.preloadedResources[$0.key] = $0.value }
+                return .none
+            }
+
         case .snippets:
+            return .none
+
+        case .showSnippet(snippetId: let snippetId):
+            state.snippets[id: snippetId]?.isVisible = true
+            return .none
+
+        case .hideSnippet(snippetId: let snippetId):
+            state.snippets[id: snippetId]?.isVisible = false
             return .none
         }
     }
 
     // MARK: - Helpers
 
-    private func _sort(basedOn orderedIDs: [UUID], _ state: inout State) {
-        var orderDict = [UUID: Int]()
+    private func _sort(basedOn orderedIDs: [TWSSnippet.ID], _ state: inout State) {
+        var orderDict = [TWSSnippet.ID: Int]()
         for (index, id) in orderedIDs.enumerated() {
             orderDict[id] = index
         }
@@ -264,7 +319,9 @@ public struct TWSSnippetsFeature {
         return urls.map {
             .init(
                 id: uuidGenerator(),
-                target: $0
+                target: $0,
+                status: "enabled",
+                visibilty: nil
             )
         }
     }
@@ -303,12 +360,13 @@ public struct TWSSnippetsFeature {
                     await send(.business(.load))
 
                 case .updated:
+
                     await send(
                         .business(
                             .snippets(
                                 .element(
                                     id: message.id,
-                                    action: .business(.snippetUpdated(target: message.target))
+                                    action: .business(.snippetUpdated(snippet: message.snippet))
                                 )
                             )
                         )

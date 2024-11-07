@@ -20,6 +20,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation \(webView.hash)] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
 
+        _ = pullToRefresh.verifyForRefresh(navigation: navigation)
         _updateHeight(webView: webView)
 
         // Mandatory to hop the thread, because of UI layout change
@@ -99,7 +100,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         preferences: WKWebpagePreferences,
-        decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
+        decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction)")
 
@@ -132,7 +133,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
     func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationResponse: WKNavigationResponse,
-        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+        decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation response: \(navigationResponse)")
         if navigationResponse.canShowMIMEType {
@@ -145,7 +146,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
     func webView(
         _ webView: WKWebView,
         didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        completionHandler: @escaping @MainActor @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Received authentication challenge")
         completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge

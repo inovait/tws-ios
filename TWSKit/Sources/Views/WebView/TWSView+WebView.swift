@@ -18,7 +18,7 @@ struct WebView: UIViewRepresentable {
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
 
-    var id: UUID { snippet.id }
+    var id: String { snippet.id }
     var url: URL { snippet.target }
     let snippet: TWSSnippet
     let preloadedResources: [TWSSnippet.Attachment: String]
@@ -53,8 +53,8 @@ struct WebView: UIViewRepresentable {
         forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
-        onHeightCalculated: @escaping @Sendable (CGFloat) -> Void,
-        onUniversalLinkDetected: @escaping @Sendable (URL) -> Void,
+        onHeightCalculated: @escaping @Sendable @MainActor (CGFloat) -> Void,
+        onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
@@ -123,12 +123,28 @@ struct WebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
         webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
-        webView.scrollView.bounces = false
+        webView.scrollView.bounces = true
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        webView.load(URLRequest(url: self.url))
+
+        context.coordinator.pullToRefresh.enable(on: webView)
+
+        let key = TWSSnippet.Attachment(url: url, contentType: .html)
+        if let preloaded = preloadedResources[key] {
+            logger.debug("Load from raw HTML: \(url.absoluteString)")
+            var htmlToLoad = preloaded
+            if snippet.engine == .mustache {
+                let mustacheRenderer = MustacheRenderer()
+                let convertedProps = mustacheRenderer.convertDictPropsToData(snippet.props)
+                htmlToLoad = mustacheRenderer.renderMustache(preloaded, convertedProps, addDefaultValues: true)
+            }
+            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
+        } else {
+            logger.debug("Load from url: \(url.absoluteString)")
+            webView.load(URLRequest(url: self.url))
+        }
 
         context.coordinator.observe(heightOf: webView)
         updateState(for: webView, loadingState: .loading)

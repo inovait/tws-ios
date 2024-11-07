@@ -9,6 +9,7 @@
 import SwiftUI
 import Network
 
+@MainActor
 @Observable
 class NetworkMonitor {
 

@@ -10,7 +10,7 @@ import Foundation
 import ComposableArchitecture
 import TWSModels
 
-public struct SocketDependency {
+public struct SocketDependency: Sendable {
 
     public var get: @Sendable (TWSConfiguration, URL) async -> UUID
     public var connect: @Sendable (UUID) async throws(SocketMessageReadError) -> AsyncStream<WebSocketEvent>
@@ -37,7 +37,7 @@ public enum SocketDependencyKey: DependencyKey {
                 guard let socket = await storage.getValue(forKey: id)
                 else { preconditionFailure("Sending a `connect` message to an invalid object: \(id)") }
                 try await socket.connect()
-                return await socket.stream
+                return socket.stream
             },
             listen: { [storage] id in
                 guard let socket = await storage.getValue(forKey: id)

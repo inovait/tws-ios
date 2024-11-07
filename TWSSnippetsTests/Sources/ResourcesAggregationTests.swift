@@ -28,7 +28,8 @@ final class ResourcesAggregationTests: XCTestCase {
                 .init(url: URL(string: "https://www.r2.com")!, contentType: .css),
                 .init(url: URL(string: "https://www.r3.com")!, contentType: .javascript),
                 .init(url: URL(string: "https://www.r4.com")!, contentType: .css)
-            ]
+            ],
+            status: "enabled"
         )
     ]
 
@@ -51,6 +52,10 @@ final class ResourcesAggregationTests: XCTestCase {
 
         let expectedResources: [TWSSnippet.Attachment: String] = [
             .init(
+                url: snippets[0].target,
+                contentType: .html
+            ): snippets[0].target.absoluteString,
+            .init(
                 url: URL(string: "https://www.r1.com")!,
                 contentType: .javascript
             ): "https://www.r1.com",
@@ -70,23 +75,24 @@ final class ResourcesAggregationTests: XCTestCase {
 
         let aggregate = TWSProjectBundle(
             project: project,
-            resources: expectedResources
+            resources: expectedResources,
+            serverDate: nil
         )
 
         let store = TestStore(
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { _ in return project }
+                $0.api.getProject = { _ in return (project, nil) }
                 $0.api.getResource = { attachment in return attachment.url.absoluteString }
             }
         )
 
         await store.send(.business(.load)).finish()
-        await store.receive(\.business.projectLoaded.success, aggregate) {
-            $0.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
-            $0.socketURL = self.socketURL
-            $0.preloadedResources = expectedResources
+        await store.receive(\.business.projectLoaded.success, aggregate) { [socketURL] state in
+            state.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
+            state.socketURL = socketURL
+            state.preloadedResources = expectedResources
         }
     }
 }

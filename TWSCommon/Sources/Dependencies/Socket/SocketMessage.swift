@@ -7,19 +7,19 @@
 //
 
 import Foundation
+import TWSModels
 
-public struct SocketMessage: CustomDebugStringConvertible {
+public struct SocketMessage: CustomDebugStringConvertible, Sendable {
 
-    public let id: UUID
+    public let id: TWSSnippet.ID
     public let type: MessageType
-    public let target: URL?
+    public let snippet: TWSSnippet?
 
     init?(json: [AnyHashable: Any]) {
         guard
             let typeStr = json["type"] as? String,
             let dataJson = json["data"] as? [AnyHashable: Any],
-            let idStr = dataJson["id"] as? String,
-            let id = UUID(uuidString: idStr),
+            let id = dataJson["id"] as? TWSSnippet.ID,
             let type = MessageType(
                 rawValue: typeStr
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -31,15 +31,15 @@ public struct SocketMessage: CustomDebugStringConvertible {
 
         self.id = id
         self.type = type
-        self.target = Self._parseTarget(dataJson)
+        self.snippet = Self._parseSnippet(dataJson)
     }
 
     #if DEBUG
     // periphery:ignore - Used in unit tests
-    init(id: UUID, type: MessageType, target: URL? = nil) {
+    init(id: TWSSnippet.ID, type: MessageType, snippet: TWSSnippet? = nil) {
         self.id = id
         self.type = type
-        self.target = target
+        self.snippet = snippet
     }
     #endif
 
@@ -49,16 +49,21 @@ public struct SocketMessage: CustomDebugStringConvertible {
         """
     }
 
-    private static func _parseTarget(_ json: [AnyHashable: Any]) -> URL? {
-        guard let urlString = json["target"] as? String
-        else { return nil }
-        return URL(string: urlString)
+    private static func _parseSnippet(_ json: [AnyHashable: Any]) -> TWSSnippet? {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+            let snippet = try JSONDecoder().decode(TWSSnippet.self, from: jsonData)
+            return snippet
+        } catch {
+            logger.warn("Failed to parse snippet from socket: \(error.localizedDescription)")
+            return nil
+        }
     }
 }
 
 public extension SocketMessage {
 
-    enum MessageType: String {
+    enum MessageType: String, Sendable {
 
         case created = "SNIPPET_CREATED"
         case updated = "SNIPPET_UPDATED"

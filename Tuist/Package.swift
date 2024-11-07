@@ -1,5 +1,5 @@
-// swift-tools-version: 5.9
-import PackageDescription
+// swift-tools-version: 6.0
+@preconcurrency import PackageDescription
 
 #if TUIST
     import ProjectDescription
@@ -36,6 +36,10 @@ let package = Package(
         .package(
             url: "https://github.com/ProxymanApp/atlantis",
             exact: .init(1, 25, 1)
+        ),
+        .package(
+            url: "https://github.com/groue/GRMustache.swift",
+            exact: .init(6, 0, 0)
         )
     ]
 )

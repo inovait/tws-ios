@@ -3,14 +3,18 @@ import TWSModels
 
 public struct TWSAPI {
 
-    public let getProject: @Sendable (TWSConfiguration) async throws(APIError) -> TWSProject
+    public let getProject: @Sendable (
+        TWSConfiguration
+    ) async throws(APIError) -> (TWSProject, Date?)
 
     public var getSnippetBySharedId: @Sendable (
         TWSConfiguration,
         _ token: String
     ) async throws(APIError) -> TWSSharedSnippet
 
-    public let getResource: @Sendable (TWSSnippet.Attachment) async throws(APIError) -> String
+    public let getResource: @Sendable (
+        TWSSnippet.Attachment
+    ) async throws(APIError) -> String
 
     static func live(
         host: String
@@ -18,8 +22,8 @@ public struct TWSAPI {
         .init(
             getProject: { configuration throws(APIError) in
                 // Need to transform to lowercased, otherwise server returns 404
-                let organizationID = configuration.organizationID.uuidString.lowercased()
-                let projectID = configuration.projectID.uuidString.lowercased()
+                let organizationID = configuration.organizationID
+                let projectID = configuration.projectID
                 let result = try await Router.make(request: .init(
                         method: .get,
                         path: "/organizations/\(organizationID)/projects/\(projectID)/register",
@@ -31,7 +35,9 @@ public struct TWSAPI {
                     ))
 
                 do {
-                    return try JSONDecoder().decode(TWSProject.self, from: result.data)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    return (try decoder.decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
                 }
