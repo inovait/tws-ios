@@ -72,8 +72,16 @@ struct SnippetsTabView: View {
                     } label: {
                         VStack {
                             if let icon = item.props?[.tabIcon, as: \.string] {
-                                Image(systemName: icon)
-                                    .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                                Group {
+                                    if UIImage(named: icon) != nil {
+                                        Image(icon)
+                                    } else if UIImage(systemName: icon) != nil {
+                                        Image(systemName: icon)
+                                    } else {
+                                        Image("broken_image")
+                                    }
+                                }
+                                .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
                             }
 
                             if let tabName = item.props?[.tabName, as: \.string] {

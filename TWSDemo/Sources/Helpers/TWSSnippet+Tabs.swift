@@ -8,12 +8,11 @@
 
 import TWSKit
 
-extension TWSSnippet {
+private extension TWSSnippet {
 
-    public var isTab: Bool {
+    var isTab: Bool {
         props?[.tabName, as: \.string] != nil || props?[.tabIcon, as: \.string] != nil
     }
-
 }
 
 extension TWSManager {
