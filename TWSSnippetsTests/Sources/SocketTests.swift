@@ -58,6 +58,7 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
@@ -96,7 +97,7 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
-
+        await store.receive(\.business.startVisibilityTimers)
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
@@ -116,6 +117,7 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.socketURL = self.socketURL
         }
+        await store.receive(\.business.startVisibilityTimers)
         await store.receive(\.business.listenForChanges, timeout: NSEC_PER_SEC)
 
         // After the socket connection is established, check the snippets again
@@ -126,6 +128,7 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
@@ -164,11 +167,13 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.startVisibilityTimers)
 
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))
         await store.receive(\.business.load, timeout: NSEC_PER_SEC)
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
