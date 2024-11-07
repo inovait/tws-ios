@@ -8,7 +8,7 @@
 
 import TWSKit
 
-private extension TWSSnippet {
+extension TWSSnippet {
 
     var isTab: Bool {
         props?[.tabName, as: \.string] != nil || props?[.tabIcon, as: \.string] != nil
