@@ -56,7 +56,7 @@ public final class TWSManager: Identifiable {
             }
             .sink(receiveValue: { [weak self] _ in
                 guard let weakSelf = self else { return }
-                weakSelf.snippets = weakSelf.store.snippets.snippets.elements.map(\.snippet)
+                weakSelf.snippets = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
             })
     }
 

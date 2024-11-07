@@ -20,6 +20,7 @@ extension TWSSnippetsFeature {
         public enum BusinessAction {
             case load
             case projectLoaded(Result<TWSProjectBundle, Error>)
+            case startVisibilityTimers([TWSSnippet])
             case listenForChanges
             case delayReconnect
             case reconnectTriggered

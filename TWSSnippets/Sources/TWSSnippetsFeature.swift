@@ -76,6 +76,59 @@ public struct TWSSnippetsFeature: Sendable {
                 }
             }
 
+        case .startVisibilityTimers(let snippets):
+            var effects = [Effect<Action>]()
+            let snippetTimes = state.snippetDates
+            snippets.forEach { snippet in
+                var snippetDateInfo = snippetTimes[snippet.id]
+                if snippetDateInfo == nil {
+                    snippetDateInfo = .init(serverTime: Date())
+                }
+                if let snippetDateInfo {
+                    if let snippetVisibility = snippet.visibility {
+                        if let fromUtc = snippetVisibility.fromUtc {
+                            if snippetDateInfo.adaptedTime < fromUtc {
+                                let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                        try? await clock.sleep(for: .seconds(duration))
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                    }
+                                        .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
+                                )
+                            } else {
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                    }
+                                )
+                            }
+                        }
+                        if let untilUtc = snippetVisibility.untilUtc {
+                            if snippetDateInfo.adaptedTime < untilUtc {
+                                let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                        try? await clock.sleep(for: .seconds(duration))
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                    }
+                                        .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
+                                )
+                            } else {
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            return .concatenate(effects)
+
         case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
 
@@ -86,36 +139,7 @@ public struct TWSSnippetsFeature: Sendable {
             state.socketURL = project.listenOn
             state.preloadedResources = project.resources
 
-            let snippetTimes = state.snippetDates
-            snippets.forEach { snippet in
-                if let snippetDateInfo = snippetTimes[snippet.id] {
-                    if let snippetVisibility = snippet.visibility {
-                        if let fromUtc = snippetVisibility.fromUtc,
-                           snippetDateInfo.adaptedTime < fromUtc {
-                            let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
-                            effects.append(
-                                .run { send in
-                                    try? await clock.sleep(for: .seconds(duration))
-                                    await send(.business(.showSnippet(snippetId: snippet.id)))
-                                }
-                                    .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
-                            )
-
-                        }
-                        if let untilUtc = snippetVisibility.untilUtc,
-                           snippetDateInfo.adaptedTime < untilUtc {
-                            let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
-                            effects.append(
-                                .run { send in
-                                    try? await clock.sleep(for: .seconds(duration))
-                                    await send(.business(.hideSnippet(snippetId: snippet.id)))
-                                }
-                                    .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
-                            )
-                        }
-                    }
-                }
-            }
+            effects.append(.send(.business(.startVisibilityTimers(snippets))))
 
             // Update current or add new
             for snippet in snippets {
@@ -361,16 +385,19 @@ public struct TWSSnippetsFeature: Sendable {
 
                 case .updated:
 
-                    await send(
-                        .business(
-                            .snippets(
-                                .element(
-                                    id: message.id,
-                                    action: .business(.snippetUpdated(snippet: message.snippet))
+                    if let snippet = message.snippet {
+                        await send(
+                            .business(
+                                .snippets(
+                                    .element(
+                                        id: message.id,
+                                        action: .business(.snippetUpdated(snippet: snippet))
+                                    )
                                 )
                             )
                         )
-                    )
+                        await send(.business(.startVisibilityTimers([snippet])))
+                    }
                 }
 
                 do {

@@ -85,6 +85,7 @@ final class ResourcesAggregationTests: XCTestCase {
             withDependencies: {
                 $0.api.getProject = { _ in return (project, nil) }
                 $0.api.getResource = { attachment in return attachment.url.absoluteString }
+                $0.date.now = Date()
             }
         )
 
@@ -94,5 +95,6 @@ final class ResourcesAggregationTests: XCTestCase {
             state.socketURL = socketURL
             state.preloadedResources = expectedResources
         }
+        await store.receive(\.business.startVisibilityTimers)
     }
 }
