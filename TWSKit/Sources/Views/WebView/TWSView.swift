@@ -35,7 +35,7 @@ public struct TWSView: View {
     public init(
         snippet: TWSSnippet,
         displayID id: String,
-        info: Bindable<TWSViewInfo> = .init(.init()),
+        info: Bindable<TWSViewInfo> = .init(.init(loadingState: .loaded)),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = []
     ) {

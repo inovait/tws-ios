@@ -22,6 +22,7 @@ public final class TWSManager: Identifiable {
     private let initDate: Date
     private let _id = UUID().uuidString.suffix(4)
     private var _stateSync: AnyCancellable?
+    private var isSetup = false
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -67,6 +68,8 @@ public final class TWSManager: Identifiable {
     /// A function that starts loading snippets and listen for changes
     public func run() {
         precondition(Thread.isMainThread, "`run()` can only be called on main thread")
+        defer { isSetup = true }
+        guard !isSetup else { return }
         store.send(.snippets(.business(.load)))
     }
 
