@@ -86,28 +86,43 @@ public struct TWSSnippetsFeature: Sendable {
                 }
                 if let snippetDateInfo {
                     if let snippetVisibility = snippet.visibility {
-                        if let fromUtc = snippetVisibility.fromUtc,
-                           snippetDateInfo.adaptedTime < fromUtc {
-                            let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
-                            effects.append(
-                                .run { send in
-                                    try? await clock.sleep(for: .seconds(duration))
-                                    await send(.business(.showSnippet(snippetId: snippet.id)))
-                                }
-                                    .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
-                            )
-
+                        if let fromUtc = snippetVisibility.fromUtc {
+                            if snippetDateInfo.adaptedTime < fromUtc {
+                                let duration = snippetDateInfo.adaptedTime.timeIntervalSince(fromUtc)
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                        try? await clock.sleep(for: .seconds(duration))
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                    }
+                                        .cancellable(id: CancelID.showSnippet(snippet.id), cancelInFlight: true)
+                                )
+                            } else {
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                    }
+                                )
+                            }
                         }
-                        if let untilUtc = snippetVisibility.untilUtc,
-                           snippetDateInfo.adaptedTime < untilUtc {
-                            let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
-                            effects.append(
-                                .run { send in
-                                    try? await clock.sleep(for: .seconds(duration))
-                                    await send(.business(.hideSnippet(snippetId: snippet.id)))
-                                }
-                                    .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
-                            )
+                        if let untilUtc = snippetVisibility.untilUtc {
+                            if snippetDateInfo.adaptedTime < untilUtc {
+                                let duration = untilUtc.timeIntervalSince(snippetDateInfo.adaptedTime)
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.showSnippet(snippetId: snippet.id)))
+                                        try? await clock.sleep(for: .seconds(duration))
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                    }
+                                        .cancellable(id: CancelID.hideSnippet(snippet.id), cancelInFlight: true)
+                                )
+                            } else {
+                                effects.append(
+                                    .run { send in
+                                        await send(.business(.hideSnippet(snippetId: snippet.id)))
+                                    }
+                                )
+                            }
                         }
                     }
                 }

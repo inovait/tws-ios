@@ -14,7 +14,7 @@ public let isoDateDecoder = JSONDecoder.DateDecodingStrategy.custom { decoder in
     dateFormatterFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     let container = try decoder.singleValueContainer()
     let dateString = try container.decode(String.self)
-    
+
     if let date = dateFormatterRegular.date(from: dateString) {
         return date
     } else if let date = dateFormatterFractional.date(from: dateString) {
