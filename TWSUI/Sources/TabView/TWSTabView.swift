@@ -9,14 +9,14 @@
 import SwiftUI
 import TWSKit
 
-public struct TWSTabView<AdditionalTabs: View>: View {
+public struct TWSTabView: View {
 
-    let additionalTabs: () -> AdditionalTabs
+    let showTWSList: Bool
     @Environment(TWSManager.self) private var twsManager
 
-    public init(@ViewBuilder additionalTabs: @escaping () -> AdditionalTabs) {
-            self.additionalTabs = additionalTabs
-        }
+    public init(showTWSList: Bool = true) {
+        self.showTWSList = showTWSList
+    }
 
     public var body: some View {
         TabView {
@@ -42,7 +42,12 @@ public struct TWSTabView<AdditionalTabs: View>: View {
                 }
             }
 
-            additionalTabs()
+            if showTWSList {
+                TWSListView()
+                    .tabItem {
+                        Text("Preview")
+                    }
+            }
         }
         .mask {
             Rectangle().ignoresSafeArea(.all, edges: .bottom)
