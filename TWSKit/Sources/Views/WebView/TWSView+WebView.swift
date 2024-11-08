@@ -8,7 +8,7 @@
 
 import SwiftUI
 import WebKit
-@_spi(InternalLibraries) import TWSModels
+@_spi(Internals) import TWSModels
 
 struct WebView: UIViewRepresentable {
 

@@ -9,7 +9,7 @@
 import XCTest
 @testable import TWSUniversalLinks
 @testable import TWSCommon
-@testable @_spi(InternalLibraries) import TWSModels
+@testable @_spi(Internals) import TWSModels
 @testable import TWSAPI
 @testable import ComposableArchitecture
 

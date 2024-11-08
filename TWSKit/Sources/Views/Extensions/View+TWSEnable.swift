@@ -8,9 +8,9 @@
 
 import SwiftUI
 
-public extension View {
+extension View {
 
-    func twsEnable(
+    public func twsEnable(
         using manager: TWSManager
     ) -> some View {
         self
@@ -20,7 +20,7 @@ public extension View {
             }
     }
 
-    func twsEnable(
+    public func twsEnable(
         configuration: TWSConfiguration
     ) -> some View {
         ModifiedContent(
@@ -31,7 +31,7 @@ public extension View {
         )
     }
 
-    func twsEnable(
+    public func twsEnable(
         bundle: TWSSharedSnippetBundle
     ) -> some View {
         ModifiedContent(

@@ -16,16 +16,16 @@ final private class DefaultImplementations: Sendable {
     static let shared = DefaultImplementations()
 }
 
-public extension View {
+extension View {
 
-    func bind(
+    public func bind(
         locationServiceBridge: some LocationServicesBridge
     ) -> some View {
         self
             .environment(\.locationServiceBridge, locationServiceBridge)
     }
 
-    func bind(
+    public func bind(
         cameraMicrophoneServiceBridge: some CameraMicrophoneServicesBridge
     ) -> some View {
         self
@@ -42,5 +42,4 @@ extension EnvironmentValues {
     @Entry var cameraMicrophoneServiceBridge: CameraMicrophoneServicesBridge = DefaultImplementations
         .shared
         .cameraMicrophoneServiceBridge
-
 }

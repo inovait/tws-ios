@@ -9,7 +9,7 @@
 import Foundation
 
 @propertyWrapper
-@_spi(InternalLibraries) public struct LossyCodableList<Element: Sendable>: Sendable {
+@_spi(Internals) public struct LossyCodableList<Element: Sendable>: Sendable {
 
     private var elements: [Element]?
 
@@ -41,7 +41,7 @@ extension LossyCodableList: Decodable where Element: Decodable {
         }
     }
 
-    @_spi(InternalLibraries) public init(from decoder: any Decoder) throws {
+    @_spi(Internals) public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let wrappers = try? container.decode([ElementWrapper].self) {
             elements = wrappers.compactMap(\.element)
@@ -53,7 +53,7 @@ extension LossyCodableList: Decodable where Element: Decodable {
 
 extension LossyCodableList: Encodable where Element: Encodable {
 
-    @_spi(InternalLibraries) public func encode(to encoder: any Encoder) throws {
+    @_spi(Internals) public func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
         if let elements {
             for element in elements {

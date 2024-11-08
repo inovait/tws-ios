@@ -8,9 +8,9 @@
 
 import SwiftUI
 
-public extension View {
+extension View {
 
-    func twsOnDownloadCompleted(
+    public func twsOnDownloadCompleted(
         action: @Sendable @escaping @MainActor (TWSDownloadState) -> Void
     ) -> some View {
         self

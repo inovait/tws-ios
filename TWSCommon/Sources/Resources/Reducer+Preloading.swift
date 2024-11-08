@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@_spi(InternalLibraries) import TWSModels
+@_spi(Internals) import TWSModels
 import ComposableArchitecture
 
 public extension Reducer {
