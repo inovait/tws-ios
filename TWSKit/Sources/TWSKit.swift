@@ -13,9 +13,10 @@ internal import TWSSnippet
 @Observable
 public final class TWSManager: Identifiable {
 
+    public let configuration: TWSConfiguration
+
     let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
-    let configuration: TWSConfiguration
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
 
