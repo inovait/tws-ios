@@ -90,6 +90,7 @@ public struct TWSSnippetFeature: Sendable {
         case let .business(.snippetUpdated(snippet)):
             if let snippet {
                 state.snippet = snippet
+                state.isVisible = true
                 if snippet != state.snippet {
                     logger.info("Snippet updated from \(state.snippet) to \(snippet).")
                 } else {

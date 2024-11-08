@@ -1,5 +1,6 @@
 import Foundation
 import TWSModels
+import TWSFormatters
 
 public struct TWSAPI {
 
@@ -36,7 +37,9 @@ public struct TWSAPI {
 
                 do {
                     let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .iso8601
+
+                    decoder.dateDecodingStrategy = isoDateDecoder
+
                     return (try decoder.decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
