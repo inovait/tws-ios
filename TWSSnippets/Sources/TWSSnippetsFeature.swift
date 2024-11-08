@@ -2,7 +2,7 @@ import Foundation
 import ComposableArchitecture
 import TWSSnippet
 import TWSCommon
-@_spi(InternalLibraries) import TWSModels
+@_spi(Internals) import TWSModels
 
 // swiftlint:disable identifier_name
 private let RECONNECT_TIMEOUT: TimeInterval = 3

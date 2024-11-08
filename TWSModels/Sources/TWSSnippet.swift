@@ -82,7 +82,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public let visibility: SnippetVisibility?
     public var props: Props?
     public var engine: SnippetEngine?
-    @_spi(InternalLibraries) @LossyCodableList public var dynamicResources: [Attachment]?
+    @_spi(Internals) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
         case id, status, target, visibility, props, dynamicResources, engine
@@ -132,6 +132,6 @@ public extension TWSSnippet.Attachment {
 
         case javascript = "text/javascript"
         case css = "text/css"
-        case html = "text/html"
+        @_spi(Internals) case html = "text/html"
     }
 }

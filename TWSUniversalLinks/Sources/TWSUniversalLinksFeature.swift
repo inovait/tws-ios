@@ -8,7 +8,7 @@
 import Foundation
 import ComposableArchitecture
 import TWSCommon
-@_spi(InternalLibraries) import TWSModels
+@_spi(Internals) import TWSModels
 
 @Reducer
 public struct TWSUniversalLinksFeature: Sendable {

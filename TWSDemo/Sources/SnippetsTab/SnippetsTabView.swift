@@ -59,7 +59,7 @@ struct SnippetsTabView: View {
     @ViewBuilder
     private func _selectionView() -> some View {
         if twsManager.tabs.count > 1 {
-            HStack(spacing: 1) {
+            HStack(alignment: .bottom, spacing: 1) {
                 ForEach(
                     Array(zip(
                         twsManager.tabs.indices,

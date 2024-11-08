@@ -13,9 +13,9 @@ import Foundation
 public struct TWSSharedSnippetBundle: Codable, Equatable, Sendable {
 
     public let sharedSnippet: TWSSharedSnippet
-    @_spi(InternalLibraries) public let resources: [TWSSnippet.Attachment: String]
+    @_spi(Internals) public let resources: [TWSSnippet.Attachment: String]
 
-    @_spi(InternalLibraries) public init(
+    @_spi(Internals) public init(
         sharedSnippet: TWSSharedSnippet,
         resources: [TWSSnippet.Attachment: String]
     ) {

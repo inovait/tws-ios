@@ -25,7 +25,7 @@ extension JSLocationMessage {
 // periphery:ignore - may be used by the client of our SDK
 /// These parameters correspond to options available in the Geolocation API of web browsers,
 /// providing additional configurations necessary for executing location-related commands.
-public struct JSLocationMessageOptions: Codable, Sendable {
+struct JSLocationMessageOptions: Codable, Sendable {
 
     /// The maximum age in milliseconds of a cached position that is acceptable to return.
     /// If the cached position is older than the specified `maximumAge`, the location will be re-fetched.

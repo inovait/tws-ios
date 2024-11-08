@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@_spi(InternalLibraries) import TWSModels
+@_spi(Internals) import TWSModels
 
 class ExtractResources {
 
