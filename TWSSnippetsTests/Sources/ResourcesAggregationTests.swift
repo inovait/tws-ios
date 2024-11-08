@@ -9,7 +9,7 @@
 import XCTest
 @testable import TWSSnippets
 @testable import TWSCommon
-@testable import TWSModels
+@testable @_spi(Internals) import TWSModels
 @testable import ComposableArchitecture
 
 final class ResourcesAggregationTests: XCTestCase {
