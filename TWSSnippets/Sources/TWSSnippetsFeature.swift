@@ -44,7 +44,7 @@ public struct TWSSnippetsFeature: Sendable {
 
             case let .customURLs(urls):
                 let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
-                let snippets = _generateCustomSnippets(urls: urls)
+                let snippets = generateCustomSnippets(urls: urls)
                 let project = TWSProject(
                     listenOn: dummySocketURL,
                     snippets: snippets
@@ -181,7 +181,7 @@ public struct TWSSnippetsFeature: Sendable {
             }
 
             // Keep sorted
-            _sort(basedOn: newOrder, &state)
+            sort(basedOn: newOrder, &state)
 
             return .concatenate(effects)
 
@@ -239,7 +239,7 @@ public struct TWSSnippetsFeature: Sendable {
                 }
 
                 do {
-                    try await _listen(
+                    try await listen(
                         connectionID: connectionID,
                         stream: stream,
                         send: send
@@ -320,93 +320,6 @@ public struct TWSSnippetsFeature: Sendable {
         case .hideSnippet(snippetId: let snippetId):
             state.snippets[id: snippetId]?.isVisible = false
             return .none
-        }
-    }
-
-    // MARK: - Helpers
-
-    private func _sort(basedOn orderedIDs: [TWSSnippet.ID], _ state: inout State) {
-        var orderDict = [TWSSnippet.ID: Int]()
-        for (index, id) in orderedIDs.enumerated() {
-            orderDict[id] = index
-        }
-
-        state.snippets.sort(by: {
-            let idx1 = orderDict[$0.id] ?? Int.max
-            let idx2 = orderDict[$1.id] ?? Int.max
-            return idx1 < idx2
-        })
-    }
-
-    private func _generateCustomSnippets(urls: [URL]) -> [TWSSnippet] {
-        let uuidGenerator = IncrementingUUIDGenerator()
-        return urls.map {
-            .init(
-                id: uuidGenerator(),
-                target: $0,
-                status: "enabled",
-                visibilty: nil
-            )
-        }
-    }
-
-    private func _listen(
-        connectionID: UUID,
-        stream: AsyncStream<WebSocketEvent>,
-        send: Send<TWSSnippetsFeature.Action>
-    ) async throws {
-        mainLoop: for await event in stream {
-            switch event {
-            case .didConnect:
-                logger.info("Did connect \(Date.now)")
-                await send(.business(.isSocketConnected(true)))
-                await send(.business(.load))
-
-                do {
-                    try await socket.listen(connectionID)
-                } catch {
-                    logger.err("Failed to receive a message: \(error)")
-                    break mainLoop
-                }
-
-                if Task.isCancelled { break mainLoop }
-
-            case .didDisconnect:
-                logger.info("Did disconnect \(Date())")
-                await send(.business(.isSocketConnected(false)))
-                break mainLoop
-
-            case let .receivedMessage(message):
-                logger.info("Received a message: \(message)")
-
-                switch message.type {
-                case .created, .deleted:
-                    await send(.business(.load))
-
-                case .updated:
-
-                    if let snippet = message.snippet {
-                        await send(
-                            .business(
-                                .snippets(
-                                    .element(
-                                        id: message.id,
-                                        action: .business(.snippetUpdated(snippet: snippet))
-                                    )
-                                )
-                            )
-                        )
-                        await send(.business(.startVisibilityTimers([snippet])))
-                    }
-                }
-
-                do {
-                    try await socket.listen(connectionID)
-                } catch {
-                    logger.err("Failed to receive a message: \(error)")
-                    break mainLoop
-                }
-            }
         }
     }
 }
