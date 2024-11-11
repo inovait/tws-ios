@@ -25,8 +25,7 @@ struct ProjectView: View {
         TabView(selection: $selectedID) {
             ForEach(viewModel.tabSnippets) { snippet in
                 ProjectSnippetView(
-                    snippet: snippet,
-                    organizationID: "\(viewModel.manager.id.hashValue)"
+                    snippet: snippet
                 )
                 .tabItem {
                     if let tabName = snippet.props?[.tabName, as: \.string] {

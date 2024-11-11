@@ -77,12 +77,4 @@ class TWSViewModel {
             }
         }
     }
-
-    public func addClearedPopup(_ snippet: TWSSnippet) {
-        self.clearedPopupSnippets.append(snippet)
-    }
-
-    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
-        return !clearedPopupSnippets.contains(snippet)
-    }
 }
