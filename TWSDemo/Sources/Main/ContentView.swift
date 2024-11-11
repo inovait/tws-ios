@@ -57,9 +57,5 @@ struct ContentView: View {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
                 .twsEnable(using: $0.viewModel.manager)
         }
-        .fullScreenCover(isPresented: $twsViewModel.presentPopups, content: {
-            TWSPopupView(isPresented: $twsViewModel.presentPopups, manager: twsViewModel.manager)
-                .twsEnable(using: twsViewModel.manager)
-        })
     }
 }
