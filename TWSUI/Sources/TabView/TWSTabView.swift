@@ -21,25 +21,22 @@ public struct TWSTabView: View {
     public var body: some View {
         TabView {
             ForEach(twsManager.tabs) { snippet in
-                TWSView(
-                    snippet: snippet,
-                    displayID: "home-\(snippet.id)"
-                )
-                .tabItem {
-                    if let title = snippet.props?[.tabName, as: \.string] {
-                        Text(title)
-                    }
-
-                    if let icon = snippet.props?[.tabIcon, as: \.string] {
-                        if UIImage(named: icon) != nil {
-                            Image(icon)
-                        } else if UIImage(systemName: icon) != nil {
-                            Image(systemName: icon)
-                        } else {
-                            Image("broken_image")
+                TWSView(snippet: snippet)
+                    .tabItem {
+                        if let title = snippet.props?[.tabName, as: \.string] {
+                            Text(title)
+                        }
+                        
+                        if let icon = snippet.props?[.tabIcon, as: \.string] {
+                            if UIImage(named: icon) != nil {
+                                Image(icon)
+                            } else if UIImage(systemName: icon) != nil {
+                                Image(systemName: icon)
+                            } else {
+                                Image("broken_image")
+                            }
                         }
                     }
-                }
             }
 
             if showTWSList {

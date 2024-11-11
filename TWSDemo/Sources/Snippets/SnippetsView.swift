@@ -66,7 +66,6 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: displayId,
                 info: $info
             )
             .border(Color.black)

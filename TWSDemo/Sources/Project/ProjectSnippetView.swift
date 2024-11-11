@@ -57,7 +57,6 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: "\(organizationID)",
                 info: $info
             )
             .frame(maxHeight: .infinity, alignment: .top)

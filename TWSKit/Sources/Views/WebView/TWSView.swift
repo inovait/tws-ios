@@ -18,15 +18,15 @@ public struct TWSView: View {
     @Environment(\.errorView) private var errorView
     @Bindable var info: TWSViewInfo
 
+    @State private var displayID = UUID().uuidString
+
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
-    let displayID: String
 
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
-    ///   - displayID: Display id of the view that will be presented. This is needed because the same snippet can be presented on multiple places in the app with different heights. In order for the auto height to work correctly, each loading of the snippet needs it's unique ID to handle this case. The canGoBack and canGoForward functionalities also rely on this ID.
     ///   - info: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
@@ -34,7 +34,6 @@ public struct TWSView: View {
     ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
-        displayID id: String,
         info: Bindable<TWSViewInfo> = .init(.init(loadingState: .loaded)),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = []
@@ -42,7 +41,6 @@ public struct TWSView: View {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
-        self.displayID = id
         self._info = info
     }
 

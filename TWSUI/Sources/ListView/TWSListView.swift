@@ -54,14 +54,11 @@ public struct TWSListView: View {
         .sheet(item: $destination) { destination in
             switch destination {
             case let .snippet(snippet):
-                TWSView(
-                    snippet: snippet,
-                    displayID: "list-\(snippet.id)"
-                )
-                .twsEnable(configuration: .init(
-                    organizationID: twsManager.configuration.organizationID,
-                    projectID: twsManager.configuration.projectID
-                ))
+                TWSView(snippet: snippet)
+                    .twsEnable(configuration: .init(
+                        organizationID: twsManager.configuration.organizationID,
+                        projectID: twsManager.configuration.projectID
+                    ))
 
             case let .details(snippet):
                 NavigationView {
