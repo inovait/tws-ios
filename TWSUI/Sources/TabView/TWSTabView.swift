@@ -26,7 +26,7 @@ public struct TWSTabView: View {
                         if let title = snippet.props?[.tabName, as: \.string] {
                             Text(title)
                         }
-                        
+
                         if let icon = snippet.props?[.tabIcon, as: \.string] {
                             if UIImage(named: icon) != nil {
                                 Image(icon)

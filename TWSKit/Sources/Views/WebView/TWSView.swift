@@ -12,7 +12,7 @@ import SwiftUI
 /// The main view to use to display snippets
 public struct TWSView: View {
 
-    @Environment(TWSManager.self) private var manager
+    @Environment(\.twsPresenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.loadingView) private var loadingView
     @Environment(\.errorView) private var errorView
@@ -45,7 +45,7 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        if manager.store.snippets.snippets[id: snippet.id]?.isVisible ?? false {
+        if presenter.isVisible(snippet: snippet) {
             ZStack {
                 _TWSView(
                     snippet: snippet,
@@ -59,9 +59,9 @@ public struct TWSView: View {
                 // The actual URL changed for the same Snippet ~ redraw is required
                 .id(snippet.target)
                 // The payload of dynamic resources can change
-                .id(_resourcesHash(resources: manager.store.snippets.preloadedResources, of: snippet))
+                .id(presenter.resourcesHash(for: snippet))
                 // The internal payload of the target URL has changed ~ redraw is required
-                .id(manager.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0)
+                .id(presenter.updateCount(for: snippet))
                 // Only for default location provider; starting on appear/foreground; stopping on disappear/background
                 .conditionallyActivateDefaultLocationBehavior(
                     locationServicesBridge: locationServicesBridge,
@@ -85,21 +85,12 @@ public struct TWSView: View {
             }
         }
     }
-
-    private func _resourcesHash(
-        resources: [TWSSnippet.Attachment: String],
-        of snippet: TWSSnippet
-    ) -> Int {
-        var hasher = Hasher()
-        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]) }
-        return hasher.finalize()
-    }
 }
 
 @MainActor
 private struct _TWSView: View {
 
-    @Environment(TWSManager.self) private var manager
+    @Environment(\.twsPresenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServiceBridge
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
@@ -133,7 +124,7 @@ private struct _TWSView: View {
     var body: some View {
         WebView(
             snippet: snippet,
-            preloadedResources: manager.store.snippets.preloadedResources,
+            preloadedResources: presenter.preloadedResources,
             locationServicesBridge: locationServiceBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
             cssOverrides: cssOverrides,
@@ -145,15 +136,11 @@ private struct _TWSView: View {
             openURL: openURL,
             backCommandId: backCommandID,
             forwardCommandID: forwardCommandID,
-            snippetHeightProvider: manager.snippetHeightProvider,
-            navigationProvider: manager.navigationProvider,
-            onHeightCalculated: { [weak manager] height in
+            snippetHeightProvider: presenter.heightProvider,
+            navigationProvider: presenter.navigationProvider,
+            onUniversalLinkDetected: { url in
                 assert(Thread.isMainThread)
-                manager?.set(height: height, for: snippet, displayID: displayID)
-            },
-            onUniversalLinkDetected: { [weak manager] url in
-                assert(Thread.isMainThread)
-                manager?.handleIncomingUrl(url)
+                presenter.handleIncomingUrl(url)
             },
             canGoBack: $info.canGoBack,
             canGoForward: $info.canGoForward,

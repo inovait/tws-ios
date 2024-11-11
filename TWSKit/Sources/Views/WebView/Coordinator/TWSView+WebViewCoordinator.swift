@@ -61,7 +61,7 @@ extension WebView {
             heightObserver = webView.scrollView.observe(
                 \.contentSize,
                 options: [.new]
-            ) { [weak self, parent] _, change in
+            ) { [weak self] _, change in
                 MainActor.assumeIsolated {
                     guard
                         let self = self,
@@ -77,11 +77,6 @@ extension WebView {
                             for: hash,
                             displayID: self.parent.displayID
                         )
-
-                        if hash == WebPageDescription(self.parent.url) {
-                            assert(displayID == parent.displayID)
-                            self.parent.onHeightCalculated(newHeight)
-                        }
                     }
 
                     // Mandatory to hop the thread, because of UI layout change
