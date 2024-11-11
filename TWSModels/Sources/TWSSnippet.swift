@@ -82,10 +82,11 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public let visibility: SnippetVisibility?
     public var props: Props?
     public var engine: SnippetEngine?
+    public let headers: [String: String]?
     @_spi(Internals) @LossyCodableList public var dynamicResources: [Attachment]?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, target, visibility, props, dynamicResources, engine
+        case id, status, target, visibility, props, dynamicResources, engine, headers
     }
 
     public init(
@@ -95,7 +96,8 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         status: SnippetStatus = .enabled,
         visibilty: SnippetVisibility? = nil,
         props: Props = .dictionary([:]),
-        engine: SnippetEngine? = nil
+        engine: SnippetEngine? = nil,
+        headers: [String: String]? = nil
     ) {
         self.id = id
         self.target = target
@@ -104,6 +106,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
         self.visibility = visibilty
         self.props = props
         self.engine = engine
+        self.headers = headers
     }
 }
 

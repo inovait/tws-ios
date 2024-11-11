@@ -17,14 +17,15 @@ public extension Reducer {
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
         let attachments = snippet.dynamicResources ?? []
-        guard !attachments.isEmpty else { return [:] }
+        let homepage = TWSSnippet.Attachment.init(
+            url: snippet.target,
+            contentType: .html
+        )
 
         return await _preloadResources(
-            homepages: [.init(
-                url: snippet.target,
-                contentType: .html
-            )],
+            homepages: [homepage],
             resources: attachments,
+            headers: [homepage: snippet.headers ?? [:]],
             using: api
         )
     }
@@ -36,14 +37,20 @@ public extension Reducer {
         let attachments = project.snippets
             .compactMap(\.dynamicResources)
             .flatMap { $0 }
+        var homepages = [TWSSnippet.Attachment]()
+        var headers = [TWSSnippet.Attachment:[String:String]]()
+        project.snippets.forEach { snippet in
+            let homepage = TWSSnippet.Attachment(
+                url: snippet.target,
+                contentType: .html)
+            homepages.append(homepage)
+            headers[homepage] = snippet.headers
+        }
 
         return await _preloadResources(
-            homepages: project.snippets.map {
-                TWSSnippet.Attachment(
-                    url: $0.target,
-                    contentType: .html)
-            },
+            homepages: homepages,
             resources: attachments,
+            headers: headers,
             using: api
         )
     }
@@ -52,14 +59,16 @@ public extension Reducer {
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
+        let homepage = TWSSnippet.Attachment(
+            url: sharedSnippet.snippet.target,
+            contentType: .html
+        )
         let attachments = sharedSnippet.snippet.dynamicResources ?? []
-        guard !attachments.isEmpty else { return [:] }
+        let headers = [homepage: sharedSnippet.snippet.headers ?? [:]]
         return await _preloadResources(
-            homepages: [.init(
-                url: sharedSnippet.snippet.target,
-                contentType: .html
-            )],
+            homepages: [homepage],
             resources: attachments,
+            headers: headers,
             using: api
         )
     }
@@ -67,6 +76,7 @@ public extension Reducer {
     private func _preloadResources(
         homepages: [TWSSnippet.Attachment],
         resources: [TWSSnippet.Attachment],
+        headers: [TWSSnippet.Attachment: [String:String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
         return await withTaskGroup(
@@ -77,7 +87,7 @@ public extension Reducer {
             for resource in Set(homepages + resources) {
                 group.addTask { [resource] in
                     do {
-                        let payload = try await api.getResource(resource)
+                        let payload = try await api.getResource(resource, headers[resource] ?? [:])
                         if !payload.isEmpty { return (resource, payload) }
                         return nil
                     } catch {
