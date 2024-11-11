@@ -8,7 +8,6 @@
 
 import SwiftUI
 import TWSKit
-import TWSUI
 
 @MainActor
 struct ProjectView: View {
@@ -47,9 +46,5 @@ struct ProjectView: View {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
                 .twsEnable(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
         }
-        .fullScreenCover(isPresented: $viewModel.presentPopups, content: {
-            TWSPopupView(isPresented: $viewModel.presentPopups, manager: viewModel.manager)
-                .twsEnable(using: viewModel.manager)
-        })
     }
 }

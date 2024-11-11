@@ -56,7 +56,6 @@ extension WebView {
 
         func observe(heightOf webView: WKWebView) {
             var prevHeight: CGFloat = .zero
-            let displayID = parent.displayID
 
             heightObserver = webView.scrollView.observe(
                 \.contentSize,
