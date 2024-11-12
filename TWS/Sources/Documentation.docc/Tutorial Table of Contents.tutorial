@@ -1,0 +1,13 @@
+@Tutorials(name: "Getting started") {
+    @Intro(title: "Gettings Started") {
+        Follow the tutorial to display your snippets
+    }
+    
+    @Chapter(name: "Display your first snippet") {
+        This tutorial will show you how to setup TWS and display your snippet
+        
+        @Image(source: appIcon-200x200, alt: "TWS Logo")
+        
+        @TutorialReference(tutorial: "doc:GettingStarted")
+    }
+}

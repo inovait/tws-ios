@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import TWSKit
+import TWS
 
 struct LoadedProjectInfo: Identifiable {
 

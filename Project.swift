@@ -16,7 +16,7 @@ let project = Project(
             name: "Playground",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.inova.tws",
+            bundleId: "com.inova.twsPlayground",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
@@ -26,7 +26,7 @@ let project = Project(
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWSKit"),
+                .target(name: "TWS"),
                 .external(name: "Atlantis")
             ],
             settings: .settings(
@@ -45,7 +45,7 @@ let project = Project(
             name: "Template",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.inova.tws",
+            bundleId: "com.inova.twsPlayground",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlistTemplate()),
             sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
@@ -53,8 +53,8 @@ let project = Project(
             entitlements: getEntitlements(),
             scripts: targetScriptsTemplate(),
             dependencies: [
-                .target(name: "TWSKit")
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWSKit.xcframework"),
+                .target(name: "TWS")
+//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWS.xcframework"),
 //                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWSModels.xcframework")
             ],
             settings: .settings(
@@ -101,13 +101,13 @@ let project = Project(
             )
         ),
         .target(
-            name: "TWSKit",
+            name: "TWS",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.inova.twskit",
+            bundleId: "com.inova.tws",
             deploymentTargets: .iOS(deploymentTarget()),
-            sources: ["TWSKit/Sources/**"],
-            resources: ["TWSKit/Resources/**"],
+            sources: ["TWS/Sources/**"],
+            resources: ["TWS/Resources/**"],
             dependencies: [
                 .external(name: "Mustache"),
                 .target(name: "TWSCore"),
@@ -515,7 +515,7 @@ func loggerInfoPlist() -> [String: Plist.Value] {
     [
         "OSLogPreferences": [
             "$(PRODUCT_BUNDLE_IDENTIFIER)": [
-                "TWSKit": [
+                "TWS": [
                     "Level": [
                         "Enable": "Debug",
                         "Persist": "Debug"
