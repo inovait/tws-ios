@@ -59,7 +59,7 @@ jobs:
 
         for tag in $TAGS;
           do
-            if [ -d "docs-out/$tag/data/documentation/twskit" ] 
+            if [ -d "docs-out/$tag/data/documentation/tws" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
@@ -79,7 +79,7 @@ jobs:
               echo "🔨 Build Started";
               xcodebuild \
                 -workspace TheWebSnippet.xcworkspace \
-                -scheme TWSKit \
+                -scheme TWS \
                 -destination 'generic/platform=iOS' \
                 docbuild \
                 -derivedDataPath _build \
@@ -88,11 +88,11 @@ jobs:
               # Transform the documentation for static hosting
               echo "⚙️  Transforming to static webpage: $tag";
               $(xcrun --find docc) process-archive \
-                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWSKit.doccarchive \
+                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
                 --output-path docs-out/"$tag" \
                 --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for TWSKit @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for TWSKit @ "$tag".";
+                && echo "✅ Documentation generated for TWS @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
 
               # Remove build folder
               rm -rf _build
