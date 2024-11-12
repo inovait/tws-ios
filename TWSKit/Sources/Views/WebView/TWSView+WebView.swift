@@ -33,7 +33,6 @@ struct WebView: UIViewRepresentable {
     let forwardCommandID: UUID
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
-    let onHeightCalculated: (CGFloat) -> Void
     let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
 
@@ -53,7 +52,6 @@ struct WebView: UIViewRepresentable {
         forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
-        onHeightCalculated: @escaping @Sendable @MainActor (CGFloat) -> Void,
         onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
@@ -75,7 +73,6 @@ struct WebView: UIViewRepresentable {
         self.forwardCommandID = forwardCommandID
         self.snippetHeightProvider = snippetHeightProvider
         self.navigationProvider = navigationProvider
-        self.onHeightCalculated = onHeightCalculated
         self.onUniversalLinkDetected = onUniversalLinkDetected
         self._dynamicHeight = dynamicHeight
         self._canGoBack = canGoBack

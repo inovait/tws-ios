@@ -141,7 +141,6 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: "tab-\(snippet.id)",
                 info: $info
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
