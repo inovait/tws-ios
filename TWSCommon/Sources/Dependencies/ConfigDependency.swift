@@ -1,6 +1,6 @@
 //
 //  ConfigDependency.swift
-//  TWSKit
+//  TWS
 //
 //  Created by Miha Hozjan on 17. 07. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.

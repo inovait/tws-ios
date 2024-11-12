@@ -1,6 +1,6 @@
 //
 //  TWSConfiguration.swift
-//  TWSKit
+//  TWS
 //
 //  Created by Miha Hozjan on 17. 07. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// A struct used to provided all information for a TWSKit manager to receive snippets and connect to the socket for updats
+/// A struct used to provided all information for a TWS manager to receive snippets and connect to the socket for updats
 public struct TWSConfiguration: Hashable, Sendable {
 
     /// The ID of the TWS organization
