@@ -38,7 +38,7 @@ public extension Reducer {
             .compactMap(\.dynamicResources)
             .flatMap { $0 }
         var homepages = [TWSSnippet.Attachment]()
-        var headers = [TWSSnippet.Attachment:[String:String]]()
+        var headers = [TWSSnippet.Attachment: [String: String]]()
         project.snippets.forEach { snippet in
             let homepage = TWSSnippet.Attachment(
                 url: snippet.target,
@@ -76,7 +76,7 @@ public extension Reducer {
     private func _preloadResources(
         homepages: [TWSSnippet.Attachment],
         resources: [TWSSnippet.Attachment],
-        headers: [TWSSnippet.Attachment: [String:String]],
+        headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
         return await withTaskGroup(
