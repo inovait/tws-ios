@@ -13,7 +13,6 @@ struct ProjectSnippetView: View {
 
     @State private var info: TWSViewInfo = .init()
     let snippet: TWSSnippet
-    let organizationID: String
 
     @Environment(\.dismiss) var dismiss
 
@@ -57,7 +56,6 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: "\(organizationID)",
                 info: $info
             )
             .frame(maxHeight: .infinity, alignment: .top)

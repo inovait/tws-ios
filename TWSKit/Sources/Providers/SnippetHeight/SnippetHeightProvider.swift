@@ -8,6 +8,7 @@
 
 import UIKit
 
+@MainActor
 protocol SnippetHeightProvider {
 
     func set(height: CGFloat, for hash: WebPageDescription, displayID: String)

@@ -154,31 +154,4 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
         store.send(.universalLinks(.business(.onUniversalLink(url))))
     }
-
-    // MARK: - Internal
-
-    func set(height: CGFloat, for snippet: TWSSnippet, displayID: String) {
-        assert(Thread.isMainThread)
-        guard
-            store.snippets.snippets[id: snippet.id] != nil
-        else {
-            return
-        }
-
-        let snippetAction: TWSSnippetFeature.Action = .business(.update(
-            height: height,
-            forId: displayID
-        ))
-
-        let snippetsAction: TWSSnippetsFeature.Action = .business(
-            .snippets(
-                .element(
-                    id: snippet.id,
-                    action: snippetAction
-                )
-            )
-        )
-
-        store.send(.snippets(snippetsAction))
-    }
 }
