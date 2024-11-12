@@ -140,7 +140,11 @@ struct WebView: UIViewRepresentable {
             webView.loadHTMLString(htmlToLoad, baseURL: self.url)
         } else {
             logger.debug("Load from url: \(url.absoluteString)")
-            webView.load(URLRequest(url: self.url))
+            var urlRequest = URLRequest(url: self.url)
+            snippet.headers?.forEach { header in
+                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+            }
+            webView.load(urlRequest)
         }
 
         context.coordinator.observe(heightOf: webView)
