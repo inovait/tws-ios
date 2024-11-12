@@ -8,7 +8,7 @@
 
 import UIKit
 import SwiftUI
-import TWSKit
+import TWS
 
 struct SnippetsView: View {
 

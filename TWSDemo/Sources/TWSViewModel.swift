@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import TWSKit
+import TWS
 
 @MainActor
 @Observable

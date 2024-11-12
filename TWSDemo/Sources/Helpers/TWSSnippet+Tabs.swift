@@ -6,7 +6,7 @@
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
-import TWSKit
+import TWS
 
 extension TWSSnippet {
 
