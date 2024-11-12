@@ -64,7 +64,7 @@ jobs:
 
       - name: "Generate XCFrameworks"
         run: |
-            ./xcframeworks_create.sh TWSKit TWSModels TWSUI
+            ./xcframeworks_create.sh TWS TWSModels
 
       - name: "Generate changelog"
         uses: pmuraus/spotlight-changelog-generator-action@main
@@ -76,7 +76,7 @@ jobs:
         with:
           buildName: "iOS Release"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Changelog.md,XCFrameworks/TWSKit.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip,XCFrameworks/TWSUI.xcframework.zip"
+          files: "./Changelog.md,XCFrameworks/TWS.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build

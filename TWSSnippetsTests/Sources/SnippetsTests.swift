@@ -62,12 +62,6 @@ final class SnippetsTests: XCTestCase {
         }
         await store.receive(\.business.startVisibilityTimers)
 
-        await store.send(
-            .business(.snippets(.element(id: s1ID, action: .business(.update(height: 500, forId: "display1")))))
-        ) {
-            $0.snippets[id: s1ID]?.displayInfo.displays["display1"] = .init(id: "display1", height: 500)
-        }
-
         // Send response for the second time (state must be preserved)
         await store.send(.business(.load)).finish()
         await store.receive(\.business.projectLoaded.success)

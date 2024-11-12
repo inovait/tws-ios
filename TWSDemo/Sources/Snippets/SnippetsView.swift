@@ -8,7 +8,7 @@
 
 import UIKit
 import SwiftUI
-import TWSKit
+import TWS
 
 struct SnippetsView: View {
 
@@ -66,7 +66,6 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                displayID: displayId,
                 info: $info
             )
             .border(Color.black)

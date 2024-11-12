@@ -1,14 +1,13 @@
 //
 //  PrrojectView.swift
-//  TWSKit
+//  TWS
 //
 //  Created by Miha Hozjan on 25. 07. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
 import SwiftUI
-import TWSKit
-import TWSUI
+import TWS
 
 @MainActor
 struct ProjectView: View {
@@ -25,8 +24,7 @@ struct ProjectView: View {
         TabView(selection: $selectedID) {
             ForEach(viewModel.tabSnippets) { snippet in
                 ProjectSnippetView(
-                    snippet: snippet,
-                    organizationID: "\(viewModel.manager.id.hashValue)"
+                    snippet: snippet
                 )
                 .tabItem {
                     if let tabName = snippet.props?[.tabName, as: \.string] {
@@ -48,9 +46,5 @@ struct ProjectView: View {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
                 .twsEnable(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
         }
-        .fullScreenCover(isPresented: $viewModel.presentPopups, content: {
-            TWSPopupView(isPresented: $viewModel.presentPopups, manager: viewModel.manager)
-                .twsEnable(using: viewModel.manager)
-        })
     }
 }

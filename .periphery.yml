@@ -3,7 +3,7 @@ retain_public: true
 retain_swift_ui_previews: true
 schemes:
 - Playground
-- TWSKit
+- TWS
 - TWSCore
 - TWSSnippets
 - TWSSnippet
@@ -15,7 +15,7 @@ schemes:
 - TWSUniversalLinks
 targets:
 - Playground
-- TWSKit
+- TWS
 - TWSCore
 - TWSSnippets
 - TWSSnippet

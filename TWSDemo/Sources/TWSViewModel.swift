@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import TWSKit
+import TWS
 
 @MainActor
 @Observable
@@ -76,13 +76,5 @@ class TWSViewModel {
                 assertionFailure("Unhandled stream event")
             }
         }
-    }
-
-    public func addClearedPopup(_ snippet: TWSSnippet) {
-        self.clearedPopupSnippets.append(snippet)
-    }
-
-    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
-        return !clearedPopupSnippets.contains(snippet)
     }
 }

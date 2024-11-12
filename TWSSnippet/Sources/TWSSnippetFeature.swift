@@ -53,7 +53,6 @@ public struct TWSSnippetFeature: Sendable {
 
         @CasePathable
         public enum Business {
-            case update(height: CGFloat, forId: String)
             case snippetUpdated(snippet: TWSSnippet?)
             case showSnippet
             case hideSnippet
@@ -75,18 +74,6 @@ public struct TWSSnippetFeature: Sendable {
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
-        case let .business(.update(height, forId)):
-            if let info = state.displayInfo.displays[forId] {
-                state.displayInfo.displays[forId] = info.height(height)
-            } else {
-                state.displayInfo.displays[forId] = .init(
-                    id: forId,
-                    height: height
-                )
-            }
-
-            return .none
-
         case let .business(.snippetUpdated(snippet)):
             if let snippet {
                 state.snippet = snippet

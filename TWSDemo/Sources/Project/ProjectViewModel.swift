@@ -1,13 +1,13 @@
 //
 //  ProjectViewModel.swift
-//  TWSKit
+//  TWS
 //
 //  Created by Miha Hozjan on 25. 07. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
 import Foundation
-import TWSKit
+import TWS
 
 @MainActor
 @Observable
@@ -80,13 +80,5 @@ class ProjectViewModel {
         tabSnippets = []
         popupSnippets = []
         universalLinkLoadedProject = nil
-    }
-
-    public func addClearedPopup(_ snippet: TWSSnippet) {
-        self.clearedPopupSnippets.append(snippet)
-    }
-
-    public func canShowPopupSnippet(_ snippet: TWSSnippet) -> Bool {
-        return !clearedPopupSnippets.contains(snippet)
     }
 }

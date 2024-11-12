@@ -1,6 +1,6 @@
 //
 //  TWSSource.swift
-//  TWSKit
+//  TWS
 //
 //  Created by Miha Hozjan on 6. 06. 24.
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
