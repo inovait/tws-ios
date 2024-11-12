@@ -77,7 +77,7 @@ final class ResourcesAggregationTests: XCTestCase {
             ,
             withDependencies: {
                 $0.api.getSnippetBySharedId = { @Sendable _, _ in return sharedSnippet }
-                $0.api.getResource = { attachment in return attachment.url.absoluteString }
+                $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
             }
         )
 
