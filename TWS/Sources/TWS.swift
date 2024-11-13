@@ -83,30 +83,6 @@ public final class TWSManager: Identifiable {
         await adapter.listen(onEvent: onEvent)
     }
 
-    /// A function that invokes the browser's back functionality
-    /// - Parameters:
-    ///   - snippet: The snippet that is currently showing
-    ///   - displayID: The displayID you've set in your ``TWSView``
-    public func goBack(snippet: TWSSnippet, displayID: String) {
-        NotificationBuilder.send(
-            Notification.Name.Navigation.Back,
-            snippet: snippet,
-            displayID: displayID
-        )
-    }
-
-    /// A function that invokes the browser's forward functionality
-    /// - Parameters:
-    ///   - snippet: The snippet that is currently showing
-    ///   - displayID: The displayID you've set in your ``TWSView``
-    public func goForward(snippet: TWSSnippet, displayID: String) {
-        NotificationBuilder.send(
-            Notification.Name.Navigation.Forward,
-            snippet: snippet,
-            displayID: displayID
-        )
-    }
-
     /// A function that sets the location from where the snippets are going to be loaded
     /// - Parameter source: Define the source of the snippets
     public func set(source: TWSSource) {

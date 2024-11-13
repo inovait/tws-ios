@@ -10,5 +10,5 @@ import SwiftUI
 
 extension EnvironmentValues {
 
-    @Entry var twsPresenter: TWSPresenter = NoopPresenter()
+    @Entry var presenter: TWSPresenter = NoopPresenter()
 }

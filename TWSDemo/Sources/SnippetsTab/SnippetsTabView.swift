@@ -106,35 +106,27 @@ struct SnippetsTabView: View {
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSViewModel.self) private var twsViewModel
     @State private var info = TWSViewInfo()
+    @State private var navigator = TWSViewNavigator()
 
     var body: some View {
         @Bindable var info = info
 
         VStack(alignment: .leading) {
-            let displayId = "tab-\(snippet.id)"
-
             HStack {
                 Button {
-                    twsViewModel.manager.goBack(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goBack()
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!info.canGoBack)
+                .disabled(!navigator.canGoBack)
 
                 Button {
-                    twsViewModel.manager.goForward(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goForward()
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!info.canGoForward)
+                .disabled(!navigator.canGoForward)
             }
 
             Divider()
@@ -143,6 +135,7 @@ private struct SnippetView: View {
                 snippet: snippet,
                 info: $info
             )
+            .twsBind(navigator: navigator)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .border(Color.black)
         }
