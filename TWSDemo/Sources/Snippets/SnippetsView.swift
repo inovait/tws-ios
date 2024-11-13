@@ -54,6 +54,12 @@ private struct SnippetView: View {
                     Image(systemName: "arrowshape.forward.fill")
                 }
                 .disabled(!navigator.canGoForward)
+
+                Button {
+                    navigator.reload()
+                } label: {
+                    Image(systemName: "repeat")
+                }
             }
 
             Divider()
