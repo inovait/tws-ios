@@ -74,6 +74,10 @@ public final class TWSManager: Identifiable {
         store.send(.snippets(.business(.load)))
     }
 
+    public func forceRefresh() {
+        store.send(.snippets(.business(.load)))
+    }
+
     /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
     /// It is automatically canceled when the parent task is cancelled.
     /// - Parameter onEvent: A callback triggered for every update
@@ -81,18 +85,6 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`observe` can only be called on main thread")
         let adapter = CombineToAsyncStreamAdapter(upstream: observer)
         await adapter.listen(onEvent: onEvent)
-    }
-
-    /// A function that sets the location from where the snippets are going to be loaded
-    /// - Parameter source: Define the source of the snippets
-    public func set(source: TWSSource) {
-        precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
-
-        // Reset height store
-        snippetHeightProvider.reset()
-
-        // Send to store
-        store.send(.snippets(.business(.set(source: source))))
     }
 
     /// Defines a custom set of local properties that will be injected into the ``TWSView``.

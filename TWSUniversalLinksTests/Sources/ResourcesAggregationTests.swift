@@ -66,8 +66,7 @@ final class ResourcesAggregationTests: XCTestCase {
             snippet: .init(
                 id: "00000000-0000-0000-0000-000000000002",
                 target: url,
-                dynamicResources: attachments,
-                status: "enabled"
+                dynamicResources: attachments
             )
         )
 

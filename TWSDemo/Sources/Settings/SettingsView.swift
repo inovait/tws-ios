@@ -11,11 +11,38 @@ import TWS
 import OSLog
 import WebKit
 
+@dynamicMemberLookup
+struct Source: CustomDebugStringConvertible, Equatable {
+
+    static let key = "com.twsdemo.source"
+    static var server: Self { .init(type: .server) }
+    static func local(_ urls: [URL]) -> Self { .init(type: .local(urls)) }
+    let type: SourceType
+
+    var debugDescription: String {
+        switch type {
+        case .server: return "Server"
+        case let .local(urls): return "Local (\(urls.count))"
+        }
+    }
+
+    subscript(dynamicMember keyPath: WritableKeyPath<Self, SourceType>) -> SourceType {
+        get { self[keyPath: keyPath] }
+        set { self[keyPath: keyPath] = newValue }
+    }
+}
+
+enum SourceType: Codable, Equatable {
+    case server, local([URL])
+}
+
 @MainActor
 struct SettingsView: View {
 
     @State var viewModel = SettingsViewModel()
     @State private var cacheRemoved = false
+    @AppStorage(Source.key) private var source: Source = .server
+    @AppStorage("_localUrls") private var localURLs = ""
     @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
@@ -36,7 +63,7 @@ struct SettingsView: View {
                         if viewModel.selection == .localURLs {
                             TextField(
                                 "Custom URLs",
-                                text: $viewModel.localURLs,
+                                text: $localURLs,
                                 axis: .vertical
                             )
                             .padding()
@@ -44,15 +71,20 @@ struct SettingsView: View {
                             .toolbar {
                                 ToolbarItemGroup(placement: .automatic) {
                                     HStack {
+                                        Text("Current source: \(source.debugDescription)")
+
                                         Spacer()
 
                                         Button("Done") {
-                                            guard viewModel.selection == .localURLs
-                                            else { return }
+                                            switch viewModel.selection {
+                                            case .apiResponse:
+                                                source = .server
 
-                                            UIApplication.shared.endEditing()
-                                            viewModel.validate()
-                                            viewModel.setSource(manager: twsViewModel.manager, source: .localURLs)
+                                            case .localURLs:
+                                                UIApplication.shared.endEditing()
+                                                viewModel.validate(localURLs: localURLs)
+                                                source = .local(viewModel.validUrls)
+                                            }
                                         }
                                     }
                                 }
@@ -118,7 +150,17 @@ struct SettingsView: View {
             .navigationTitle("Settings")
         }
         .onChange(of: viewModel.selection) { _, newValue in
-            viewModel.setSource(manager: twsViewModel.manager, source: newValue)
+            switch newValue {
+            case .apiResponse:
+                source = .server
+
+            case .localURLs:
+                viewModel.validate(localURLs: localURLs)
+                source = .local(viewModel.validUrls)
+            }
+        }
+        .onAppear {
+            viewModel.validate(localURLs: localURLs)
         }
     }
 

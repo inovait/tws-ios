@@ -13,13 +13,15 @@ import TWS
 struct SnippetsView: View {
 
     @Environment(TWSManager.self) var twsManager
+    @AppStorage(Source.key) private var source: Source = .server
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsManager.snippets) { snippet in
+                    ForEach(_snippets) { snippet in
                         SnippetView(snippet: snippet)
+                            .twsLocal(source != .server)
                     }
                 }
                 .padding()
@@ -27,12 +29,34 @@ struct SnippetsView: View {
             .navigationTitle("Snippets")
         }
     }
+
+    private var _snippets: [TWSSnippet] {
+        switch source.type {
+        case .server:
+            return twsManager.tabs
+
+        case let .local(urls):
+            var id = 0
+            var snippets: [TWSSnippet] = []
+            urls.forEach {
+                snippets.append(
+                    .init(
+                        id: "\(id)-\($0.absoluteString)",
+                        target: $0
+                    )
+                )
+
+                id += 1
+            }
+
+            return snippets
+        }
+    }
 }
 
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSManager.self) var twsManager
     @State private var info = TWSViewInfo()
     @State private var navigator = TWSViewNavigator()
 

@@ -36,30 +36,6 @@ public struct TWSSnippetsFeature: Sendable {
         // MARK: - Loading snippets
 
         case .load:
-            logger.info("Load from source: \(state.source)")
-
-            switch state.source {
-            case .api:
-                break
-
-            case let .customURLs(urls):
-                let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
-                let snippets = generateCustomSnippets(urls: urls)
-                let project = TWSProject(
-                    listenOn: dummySocketURL,
-                    snippets: snippets
-                )
-
-                return .send(.business(.projectLoaded(.success(.init(
-                    project: project,
-                    resources: [:],
-                    serverDate: nil
-                )))))
-
-            @unknown default:
-                break
-            }
-
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
@@ -208,19 +184,6 @@ public struct TWSSnippetsFeature: Sendable {
                 return .none
             }
 
-            logger.info("Request to start listening request with source: \(state.source)")
-            switch state.source {
-            case .api:
-                break
-
-            case .customURLs:
-                logger.info("Won't listen because the snippets are overridden locally.")
-                return .none
-
-            @unknown default:
-                break
-            }
-
             guard let url = state.socketURL
             else {
                 logger.err("Failed to listen for changes. URL is nil")
@@ -284,18 +247,6 @@ public struct TWSSnippetsFeature: Sendable {
             return .cancel(id: CancelID.reconnect(configuration()))
 
         // MARK: - Other
-
-        case let .set(source):
-            logger.info("Set source to: \(source)")
-            state.source = source
-
-            switch source {
-            case .api, .customURLs:
-                return .send(.business(.load))
-
-            @unknown default:
-                return .send(.business(.load))
-            }
 
         case let .setLocalProps(props):
             let id = props.0
