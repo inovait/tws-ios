@@ -14,12 +14,6 @@ public final class TWSViewInfo {
     /// Once the snippet is loaded, it's title will be set in this variable
     public var title: String = ""
 
-    /// A Boolean value that indicates whether there is a valid back item in the back-forward list on a webpage
-    public var canGoBack: Bool
-
-    /// A Boolean value that indicates whether there is a valid forward item in the back-forward list on a webpage
-    public var canGoForward: Bool
-
     /// An instance of ``TWSLoadingState`` that tells you the state of the snippet
     public var loadingState: TWSLoadingState
 
@@ -31,8 +25,6 @@ public final class TWSViewInfo {
         loadingState: TWSLoadingState = .idle
     ) {
         self.title = title
-        self.canGoBack = false
-        self.canGoForward = false
         self.loadingState = loadingState
     }
 }

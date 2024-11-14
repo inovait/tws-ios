@@ -15,7 +15,7 @@ extension View {
     ) -> some View {
         self
             .environment(manager)
-            .environment(\.twsPresenter, LivePresenter(manager: manager))
+            .environment(\.presenter, LivePresenter(manager: manager))
             .task {
                 manager.run()
             }

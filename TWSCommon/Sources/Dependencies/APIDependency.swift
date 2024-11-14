@@ -30,7 +30,7 @@ public struct APIDependency: Sendable {
     }
 
     public var getResource: @Sendable (
-        TWSSnippet.Attachment, [String:String]
+        TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> String = { _, _ throws(APIError) in
         reportIssue("\(Self.self).loadResource")
         throw APIError.local(NSError(domain: "", code: -1))

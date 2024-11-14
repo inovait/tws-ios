@@ -14,7 +14,7 @@ public struct TWSAPI {
     ) async throws(APIError) -> TWSSharedSnippet
 
     public let getResource: @Sendable (
-        TWSSnippet.Attachment, [String:String]
+        TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> String
 
     static func live(

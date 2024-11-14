@@ -16,8 +16,6 @@ extension WebView {
 
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
-        var backCommandId: UUID?
-        var forwardCommandID: UUID?
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
@@ -29,6 +27,7 @@ extension WebView {
         let downloadCompleted: ((TWSDownloadState) -> Void)?
 
         var pullToRefresh: PullToRefresh!
+        weak var webView: WKWebView?
 
         init(
             _ parent: WebView,

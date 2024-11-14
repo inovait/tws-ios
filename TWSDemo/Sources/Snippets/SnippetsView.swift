@@ -34,32 +34,32 @@ private struct SnippetView: View {
     let snippet: TWSSnippet
     @Environment(TWSManager.self) var twsManager
     @State private var info = TWSViewInfo()
+    @State private var navigator = TWSViewNavigator()
 
     var body: some View {
         @Bindable var info = info
-        let displayId = "list-\(snippet.id)"
 
         VStack(alignment: .leading) {
             HStack {
                 Button {
-                    twsManager.goBack(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goBack()
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!info.canGoBack)
+                .disabled(!navigator.canGoBack)
 
                 Button {
-                    twsManager.goForward(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goForward()
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!info.canGoForward)
+                .disabled(!navigator.canGoForward)
+
+                Button {
+                    navigator.reload()
+                } label: {
+                    Image(systemName: "repeat")
+                }
             }
 
             Divider()
@@ -70,5 +70,6 @@ private struct SnippetView: View {
             )
             .border(Color.black)
         }
+        .twsBind(navigator: navigator)
     }
 }

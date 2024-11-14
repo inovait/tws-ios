@@ -15,7 +15,7 @@ extension View {
     /// - Parameter loadingView: A closure that returns the view to be displayed during the loading process.
     /// - Returns: A view that wraps the current view and includes the loading view.
     ///
-    /// ## Usage of ``AnyView``
+    /// ## Usage of AnyView
     ///
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
@@ -33,7 +33,7 @@ extension View {
     /// - Parameter errorView: A closure that returns the view to be displayed for an error
     /// - Returns: A view that wraps the current view and includes the error view.
     ///
-    /// ## Usage of ``AnyView``
+    /// ## Usage of AnyView
     ///
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
