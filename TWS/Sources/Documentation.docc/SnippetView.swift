@@ -4,6 +4,8 @@
 @State private var canGoBack = false
 @State private var canGoForward = false
 
+let interceptor = URLInterceptor()
+
 var body: some View {
     TWSView(
         snippet: snippet,
@@ -20,4 +22,5 @@ var body: some View {
             WebViewErrorView(error: error)
         }
     )
+    .handleUrl(interceptor)
 }

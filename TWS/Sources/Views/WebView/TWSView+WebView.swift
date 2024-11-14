@@ -13,6 +13,7 @@ import WebKit
 struct WebView: UIViewRepresentable {
 
     @Environment(\.navigator) var navigator
+    @Environment(\.interceptor) var interceptor
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
@@ -167,7 +168,8 @@ struct WebView: UIViewRepresentable {
             self,
             snippetHeightProvider: snippetHeightProvider,
             navigationProvider: navigationProvider,
-            downloadCompleted: downloadCompleted
+            downloadCompleted: downloadCompleted,
+            interceptor: interceptor
         )
     }
 
