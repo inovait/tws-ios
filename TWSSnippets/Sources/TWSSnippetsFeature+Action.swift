@@ -28,7 +28,6 @@ extension TWSSnippetsFeature {
             case stopReconnecting
             case isSocketConnected(Bool)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
-            case set(source: TWSSource)
             case setLocalProps(props: (TWSSnippet.ID, [String: TWSSnippet.Props]))
             case showSnippet(snippetId: TWSSnippet.ID)
             case hideSnippet(snippetId: TWSSnippet.ID)

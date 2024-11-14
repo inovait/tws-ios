@@ -17,7 +17,6 @@ extension TWSSnippetsFeature {
     public struct State: Equatable {
 
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
-        @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
         @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
@@ -31,7 +30,6 @@ extension TWSSnippetsFeature {
             serverTime: Date? = nil
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            _source = Shared(wrappedValue: .api, .source(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 

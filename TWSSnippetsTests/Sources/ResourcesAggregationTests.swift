@@ -28,8 +28,7 @@ final class ResourcesAggregationTests: XCTestCase {
                 .init(url: URL(string: "https://www.r2.com")!, contentType: .css),
                 .init(url: URL(string: "https://www.r3.com")!, contentType: .javascript),
                 .init(url: URL(string: "https://www.r4.com")!, contentType: .css)
-            ],
-            status: "enabled"
+            ]
         )
     ]
 

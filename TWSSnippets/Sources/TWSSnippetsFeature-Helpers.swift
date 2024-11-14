@@ -25,18 +25,6 @@ extension TWSSnippetsFeature {
         })
     }
 
-    func generateCustomSnippets(urls: [URL]) -> [TWSSnippet] {
-        let uuidGenerator = IncrementingUUIDGenerator()
-        return urls.map {
-            .init(
-                id: uuidGenerator(),
-                target: $0,
-                status: "enabled",
-                visibilty: nil
-            )
-        }
-    }
-
     func listen(
         connectionID: UUID,
         stream: AsyncStream<WebSocketEvent>,

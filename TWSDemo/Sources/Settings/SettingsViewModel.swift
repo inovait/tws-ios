@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import TWS
 
 @MainActor
 @Observable
@@ -18,15 +17,6 @@ class SettingsViewModel {
             UserDefaults.standard.set(
                 selection.rawValue,
                 forKey: "_settingsSourceSelection"
-            )
-        }
-    }
-
-    var localURLs: String {
-        didSet {
-            UserDefaults.standard.setValue(
-                localURLs,
-                forKey: "_settingsCustomURLs"
             )
         }
     }
@@ -43,13 +33,9 @@ class SettingsViewModel {
         } else {
             self.selection = .apiResponse
         }
-
-        self.localURLs = UserDefaults.standard.string(forKey: "_settingsCustomURLs") ?? ""
-
-        validate()
     }
 
-    func validate() {
+    func validate(localURLs: String) {
         var invalidUrls = [String]()
         var validUrls = [URL]()
 
@@ -73,22 +59,6 @@ class SettingsViewModel {
         } else {
             invalidFootnote = nil
         }
-    }
-
-    func setSource(
-        manager: TWSManager,
-        source: Selection
-    ) {
-        let twsSource: TWSSource
-        switch source {
-        case .apiResponse:
-            twsSource = .api
-
-        case .localURLs:
-            twsSource = .customURLs(validUrls)
-        }
-
-        manager.set(source: twsSource)
     }
 }
 
