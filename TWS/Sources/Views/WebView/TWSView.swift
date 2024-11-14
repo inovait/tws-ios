@@ -93,7 +93,6 @@ private struct _TWSView: View {
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
-    @Environment(\.interceptor) private var interceptor
     @Bindable var info: TWSViewInfo
 
     @State var height: CGFloat = 16
