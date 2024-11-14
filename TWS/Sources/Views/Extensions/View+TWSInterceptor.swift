@@ -10,7 +10,7 @@ import SwiftUI
 
 extension EnvironmentValues {
 
-    @Entry var interceptor: TWSViewInterceptor? = nil
+    @Entry var interceptor: TWSViewInterceptor?
 }
 
 extension View {
