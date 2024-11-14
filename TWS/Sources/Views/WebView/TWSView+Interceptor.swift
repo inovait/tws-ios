@@ -9,20 +9,7 @@
 import SwiftUI
 
 @MainActor
-public protocol TWSViewInterceptorDelegate: AnyObject, Sendable {
+public protocol TWSViewInterceptor: AnyObject, Sendable {
 
     func handleUrl(_ url: URL) -> Bool
-}
-
-@MainActor
-@Observable
-public class TWSViewInterceptor: Sendable {
-
-    weak var delegate: TWSViewInterceptorDelegate?
-
-    nonisolated public init() { }
-
-    public func handleUrl(_ url: URL) -> Bool {
-        return delegate?.handleUrl(url) ?? false
-    }
 }
