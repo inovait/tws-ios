@@ -28,7 +28,7 @@ class TWSViewModel {
     private var clearedPopupSnippets: [TWSSnippet] = []
 
     init() {
-        let snippets = manager.snippets
+        let snippets = manager.snippets()
         self.tabSnippets = snippets.filter(\.isTab)
         self.popupSnippets = snippets.filter { _ in
             // As of now, because `type` needs to be removed with TWS-212,
@@ -60,7 +60,7 @@ class TWSViewModel {
                 )
 
             case .snippetsUpdated:
-                let snippets = manager.snippets
+                let snippets = manager.snippets()
                 self.tabSnippets = snippets.filter(\.isTab)
                 self.popupSnippets = snippets.filter({ _ in
                     // As of now, because `type` needs to be removed with TWS-212,
@@ -72,8 +72,11 @@ class TWSViewModel {
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
 
-            default:
-                assertionFailure("Unhandled stream event")
+            case .stateChanged:
+                break
+
+            @unknown default:
+                break
             }
         }
     }

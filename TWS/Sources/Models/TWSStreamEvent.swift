@@ -16,6 +16,9 @@ public enum TWSStreamEvent: Sendable {
     case universalLinkSnippetLoaded(TWSSharedSnippetBundle)
 
     /// This event is sent when there are new snippets available
-    /// - Parameter TWSSnippets A list of new snippets
+    /// - Parameter TWSSnippets: A list of new snippets
     case snippetsUpdated
+
+    /// This event is triggered when there is a change in the snippet loading state.
+    case stateChanged
 }

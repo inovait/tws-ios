@@ -24,7 +24,6 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
             let type = MessageType(
                 rawValue: typeStr
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .uppercased()
             )
         else {
             return nil
@@ -69,9 +68,9 @@ public extension SocketMessage {
 
     enum MessageType: String, Sendable {
 
-        case created = "SNIPPET_CREATED"
-        case updated = "SNIPPET_UPDATED"
-        case deleted = "SNIPPET_DELETED"
+        case created = "snippetCreated"
+        case updated = "snippetUpdated"
+        case deleted = "snippetDeleted"
     }
 }
 

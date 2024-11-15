@@ -21,6 +21,7 @@ extension TWSSnippetsFeature {
         @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
+        public internal(set) var state: TWSLoadingState = .idle
 
         public init(
             configuration: TWSConfiguration,
@@ -42,6 +43,8 @@ extension TWSSnippetsFeature {
                 }
                 self.snippets = .init(uniqueElements: state)
             }
+
+            state = self.snippets.isEmpty ? .idle : .loaded
 
             if let socketURL {
                 self.socketURL = socketURL

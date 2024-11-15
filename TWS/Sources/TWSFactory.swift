@@ -74,7 +74,6 @@ public class TWSFactory {
             return manager
         }
 
-        let events = AsyncStream<TWSStreamEvent>.makeStream()
         let state = TWSCoreFeature.State(
             settings: .init(),
             snippets: .init(
@@ -106,6 +105,11 @@ public class TWSFactory {
                         return .send(.snippetsDidChange)
                     }
                 }
+                .onChange(of: \.snippets.state) { _, _ in
+                    Reduce { _, _ in
+                        return .send(.stateChanged)
+                    }
+                }
         }
         // Set the environment
         .dependency(\.configuration.configuration, { configuration })
@@ -115,9 +119,14 @@ public class TWSFactory {
             reducer: { combinedReducers }
         )
 
-        events.continuation.yield(.snippetsUpdated)
-
-        let manager = TWSManager(store: store, observer: publisher.eraseToAnyPublisher(), configuration: configuration)
+        let manager = TWSManager(
+            store: store,
+            observer: publisher
+                // This is a 'must' we need to hop the thread for the store to set (if the user access it)
+                .receive(on: DispatchQueue.main)
+                .eraseToAnyPublisher(),
+            configuration: configuration
+        )
         logger.info("Created a new TWSManager for configuration: \(configuration)")
         _instances[configuration] = WeakBox(manager)
         return manager

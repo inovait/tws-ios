@@ -9,14 +9,15 @@
 import Foundation
 
 /// An enum to define the loading status of the snippet
-public enum TWSLoadingState: Equatable {
+@frozen
+public enum TWSLoadingState: Equatable, Sendable {
 
     public static func == (lhs: TWSLoadingState, rhs: TWSLoadingState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle): true
         case (.loading, .loading): true
         case (.loaded, .loaded): true
-        case (.failed, .failed): true
+        case let (.failed(err1), .failed(err2)): err1.same(as: err2)
         default: false
         }
     }
@@ -27,13 +28,31 @@ public enum TWSLoadingState: Equatable {
     case failed(Error)
 }
 
+private extension Error {
+
+    func same<T: Error>(as error: T) -> Bool {
+        if let error = self as? T {
+            return "\(self)" == "\(error)"
+        }
+
+        return false
+    }
+}
+
 extension TWSLoadingState {
 
     /// A flag that defines if the view can be shown, depending on it's loading state
-    var showView: Bool {
+    @_spi(Internals) public var showView: Bool {
         switch self {
         case .idle, .loading, .failed: false
         case .loaded: true
+        }
+    }
+
+    @_spi(Internals) public var canLoad: Bool {
+        switch self {
+        case .idle, .loaded, .failed: true
+        case .loading: false
         }
     }
 }

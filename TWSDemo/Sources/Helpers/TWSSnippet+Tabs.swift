@@ -18,6 +18,6 @@ extension TWSSnippet {
 extension TWSManager {
 
     var tabs: [TWSSnippet] {
-        self.snippets.filter(\.isTab)
+        self.snippets().filter(\.isTab)
     }
 }

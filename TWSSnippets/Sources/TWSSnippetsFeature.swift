@@ -36,6 +36,14 @@ public struct TWSSnippetsFeature: Sendable {
         // MARK: - Loading snippets
 
         case .load:
+            guard state.state.canLoad
+            else {
+                logger.warn("Skipped loading state because of the state: \(state.state)")
+                return .none
+            }
+
+            state.state = .loading
+
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
@@ -107,6 +115,7 @@ public struct TWSSnippetsFeature: Sendable {
 
         case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
+            state.state = .loaded
 
             var effects = [Effect<Action>]()
             let snippets = project.snippets
@@ -162,6 +171,8 @@ public struct TWSSnippetsFeature: Sendable {
             return .concatenate(effects)
 
         case let .projectLoaded(.failure(error)):
+            state.state = .failed(error)
+
             if let error = error as? DecodingError {
                 logger.err(
                     "Failed to decode snippets: \(error)"

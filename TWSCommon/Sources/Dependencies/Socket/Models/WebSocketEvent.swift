@@ -9,5 +9,5 @@
 import Foundation
 
 public enum WebSocketEvent: Sendable {
-    case didConnect, didDisconnect, receivedMessage(SocketMessage)
+    case didConnect, didDisconnect, receivedMessage(SocketMessage), skipUnknownMessage(String)
 }
