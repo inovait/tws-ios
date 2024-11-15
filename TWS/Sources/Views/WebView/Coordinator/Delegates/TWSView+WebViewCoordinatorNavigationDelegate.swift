@@ -103,11 +103,9 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction)")
-        if let url = navigationAction.request.url {
-            if interceptor?.handleUrl(url) == true {
-                decisionHandler(.cancel, preferences)
-                return
-            }
+        if let url = navigationAction.request.url, interceptor?.handleUrl(url) == true {
+            decisionHandler(.cancel, preferences)
+            return
         }
 
         // OAuth request to Google in embedded browsers are not allowed
