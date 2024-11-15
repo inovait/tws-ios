@@ -25,6 +25,7 @@ extension WebView {
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
         let downloadCompleted: ((TWSDownloadState) -> Void)?
+        let interceptor: TWSViewInterceptor?
 
         var pullToRefresh: PullToRefresh!
         weak var webView: WKWebView?
@@ -33,13 +34,15 @@ extension WebView {
             _ parent: WebView,
             snippetHeightProvider: SnippetHeightProvider,
             navigationProvider: NavigationProvider,
-            downloadCompleted: ((TWSDownloadState) -> Void)?
+            downloadCompleted: ((TWSDownloadState) -> Void)?,
+            interceptor: TWSViewInterceptor?
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
             self.navigationProvider = navigationProvider
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
+            self.interceptor = interceptor
 
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
