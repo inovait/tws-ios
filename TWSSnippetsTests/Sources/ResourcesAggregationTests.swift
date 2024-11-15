@@ -88,11 +88,16 @@ final class ResourcesAggregationTests: XCTestCase {
             }
         )
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success, aggregate) { [socketURL] state in
             state.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
             state.socketURL = socketURL
             state.preloadedResources = expectedResources
+            state.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
