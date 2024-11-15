@@ -55,16 +55,28 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
+
         await store.receive(\.business.startVisibilityTimers)
 
         // Send response for the second time (state must be preserved)
-        await store.send(.business(.load)).finish()
-        await store.receive(\.business.projectLoaded.success)
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
+        await store.receive(\.business.projectLoaded.success) { state in
+            state.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
     }
 
@@ -92,10 +104,15 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -105,9 +122,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets.removeFirst()
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -138,10 +160,15 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -150,9 +177,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: snippets), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets.insert(.init(snippet: snippets[1]), at: 1)
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -183,10 +215,14 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippetsStates)
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -196,9 +232,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2], snippets[0]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[1], snippetsStates[2], snippetsStates[0]])
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -233,11 +274,16 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
             $0.socketURL = self.socketURL
             $0.snippetDates = [:]
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -247,9 +293,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2], snippets[3]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[2], snippetsStates[3]])
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }

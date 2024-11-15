@@ -31,6 +31,7 @@ public struct TWSCoreFeature {
         case settings(TWSSettingsFeature.Action)
         case snippets(TWSSnippetsFeature.Action)
         case snippetsDidChange
+        case stateChanged
         case universalLinks(TWSUniversalLinksFeature.Action)
     }
 

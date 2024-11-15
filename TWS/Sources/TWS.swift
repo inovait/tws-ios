@@ -15,6 +15,9 @@ public final class TWSManager: Identifiable {
 
     public let configuration: TWSConfiguration
 
+    /// A getter for the list of loaded snippets
+    public internal(set) var snippets: TWSOutcome<[TWSSnippet]>
+
     let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
     let snippetHeightProvider: SnippetHeightProvider
@@ -36,7 +39,13 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
-        self.snippets = store.snippets.snippets.elements.map(\.snippet)
+
+        let items = store.snippets.snippets.elements.map(\.snippet)
+        let state = store.snippets.state
+        self.snippets = .init(
+            items: items,
+            state: state
+        )
 
         logger.info("INIT TWSManager \(_id)")
         _syncState()
@@ -51,20 +60,25 @@ public final class TWSManager: Identifiable {
         _stateSync = observer
             .compactMap {
                 switch $0 {
-                case .snippetsUpdated: return ()
+                case .snippetsUpdated: return _React.snippets
                 case .universalLinkSnippetLoaded: return nil
+                case .stateChanged: return .state
                 }
             }
-            .sink(receiveValue: { [weak self] _ in
+            .sink(receiveValue: { [weak self] react in
                 guard let weakSelf = self else { return }
-                weakSelf.snippets = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
+                switch react {
+                case .snippets:
+                    let items = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
+                    weakSelf.snippets.items = items
+
+                case .state:
+                    weakSelf.snippets.state = weakSelf.store.snippets.state
+                }
             })
     }
 
     // MARK: - Public
-
-    /// A getter for the list of loaded snippets
-    public internal(set) var snippets: [TWSSnippet]
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
@@ -123,3 +137,5 @@ public final class TWSManager: Identifiable {
         store.send(.universalLinks(.business(.onUniversalLink(url))))
     }
 }
+
+private enum _React { case snippets, state }

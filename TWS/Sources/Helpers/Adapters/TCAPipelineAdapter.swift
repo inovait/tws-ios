@@ -44,6 +44,9 @@ extension AnyCasePath {
                 case .snippetsDidChange:
                     return .snippetsUpdated
 
+                case .stateChanged:
+                    return .stateChanged
+
                 default:
                     return nil
                 }

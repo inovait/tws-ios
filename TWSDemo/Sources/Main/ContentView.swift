@@ -7,11 +7,13 @@
 //
 
 import SwiftUI
+import TWS
 
 @MainActor
 struct ContentView: View {
 
     @State private var viewModel = ContentViewModel()
+    @Environment(TWSManager.self) private var twsManager
     @Environment(TWSViewModel.self) private var twsViewModel
 
     var body: some View {
@@ -56,6 +58,13 @@ struct ContentView: View {
         .sheet(item: $twsViewModel.universalLinkLoadedProject) {
             ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
                 .twsEnable(using: $0.viewModel.manager)
+        }
+        .overlay {
+            ZStack(alignment: .topTrailing) {
+                Text("Manager state: \(twsManager.snippets.state)")
+                    .font(.footnote)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ class ProjectViewModel {
     private var clearedPopupSnippets: [TWSSnippet] = []
 
     init(manager: TWSManager) {
-        let snippets = manager.snippets
+        let snippets = manager.snippets()
         self.tabSnippets = snippets.filter(\.isTab)
         self.popupSnippets = snippets.filter { _ in
             // As of now, because `type` needs to be removed with TWS-212,
@@ -61,7 +61,7 @@ class ProjectViewModel {
 
             case .snippetsUpdated:
                 print("->", _id, "Received event: snippets updated")
-                let snippets = manager.snippets
+                let snippets = manager.snippets()
                 self.tabSnippets = snippets.filter(\.isTab)
                 self.popupSnippets = snippets.filter({ _ in
                     // As of now, because `type` needs to be removed with TWS-212,
@@ -70,6 +70,9 @@ class ProjectViewModel {
                     return false
                 })
                 self.presentPopups = !self.popupSnippets.isEmpty
+
+            case .stateChanged:
+                break
 
             @unknown default:
                 break

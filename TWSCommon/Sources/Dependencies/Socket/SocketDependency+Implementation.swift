@@ -61,12 +61,24 @@ actor SocketConnector {
                 let result = try await webSocket.receive()
                 switch result {
                 case let .data(data):
-                    try await _processMessage(data: data)
+                    do {
+                        try await _processMessage(data: data)
+                    } catch let SocketMessageReadError.failedToParse(error) {
+                        continuation.yield(.skipUnknownMessage(error))
+                    } catch {
+                        throw error
+                    }
 
                 case let .string(string):
                     logger.info("Received a message from server.")
                     if let data = string.data(using: .utf8) {
-                        try await _processMessage(data: data)
+                        do {
+                            try await _processMessage(data: data)
+                        } catch let SocketMessageReadError.failedToParse(error) {
+                            continuation.yield(.skipUnknownMessage(error))
+                        } catch {
+                            throw error
+                        }
                     }
 
                 @unknown default:
@@ -97,7 +109,17 @@ actor SocketConnector {
             let message = SocketMessage(json: jsonData)
         else {
             let rawString = String(data: data, encoding: .utf8) ?? ""
-            assertionFailure("Failed to process data: \(rawString)")
+            #if DEBUG
+            if
+                let jsonData = try JSONSerialization.jsonObject(with: data) as? [AnyHashable: Any],
+                let type = jsonData["type"] as? String,
+                type == "SNIPPET_CREATED" || type == "SNIPPET_UPDATED" || type == "SNIPPET_DELETED" {
+                print("old type: \(type)")
+            } else {
+                assertionFailure("Failed to process data: \(rawString)")
+            }
+            #endif
+
             throw SocketMessageReadError.failedToParse(rawString)
         }
 

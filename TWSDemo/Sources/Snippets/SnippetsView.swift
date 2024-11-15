@@ -33,7 +33,7 @@ struct SnippetsView: View {
     private var _snippets: [TWSSnippet] {
         switch source.type {
         case .server:
-            return twsManager.tabs
+            return twsManager.snippets()
 
         case let .local(urls):
             var id = 0
