@@ -13,13 +13,15 @@ import TWS
 struct SnippetsView: View {
 
     @Environment(TWSManager.self) var twsManager
+    @AppStorage(Source.key) private var source: Source = .server
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    ForEach(twsManager.snippets) { snippet in
+                    ForEach(_snippets) { snippet in
                         SnippetView(snippet: snippet)
+                            .twsLocal(source != .server)
                     }
                 }
                 .padding()
@@ -27,39 +29,61 @@ struct SnippetsView: View {
             .navigationTitle("Snippets")
         }
     }
+
+    private var _snippets: [TWSSnippet] {
+        switch source.type {
+        case .server:
+            return twsManager.snippets()
+
+        case let .local(urls):
+            var id = 0
+            var snippets: [TWSSnippet] = []
+            urls.forEach {
+                snippets.append(
+                    .init(
+                        id: "\(id)-\($0.absoluteString)",
+                        target: $0
+                    )
+                )
+
+                id += 1
+            }
+
+            return snippets
+        }
+    }
 }
 
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSManager.self) var twsManager
     @State private var info = TWSViewInfo()
+    @State private var navigator = TWSViewNavigator()
 
     var body: some View {
         @Bindable var info = info
-        let displayId = "list-\(snippet.id)"
 
         VStack(alignment: .leading) {
             HStack {
                 Button {
-                    twsManager.goBack(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goBack()
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!info.canGoBack)
+                .disabled(!navigator.canGoBack)
 
                 Button {
-                    twsManager.goForward(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goForward()
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!info.canGoForward)
+                .disabled(!navigator.canGoForward)
+
+                Button {
+                    navigator.reload()
+                } label: {
+                    Image(systemName: "repeat")
+                }
             }
 
             Divider()
@@ -70,5 +94,6 @@ private struct SnippetView: View {
             )
             .border(Color.black)
         }
+        .twsBind(navigator: navigator)
     }
 }

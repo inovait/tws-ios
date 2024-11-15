@@ -15,6 +15,7 @@ struct SnippetsTabView: View {
 
     @Environment(TWSManager.self) var twsManager
     @State private var selectedId: TWSSnippet.ID?
+    @AppStorage(Source.key) private var source: Source = .server
 
     var body: some View {
         NavigationStack {
@@ -22,14 +23,15 @@ struct SnippetsTabView: View {
                 ZStack {
                     ForEach(
                         Array(zip(
-                            twsManager.tabs.indices,
-                            twsManager.tabs
+                            _snippets.indices,
+                            _snippets
                         )),
                         id: \.1.id
                     ) { idx, snippet in
                         ZStack {
                             SnippetView(snippet: snippet)
-                                .zIndex(Double(selectedId == snippet.id ? twsManager.tabs.count : idx))
+                                .twsLocal(source != .server)
+                                .zIndex(Double(selectedId == snippet.id ? _snippets.count : idx))
                                 .opacity(selectedId != snippet.id ? 0 : 1)
                         }
                     }
@@ -46,24 +48,47 @@ struct SnippetsTabView: View {
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 // Safe to force cast, because of the first segment
-                guard selectedId == nil || !twsManager.tabs.map(\.id).contains(selectedId!) else { return }
-                selectedId = twsManager.tabs.first?.id
+                guard selectedId == nil || !_snippets.map(\.id).contains(selectedId!) else { return }
+                selectedId = _snippets.first?.id
             }
-            .onChange(of: twsManager.tabs.first?.id) { _, newValue in
+            .onChange(of: _snippets.first?.id) { _, newValue in
                 guard selectedId == nil else { return }
                 selectedId = newValue
             }
         }
     }
 
+    private var _snippets: [TWSSnippet] {
+        switch source.type {
+        case .server:
+            return twsManager.tabs
+
+        case let .local(urls):
+            var id = 0
+            var snippets: [TWSSnippet] = []
+            urls.forEach {
+                snippets.append(
+                    .init(
+                        id: "\(id)-\($0.absoluteString)",
+                        target: $0
+                    )
+                )
+
+                id += 1
+            }
+
+            return snippets
+        }
+    }
+
     @ViewBuilder
     private func _selectionView() -> some View {
-        if twsManager.tabs.count > 1 {
+        if _snippets.count > 1 {
             HStack(alignment: .bottom, spacing: 1) {
                 ForEach(
                     Array(zip(
-                        twsManager.tabs.indices,
-                        twsManager.tabs
+                        _snippets.indices,
+                        _snippets
                     )),
                     id: \.1.id
                 ) { _, item in
@@ -87,6 +112,10 @@ struct SnippetsTabView: View {
                             if let tabName = item.props?[.tabName, as: \.string] {
                                 Text(tabName)
                                     .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
+                            } else {
+                                Text(item.target.absoluteString)
+                                    .font(.footnote)
+                                    .foregroundColor(selectedId == item.id ? Color.accentColor : Color.gray)
                             }
 
                             Rectangle()
@@ -106,35 +135,33 @@ struct SnippetsTabView: View {
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @Environment(TWSViewModel.self) private var twsViewModel
     @State private var info = TWSViewInfo()
+    @State private var navigator = TWSViewNavigator()
 
     var body: some View {
         @Bindable var info = info
 
         VStack(alignment: .leading) {
-            let displayId = "tab-\(snippet.id)"
-
             HStack {
                 Button {
-                    twsViewModel.manager.goBack(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goBack()
                 } label: {
                     Image(systemName: "arrowshape.backward.fill")
                 }
-                .disabled(!info.canGoBack)
+                .disabled(!navigator.canGoBack)
 
                 Button {
-                    twsViewModel.manager.goForward(
-                        snippet: snippet,
-                        displayID: displayId
-                    )
+                    navigator.goForward()
                 } label: {
                     Image(systemName: "arrowshape.forward.fill")
                 }
-                .disabled(!info.canGoForward)
+                .disabled(!navigator.canGoForward)
+
+                Button {
+                    navigator.reload()
+                } label: {
+                    Image(systemName: "repeat")
+                }
             }
 
             Divider()
@@ -143,6 +170,7 @@ private struct SnippetView: View {
                 snippet: snippet,
                 info: $info
             )
+            .twsBind(navigator: navigator)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .border(Color.black)
         }

@@ -10,5 +10,29 @@ import SwiftUI
 
 extension EnvironmentValues {
 
-    @Entry var twsPresenter: TWSPresenter = NoopPresenter()
+    @Entry var presenter: TWSPresenter = NoopPresenter()
+}
+
+extension View {
+
+    public func twsLocal(_ override: Bool = true) -> some View {
+        ModifiedContent(
+            content: self,
+            modifier: PresenterViewModifer(overrideToLocal: override)
+        )
+    }
+}
+
+private struct PresenterViewModifer: ViewModifier {
+
+    let overrideToLocal: Bool
+
+    func body(content: Content) -> some View {
+        if overrideToLocal {
+            content
+                .environment(\.presenter, NoopPresenter())
+        } else {
+            content
+        }
+    }
 }

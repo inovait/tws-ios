@@ -13,7 +13,6 @@ protocol SnippetHeightProvider {
 
     func set(height: CGFloat, for hash: WebPageDescription, displayID: String)
     func getHeight(for hash: WebPageDescription, displayID: String) -> CGFloat?
-    func reset()
 }
 
 class SnippetHeightProviderImpl: SnippetHeightProvider {
@@ -30,10 +29,5 @@ class SnippetHeightProviderImpl: SnippetHeightProvider {
     func getHeight(for hash: WebPageDescription, displayID: String) -> CGFloat? {
         logger.debug("Get h(\(store[hash]?[displayID] ?? -1)) for \(hash.path)@\(displayID)")
         return store[hash]?[displayID]
-    }
-
-    func reset() {
-        logger.debug("Reset store")
-        store.removeAll()
     }
 }

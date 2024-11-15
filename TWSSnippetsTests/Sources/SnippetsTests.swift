@@ -48,23 +48,35 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _ in return "" }
+                $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
         )
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
+
         await store.receive(\.business.startVisibilityTimers)
 
         // Send response for the second time (state must be preserved)
-        await store.send(.business(.load)).finish()
-        await store.receive(\.business.projectLoaded.success)
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
+        await store.receive(\.business.projectLoaded.success) { state in
+            state.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
     }
 
@@ -85,17 +97,22 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _ in return "" }
+                $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
         )
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -105,9 +122,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets.removeFirst()
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -131,17 +153,22 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _ in return "" }
+                $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
         )
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -150,9 +177,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: snippets), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets.insert(.init(snippet: snippets[1]), at: 1)
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -176,17 +208,21 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _ in return "" }
+                $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
         )
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: snippetsStates)
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -196,9 +232,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[1], snippets[2], snippets[0]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[1], snippetsStates[2], snippetsStates[0]])
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }
@@ -226,18 +267,23 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[1], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _ in return "" }
+                $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
         )
 
         // Send response for the first time
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
             $0.socketURL = self.socketURL
             $0.snippetDates = [:]
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
 
@@ -247,64 +293,14 @@ final class SnippetsTests: XCTestCase {
             (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2], snippets[3]]), nil)
         }
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[2], snippetsStates[3]])
-        }
-        await store.receive(\.business.startVisibilityTimers)
-    }
-
-    @MainActor
-    func testSourceToAPI() async {
-        let testClock = TestClock()
-        let store = TestStore(
-            initialState: TWSSnippetsFeature.State(configuration: configuration),
-            reducer: { TWSSnippetsObserverFeature() },
-            withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (.init(listenOn: socketURL, snippets: []), nil)}
-                $0.socket.get = { _, _ in .init() }
-                $0.socket.connect = { _ in .makeStream().stream }
-                $0.socket.closeConnection = { _ in }
-                $0.continuousClock = testClock
-            }
-        )
-
-        await store.send(.business(.set(source: .api))) {
-            $0.source = .api
-        }
-
-        await store.receive(\.business.load)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
-            $0.socketURL = self.socketURL
-        }
-        await store.receive(\.business.startVisibilityTimers)
-        await store.receive(\.business.listenForChanges)
-
-        // Stop listening
-
-        await store.send(.business(.stopListeningForChanges))
-        await store.receive(\.business.delayReconnect)
-        await store.send(.business(.stopReconnecting))
-    }
-
-    @MainActor
-    func testSourceToCustomURLs() async {
-        let store = TestStore(
-            initialState: TWSSnippetsFeature.State(configuration: configuration),
-            reducer: { TWSSnippetsFeature() },
-            withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: []), nil)}
-            }
-        )
-
-        let dummySocket = URL(string: "wss://api.thewebsnippet.com")!
-
-        await store.send(.business(.set(source: .customURLs([])))) {
-            $0.source = .customURLs([])
-        }
-        await store.receive(\.business.load)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: dummySocket, snippets: [])) {
-            $0.socketURL = dummySocket
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }

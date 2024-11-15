@@ -66,8 +66,7 @@ final class ResourcesAggregationTests: XCTestCase {
             snippet: .init(
                 id: "00000000-0000-0000-0000-000000000002",
                 target: url,
-                dynamicResources: attachments,
-                status: "enabled"
+                dynamicResources: attachments
             )
         )
 
@@ -77,7 +76,7 @@ final class ResourcesAggregationTests: XCTestCase {
             ,
             withDependencies: {
                 $0.api.getSnippetBySharedId = { @Sendable _, _ in return sharedSnippet }
-                $0.api.getResource = { attachment in return attachment.url.absoluteString }
+                $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
             }
         )
 

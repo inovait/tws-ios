@@ -14,7 +14,7 @@ public struct TWSAPI {
     ) async throws(APIError) -> TWSSharedSnippet
 
     public let getResource: @Sendable (
-        TWSSnippet.Attachment
+        TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> String
 
     static func live(
@@ -64,13 +64,13 @@ public struct TWSAPI {
                     throw APIError.decode(error)
                 }
             },
-            getResource: { attachment throws(APIError) in
+            getResource: { attachment, headers throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
                     queryItems: [],
-                    headers: [:]
+                    headers: headers
                 ))
 
                 if let payload = String(data: result.data, encoding: .utf8) {

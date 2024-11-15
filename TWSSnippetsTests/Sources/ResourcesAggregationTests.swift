@@ -28,8 +28,7 @@ final class ResourcesAggregationTests: XCTestCase {
                 .init(url: URL(string: "https://www.r2.com")!, contentType: .css),
                 .init(url: URL(string: "https://www.r3.com")!, contentType: .javascript),
                 .init(url: URL(string: "https://www.r4.com")!, contentType: .css)
-            ],
-            status: "enabled"
+            ]
         )
     ]
 
@@ -84,16 +83,21 @@ final class ResourcesAggregationTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in return (project, nil) }
-                $0.api.getResource = { attachment in return attachment.url.absoluteString }
+                $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
                 $0.date.now = Date()
             }
         )
 
-        await store.send(.business(.load)).finish()
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        .finish()
+
         await store.receive(\.business.projectLoaded.success, aggregate) { [socketURL] state in
             state.snippets = .init(uniqueElements: self.snippets.map { .init(snippet: $0) })
             state.socketURL = socketURL
             state.preloadedResources = expectedResources
+            state.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
     }

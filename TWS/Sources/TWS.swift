@@ -15,6 +15,9 @@ public final class TWSManager: Identifiable {
 
     public let configuration: TWSConfiguration
 
+    /// A getter for the list of loaded snippets
+    public internal(set) var snippets: TWSOutcome<[TWSSnippet]>
+
     let observer: AnyPublisher<TWSStreamEvent, Never>
     let store: StoreOf<TWSCoreFeature>
     let snippetHeightProvider: SnippetHeightProvider
@@ -36,7 +39,13 @@ public final class TWSManager: Identifiable {
         self.initDate = Date()
         self.snippetHeightProvider = SnippetHeightProviderImpl()
         self.navigationProvider = NavigationProviderImpl()
-        self.snippets = store.snippets.snippets.elements.map(\.snippet)
+
+        let items = store.snippets.snippets.elements.map(\.snippet)
+        let state = store.snippets.state
+        self.snippets = .init(
+            items: items,
+            state: state
+        )
 
         logger.info("INIT TWSManager \(_id)")
         _syncState()
@@ -51,26 +60,35 @@ public final class TWSManager: Identifiable {
         _stateSync = observer
             .compactMap {
                 switch $0 {
-                case .snippetsUpdated: return ()
+                case .snippetsUpdated: return _React.snippets
                 case .universalLinkSnippetLoaded: return nil
+                case .stateChanged: return .state
                 }
             }
-            .sink(receiveValue: { [weak self] _ in
+            .sink(receiveValue: { [weak self] react in
                 guard let weakSelf = self else { return }
-                weakSelf.snippets = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
+                switch react {
+                case .snippets:
+                    let items = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
+                    weakSelf.snippets.items = items
+
+                case .state:
+                    weakSelf.snippets.state = weakSelf.store.snippets.state
+                }
             })
     }
 
     // MARK: - Public
-
-    /// A getter for the list of loaded snippets
-    public internal(set) var snippets: [TWSSnippet]
 
     /// A function that starts loading snippets and listen for changes
     public func run() {
         precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         defer { isSetup = true }
         guard !isSetup else { return }
+        store.send(.snippets(.business(.load)))
+    }
+
+    public func forceRefresh() {
         store.send(.snippets(.business(.load)))
     }
 
@@ -81,42 +99,6 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`observe` can only be called on main thread")
         let adapter = CombineToAsyncStreamAdapter(upstream: observer)
         await adapter.listen(onEvent: onEvent)
-    }
-
-    /// A function that invokes the browser's back functionality
-    /// - Parameters:
-    ///   - snippet: The snippet that is currently showing
-    ///   - displayID: The displayID you've set in your ``TWSView``
-    public func goBack(snippet: TWSSnippet, displayID: String) {
-        NotificationBuilder.send(
-            Notification.Name.Navigation.Back,
-            snippet: snippet,
-            displayID: displayID
-        )
-    }
-
-    /// A function that invokes the browser's forward functionality
-    /// - Parameters:
-    ///   - snippet: The snippet that is currently showing
-    ///   - displayID: The displayID you've set in your ``TWSView``
-    public func goForward(snippet: TWSSnippet, displayID: String) {
-        NotificationBuilder.send(
-            Notification.Name.Navigation.Forward,
-            snippet: snippet,
-            displayID: displayID
-        )
-    }
-
-    /// A function that sets the location from where the snippets are going to be loaded
-    /// - Parameter source: Define the source of the snippets
-    public func set(source: TWSSource) {
-        precondition(Thread.isMainThread, "`set(source:)` can only be called on main thread")
-
-        // Reset height store
-        snippetHeightProvider.reset()
-
-        // Send to store
-        store.send(.snippets(.business(.set(source: source))))
     }
 
     /// Defines a custom set of local properties that will be injected into the ``TWSView``.
@@ -155,3 +137,5 @@ public final class TWSManager: Identifiable {
         store.send(.universalLinks(.business(.onUniversalLink(url))))
     }
 }
+
+private enum _React { case snippets, state }

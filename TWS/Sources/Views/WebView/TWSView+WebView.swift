@@ -12,6 +12,8 @@ import WebKit
 
 struct WebView: UIViewRepresentable {
 
+    @Environment(\.navigator) var navigator
+    @Environment(\.interceptor) var interceptor
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
@@ -29,8 +31,6 @@ struct WebView: UIViewRepresentable {
     let displayID: String
     let isConnectedToNetwork: Bool
     let openURL: URL?
-    let backCommandId: UUID
-    let forwardCommandID: UUID
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
     let onUniversalLinkDetected: (URL) -> Void
@@ -48,8 +48,6 @@ struct WebView: UIViewRepresentable {
         dynamicHeight: Binding<CGFloat>,
         pageTitle: Binding<String>,
         openURL: URL?,
-        backCommandId: UUID,
-        forwardCommandID: UUID,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
         onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
@@ -69,8 +67,6 @@ struct WebView: UIViewRepresentable {
         self._dynamicHeight = dynamicHeight
         self._pageTitle = pageTitle
         self.openURL = openURL
-        self.backCommandId = backCommandId
-        self.forwardCommandID = forwardCommandID
         self.snippetHeightProvider = snippetHeightProvider
         self.navigationProvider = navigationProvider
         self.onUniversalLinkDetected = onUniversalLinkDetected
@@ -125,6 +121,7 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        navigator.delegate = context.coordinator
 
         context.coordinator.pullToRefresh.enable(on: webView)
 
@@ -140,10 +137,16 @@ struct WebView: UIViewRepresentable {
             webView.loadHTMLString(htmlToLoad, baseURL: self.url)
         } else {
             logger.debug("Load from url: \(url.absoluteString)")
-            webView.load(URLRequest(url: self.url))
+            var urlRequest = URLRequest(url: self.url)
+            snippet.headers?.forEach { header in
+                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+            }
+            webView.load(urlRequest)
         }
 
         context.coordinator.observe(heightOf: webView)
+        context.coordinator.webView = webView
+
         updateState(for: webView, loadingState: .loading)
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
@@ -165,7 +168,8 @@ struct WebView: UIViewRepresentable {
             self,
             snippetHeightProvider: snippetHeightProvider,
             navigationProvider: navigationProvider,
-            downloadCompleted: downloadCompleted
+            downloadCompleted: downloadCompleted,
+            interceptor: interceptor
         )
     }
 
@@ -174,28 +178,11 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-
         // Save state at the end
 
         defer {
-            context.coordinator.backCommandId = backCommandId
-            context.coordinator.forwardCommandID = forwardCommandID
             context.coordinator.isConnectedToNetwork = isConnectedToNetwork
             context.coordinator.openURL = openURL
-        }
-
-        // Go back & Go forward
-
-        if
-            let prevBackCommand = context.coordinator.backCommandId,
-            prevBackCommand != backCommandId {
-            uiView.goBack()
-        }
-
-        if
-            let prevForwardCommandID = context.coordinator.forwardCommandID,
-            prevForwardCommandID != forwardCommandID {
-            uiView.goForward()
         }
 
         // Regained network connection

@@ -56,8 +56,12 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.isSocketConnected, true) {
             $0.isSocketConnected = true
         }
-        await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening
@@ -95,8 +99,12 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.isSocketConnected, true) {
             $0.isSocketConnected = true
         }
-        await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
@@ -113,9 +121,12 @@ final class SocketTests: XCTestCase {
         }
 
         // Ask for new url,...
-        await store.receive(\.business.load)
+        await store.receive(\.business.load) {
+            $0.state = .loading
+        }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.socketURL = self.socketURL
+            $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
         await store.receive(\.business.listenForChanges, timeout: NSEC_PER_SEC)
@@ -126,8 +137,12 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.isSocketConnected, true) {
             $0.isSocketConnected = true
         }
-        await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening
@@ -165,14 +180,22 @@ final class SocketTests: XCTestCase {
         await store.receive(\.business.isSocketConnected, true) {
             $0.isSocketConnected = true
         }
-        await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
 
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))
-        await store.receive(\.business.load, timeout: NSEC_PER_SEC)
-        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: []))
+        await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
+            $0.state = .loaded
+        }
         await store.receive(\.business.startVisibilityTimers)
 
         // Stop listening

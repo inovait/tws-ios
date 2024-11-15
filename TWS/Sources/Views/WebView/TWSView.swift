@@ -12,7 +12,7 @@ import SwiftUI
 /// The main view to use to display snippets
 public struct TWSView: View {
 
-    @Environment(\.twsPresenter) private var presenter
+    @Environment(\.presenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.loadingView) private var loadingView
     @Environment(\.errorView) private var errorView
@@ -30,8 +30,6 @@ public struct TWSView: View {
     ///   - info: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
-    ///   - loadingView: A custom view to display while the snippet is loading
-    ///   - errorView: A custom view to display in case the snippet fails to load
     public init(
         snippet: TWSSnippet,
         info: Bindable<TWSViewInfo> = .init(.init(loadingState: .loaded)),
@@ -90,15 +88,14 @@ public struct TWSView: View {
 @MainActor
 private struct _TWSView: View {
 
-    @Environment(\.twsPresenter) private var presenter
+    @Environment(\.presenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServiceBridge
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
+    @Environment(\.navigator) private var navigator
     @Bindable var info: TWSViewInfo
 
     @State var height: CGFloat = 16
-    @State private var backCommandID = UUID()
-    @State private var forwardCommandID = UUID()
     @State private var networkObserver = NetworkMonitor()
     @State private var openURL: URL?
 
@@ -122,6 +119,7 @@ private struct _TWSView: View {
     }
 
     var body: some View {
+        @Bindable var navigator = navigator
         WebView(
             snippet: snippet,
             preloadedResources: presenter.preloadedResources,
@@ -134,16 +132,14 @@ private struct _TWSView: View {
             dynamicHeight: $height,
             pageTitle: $info.title,
             openURL: openURL,
-            backCommandId: backCommandID,
-            forwardCommandID: forwardCommandID,
             snippetHeightProvider: presenter.heightProvider,
             navigationProvider: presenter.navigationProvider,
             onUniversalLinkDetected: { url in
                 assert(Thread.isMainThread)
                 presenter.handleIncomingUrl(url)
             },
-            canGoBack: $info.canGoBack,
-            canGoForward: $info.canGoForward,
+            canGoBack: $navigator.canGoBack,
+            canGoForward: $navigator.canGoForward,
             loadingState: $info.loadingState,
             downloadCompleted: onDownloadCompleted
         )
@@ -154,19 +150,5 @@ private struct _TWSView: View {
             maxWidth: .infinity,
             idealHeight: height
         )
-        .onReceive(
-            NotificationCenter.default.publisher(for: Notification.Name.Navigation.Back)
-        ) { notification in
-            guard NotificationBuilder.shouldReact(to: notification, as: snippet, displayID: displayID)
-            else { return }
-            backCommandID = UUID()
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: Notification.Name.Navigation.Forward)
-        ) { notification in
-            guard NotificationBuilder.shouldReact(to: notification, as: snippet, displayID: displayID)
-            else { return }
-            forwardCommandID = UUID()
-        }
     }
 }

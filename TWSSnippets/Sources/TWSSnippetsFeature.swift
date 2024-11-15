@@ -36,29 +36,13 @@ public struct TWSSnippetsFeature: Sendable {
         // MARK: - Loading snippets
 
         case .load:
-            logger.info("Load from source: \(state.source)")
-
-            switch state.source {
-            case .api:
-                break
-
-            case let .customURLs(urls):
-                let dummySocketURL = URL(string: "wss://api.thewebsnippet.com")!
-                let snippets = generateCustomSnippets(urls: urls)
-                let project = TWSProject(
-                    listenOn: dummySocketURL,
-                    snippets: snippets
-                )
-
-                return .send(.business(.projectLoaded(.success(.init(
-                    project: project,
-                    resources: [:],
-                    serverDate: nil
-                )))))
-
-            @unknown default:
-                break
+            guard state.state.canLoad
+            else {
+                logger.warn("Skipped loading state because of the state: \(state.state)")
+                return .none
             }
+
+            state.state = .loading
 
             return .run { [api] send in
                 do {
@@ -131,6 +115,7 @@ public struct TWSSnippetsFeature: Sendable {
 
         case let .projectLoaded(.success(project)):
             logger.info("Snippets loaded.")
+            state.state = .loaded
 
             var effects = [Effect<Action>]()
             let snippets = project.snippets
@@ -186,6 +171,8 @@ public struct TWSSnippetsFeature: Sendable {
             return .concatenate(effects)
 
         case let .projectLoaded(.failure(error)):
+            state.state = .failed(error)
+
             if let error = error as? DecodingError {
                 logger.err(
                     "Failed to decode snippets: \(error)"
@@ -206,19 +193,6 @@ public struct TWSSnippetsFeature: Sendable {
                 let socket = state.socketURL?.absoluteString ?? ""
                 logger.info("Early return, because the socket is already connected to: \(socket)")
                 return .none
-            }
-
-            logger.info("Request to start listening request with source: \(state.source)")
-            switch state.source {
-            case .api:
-                break
-
-            case .customURLs:
-                logger.info("Won't listen because the snippets are overridden locally.")
-                return .none
-
-            @unknown default:
-                break
             }
 
             guard let url = state.socketURL
@@ -284,18 +258,6 @@ public struct TWSSnippetsFeature: Sendable {
             return .cancel(id: CancelID.reconnect(configuration()))
 
         // MARK: - Other
-
-        case let .set(source):
-            logger.info("Set source to: \(source)")
-            state.source = source
-
-            switch source {
-            case .api, .customURLs:
-                return .send(.business(.load))
-
-            @unknown default:
-                return .send(.business(.load))
-            }
 
         case let .setLocalProps(props):
             let id = props.0

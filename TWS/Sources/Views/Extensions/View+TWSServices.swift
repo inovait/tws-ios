@@ -18,14 +18,14 @@ final private class DefaultImplementations: Sendable {
 
 extension View {
 
-    public func bind(
+    public func twsBind(
         locationServiceBridge: some LocationServicesBridge
     ) -> some View {
         self
             .environment(\.locationServiceBridge, locationServiceBridge)
     }
 
-    public func bind(
+    public func twsBind(
         cameraMicrophoneServiceBridge: some CameraMicrophoneServicesBridge
     ) -> some View {
         self

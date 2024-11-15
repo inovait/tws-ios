@@ -25,18 +25,6 @@ extension TWSSnippetsFeature {
         })
     }
 
-    func generateCustomSnippets(urls: [URL]) -> [TWSSnippet] {
-        let uuidGenerator = IncrementingUUIDGenerator()
-        return urls.map {
-            .init(
-                id: uuidGenerator(),
-                target: $0,
-                status: "enabled",
-                visibilty: nil
-            )
-        }
-    }
-
     func listen(
         connectionID: UUID,
         stream: AsyncStream<WebSocketEvent>,
@@ -87,6 +75,15 @@ extension TWSSnippetsFeature {
                     }
                 }
 
+                do {
+                    try await socket.listen(connectionID)
+                } catch {
+                    logger.err("Failed to receive a message: \(error)")
+                    break mainLoop
+                }
+
+            case let .skipUnknownMessage(error):
+                logger.warn("Skipped processing the message due to a parsing failure: \(error)")
                 do {
                     try await socket.listen(connectionID)
                 } catch {

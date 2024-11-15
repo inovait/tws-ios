@@ -17,11 +17,11 @@ extension TWSSnippetsFeature {
     public struct State: Equatable {
 
         @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
-        @Shared public internal(set) var source: TWSSource
         @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
         @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
+        public internal(set) var state: TWSLoadingState = .idle
 
         public init(
             configuration: TWSConfiguration,
@@ -31,7 +31,6 @@ extension TWSSnippetsFeature {
             serverTime: Date? = nil
         ) {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            _source = Shared(wrappedValue: .api, .source(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
@@ -44,6 +43,8 @@ extension TWSSnippetsFeature {
                 }
                 self.snippets = .init(uniqueElements: state)
             }
+
+            state = self.snippets.isEmpty ? .idle : .loaded
 
             if let socketURL {
                 self.socketURL = socketURL
