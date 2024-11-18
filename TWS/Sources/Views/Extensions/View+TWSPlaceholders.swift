@@ -75,7 +75,11 @@ extension EnvironmentValues {
             HStack {
                 Spacer()
 
-                ProgressView(label: { Text("Loading...") })
+                ProgressView()
+                    .tint(.white)
+                    .padding(10)
+                    .background(Color.gray.opacity(0.4))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 Spacer()
             }
@@ -86,15 +90,14 @@ extension EnvironmentValues {
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
     @Entry var errorView: @Sendable @MainActor (Error) -> AnyView = { error in
         AnyView(
-            HStack {
-                Spacer()
+            VStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.title)
 
-                Text("Error: \(error.localizedDescription)")
-                    .padding()
-
-                Spacer()
+                Text(error.localizedDescription)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
-            .padding()
         )
     }
 }

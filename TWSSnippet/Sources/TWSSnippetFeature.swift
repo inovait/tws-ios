@@ -1,6 +1,6 @@
 import Foundation
 import ComposableArchitecture
-import TWSModels
+@_spi(Internals) import TWSModels
 import TWSCommon
 
 @Reducer
@@ -10,18 +10,16 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, displayInfo, updateCount, isVisible, customProps
+            case snippet, updateCount, isVisible, customProps
         }
 
         public var snippet: TWSSnippet
-        public var displayInfo: TWSDisplayInfo
         public var updateCount = 0
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
 
         public init(snippet: TWSSnippet) {
             self.snippet = snippet
-            self.displayInfo = .init()
         }
 
         public init(from decoder: any Decoder) throws {
@@ -30,7 +28,6 @@ public struct TWSSnippetFeature: Sendable {
             // MARK: - Persistent properties
 
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
-            displayInfo = try container.decode(TWSDisplayInfo.self, forKey: .displayInfo)
 
             // MARK: - Non-persistent properties - Reset on init
 
@@ -42,7 +39,6 @@ public struct TWSSnippetFeature: Sendable {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(snippet, forKey: .snippet)
-            try container.encode(displayInfo, forKey: .displayInfo)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(updateCount, forKey: .updateCount)
             try container.encode(localProps, forKey: .customProps)

@@ -9,7 +9,7 @@
 import Foundation
 
 @Observable
-public final class TWSViewInfo {
+public final class TWSViewState {
 
     /// Once the snippet is loaded, it's title will be set in this variable
     public var title: String = ""

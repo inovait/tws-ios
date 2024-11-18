@@ -8,13 +8,13 @@
 
 import Foundation
 
-public class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @unchecked Sendable {
+class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @unchecked Sendable {
     private let queue = DispatchQueue(label: "ThreadSafeDictionaryQueue", attributes: .concurrent)
     private var _value = [U: V]()
 
-    public init() { }
+    init() { }
 
-    public subscript(index: U) -> V? {
+    subscript(index: U) -> V? {
         get {
             var result: V?
             queue.sync {
@@ -29,7 +29,7 @@ public class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @uncheck
         }
     }
 
-    public var value: [U: V] {
+    var value: [U: V] {
         get {
             var value: [U: V]!
             queue.sync { value = self._value }
@@ -41,13 +41,13 @@ public class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @uncheck
         }
     }
 
-    public var count: Int {
+    var count: Int {
         var result = 0
         queue.sync { result = self._value.count }
         return result
     }
 
-    public func removeValue(forKey key: U, completion: (@Sendable (V?) -> Void)? = nil) {
+    func removeValue(forKey key: U, completion: (@Sendable (V?) -> Void)? = nil) {
         queue.async(flags: .barrier) {
             let result = self._value.removeValue(forKey: key)
 

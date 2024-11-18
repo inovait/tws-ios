@@ -10,8 +10,9 @@ import Foundation
 
 /// A struct representing data about the download that was completed
 public struct TWSDownloadInfo {
-    var downloadedFilename: String
-    var downloadedLocation: String
+
+    public internal(set) var downloadedFilename: String
+    public internal(set) var downloadedLocation: String
 
     init() {
         self.downloadedFilename = ""
