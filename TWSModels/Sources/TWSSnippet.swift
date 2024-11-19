@@ -50,22 +50,61 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public let headers: [String: String]?
     @_spi(Internals) @LossyCodableList public var dynamicResources: [Attachment]?
 
+    private init(
+        id: String,
+        target: URL,
+        visibility: SnippetVisibility?,
+        props: Props,
+        engine: Engine?,
+        headers: [String: String]?,
+        dynamicResources: [Attachment]?
+    ) {
+        self.id = id
+        self.target = target
+        self.visibility = visibility
+        self.props = props
+        self.engine = engine
+        self.headers = headers
+        self._dynamicResources = .init(elements: dynamicResources)
+    }
+
+    @_spi(Internals)
     public init(
         id: String,
         target: URL,
         dynamicResources: [Attachment]? = nil,
-        visibilty: SnippetVisibility? = nil,
+        visibility: SnippetVisibility? = nil,
         props: Props = .dictionary([:]),
         engine: Engine? = nil,
         headers: [String: String]? = nil
     ) {
-        self.id = id
-        self.target = target
-        self._dynamicResources = .init(elements: dynamicResources)
-        self.visibility = visibilty
-        self.props = props
-        self.engine = engine
-        self.headers = headers
+        self.init(
+            id: id,
+            target: target,
+            visibility: visibility,
+            props: props,
+            engine: engine,
+            headers: headers,
+            dynamicResources: dynamicResources
+        )
+    }
+
+    public init(
+        id: String,
+        target: URL,
+        props: Props = .dictionary([:]),
+        engine: Engine? = nil,
+        headers: [String: String]? = nil
+    ) {
+        self.init(
+            id: id,
+            target: target,
+            visibility: nil,
+            props: props,
+            engine: engine,
+            headers: headers,
+            dynamicResources: nil
+        )
     }
 }
 

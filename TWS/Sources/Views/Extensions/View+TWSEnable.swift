@@ -16,9 +16,6 @@ extension View {
         self
             .environment(manager)
             .environment(\.presenter, LivePresenter(manager: manager))
-            .task {
-                manager.run()
-            }
     }
 
     public func twsEnable(

@@ -57,7 +57,7 @@ struct SnippetsView: View {
 private struct SnippetView: View {
 
     let snippet: TWSSnippet
-    @State private var info = TWSViewInfo()
+    @State private var info = TWSViewState()
     @State private var navigator = TWSViewNavigator()
 
     var body: some View {
@@ -90,7 +90,7 @@ private struct SnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                info: $info
+                state: $info
             )
             .border(Color.black)
         }

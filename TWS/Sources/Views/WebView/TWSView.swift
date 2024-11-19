@@ -16,7 +16,7 @@ public struct TWSView: View {
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.loadingView) private var loadingView
     @Environment(\.errorView) private var errorView
-    @Bindable var info: TWSViewInfo
+    @Bindable var state: TWSViewState
 
     @State private var displayID = UUID().uuidString
 
@@ -27,19 +27,19 @@ public struct TWSView: View {
     /// Main contructor
     /// - Parameters:
     ///   - snippet: The snippet you want to display
-    ///   - info: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
+    ///   - state: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     public init(
         snippet: TWSSnippet,
-        info: Bindable<TWSViewInfo> = .init(.init(loadingState: .loaded)),
+        state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = []
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
-        self._info = info
+        self._state = state
     }
 
     public var body: some View {
@@ -50,9 +50,8 @@ public struct TWSView: View {
                     cssOverrides: cssOverrides,
                     jsOverrides: jsOverrides,
                     displayID: displayID,
-                    info: $info
+                    state: $state
                 )
-                .frame(width: info.loadingState.showView ? nil : 0, height: info.loadingState.showView ? nil : 0)
                 .id(snippet.id)
                 // The actual URL changed for the same Snippet ~ redraw is required
                 .id(snippet.target)
@@ -68,7 +67,7 @@ public struct TWSView: View {
                 )
 
                 ZStack {
-                    switch info.loadingState {
+                    switch state.loadingState {
                     case .idle, .loading:
                         loadingView()
 
@@ -79,7 +78,7 @@ public struct TWSView: View {
                         errorView(error)
                     }
                 }
-                .frame(width: info.loadingState.showView ? 0 : nil, height: info.loadingState.showView ? 0 : nil)
+                .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
             }
         }
     }
@@ -93,7 +92,7 @@ private struct _TWSView: View {
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
-    @Bindable var info: TWSViewInfo
+    @Bindable var state: TWSViewState
 
     @State var height: CGFloat = 16
     @State private var networkObserver = NetworkMonitor()
@@ -109,13 +108,13 @@ private struct _TWSView: View {
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID id: String,
-        info: Bindable<TWSViewInfo>
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
-        self._info = info
+        self._state = state
     }
 
     var body: some View {
@@ -130,7 +129,7 @@ private struct _TWSView: View {
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
-            pageTitle: $info.title,
+            pageTitle: $state.title,
             openURL: openURL,
             snippetHeightProvider: presenter.heightProvider,
             navigationProvider: presenter.navigationProvider,
@@ -140,7 +139,7 @@ private struct _TWSView: View {
             },
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
-            loadingState: $info.loadingState,
+            loadingState: $state.loadingState,
             downloadCompleted: onDownloadCompleted
         )
         // Used for Authentication via Safari

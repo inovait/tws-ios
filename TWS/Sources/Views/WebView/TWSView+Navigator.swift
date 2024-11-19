@@ -9,7 +9,7 @@
 import SwiftUI
 
 @MainActor
-public protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
+protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 
     func navigateBack()
     func navigateForward()

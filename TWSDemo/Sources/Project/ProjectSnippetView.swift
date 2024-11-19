@@ -11,7 +11,7 @@ import TWS
 
 struct ProjectSnippetView: View {
 
-    @State private var info: TWSViewInfo = .init()
+    @State private var info: TWSViewState = .init()
     let snippet: TWSSnippet
 
     @Environment(\.dismiss) var dismiss
@@ -56,7 +56,7 @@ struct ProjectSnippetView: View {
 
             TWSView(
                 snippet: snippet,
-                info: $info
+                state: $info
             )
             .frame(maxHeight: .infinity, alignment: .top)
         }

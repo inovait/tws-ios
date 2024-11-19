@@ -49,6 +49,7 @@ public final class TWSManager: Identifiable {
 
         logger.info("INIT TWSManager \(_id)")
         _syncState()
+        _run()
     }
 
     deinit {
@@ -56,37 +57,7 @@ public final class TWSManager: Identifiable {
         MainActor.assumeIsolated { TWSFactory.destroy(configuration: configuration) }
     }
 
-    private func _syncState() {
-        _stateSync = observer
-            .compactMap {
-                switch $0 {
-                case .snippetsUpdated: return _React.snippets
-                case .universalLinkSnippetLoaded: return nil
-                case .stateChanged: return .state
-                }
-            }
-            .sink(receiveValue: { [weak self] react in
-                guard let weakSelf = self else { return }
-                switch react {
-                case .snippets:
-                    let items = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
-                    weakSelf.snippets.items = items
-
-                case .state:
-                    weakSelf.snippets.state = weakSelf.store.snippets.state
-                }
-            })
-    }
-
     // MARK: - Public
-
-    /// A function that starts loading snippets and listen for changes
-    public func run() {
-        precondition(Thread.isMainThread, "`run()` can only be called on main thread")
-        defer { isSetup = true }
-        guard !isSetup else { return }
-        store.send(.snippets(.business(.load)))
-    }
 
     public func forceRefresh() {
         store.send(.snippets(.business(.load)))
@@ -135,6 +106,37 @@ public final class TWSManager: Identifiable {
     public func handleIncomingUrl(_ url: URL) {
         precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
         store.send(.universalLinks(.business(.onUniversalLink(url))))
+    }
+
+    // MARK: - Helpers
+
+    private func _run() {
+        precondition(Thread.isMainThread, "`run()` can only be called on main thread")
+        defer { isSetup = true }
+        guard !isSetup else { return }
+        store.send(.snippets(.business(.load)))
+    }
+
+    private func _syncState() {
+        _stateSync = observer
+            .compactMap {
+                switch $0 {
+                case .snippetsUpdated: return _React.snippets
+                case .universalLinkSnippetLoaded: return nil
+                case .stateChanged: return .state
+                }
+            }
+            .sink(receiveValue: { [weak self] react in
+                guard let weakSelf = self else { return }
+                switch react {
+                case .snippets:
+                    let items = weakSelf.store.snippets.snippets.filter(\.isVisible).elements.map(\.snippet)
+                    weakSelf.snippets.items = items
+
+                case .state:
+                    weakSelf.snippets.state = weakSelf.store.snippets.state
+                }
+            })
     }
 }
 
