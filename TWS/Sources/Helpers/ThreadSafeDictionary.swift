@@ -29,6 +29,7 @@ class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @unchecked Send
         }
     }
 
+    // periphery:ignore
     var value: [U: V] {
         get {
             var value: [U: V]!
@@ -41,6 +42,7 @@ class ThreadSafeDictionary<U: Hashable & Sendable, V: Sendable>: @unchecked Send
         }
     }
 
+    // periphery:ignore
     var count: Int {
         var result = 0
         queue.sync { result = self._value.count }

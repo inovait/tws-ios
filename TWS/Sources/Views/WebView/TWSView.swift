@@ -8,7 +8,6 @@
 
 import SwiftUI
 @_spi(Internals) import TWSModels
-internal import TWSCommon
 internal import ComposableArchitecture
 internal import TWSSnippet
 
@@ -23,7 +22,6 @@ public struct TWSView: View {
     @Bindable var state: TWSViewState
 
     @State private var displayID = UUID().uuidString
-    @State private var storeInitialized = false
     @State private var store: StoreOf<TWSSnippetFeature>?
 
     let snippet: TWSSnippet
