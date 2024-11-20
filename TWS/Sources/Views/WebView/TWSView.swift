@@ -8,6 +8,9 @@
 
 import SwiftUI
 @_spi(Internals) import TWSModels
+internal import TWSCommon
+internal import ComposableArchitecture
+internal import TWSSnippet
 
 /// The main view to use to display snippets
 public struct TWSView: View {
@@ -15,10 +18,13 @@ public struct TWSView: View {
     @Environment(\.presenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.loadingView) private var loadingView
+    @Environment(\.preloadingView) private var preloadingView
     @Environment(\.errorView) private var errorView
     @Bindable var state: TWSViewState
 
     @State private var displayID = UUID().uuidString
+    @State private var storeInitialized = false
+    @State private var store: StoreOf<TWSSnippetFeature>?
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -44,41 +50,49 @@ public struct TWSView: View {
 
     public var body: some View {
         if presenter.isVisible(snippet: snippet) {
-            ZStack {
-                _TWSView(
-                    snippet: snippet,
-                    cssOverrides: cssOverrides,
-                    jsOverrides: jsOverrides,
-                    displayID: displayID,
-                    state: $state
-                )
-                .id(snippet.id)
-                // The actual URL changed for the same Snippet ~ redraw is required
-                .id(snippet.target)
-                // The payload of dynamic resources can change
-                .id(presenter.resourcesHash(for: snippet))
-                // The internal payload of the target URL has changed ~ redraw is required
-                .id(presenter.updateCount(for: snippet))
-                // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-                .conditionallyActivateDefaultLocationBehavior(
-                    locationServicesBridge: locationServicesBridge,
-                    snippet: snippet,
-                    displayID: displayID
-                )
-
-                ZStack {
-                    switch state.loadingState {
-                    case .idle, .loading:
-                        loadingView()
-
-                    case .loaded:
-                        EmptyView()
-
-                    case let .failed(error):
-                        errorView(error)
+            if store?.preloaded != true {
+                preloadingView()
+                    .onAppear {
+                        store = presenter.store(forSnippetID: snippet.id)
+                        store?.send(.business(.preload))
                     }
+            } else {
+                ZStack {
+                    _TWSView(
+                        snippet: snippet,
+                        cssOverrides: cssOverrides,
+                        jsOverrides: jsOverrides,
+                        displayID: displayID,
+                        state: $state
+                    )
+                    .id(snippet.id)
+                    // The actual URL changed for the same Snippet ~ redraw is required
+                    .id(snippet.target)
+                    // The payload of dynamic resources can change
+                    .id(presenter.resourcesHash(for: snippet))
+                    // The internal payload of the target URL has changed ~ redraw is required
+                    .id(presenter.updateCount(for: snippet))
+                    // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                    .conditionallyActivateDefaultLocationBehavior(
+                        locationServicesBridge: locationServicesBridge,
+                        snippet: snippet,
+                        displayID: displayID
+                    )
+
+                    ZStack {
+                        switch state.loadingState {
+                        case .idle, .loading:
+                            loadingView()
+
+                        case .loaded:
+                            EmptyView()
+
+                        case let .failed(error):
+                            errorView(error)
+                        }
+                    }
+                    .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                 }
-                .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
             }
         }
     }

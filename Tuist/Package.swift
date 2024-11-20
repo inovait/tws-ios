@@ -10,6 +10,7 @@
         baseSettings: .settings(
             configurations: [
                 .debug(name: "Debug"),
+                .debug(name: "Testing"),
                 .release(name: "Staging"),
                 .release(name: "Release")
             ]
@@ -27,7 +28,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: .init(1, 15, 0)
+            exact: .init(1, 16, 1)
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
