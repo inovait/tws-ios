@@ -8,6 +8,8 @@
 
 import Foundation
 import TWSModels
+internal import ComposableArchitecture
+internal import TWSSnippet
 
 @MainActor
 protocol TWSPresenter {
@@ -15,9 +17,11 @@ protocol TWSPresenter {
     var preloadedResources: [TWSSnippet.Attachment: String] { get }
     var navigationProvider: NavigationProvider { get }
     var heightProvider: SnippetHeightProvider { get }
+    var isLocal: Bool { get }
 
     func isVisible(snippet: TWSSnippet) -> Bool
     func resourcesHash(for snippet: TWSSnippet) -> Int
     func updateCount(for snippet: TWSSnippet) -> Int
     func handleIncomingUrl(_ url: URL)
+    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?
 }

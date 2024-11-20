@@ -6,6 +6,8 @@
 //  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
 //
 
+// swiftlint:disable file_length
+
 import XCTest
 @testable import TWSSnippets
 @testable import TWSSnippet
@@ -42,12 +44,14 @@ final class SnippetsTests: XCTestCase {
         ]
 
         let state = TWSSnippetsFeature.State(configuration: configuration)
+        let project = TWSProject(listenOn: socketURL, snippets: snippets)
+        let bundle = TWSProjectBundle(project: project, serverDate: nil)
 
         let store = TestStore(
             initialState: state,
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
-                $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
+                $0.api.getProject = { _ in (project, nil)}
                 $0.api.getResource = { _, _ in return "" }
                 $0.date.now = Date()
             }
@@ -58,21 +62,44 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
-        await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
+        await store.receive(\.business.projectLoaded.success, bundle) {
+            $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0, preloaded: false) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
         }
 
         await store.receive(\.business.startVisibilityTimers)
 
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].delegate.resourcesUpdated, [:])
+
         // Send response for the second time (state must be preserved)
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) { state in
             state.state = .loaded
@@ -107,14 +134,38 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
+            $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0, preloaded: false) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
+
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].delegate.resourcesUpdated, [:])
 
         // Send for the second time without one element. Snippet should be removed from state
 
@@ -163,14 +214,30 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
+            $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0, preloaded: false) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
+
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].delegate.resourcesUpdated, [:])
 
         // Send for the second time with new element. Snippet should be added in right order
         store.dependencies.api.getProject = { [socketURL] _ in
@@ -180,13 +247,21 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) {
-            $0.snippets.insert(.init(snippet: snippets[1]), at: 1)
+            $0.snippets.insert(.init(snippet: snippets[1], preloaded: false), at: 1)
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
+
+        await store.receive(\.business.snippets[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated, [:])
     }
 
     @MainActor
@@ -201,7 +276,7 @@ final class SnippetsTests: XCTestCase {
             .init(id: s3ID, target: URL(string: "https://news.ycombinator.com")!)
         ]
 
-        let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
+        let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0, preloaded: false) }
 
         let store = TestStore(
             initialState: TWSSnippetsFeature.State(configuration: configuration),
@@ -226,6 +301,31 @@ final class SnippetsTests: XCTestCase {
         }
         await store.receive(\.business.startVisibilityTimers)
 
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].delegate.resourcesUpdated, [:])
+
         // Send response for the second time but change the order
 
         store.dependencies.api.getProject = { [socketURL] _ in
@@ -238,7 +338,8 @@ final class SnippetsTests: XCTestCase {
         .finish()
 
         await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: [snippetsStates[1], snippetsStates[2], snippetsStates[0]])
+            let before = $0.snippets
+            $0.snippets = .init(uniqueElements: [before[1], before[2], before[0]])
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
@@ -258,7 +359,7 @@ final class SnippetsTests: XCTestCase {
             .init(id: s4ID, target: URL(string: "https://news.ycombinato2.com")!)
         ]
 
-        let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0) }
+        let snippetsStates: [TWSSnippetFeature.State] = snippets.map { .init(snippet: $0, preloaded: false) }
 
         let store = TestStore(
             initialState: TWSSnippetsFeature.State(configuration: configuration),
@@ -277,7 +378,6 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
@@ -286,6 +386,31 @@ final class SnippetsTests: XCTestCase {
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)
+
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated, [:])
+        await store.receive(\.business.snippets[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s3ID].delegate.resourcesUpdated, [:])
 
         // Send response for the second time but remove some and add some
 
@@ -296,12 +421,27 @@ final class SnippetsTests: XCTestCase {
         await store.send(.business(.load)) { state in
             state.state = .loading
         }
-        .finish()
 
         await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[2], snippetsStates[3]])
+            var new = [snippetsStates[0], snippetsStates[2], snippetsStates[3]]
+            new[0].preloaded = true
+            new[1].preloaded = true
+
+            $0.snippets = .init(uniqueElements: new)
             $0.state = .loaded
         }
+
         await store.receive(\.business.startVisibilityTimers)
+
+        await store.receive(\.business.snippets[id: s4ID].business.preload) {
+            $0.snippets[id: s4ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s4ID].business.preloadCompleted) {
+            $0.snippets[id: s4ID]?.isPreloading = false
+            $0.snippets[id: s4ID]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: s4ID].delegate.resourcesUpdated, [:])
     }
 }
+
+// swiftlint:enable file_length

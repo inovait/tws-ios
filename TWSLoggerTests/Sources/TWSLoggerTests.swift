@@ -8,7 +8,6 @@
 
 import XCTest
 import OSLog
-import ComposableArchitecture
 @testable import TWSLogger
 
 final class TWSLoggerTests: XCTestCase {
@@ -34,10 +33,10 @@ final class TWSLoggerTests: XCTestCase {
         logManager.info("This is an info")
 
         let expectedLogResult =
-            "This is an error [Class 1, l31]\n" +
+            "This is an error [Class 1, l30]\n" +
             "This is a message [TWSLoggerTests/TWSLoggerTests.swift, l13]\n" +
-            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l33]\n" +
-            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l34]\n"
+            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l32]\n" +
+            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l33]\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
@@ -64,7 +63,11 @@ final class TWSLoggerTests: XCTestCase {
                     XCTAssertEqual(
                         fileContent,
                         expectedLogResult,
-                        diff(fileContent.description, expectedLogResult.description) ?? ""
+                        """
+                        Actual: \(fileContent.description)
+                        -------
+                        Expected: \(expectedLogResult.description)
+                        """
                     )
                 } catch {
                     XCTFail("Failed to read file content: \(error)")

@@ -8,6 +8,8 @@
 
 import Foundation
 @_spi(Internals) import TWSModels
+internal import ComposableArchitecture
+internal import TWSSnippet
 
 class LivePresenter: TWSPresenter {
 
@@ -18,6 +20,8 @@ class LivePresenter: TWSPresenter {
     }
 
     // MARK: - Confirming to `TWSPresenter`
+
+    var isLocal = false
 
     var preloadedResources: [TWSSnippet.Attachment: String] {
         manager?.store.snippets.preloadedResources ?? [:]
@@ -51,6 +55,13 @@ class LivePresenter: TWSPresenter {
 
     func handleIncomingUrl(_ url: URL) {
         manager?.handleIncomingUrl(url)
+    }
+
+    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? {
+        manager?.store.scope(
+            state: \.snippets.snippets[id: id],
+            action: \.snippets.business.snippets[id: id]
+        )
     }
 
     // MARK: - Helper methods

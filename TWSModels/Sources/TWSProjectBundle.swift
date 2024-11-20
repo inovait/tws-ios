@@ -13,16 +13,13 @@ import Foundation
 public struct TWSProjectBundle: Codable, Equatable, Sendable {
 
     public let project: TWSProject
-    @_spi(Internals) public let resources: [TWSSnippet.Attachment: String]
     @_spi(Internals) public let serverDate: Date?
 
     public init(
         project: TWSProject,
-        resources: [TWSSnippet.Attachment: String],
         serverDate: Date? = nil
     ) {
         self.project = project
-        self.resources = resources
         self.serverDate = serverDate
     }
 
@@ -37,7 +34,6 @@ public struct TWSProjectBundle: Codable, Equatable, Sendable {
             listenOn: listenOn,
             snippets: snippets
         )
-        resources = [:]
         serverDate = date
     }
     #endif

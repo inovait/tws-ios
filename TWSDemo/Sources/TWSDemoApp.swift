@@ -33,6 +33,9 @@ struct TWSDemoApp: App {
                         organizationID: "inova.tws",
                         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
                     ))
+                    .twsBind(preloadingView: {
+                        AnyView(Text("Preloading..."))
+                    })
                     .environment(twsViewModel)
                     .task {
                         await twsViewModel.startupInitTasks()

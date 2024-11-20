@@ -10,28 +10,37 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, updateCount, isVisible, customProps
+            case snippet, preloaded, isPreloading, updateCount, isVisible, customProps
         }
 
         public var snippet: TWSSnippet
+        public var preloaded: Bool
         public var updateCount = 0
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
 
-        public init(snippet: TWSSnippet) {
+        var isPreloading = false
+
+        public init(
+            snippet: TWSSnippet,
+            preloaded: Bool
+        ) {
             self.snippet = snippet
+            self.preloaded = preloaded
         }
 
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
-            // MARK: - Persistent properties
+            // MARK: - Persistent properties ~ match with init
 
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
+            preloaded = try container.decode(Bool.self, forKey: .preloaded)
 
             // MARK: - Non-persistent properties - Reset on init
 
             isVisible = true
+            isPreloading = false
             updateCount = 0
             localProps = .dictionary([:])
         }
@@ -39,6 +48,8 @@ public struct TWSSnippetFeature: Sendable {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(snippet, forKey: .snippet)
+            try container.encode(preloaded, forKey: .preloaded)
+            try container.encode(isPreloading, forKey: .isPreloading)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(updateCount, forKey: .updateCount)
             try container.encode(localProps, forKey: .customProps)
@@ -49,10 +60,11 @@ public struct TWSSnippetFeature: Sendable {
 
         @CasePathable
         public enum Business {
-            case snippetUpdated(snippet: TWSSnippet?)
+            case snippetUpdated(snippet: TWSSnippet, preloaded: Bool)
             case showSnippet
             case hideSnippet
-            case checkResources(snippet: TWSSnippet)
+            case preload
+            case preloadCompleted([TWSSnippet.Attachment: String])
         }
 
         @CasePathable
@@ -70,21 +82,19 @@ public struct TWSSnippetFeature: Sendable {
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
-        case let .business(.snippetUpdated(snippet)):
-            if let snippet {
-                state.snippet = snippet
-                state.isVisible = true
-                if snippet != state.snippet {
-                    logger.info("Snippet updated from \(state.snippet) to \(snippet).")
-                } else {
-                    logger.info("Snippet's payload changed")
-                    state.updateCount += 1
-                }
-
-                return .send(.business(.checkResources(snippet: snippet)))
+        case let .business(.snippetUpdated(snippet, preloaded)):
+            state.snippet = snippet
+            state.preloaded = preloaded
+            state.isVisible = true
+            if snippet != state.snippet {
+                logger.info("Snippet updated from \(state.snippet) to \(snippet).")
+            } else {
+                logger.info("Snippet's payload changed")
+                state.updateCount += 1
             }
 
-            return .none
+            logger.info("Snippet is preloaded: \(preloaded)")
+            return .send(.business(.preload))
 
         case .business(.hideSnippet):
             state.isVisible = false
@@ -94,11 +104,19 @@ public struct TWSSnippetFeature: Sendable {
             state.isVisible = true
             return .none
 
-        case let .business(.checkResources(snippet)):
-            return .run { [api] send in
+        case .business(.preload):
+            guard !state.isPreloading else { return .none }
+            state.isPreloading = true
+
+            return .run { [api, snippet = state.snippet] send in
                 let resources = await preloadResources(for: snippet, using: api)
-                await send(.delegate(.resourcesUpdated(resources)))
+                await send(.business(.preloadCompleted(resources)))
             }
+
+        case let .business(.preloadCompleted(resources)):
+            state.preloaded = true
+            state.isPreloading = false
+            return .send(.delegate(.resourcesUpdated(resources)))
 
         case .delegate:
             return .none
