@@ -82,17 +82,10 @@ final class ResourcesAggregationTests: XCTestCase {
 
         await store.send(.business(.onUniversalLink(url))).finish()
         await store.receive(\.business.snippetLoaded.success, sharedSnippet)
-        await store.receive(\.business.notifyClient, TWSSharedSnippetBundle(
-            sharedSnippet: sharedSnippet,
-            resources: preloadedAttachments
-        ))
 
         await store.receive(
             \.delegate.snippetLoaded,
-            TWSSharedSnippetBundle(
-                sharedSnippet: sharedSnippet,
-                resources: preloadedAttachments
-            )
+             sharedSnippet
         )
     }
 }

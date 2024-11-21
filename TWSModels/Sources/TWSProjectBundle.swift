@@ -9,6 +9,7 @@
 import Foundation
 
 /// An aggregate of an project and all associated resources
+@_documentation(visibility: internal)
 @dynamicMemberLookup
 public struct TWSProjectBundle: Codable, Equatable, Sendable {
 

@@ -38,12 +38,12 @@ public class TWSFactory {
     /// - Parameter shared: Information about the TWSSnippet opened via universal link
     /// - Returns: An instance of ``TWSManager``
     public class func new(
-        with shared: TWSSharedSnippetBundle
+        with shared: TWSSharedSnippet
     ) -> TWSManager {
         return _new(
             configuration: shared.configuration,
             snippets: [shared.snippet],
-            preloadedResources: ExtractResources.from(bundle: shared),
+            preloadedResources: nil,
             socketURL: nil
         )
     }
