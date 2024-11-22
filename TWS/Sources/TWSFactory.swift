@@ -14,15 +14,25 @@ internal import TWSSnippets
 internal import TWSSnippet
 internal import ComposableArchitecture
 
-/// A class designed to initialize a new ``TWSManager``
+/// # TWSFactory
+///
+/// A class responsible for initializing and managing instances of ``TWSManager``. It provides methods to create new instances of ``TWSManager`` with various configurations and ensures efficient memory management by reusing existing instances when possible.
 @MainActor
 public class TWSFactory {
 
     private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
 
-    /// Creates and returns a new instance of ``TWSManager``
-    /// - Parameter configuration: Configuration of a project you would like to show
-    /// - Returns: An instance of ``TWSManager
+    /// Creates and returns a new instance of ``TWSManager``.
+    ///
+    /// This method initializes a ``TWSManager`` with a specific project configuration, allowing you to manage and display snippets for that project.
+    ///
+    /// - Parameter configuration: The configuration for the project to initialize the manager.
+    /// - Returns: An instance of ``TWSManager``.
+    ///
+    /// Example:
+    /// ```swift
+    /// let manager = TWSFactory.new(with: myConfiguration)
+    /// ```
     public class func new(
         with configuration: TWSConfiguration
     ) -> TWSManager {
@@ -34,9 +44,53 @@ public class TWSFactory {
         )
     }
 
-    /// Sets up the TWS manager
-    /// - Parameter shared: Information about the TWSSnippet opened via universal link
-    /// - Returns: An instance of ``TWSManager``
+    /// Creates and returns a new instance of ``TWSManager`` using shared snippet information.
+    ///
+    /// This method is typically used when handling a universal link that contains snippet data, enabling a seamless experience for handling deep links.
+    ///
+    /// - Parameter shared: Information about the snippet opened via a universal link.
+    /// - Returns: An instance of ``TWSManager``.
+    ///
+    /// ```swift
+    /// let manager = TWSFactory.new(with: sharedSnippet)
+    /// ```
+    ///
+    /// ## Reacting to Universal Links
+    ///
+    /// When a universal link is received, you can use this helper method to create a new flow for TWS. Here’s an example implementation:
+    ///
+    /// ```swift
+    /// struct HomeView: View {
+    ///
+    ///    @Environment(TWSManager.self) var tws
+    ///    @State private var sharedSnippet: TWSSharedSnippet?
+    ///
+    ///    var body: some View {
+    ///        TabView {
+    ///            // Your main content
+    ///        }
+    ///        .task {
+    ///            // 1. Observe events triggered by universal links
+    ///            await tws.observe { event in
+    ///                switch event {
+    ///                case let .universalLinkSnippetLoaded(snippet):
+    ///                    sharedSnippet = snippet
+    ///
+    ///                case .snippetsUpdated, .stateChanged:
+    ///                    break
+    ///
+    ///                @unknown default:
+    ///                    break
+    ///                }
+    ///            }
+    ///        }
+    ///        .sheet(item: $sharedSnippet) {
+    ///            // 2. Use a helper method to create a ``TWSManager`` instance for the snippet and present it
+    ///            TWSView(snippet: $0.snippet)
+    ///                .twsEnable(sharedSnippet: $0)
+    ///        }
+    ///    }
+    /// }
     public class func new(
         with shared: TWSSharedSnippet
     ) -> TWSManager {

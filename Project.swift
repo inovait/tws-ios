@@ -4,6 +4,10 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "TheWebSnippet",
     organizationName: "Inova IT, d.o.o.",
+    options: .options(
+        disableBundleAccessors: true,
+        disableSynthesizedResourceAccessors: true
+    ),
     settings: .settings(
         configurations: [
             .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWSDebug.xcconfig")),

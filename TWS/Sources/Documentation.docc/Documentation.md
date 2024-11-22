@@ -1,30 +1,54 @@
 # ``TWS``
 
-SDK for creating custom mobile apps
+Transform Your Website into a Powerful Mobile App in Minutes.
 
+@Metadata {
+    @CallToAction(
+        url: "https://github.com/inovait/tws-ios", 
+        purpose: link
+    )
+    
+    @PageImage(
+        purpose: icon,
+        source: "appIcon-200x200",
+        alt: "TWS Logo"
+    )
+}
 
 ## Overview
 
-This documentation will guide you through implementing TWS into your own app
+Effortlessly transform your website into a mobile app with our SDK:
 
-![The WebSnippet Logo](appIcon-200x200)
+* **Enhanced WebView**
 
-### Quick tutorial
+    Utilize our open-source WebView component with built-in features like caching, geolocation, cookie handling, and more
 
-- [Getting started](<doc:Tutorial-Table-of-Contents>)
+* **Hybrid Development**
 
-### Setting up the project with CLI
+    Save time and costs by leveraging your website's functionality while focusing native development only on features that enhance the user experience
 
-- [iOS Project Generator CLI](https://github.com/inovait/tws-cli/tree/main/ios)
+* **Real-Time Updates**
 
-### How to handle Google Login
+    Instantly update app content without rewriting extensive code, whether the app is open or running in the background. Schedule snippets to display dynamically
 
-- [Handling Google Login](<doc:GoogleLogin>)
+* **Dynamic Templating**
 
-### Downloading files
+    Create personalized, adaptive content with the lightweight Mustache templating engine, ensuring tailored user experiences
 
-If you download a file through the ``TWSView``, the file will be stored in the app's documents directory. By default that folder is private and you have 2 options available to you:
+## Topics
 
-**1 - Make your documents public:** In your info.plist make sure you've set the "UIFileSharingEnabled" to true. If you have used our project generator it will be already set to true.
+### Essentials
 
-**2 - Check the download completed callback:** On a successful download you'll receive an instance of ``TWSDownloadInfo``. This will include the full path to the downloaded file and you can use this URL to move the file to the location of your choosing.
+- <doc:00_GettingStarted>
+- <doc:01_GoogleLogin>
+
+### Tutorials
+
+- <doc:Tutorial-Table-of-Contents>
+- <doc:GettingStarted>
+
+## See Also
+
+Explore the open-source SDK for additional details.
+
+* [Source code](https://github.com/inovait/tws-ios)

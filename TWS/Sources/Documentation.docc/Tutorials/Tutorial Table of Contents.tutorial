@@ -1,6 +1,6 @@
-@Tutorials(name: "Getting started") {
-    @Intro(title: "Gettings Started") {
-        Follow the tutorial to display your snippets
+@Tutorials(name: "Learn to use the SDK") {
+    @Intro(title: "Getting Started") {
+        Follow the tutorials to learn how to use the SDK for displaying snippets.
     }
     
     @Chapter(name: "Display your first snippet") {
