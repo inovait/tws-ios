@@ -11,7 +11,7 @@ import TWSSnippet
 import TWSModels
 import ComposableArchitecture
 
-private extension URL {
+extension URL {
     static func snippets(for config: TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)

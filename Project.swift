@@ -4,9 +4,14 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "TheWebSnippet",
     organizationName: "Inova IT, d.o.o.",
+    options: .options(
+        disableBundleAccessors: true,
+        disableSynthesizedResourceAccessors: true
+    ),
     settings: .settings(
         configurations: [
             .debug( name: "Debug", xcconfig: .relativeToRoot("config/TWSDebug.xcconfig")),
+            .debug( name: "Testing",settings: ["OTHER_SWIFT_FLAGS": "-DTESTING"], xcconfig: .relativeToRoot("config/TWSDebug.xcconfig")),
             .release(name: "Staging", xcconfig: .relativeToRoot("config/TWS.xcconfig")),
             .release(name: "Release", xcconfig: .relativeToRoot("config/TWS.xcconfig"))
         ]
@@ -32,6 +37,7 @@ let project = Project(
             settings: .settings(
                 configurations: [
                     .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
+                    .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0", "OTHER_SWIFT_FLAGS": "-DTESTING"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
                     .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
                     .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
                 ],
@@ -81,23 +87,7 @@ let project = Project(
                 .target(name: "Playground")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(
-                        name: "Debug",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Staging",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Release",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    )
-                ]
+                configurations: testConfigurations()
             )
         ),
         .target(
@@ -115,11 +105,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
-                ]
+                configurations: distributionConfigurations()
             )
         ),
         .target(
@@ -138,11 +124,7 @@ let project = Project(
                 .target(name: "TWSFormatters")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -159,11 +141,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -174,11 +152,7 @@ let project = Project(
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWSFormatters/Sources/**"],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -193,23 +167,7 @@ let project = Project(
                 .target(name: "TWSSnippets")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(
-                        name: "Debug",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Staging",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Release",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    )
-                ]
+                configurations: testConfigurations()
             )
         ),
         .target(
@@ -225,11 +183,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -245,11 +199,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -262,11 +212,7 @@ let project = Project(
             dependencies: [
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
-                ]
+                configurations: distributionConfigurations()
             )
         ),
         .target(
@@ -281,23 +227,7 @@ let project = Project(
                 .target(name: "TWSModels")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(
-                        name: "Debug",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Staging",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Release",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    )
-                ]
+                configurations: testConfigurations()
             )
         ),
         .target(
@@ -313,11 +243,7 @@ let project = Project(
                 .target(name: "TWSFormatters")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -334,11 +260,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -353,11 +275,7 @@ let project = Project(
                 .target(name: "TWSModels")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -372,23 +290,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(
-                        name: "Debug",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Staging",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Release",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    )
-                ]
+                configurations: testConfigurations()
             )
         ),
         .target(
@@ -404,11 +306,7 @@ let project = Project(
                 .target(name: "TWSLogger")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
+                configurations: internalConfigurations()
             )
         ),
         .target(
@@ -423,23 +321,7 @@ let project = Project(
                 .target(name: "TWSUniversalLinks")
             ],
             settings: .settings(
-                configurations: [
-                    .debug(
-                        name: "Debug",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Staging",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    ),
-                    .release(
-                        name: "Release",
-                        settings: ["SWIFT_VERSION": "6.0"],
-                        xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
-                    )
-                ]
+                configurations: testConfigurations()
             )
         ),
     ],
@@ -447,7 +329,7 @@ let project = Project(
         .scheme(
             name: "Playground",
             buildAction: .buildAction(targets: ["Playground"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"]),
+            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "Playground"),
             profileAction: .profileAction(),
@@ -612,5 +494,48 @@ func targetScriptsTemplate() -> [TargetScript] {
             name: "SwiftLint",
             basedOnDependencyAnalysis: false
         )
+    ]
+}
+
+func testConfigurations() -> [Configuration] {
+    [
+        .debug(
+            name: "Debug",
+            settings: ["SWIFT_VERSION": "6.0"],
+            xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+        ),
+        .debug(
+            name: "Testing",
+            settings: ["SWIFT_VERSION": "6.0"],
+            xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+        ),
+        .release(
+            name: "Staging",
+            settings: ["SWIFT_VERSION": "6.0"],
+            xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+        ),
+        .release(
+            name: "Release",
+            settings: ["SWIFT_VERSION": "6.0"],
+            xcconfig: .relativeToRoot("config/TWSDemo_tests.xcconfig")
+        )
+    ]
+}
+
+func distributionConfigurations() -> [Configuration] {
+    [
+        .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+        .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDistTests.xcconfig")),
+        .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig")),
+        .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDist.xcconfig"))
+    ]
+}
+
+func internalConfigurations() -> [Configuration] {
+    [
+        .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+        .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0", "OTHER_SWIFT_FLAGS": "-DTESTING"]),
+        .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"]),
+        .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
     ]
 }

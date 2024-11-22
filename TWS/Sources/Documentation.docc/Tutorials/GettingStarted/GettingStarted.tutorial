@@ -1,0 +1,74 @@
+@Tutorial(time: 3) {
+    @Intro(title: "Display your first snippet") {
+        Learn how to set up a manager to handle the logic and functionality of your snippets, and then discover how to seamlessly integrate it into your SwiftUI views.
+    }
+    
+    @Section(title: "Connect with the TWS portal") {
+        @ContentAndMedia {
+            The fundamental building block for managing and interacting with snippets in TWS is creating and configuring a project on the TWS portal. A project serves as the core unit for organizing and managing snippets, allowing you to structure and customize functionality for your application.
+
+            This includes retrieving your organization and project IDs, adding snippets to the project, modifying their properties, and integrating them seamlessly into your app. By managing these elements through the TWS portal, you can ensure consistency and scalability across your application's features.
+
+            Most importantly, managing your snippets through the portal keeps the core logic and configuration independent from the app's UI, making it easier to test, maintain, and reuse across different environments.
+        }
+        
+        @Steps {
+            @Step {
+                Create a project on the TWS portal. Once completed, the next step is to integrate it into your app.
+                
+                > Note: Make sure to keep a reference to the organization and project ID, as you will need them later in the setup and integration process.
+                
+                @Code(name: "HelloWorld.swift", file: "GettingStarted_00")
+            }
+            
+            @Step {
+                Import the TWS module at the app's entry point.
+                
+                @Code(name: "HelloWorld.swift", file: "GettingStarted_01")
+            }
+            
+            @Step {
+                Use one of the available methods to inject the manager into your view.
+                
+                > Note: Under the hood, an instance of `TWSManager` is created, establishing a socket connection to the server and handling updates via an `@Observable` manager. If called multiple times, the same instance is shared instead of being recreated.
+                
+                @Code(name: "HelloWorld.swift", file: "GettingStarted_02")
+            }
+        }
+    }
+        
+    @Section(title: "Presenting snippets") {
+        @ContentAndMedia {
+            After injecting it into the view, you can access the ``TWSManager`` from anywhere in the view by retrieving it from the environment. Use the observable object to display snippets and listen for updates seamlessly.
+        }
+        
+        @Steps {
+            
+            @Step {
+                Navigate to the view where you want to display the snippets.
+                
+                @Code(name: "HomeView.swift", file: "GettingStarted_03")
+            }
+            
+            @Step {
+                Pull the ``TWSManager`` from the environment.
+                
+                @Code(name: "HomeView.swift", file: "GettingStarted_04")
+            }
+            
+            @Step {
+                Loop over all the snippets.
+                
+                > Note: You will be notified about the changes when snippets are added, removed or updated.
+                
+                @Code(name: "HomeView.swift", file: "GettingStarted_05")
+            }
+            
+            @Step {
+                Utilize the ``TWSView`` to display the snippets within the view hierarchy.
+                
+                @Code(name: "HomeView.swift", file: "GettingStarted_06")
+            }
+        }
+    }
+}

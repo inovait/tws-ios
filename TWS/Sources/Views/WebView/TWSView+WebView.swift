@@ -14,6 +14,7 @@ struct WebView: UIViewRepresentable {
 
     @Environment(\.navigator) var navigator
     @Environment(\.interceptor) var interceptor
+    @Environment(\.presenter) var presenter
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
@@ -136,6 +137,10 @@ struct WebView: UIViewRepresentable {
             }
             webView.loadHTMLString(htmlToLoad, baseURL: self.url)
         } else {
+            #if DEBUG
+            if !presenter.isLocal { assertionFailure("Should be loaded from resources") }
+            #endif
+
             logger.debug("Load from url: \(url.absoluteString)")
             var urlRequest = URLRequest(url: self.url)
             snippet.headers?.forEach { header in

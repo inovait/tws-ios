@@ -47,12 +47,10 @@ public struct TWSSnippetsFeature: Sendable {
             return .run { [api] send in
                 do {
                     let project = try await api.getProject(configuration())
-                    let resources = await preloadResources(for: project.0, using: api)
                     let serverDate = project.1
 
                     await send(.business(.projectLoaded(.success(.init(
                         project: project.0,
-                        resources: resources,
                         serverDate: serverDate
                     )))))
                 } catch {
@@ -122,7 +120,13 @@ public struct TWSSnippetsFeature: Sendable {
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
-            state.preloadedResources = project.resources
+
+            // Remove old attachments
+            let currentResources = Set(state.preloadedResources.keys)
+            let newResources = _getResources(of: project.project)
+            for resource in currentResources.subtracting(newResources) {
+                state.preloadedResources.removeValue(forKey: resource)
+            }
 
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
 
@@ -140,7 +144,10 @@ public struct TWSSnippetsFeature: Sendable {
                                     .snippets(
                                         .element(
                                             id: snippet.id,
-                                            action: .business(.snippetUpdated(snippet: snippet))
+                                            action: .business(.snippetUpdated(
+                                                snippet: snippet,
+                                                preloaded: snippet.hasResources(for: configuration())
+                                            ))
                                         )
                                     )
                                 )
@@ -152,9 +159,17 @@ public struct TWSSnippetsFeature: Sendable {
                     logger.info("Updated snippet: \(snippet.id)")
                 } else {
                     state.snippets.append(
-                        .init(snippet: snippet)
+                        .init(
+                            snippet: snippet,
+                            preloaded: false
+                        )
                     )
+
                     logger.info("Added snippet: \(snippet.id)")
+                    effects.append(.send(.business(.snippets(.element(
+                        id: snippet.id,
+                        action: .business(.preload)
+                    )))))
                 }
             }
 
@@ -216,7 +231,8 @@ public struct TWSSnippetsFeature: Sendable {
                     try await listen(
                         connectionID: connectionID,
                         stream: stream,
-                        send: send
+                        send: send,
+                        configuration: config
                     )
                 } catch {
                     logger.info("Stopped listening: \(error)")
@@ -283,5 +299,13 @@ public struct TWSSnippetsFeature: Sendable {
             state.snippets[id: snippetId]?.isVisible = false
             return .none
         }
+    }
+
+    // MARK: - Helpers
+
+    private func _getResources(of project: TWSProject) -> Set<TWSSnippet.Attachment> {
+        var headers = [TWSSnippet.Attachment: [String: String]]()
+        let newResources = project.allResources(headers: &headers)
+        return Set(newResources)
     }
 }

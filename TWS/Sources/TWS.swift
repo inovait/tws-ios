@@ -8,14 +8,49 @@ internal import TWSLogger
 internal import TWSSnippets
 internal import TWSSnippet
 
-/// A class that handles all the communication between your app and the SDK's functionalities
+/// A class that manages all communication between your app and the TWS portal. It handles the state and updates of snippets and provides various methods for interacting with the SDK.
+///
+/// ## Initialization
+///
+/// You can create an instance of the manager in two ways: either by using the ``TWSFactory/new(with:)-7y9q7`` or ``TWSFactory/new(with:)-7u4v8`` methods on the ``TWSFactory``. Alternatively, you can utilize SwiftUI View extensions, such as ``SwiftUICore/View/twsEnable(configuration:)`` or ``SwiftUICore/View/twsEnable(sharedSnippet:)``. These extensions internally create the manager using the factory and inject it into the view hierarchy.
+///
+/// > Note: You are responsible for keeping the instance alive. When using the SwiftUI extension, the instance will remain alive as long as the view is active.
+///
+/// ## Displaying Snippets
+///
+/// To iterate over and observe the snippets, use the ``TWSManager/snippets`` property. Leverage the ``TWSView`` to display them in your SwiftUI views.
+///
+/// ```swift
+/// import SwiftUI
+/// import TWS
+///
+/// struct HomeView: View {
+///
+///     @Environment(TWSManager.self) var tws
+///
+///     var  body: some View {
+///         TabView {
+///             ForEach(tws.snippets()) { snippet in
+///                 TWSView(snippet: snippet)
+///             }
+///         }
+///     }
+/// }
+/// ```
 @MainActor
 @Observable
 public final class TWSManager: Identifiable {
 
+    /// The configuration object used to initialize the manager and to access the current project's information.
     public let configuration: TWSConfiguration
 
-    /// A getter for the list of loaded snippets
+    /// A property that provides access to the list of loaded snippets and their current loading state.
+    ///
+    /// The snippets are wrapped in a ``TWSOutcome`` object, which contains:
+    /// - `items`: The current list of snippets.
+    /// - `state`: The loading state of the snippets, represented by ``TWSLoadingState``.
+    ///
+    /// Use this property to observe changes to the snippets or their state, and to display them in the UI.
     public internal(set) var snippets: TWSOutcome<[TWSSnippet]>
 
     let observer: AnyPublisher<TWSStreamEvent, Never>
@@ -59,31 +94,78 @@ public final class TWSManager: Identifiable {
 
     // MARK: - Public
 
+    /// Triggers a manual refresh of the snippets, forcing them to reload from the source.
     public func forceRefresh() {
         store.send(.snippets(.business(.load)))
     }
 
-    /// Start listening for updates. Check ``TWSStreamEvent`` enum for details.
-    /// It is automatically canceled when the parent task is cancelled.
-    /// - Parameter onEvent: A callback triggered for every update
+    /// Starts listening for updates from the SDK. This method provides a callback that is triggered for each event.
+    ///
+    /// - Parameter onEvent: A callback function executed on the main thread for every event update.
+    ///
+    /// To start observing events:
+    ///
+    ///```swift
+    /// ZStack {
+    ///     ...
+    /// }
+    /// // Bind it to the lifetime of the view
+    /// .task {
+    ///    await twsManager.observe() { event in
+    ///     switch event {
+    ///         ...
+    ///     }
+    ///    }
+    ///}
+    ///```
+    ///
+    ///> note: If you only need to listen for updates to snippets, you can use ``TWSManager/snippets`` instead.
+    ///
+    ///## Cancellation
+    ///
+    ///Automatically stops listening when the parent task is canceled. For event types, see the``TWSStreamEvent`` enum.
+    ///
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
         precondition(Thread.isMainThread, "`observe` can only be called on main thread")
         let adapter = CombineToAsyncStreamAdapter(upstream: observer)
         await adapter.listen(onEvent: onEvent)
     }
 
-    /// Defines a custom set of local properties that will be injected into the ``TWSView``.
+    /// Adds a custom set of local properties to a specific snippet. This will affect all views displaying the snippet.
+    ///
     /// - Parameters:
     ///   - localProps: A dictionary containing the local properties to inject.
     ///   - id: The identifier of the snippet to associate with this dictionary.
+    ///
+    /// This method attaches the specified properties to the snippet, which will be used for mustache processing in all views displaying it.
+    ///
+    /// > important: This setting is not persisted between app launches. Ensure the correct properties are set during each app launch.
+    ///
+    /// ### Local view changes
+    ///
+    /// If you want to modify a snippet for a specific view only, update the snippet directly instead:
+    ///
+    /// ```swift
+    /// var snippet = snippet
+    /// snippet.props = .dictionary([
+    ///    "firstName": .string("John"),
+    ///    "lastName": .string("Smith"),
+    ///    "age": .int(42)
+    /// ])
+    /// return TWSView(snippet: snippet)
+    /// ```
+    ///
+    /// ## See Also
+    /// * [Mustache Manual](https://mustache.github.io/mustache.5.html)
     public func set(localProps: [String: TWSSnippet.Props], to id: TWSSnippet.ID) {
         precondition(Thread.isMainThread, "`set(customProps:,to:)` can only be called on main thread")
         store.send(.snippets(.business(.setLocalProps(props: (id, localProps)))))
     }
 
-    /// An async function that gathers all the logs in the current session
-    /// - Parameter reportFiltering: A function that lets you define which data of the logs do you want displayed
-    /// - Returns: An URL of the file that has all the logs written inside
+    /// Generates a report of all logs from the current session and returns a file URL.
+    /// - Parameter reportFiltering: AA function to filter and transform log entries into strings for the report
+    /// - Returns: An optional URL pointing to the generated log file
+    /// - Throws: An error if the bundle identifier is unavailable or the report generation fails.
     public func getLogsReport(reportFiltering: @Sendable @escaping (TWSLogEntryLog) -> String) async throws -> URL? {
 
         let bundleId = Bundle.main.bundleIdentifier
@@ -101,8 +183,41 @@ public final class TWSManager: Identifiable {
         throw LoggerError.bundleIdNotAvailable
     }
 
-    /// A function you use to handle universal links regarding snippets
-    /// - Parameter url: The received universal link
+    /// Handles universal links related to snippets
+    /// - Parameter url: The universal link to process.
+    ///
+    /// ## Discussion
+    ///
+    /// When an app is opened with an universal link, forward the call to ``TWS`` to give it an opportunity to parse the URL.
+    ///
+    /// ```swift
+    /// .onOpenURL(perform: { url in
+    ///    twsViewModel.handleIncomingUrl(url)
+    ///})
+    ///// This is needed when a link is opened by scanning a QR code with the camera app.
+    ///// In that case, the `onOpenURL` is not called.
+    ///.onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
+    ///    guard let url = userActivity.webpageURL
+    ///    else { return }
+    ///    twsViewModel.handleIncomingUrl(url)
+    ///})
+    /// ```
+    ///
+    /// If the link is a valid TWS universal link, it will be parsed and you will be notified about it in the by subscribing to the ``TWSManager/observe(onEvent:)`` queue:
+    ///
+    /// ```swift
+    /// ZStack {
+    ///     ...
+    /// }
+    /// // Bind it to the lifetime of the view
+    /// .task {
+    ///    await twsManager.observe() { event in
+    ///     switch event {
+    ///         ...
+    ///     }
+    ///    }
+    ///}
+    /// ```
     public func handleIncomingUrl(_ url: URL) {
         precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
         store.send(.universalLinks(.business(.onUniversalLink(url))))

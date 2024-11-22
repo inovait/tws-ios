@@ -12,20 +12,18 @@ import ComposableArchitecture
 
 public extension Reducer {
 
+    // MARK: - Loading resources
+
     func preloadResources(
         for snippet: TWSSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
-        let attachments = snippet.dynamicResources ?? []
-        let homepage = TWSSnippet.Attachment.init(
-            url: snippet.target,
-            contentType: .html
-        )
+        var headers = [TWSSnippet.Attachment: [String: String]]()
+        let resources = snippet.allResources(headers: &headers)
 
         return await _preloadResources(
-            homepages: [homepage],
-            resources: attachments,
-            headers: [homepage: snippet.headers ?? [:]],
+            resources: resources,
+            headers: headers,
             using: api
         )
     }
@@ -34,22 +32,11 @@ public extension Reducer {
         for project: TWSProject,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
-        let attachments = project.snippets
-            .compactMap(\.dynamicResources)
-            .flatMap { $0 }
-        var homepages = [TWSSnippet.Attachment]()
         var headers = [TWSSnippet.Attachment: [String: String]]()
-        project.snippets.forEach { snippet in
-            let homepage = TWSSnippet.Attachment(
-                url: snippet.target,
-                contentType: .html)
-            homepages.append(homepage)
-            headers[homepage] = snippet.headers
-        }
+        let resources = project.allResources(headers: &headers)
 
         return await _preloadResources(
-            homepages: homepages,
-            resources: attachments,
+            resources: resources,
             headers: headers,
             using: api
         )
@@ -59,22 +46,19 @@ public extension Reducer {
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: String] {
-        let homepage = TWSSnippet.Attachment(
-            url: sharedSnippet.snippet.target,
-            contentType: .html
-        )
-        let attachments = sharedSnippet.snippet.dynamicResources ?? []
-        let headers = [homepage: sharedSnippet.snippet.headers ?? [:]]
+        var headers = [TWSSnippet.Attachment: [String: String]]()
+        let resources = sharedSnippet.allResources(headers: &headers)
+
         return await _preloadResources(
-            homepages: [homepage],
-            resources: attachments,
+            resources: resources,
             headers: headers,
             using: api
         )
     }
 
+    // MARK: - Helpers
+
     private func _preloadResources(
-        homepages: [TWSSnippet.Attachment],
         resources: [TWSSnippet.Attachment],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
@@ -84,7 +68,7 @@ public extension Reducer {
             returning: [TWSSnippet.Attachment: String].self
         ) { [api] group in
             // Use a set to download each resource only once, even if it is used in multiple snippets
-            for resource in Set(homepages + resources) {
+            for resource in Set(resources) {
                 group.addTask { [resource] in
                     do {
                         let payload = try await api.getResource(resource, headers[resource] ?? [:])
