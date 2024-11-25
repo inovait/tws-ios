@@ -9,6 +9,7 @@
 import Foundation
 
 /// Details about the TWS project, including the WebSocket URL for listening to changes, code snippets, organizational information, and more.
+@_documentation(visibility: internal)
 public struct TWSProject: Codable, Equatable, Sendable {
 
     /// A socket used to listen for changes, such as snippet being modified, deleted or added

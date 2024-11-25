@@ -8,6 +8,29 @@
 
 import Foundation
 
+/// A class that represents the state of a ``TWSView``.
+///
+/// This class stores information about the snippet's title and its current loading state. It is used by ``TWSView`` to manage and observe changes in the snippet's state.
+///
+/// ```swift
+/// struct SomeView: View {
+///
+///    @State private var state: TWSViewState = .init()
+///    let snippet: TWSSnippet
+///
+///    var body: some View {
+///        @Bindable var state = state
+///        TWSView(
+///            snippet: snippet,
+///            state: $state // Inject state
+///        )
+///        // Observe changes
+///        .onChange(of: state.loadingState) { _, state in
+///            print("State changed: \(state)")
+///        }
+///    }
+///}
+///```
 @Observable
 public final class TWSViewState {
 

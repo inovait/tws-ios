@@ -8,19 +8,32 @@
 
 import Foundation
 
-/// A struct used to provided all information for a TWS manager to receive snippets and connect to the socket for updats
+/// A struct that provides all the necessary information for a ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
 public struct TWSConfiguration: Hashable, Sendable {
 
-    /// The ID of the TWS organization
+    /// The unique identifier of the TWS organization.
     public let organizationID: String
 
-    /// The ID of the TWS project
+    /// The unique identifier of the TWS project.
     public let projectID: String
 
-    /// Initializes a new configuration
+    // MARK: - Initializer
+
+    /// Initializes a new ``TWSConfiguration`` with the provided organization and project IDs.
+    ///
     /// - Parameters:
-    ///   - organizationID: A valid UUID of the TWS organization.
-    ///   - projectID: A valid UUID of the TWS project.
+    ///   - organizationID: An ID representing the TWS organization.
+    ///   - projectID: An ID representing the TWS project.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let config = TWSConfiguration(
+    ///     organizationID: "<ORGANIZATION_ID>",
+    ///     projectID: "<PROJECT_ID>"
+    /// )
+    /// ```
+    /// This example demonstrates how to create a configuration for a specific organization and project.
     public init(
         organizationID: String,
         projectID: String

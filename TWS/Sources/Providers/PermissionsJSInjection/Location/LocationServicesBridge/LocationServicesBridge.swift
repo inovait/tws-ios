@@ -9,37 +9,45 @@
 import Foundation
 import CoreLocation
 
-/// An location service interface used to communicate between the JavaScript world and the iOS world
+/// A protocol defining a service interface for location-related interactions.
+///
+/// This interface facilitates communication between the JavaScript environment and the iOS environment, handling location permissions, retrieving the current position, and managing continuous location updates.
+///
+/// > Note: By default, a location services manager is provided. You can supply your own implementation by using the ``SwiftUICore/View/twsBind(locationServiceBridge:)`` helper function.
 public protocol LocationServicesBridge: Actor {
 
-    /// Before calling `getCurrentPosition` or `watchPosition`,
-    /// we must first check if the necessary permissions are granted.
-    /// If permissions are not granted, we'll need to notify the JavaScript side.
-    /// If permissions are in place, we can proceed by either retrieving a single
-    /// location or starting continuous location updates.
+    /// Checks if location permissions are granted.
+    ///
+    /// Before calling `getCurrentPosition` or `watchPosition`, this method verifies whether the necessary permissions are in place.
+    /// If permissions are not granted, it notifies the JavaScript environment.
+    ///
+    /// - Throws: An error if the user denies or restricts access to location services.
     func checkPermission() async throws
 
-    /// Get a single, last known location
+    /// Retrieves the most recent known location.
+    ///
     /// - Parameters:
-    ///  - id: The unique identifier for the location update session.
-    ///  - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
-    /// - Returns: The most recent location available, or `nil` if no location data is available.
+    ///   - id: A unique identifier for the location update session.
+    ///   - options: An optional instance of ``JSLocationMessageOptions`` specifying options such as maximum age, timeout, and accuracy for the location updates.
+    /// - Returns: The last known location, or `nil` if no location data is available.
     func location(
         id: Double,
         options: JSLocationMessageOptions?
     ) async -> CLLocation?
 
-    /// Begin continuous location updates using the specified ID
+    /// Starts continuous location updates.
+    ///
     /// - Parameters:
-    ///   - id: The unique identifier for the location update session.
-    ///   - options: An instance of `JSLocationMessageOptions` that specifies options such as maximum age, timeout, and accuracy for the location updates.
-    /// - Returns: An asynchronous stream of `CLLocation` objects representing the device’s location over time.
+    ///   - id: A unique identifier for the location update session.
+    ///   - options: An optional instance of `JSLocationMessageOptions` specifying options such as maximum age, timeout, and accuracy for the location updates.
+    /// - Returns: An `AsyncStream` that yields `CLLocation` objects as the device's location updates.
     func startUpdatingLocation(
         id: Double,
         options: JSLocationMessageOptions?
     ) -> AsyncStream<CLLocation>
 
-    /// Stop continuous location updates associated with the specified ID
+    /// Stops continuous location updates for the specified session ID.
+    ///
     /// - Parameter id: The unique identifier for the location update session to be stopped.
     func stopUpdatingLocation(id: Double)
 }
