@@ -1,0 +1,43 @@
+@Tutorial(time: 2) {
+    @Intro(title: "Using snippets locally") {
+        Learn how to work with TWS snippets locally without connecting to our backend service. This tutorial will guide you through the steps to display a webpage snippet in your app, bypassing the backend, and focusing solely on rendering and showcasing the snippet content.
+    }
+    
+    @Section(title: "Displaying a Snippet") {
+        @ContentAndMedia {
+            In this section, you'll learn how to create a TWS snippet for local use. We'll guide you through defining the snippet's essential properties, such as its unique identifier, target URL, and any custom properties or headers required for rendering. By the end of this section, you'll have a fully configured snippet ready to display.
+        }
+        
+        @Steps {
+            @Step {
+                Create a local instance of a snippet.
+                
+                @Code(name: "HomeView.swift", file: "LocalSnippet_00")
+            }
+            
+            @Step {
+                When needed, modify the URL of a snippet directly.
+                
+                @Code(name: "HomeView.swift", file: "LocalSnippet_01")
+            }
+            
+            @Step {
+                If you want to attach headers to the request, set them by modifying the `headers` parameter.
+                
+                @Code(name: "HomeView.swift", file: "LocalSnippet_02")
+            }
+            
+            @Step {
+                If you want to use [Mustache](https://mustache.github.io/mustache.5.html) processing, first change the engine to Mustache and then add the variables.
+                
+                @Code(name: "HomeView.swift", file: "LocalSnippet_03")
+            }
+            
+            @Step {
+                Displaying a local snippet is as simple as rendering it in a `TWSView`.
+                
+                @Code(name: "HomeView.swift", file: "LocalSnippet_04")
+            }
+        }
+    }
+}
