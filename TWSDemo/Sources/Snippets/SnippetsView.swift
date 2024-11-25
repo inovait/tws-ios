@@ -23,16 +23,6 @@ struct SnippetsView: View {
                         SnippetView(snippet: snippet)
                             .twsLocal(source != .server)
                     }
-
-                    ForEach(twsManager.snippets()) { snippet in
-                        var snippet = snippet
-                        snippet.props = .dictionary([
-                            "key1": .string("value1"),
-                            "key2": .int(42)
-                        ])
-
-                        return TWSView(snippet: snippet)
-                    }
                 }
                 .padding()
             }
