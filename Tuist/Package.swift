@@ -40,6 +40,10 @@ let package = Package(
         .package(
             url: "https://github.com/groue/GRMustache.swift",
             exact: .init(6, 0, 0)
+        ),
+        .package(
+            url: "https://github.com/Kitura/Swift-JWT.git",
+            exact: .init(4, 0, 0)
         )
     ]
 )

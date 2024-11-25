@@ -310,7 +310,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSFormatters")
+                .target(name: "TWSFormatters"),
+                .external(name: "SwiftJWT")
             ],
             settings: .settings(
                 configurations: [
