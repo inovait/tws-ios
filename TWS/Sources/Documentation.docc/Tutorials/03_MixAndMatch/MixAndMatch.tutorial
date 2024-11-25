@@ -1,0 +1,49 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Combine remote and local snippets") {
+        Once you start mixing remote and local snippets, there are a few important considerations to keep in mind. Since the manager is injected into the environment, it can be accessed from anywhere in the app. However, this setup assumes that snippets are handled remotely. To successfully work with both remote and local snippets, you'll need to follow specific rules and best practices.
+        
+        > Note: If you are exclusively using either remote or local handling for snippets, these additional considerations are not necessary.
+    }
+    
+    @Section(title: "Mix & Match") {
+        @ContentAndMedia {
+            Let's begin by displaying a few remote snippets, then integrate some local snippets, and finally switch back to remote ones. 
+            
+            
+        }
+        
+        @Steps {
+            @Step {
+                Start by enabling TWS by providing the Organization and Project identifiers.
+                
+                @Code(name: "App.swift", file: "MixAndMatch_00")
+            }
+            
+            @Step {
+                Show all of the remote snippets in the `TabView`.
+                
+                @Code(name: "HomeView.swift", file: "MixAndMatch_01")
+            }
+            
+            @Step {
+                Now, let's imagine there is a developer tool hosted on a specific site that allows us to control a snippet, but this tool is not returned from the server. In this case, we can pair the snippet with the developer tool by displaying them side-by-side. This approach allows developers to interact with and control the snippet in real time while viewing it within the application.
+                
+                @Code(name: "HomeView.swift", file: "MixAndMatch_02")
+            }
+            
+            @Step {
+                Because the manager is injected into the view and all its ancestor views, the SDK assumes that the snippet should be handled in correspondence with the remotely hosted snippet. To override this behavior, we need to explicitly inform the system that we are taking over from this point forward.
+                
+                > Note: Once you take over, all ancestor views are treated as local snippets. If you need to use remote snippets again, you must call `.twsLocal(false)` to restore the default behavior.
+                
+                @Code(name: "HomeView.swift", file: "MixAndMatch_03")
+            }
+            
+            @Step {
+                Now, if we want to use remote snippets again, we'll need to switch back to remote handling. 
+                
+                @Code(name: "HomeView.swift", file: "MixAndMatch_04")
+            }
+        }
+    }
+}

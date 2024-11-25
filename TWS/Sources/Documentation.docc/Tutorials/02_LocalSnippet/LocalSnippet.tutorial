@@ -1,11 +1,11 @@
 @Tutorial(time: 2) {
-    @Intro(title: "Using snippets locally") {
+    @Intro(title: "Use snippets locally") {
         Learn how to work with TWS snippets locally without connecting to our backend service. This tutorial will guide you through the steps to display a webpage snippet in your app, bypassing the backend, and focusing solely on rendering and showcasing the snippet content.
     }
     
     @Section(title: "Displaying a Snippet") {
         @ContentAndMedia {
-            In this section, you'll learn how to create a TWS snippet for local use. We'll guide you through defining the snippet's essential properties, such as its unique identifier, target URL, and any custom properties or headers required for rendering. By the end of this section, you'll have a fully configured snippet ready to display.
+            In this section, you'll learn how to create a TWS snippet for local use. We'll guide you through defining the snippet's essential properties, such as target URL, and any custom properties or headers required for rendering. By the end of this section, you'll have a fully configured snippet ready to display.
         }
         
         @Steps {

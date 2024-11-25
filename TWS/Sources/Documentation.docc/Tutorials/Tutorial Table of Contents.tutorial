@@ -10,5 +10,6 @@
         
         @TutorialReference(tutorial: "doc:GettingStarted")
         @TutorialReference(tutorial: "doc:LocalSnippet")
+        @TutorialReference(tutorial: "doc:MixAndMatch")
     }
 }
