@@ -14,6 +14,7 @@ private struct JWTData {
     let clientId: String
 }
 
+// periphery:ignore
 private struct Payload: Claims {
     let exp: String
     let iss: String
