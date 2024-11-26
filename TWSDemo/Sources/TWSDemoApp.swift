@@ -33,6 +33,24 @@ struct TWSDemoApp: App {
                         organizationID: "inova.tws",
                         projectID: "4166c981-56ae-4007-bc93-28875e6a2ca5"
                     ))
+                    .twsBind(loadingView: {
+                        AnyView(
+                            ProgressView {
+                                Text("Loading...")
+                            }
+                        )
+                    })
+                    .twsBind(errorView: { error in
+                        AnyView(
+                            VStack {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.red)
+
+                                Text("An error occurred: \(error)")
+                            }
+                        )
+                    })
                     .twsBind(preloadingView: {
                         AnyView(Text("Preloading..."))
                     })

@@ -40,12 +40,15 @@ Effortlessly transform your website into a mobile app with our SDK:
 ### Essentials
 
 - <doc:00_GettingStarted>
-- <doc:01_GoogleLogin>
+- <doc:01_Customizations>
+- <doc:02_GoogleLogin>
 
 ### Tutorials
 
 - <doc:Tutorial-Table-of-Contents>
 - <doc:GettingStarted>
+- <doc:LocalSnippet>
+- <doc:MixAndMatch>
 
 ## See Also
 

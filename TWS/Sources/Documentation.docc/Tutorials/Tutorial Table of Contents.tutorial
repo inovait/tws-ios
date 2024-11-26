@@ -4,7 +4,7 @@
     }
     
     @Chapter(name: "Display your first snippet") {
-        This tutorial will show you how to setup TWS and display your snippet
+        Learn how to setup TWS and display your snippet
         
         @Image(source: appIcon-200x200, alt: "TWS Logo")
         
