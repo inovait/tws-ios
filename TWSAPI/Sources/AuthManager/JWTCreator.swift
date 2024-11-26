@@ -23,71 +23,65 @@ private struct Payload: Claims {
     // swiftlint:enable identifier_name
 }
 
-func fetchLoginAndRegisterUrls() -> (String, String)? {
-    let frameworkBundle = Bundle(for: Router.self)
-    guard let jsonFilePath = frameworkBundle.url(forResource: "tws-service", withExtension: "json") else {
-        logger.err("Unable to locate tws-service.json in the project directory.")
-        return nil
-    }
+struct JWTCreator {
 
-    do {
-        let jsonData = try Data(contentsOf: jsonFilePath)
-        guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
-              let loginUrl = jsonDict["login_uri"],
-              let registerUrl = jsonDict["register_uri"]
-        else {
-            logger.err("The tws-service.json is present, but it's form is corrupted.")
-            return nil
+    static func fetchLoginAndRegisterUrls() -> (String, String)? {
+        guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
+            fatalError("Unable to locate tws-service.json in the project directory.")
         }
-        return (loginUrl, registerUrl)
-    } catch {
-        logger.err("The tws-service.json is present, but it's form is corrupted.")
-        return nil
-    }
-}
 
-func generateMainJWTToken() -> String {
-    guard let jwtData = getJWTData() else {
-        return ""
+        do {
+            let jsonData = try Data(contentsOf: URL(fileURLWithPath: jsonFilePath))
+            guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
+                  let loginUrl = jsonDict["login_uri"],
+                  let registerUrl = jsonDict["register_uri"]
+            else {
+                fatalError("The tws-service.json is present, but it's form is corrupted.")
+            }
+            return (loginUrl, registerUrl)
+        } catch {
+            fatalError("The tws-service.json is present, but it's form is corrupted.")
+        }
     }
 
-    let header = Header(kid: jwtData.privateKeyId)
-    let payload = Payload(
-        exp: "211100000000",
-        iss: jwtData.clientId,
-        client_id: jwtData.clientId
-    )
+    static func generateMainJWTToken() -> String {
+        guard let jwtData = getJWTData() else {
+            return ""
+        }
 
-    var jwt = JWT(header: header, claims: payload)
+        let header = Header(kid: jwtData.privateKeyId)
+        let payload = Payload(
+            exp: "211100000000",
+            iss: jwtData.clientId,
+            client_id: jwtData.clientId
+        )
 
-    guard let privateKey = jwtData.secret.data(using: .utf8) else {
-        logger.err("JWT signing failed")
-        return ""
+        var jwt = JWT(header: header, claims: payload)
+
+        guard let privateKey = jwtData.secret.data(using: .utf8) else {
+            fatalError("JWT signing failed")
+        }
+        let jwtSigner = JWTSigner.rs256(privateKey: privateKey)
+        if let signedJWT = try? jwt.sign(using: jwtSigner) {
+            return signedJWT
+        }
+        fatalError("Failed to sign the JWT")
     }
-    let jwtSigner = JWTSigner.rs256(privateKey: privateKey)
-    if let signedJWT = try? jwt.sign(using: jwtSigner) {
-        return signedJWT
-    }
-    logger.err("Failed to sign the JWT")
-    return ""
 }
 
 private func getJWTData() -> JWTData? {
-    let frameworkBundle = Bundle(for: Router.self)
-    guard let jsonFilePath = frameworkBundle.url(forResource: "tws-service", withExtension: "json") else {
-        logger.err("Unable to locate tws-service.json in the project directory.")
-        return nil
+    guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
+        fatalError("Unable to locate tws-service.json in the project directory.")
     }
 
     do {
-        let jsonData = try Data(contentsOf: jsonFilePath)
+        let jsonData = try Data(contentsOf: URL(fileURLWithPath: jsonFilePath))
         guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
               let secret = jsonDict["private_key"],
               let privateKeyId = jsonDict["private_key_id"],
               let clientId = jsonDict["client_id"]
         else {
-            logger.err("The tws-service.json is present, but it's form is corrupted.")
-            return nil
+            fatalError("The tws-service.json is present, but it's form is corrupted.")
         }
         return JWTData(
             secret: secret,
@@ -95,7 +89,6 @@ private func getJWTData() -> JWTData? {
             clientId: clientId
         )
     } catch {
-        logger.err("The tws-service.json is present, but it's form is corrupted.")
-        return nil
+        fatalError("The tws-service.json is present, but it's form is corrupted.")
     }
 }

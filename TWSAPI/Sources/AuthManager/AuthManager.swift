@@ -18,14 +18,15 @@ actor AuthManager {
     private let refreshTokenKey = "TWSRefreshToken"
     private let JWTTokenKey = "TWSJWTToken"
 
+    private var ongoingRefreshTask: Task<String, Error>?
+    private var ongoingAccessTask: Task<String, Error>?
+
     init() {
-        if let twsServiceUrls = fetchLoginAndRegisterUrls() {
+        if let twsServiceUrls = JWTCreator.fetchLoginAndRegisterUrls() {
             loginUrl = twsServiceUrls.0
             registerUrl = twsServiceUrls.1
         } else {
-            logger.err("Unable to connect with the server. Check your tws-service.json.")
-            loginUrl = ""
-            registerUrl = ""
+            fatalError("Unable to connect with the server. Check your tws-service.json.")
         }
     }
 
@@ -34,31 +35,66 @@ actor AuthManager {
     }
 
     func getAccessToken(_ force: Bool) async throws -> String {
-        if !force {
-            if let savedAccessToken = keychainHelper.get(for: accessTokenKey) {
-                return savedAccessToken
-            }
+        if let ongoingTask = ongoingAccessTask {
+            return try await ongoingTask.value
         }
 
-        let refreshToken = try await getRefreshToken(force)
-        let accessToken = try await requestAccessToken(refreshToken)
-        keychainHelper.save(accessToken, for: accessTokenKey)
-        return accessToken
+        let accessTask = Task { () -> String in
+            if !force {
+                if let savedAccessToken = keychainHelper.get(for: accessTokenKey) {
+                    return savedAccessToken
+                }
+            }
+
+            let refreshToken = try await getRefreshToken(force)
+            let accessToken = try await requestAccessToken(refreshToken)
+            keychainHelper.save(accessToken, for: accessTokenKey)
+            return accessToken
+        }
+
+        ongoingAccessTask = accessTask
+
+        do {
+            let result = try await accessTask.value
+            ongoingAccessTask = nil
+            return result
+        } catch {
+            ongoingAccessTask = nil
+            throw error
+        }
+
     }
 
     private func getRefreshToken(_ force: Bool) async throws -> String {
-        if !force {
-            if let savedRefreshToken = keychainHelper.get(for: refreshTokenKey) {
-                return savedRefreshToken
-            }
+        if let ongoingTask = ongoingRefreshTask {
+            return try await ongoingTask.value
         }
 
-        let jwtToken = getJWTToken(force)
-        let refreshToken = try await requestRefreshToken(jwtToken)
-        keychainHelper.save(refreshToken, for: refreshTokenKey)
-        return refreshToken
+        let refreshTask = Task { () -> String in
+            if !force {
+                if let savedRefreshToken = keychainHelper.get(for: refreshTokenKey) {
+                    return savedRefreshToken
+                }
+            }
+
+            let jwtToken = getJWTToken(force)
+            let refreshToken = try await requestRefreshToken(jwtToken)
+            keychainHelper.save(refreshToken, for: refreshTokenKey)
+            return refreshToken
+        }
+
+        ongoingRefreshTask = refreshTask
+
+        do {
+            let result = try await refreshTask.value
+            ongoingRefreshTask = nil
+            return result
+        } catch {
+            ongoingRefreshTask = nil
+            throw error
+        }
     }
-    
+
     private func getJWTToken(_ force: Bool) -> String {
         if !force {
             if let savedJWTToken = keychainHelper.get(for: JWTTokenKey) {
@@ -66,7 +102,7 @@ actor AuthManager {
             }
         }
 
-        let jwtToken = generateMainJWTToken()
+        let jwtToken = JWTCreator.generateMainJWTToken()
         keychainHelper.save(jwtToken, for: JWTTokenKey)
         return jwtToken
     }
