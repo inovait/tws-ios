@@ -22,12 +22,9 @@ actor AuthManager {
     private var ongoingAccessTask: Task<String, Error>?
 
     init() {
-        if let twsServiceUrls = JWTCreator.fetchLoginAndRegisterUrls() {
-            loginUrl = twsServiceUrls.0
-            registerUrl = twsServiceUrls.1
-        } else {
-            fatalError("Unable to connect with the server. Check your tws-service.json.")
-        }
+        let twsServiceUrls = JWTCreator.fetchLoginAndRegisterUrls()
+        loginUrl = twsServiceUrls.0
+        registerUrl = twsServiceUrls.1
     }
 
     func forceRefreshTokens() async throws {

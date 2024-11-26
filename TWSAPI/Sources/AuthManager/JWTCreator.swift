@@ -25,7 +25,7 @@ private struct Payload: Claims {
 
 struct JWTCreator {
 
-    static func fetchLoginAndRegisterUrls() -> (String, String)? {
+    static func fetchLoginAndRegisterUrls() -> (String, String) {
         guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
             fatalError("Unable to locate tws-service.json in the project directory.")
         }
@@ -45,9 +45,7 @@ struct JWTCreator {
     }
 
     static func generateMainJWTToken() -> String {
-        guard let jwtData = getJWTData() else {
-            return ""
-        }
+        let jwtData = getJWTData()
 
         let header = Header(kid: jwtData.privateKeyId)
         let payload = Payload(
@@ -67,28 +65,28 @@ struct JWTCreator {
         }
         fatalError("Failed to sign the JWT")
     }
-}
+    
+    private static func getJWTData() -> JWTData {
+        guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
+            fatalError("Unable to locate tws-service.json in the project directory.")
+        }
 
-private func getJWTData() -> JWTData? {
-    guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
-        fatalError("Unable to locate tws-service.json in the project directory.")
-    }
-
-    do {
-        let jsonData = try Data(contentsOf: URL(fileURLWithPath: jsonFilePath))
-        guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
-              let secret = jsonDict["private_key"],
-              let privateKeyId = jsonDict["private_key_id"],
-              let clientId = jsonDict["client_id"]
-        else {
+        do {
+            let jsonData = try Data(contentsOf: URL(fileURLWithPath: jsonFilePath))
+            guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
+                  let secret = jsonDict["private_key"],
+                  let privateKeyId = jsonDict["private_key_id"],
+                  let clientId = jsonDict["client_id"]
+            else {
+                fatalError("The tws-service.json is present, but it's form is corrupted.")
+            }
+            return JWTData(
+                secret: secret,
+                privateKeyId: privateKeyId,
+                clientId: clientId
+            )
+        } catch {
             fatalError("The tws-service.json is present, but it's form is corrupted.")
         }
-        return JWTData(
-            secret: secret,
-            privateKeyId: privateKeyId,
-            clientId: clientId
-        )
-    } catch {
-        fatalError("The tws-service.json is present, but it's form is corrupted.")
     }
 }
