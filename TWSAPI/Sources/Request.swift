@@ -15,6 +15,7 @@ struct Request {
     let host: String
     let queryItems: [URLQueryItem]
     let headers: [String: String]
+    let auth: Bool
 }
 
 extension Request {

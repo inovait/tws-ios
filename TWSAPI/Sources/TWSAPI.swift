@@ -27,12 +27,13 @@ public struct TWSAPI {
                 let projectID = configuration.projectID
                 let result = try await Router.make(request: .init(
                         method: .get,
-                        path: "/organizations/\(organizationID)/projects/\(projectID)/register",
+                        path: "/organizations/\(organizationID)/projects/\(projectID)/v2/register",
                         host: host,
                         queryItems: [
                             .init(name: "apiKey", value: "abc123")
                         ],
-                        headers: [:]
+                        headers: [:],
+                        auth: true
                     ))
 
                 do {
@@ -55,7 +56,8 @@ public struct TWSAPI {
                     ],
                     headers: [
                         "Accept": "application/json"
-                    ]
+                    ],
+                    auth: true
                 ))
 
                 do {
@@ -70,7 +72,8 @@ public struct TWSAPI {
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
                     queryItems: [],
-                    headers: headers
+                    headers: headers,
+                    auth: false
                 ))
 
                 if let payload = String(data: result.data, encoding: .utf8) {
