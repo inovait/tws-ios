@@ -41,7 +41,8 @@ Effortlessly transform your website into a mobile app with our SDK:
 
 - <doc:00_GettingStarted>
 - <doc:01_Customizations>
-- <doc:02_GoogleLogin>
+- <doc:02_FileDownloads>
+- <doc:03_GoogleLogin>
 
 ### Tutorials
 
