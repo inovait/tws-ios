@@ -18,36 +18,6 @@ let project = Project(
     ),
     targets: [
         .target(
-            name: "Playground",
-            destinations: .iOS,
-            product: .app,
-            bundleId: "com.inova.twsPlayground",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .extendingDefault(with: infoPlist()),
-            sources: ["TWSDemo/Sources/**"],
-            resources: ["TWSDemo/Resources/**"],
-            entitlements: getEntitlements(),
-            scripts: targetScripts(),
-            dependencies: [
-                .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWS"),
-                .external(name: "Atlantis")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0", "OTHER_SWIFT_FLAGS": "-DTESTING"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
-                ],
-                defaultSettings: .recommended(excluding: [
-                    "CODE_SIGN_IDENTITY",
-                    "DEVELOPMENT_TEAM"
-                ])
-            )
-        ),
-        .target(
             name: "Template",
             destinations: .iOS,
             product: .app,
@@ -73,21 +43,6 @@ let project = Project(
                     "CODE_SIGN_IDENTITY",
                     "DEVELOPMENT_TEAM"
                 ])
-            )
-        ),
-        .target(
-            name: "TWSDemoTests",
-            destinations: .iOS,
-            product: .unitTests,
-            bundleId: "com.inova.twsTests",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .default,
-            sources: ["TWSDemoTests/Sources/**"],
-            dependencies: [
-                .target(name: "Playground")
-            ],
-            settings: .settings(
-                configurations: testConfigurations()
             )
         ),
         .target(
