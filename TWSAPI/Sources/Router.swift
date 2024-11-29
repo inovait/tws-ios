@@ -10,6 +10,8 @@ import Foundation
 
 class Router {
 
+    private static let authManager = AuthManager()
+
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
         newDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
@@ -18,7 +20,7 @@ class Router {
         return newDateFormatter
     }()
 
-    class func make(request: Request) async throws(APIError) -> APIResult {
+    class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = "https"
         components.host = request.host
@@ -41,6 +43,12 @@ class Router {
         logger.info(urlRequest.debugDescription)
 
         do {
+            if request.auth {
+                urlRequest.setValue(
+                    "Bearer \(try await authManager.getAccessToken(false))",
+                    forHTTPHeaderField: "Authorization"
+                )
+            }
             let result = try await URLSession.shared.data(for: urlRequest)
             guard
                 let httpResult = result.1 as? HTTPURLResponse
@@ -58,6 +66,13 @@ class Router {
                     data: result.0,
                     dateOfResponse: serverDate
                 )
+            } else if httpResult.statusCode == 401 {
+                if retryEnabled {
+                    try await authManager.forceRefreshTokens()
+                    return try await make(request: request, retryEnabled: false)
+                } else {
+                    throw APIError.server(httpResult.statusCode, result.0)
+                }
             } else {
                 logger.err(String(data: result.0, encoding: .utf8) ?? "null")
                 throw APIError.server(httpResult.statusCode, result.0)
@@ -79,4 +94,5 @@ public enum APIError: Error {
     case local(Error)
     case server(Int, Data)
     case decode(Error)
+    case auth(String)
 }
