@@ -48,6 +48,26 @@ let project = Project(
             )
         ),
         .target(
+            name: "Sample",
+            destinations: .iOS,
+            product: .app,
+            bundleId: "com.inova.twsSample",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: infoPlist()),
+            sources: ["TWSSample/Sources/**"],
+            resources: ["TWSSample/Resources/**"],
+            entitlements: getEntitlements(),
+            dependencies: [
+                .target(name: "TWS")
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
+                ]
+            )
+        ),
+        .target(
             name: "Template",
             destinations: .iOS,
             product: .app,
