@@ -26,7 +26,6 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
-            entitlements: getEntitlements(),
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
@@ -51,21 +50,14 @@ let project = Project(
             name: "Sample",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.inova.twsSample",
+            bundleId: "com.tws.sample",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSSample/Sources/**"],
             resources: ["TWSSample/Resources/**"],
-            entitlements: getEntitlements(),
             dependencies: [
                 .target(name: "TWS")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"]),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"])
-                ]
-            )
+            ]
         ),
         .target(
             name: "Template",
@@ -76,7 +68,6 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlistTemplate()),
             sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
             resources: ["Submodule_tws-cli-resources/iOS/App/Resources/**"],
-            entitlements: getEntitlements(),
             scripts: targetScriptsTemplate(),
             dependencies: [
                 .target(name: "TWS")
@@ -370,17 +361,6 @@ let project = Project(
 
 func deploymentTarget() -> String {
     "17.0"
-}
-
-func getEntitlements() -> Entitlements {
-    return Entitlements.dictionary([
-        "com.apple.developer.associated-domains":
-            [
-                "applinks:thewebsnippet.com",
-                "applinks:thewebsnippet.dev",
-                "applinks:spotlight.inova.si"
-            ]
-    ])
 }
 
 func infoPlist() -> [String: Plist.Value] {
