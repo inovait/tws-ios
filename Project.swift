@@ -341,7 +341,7 @@ let project = Project(
         .scheme(
             name: "Playground",
             buildAction: .buildAction(targets: ["Playground"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
+            testAction: .targets(["TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "Playground"),
             profileAction: .profileAction(),
