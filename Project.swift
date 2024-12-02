@@ -26,7 +26,6 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSDemo/Sources/**"],
             resources: ["TWSDemo/Resources/**"],
-            entitlements: getEntitlements(),
             scripts: targetScripts(),
             dependencies: [
                 .external(name: "FirebaseAnalytics"),
@@ -48,6 +47,19 @@ let project = Project(
             )
         ),
         .target(
+            name: "Sample",
+            destinations: .iOS,
+            product: .app,
+            bundleId: "com.tws.sample",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: infoPlist()),
+            sources: ["TWSSample/Sources/**"],
+            resources: ["TWSSample/Resources/**"],
+            dependencies: [
+                .target(name: "TWS")
+            ]
+        ),
+        .target(
             name: "Template",
             destinations: .iOS,
             product: .app,
@@ -56,7 +68,6 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlistTemplate()),
             sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
             resources: ["Submodule_tws-cli-resources/iOS/App/Resources/**"],
-            entitlements: getEntitlements(),
             scripts: targetScriptsTemplate(),
             dependencies: [
                 .target(name: "TWS")
@@ -330,7 +341,7 @@ let project = Project(
         .scheme(
             name: "Playground",
             buildAction: .buildAction(targets: ["Playground"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
+            testAction: .targets(["TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
             runAction: .runAction(),
             archiveAction: .archiveAction(configuration: "Playground"),
             profileAction: .profileAction(),
@@ -350,17 +361,6 @@ let project = Project(
 
 func deploymentTarget() -> String {
     "17.0"
-}
-
-func getEntitlements() -> Entitlements {
-    return Entitlements.dictionary([
-        "com.apple.developer.associated-domains":
-            [
-                "applinks:thewebsnippet.com",
-                "applinks:thewebsnippet.dev",
-                "applinks:spotlight.inova.si"
-            ]
-    ])
 }
 
 func infoPlist() -> [String: Plist.Value] {
