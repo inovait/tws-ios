@@ -10,8 +10,8 @@ import Foundation
 
 actor AuthManager {
 
-    private let loginUrl: String
-    private let registerUrl: String
+    private let loginUrl = "https://api.thewebsnippet.dev/auth/login"
+    private let registerUrl = "https://api.thewebsnippet.dev/auth/register"
 
     private let keychainHelper = KeychainHelper()
     private let accessTokenKey = "TWSAccessToken"
@@ -21,11 +21,7 @@ actor AuthManager {
     private var ongoingRefreshTask: Task<String, Error>?
     private var ongoingAccessTask: Task<String, Error>?
 
-    init() {
-        let twsServiceUrls = JWTCreator.fetchLoginAndRegisterUrls()
-        loginUrl = twsServiceUrls.0
-        registerUrl = twsServiceUrls.1
-    }
+    init() { }
 
     func forceRefreshTokens() async throws {
         _ = try await getAccessToken(true)
