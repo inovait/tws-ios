@@ -25,25 +25,6 @@ private struct Payload: Claims {
 
 struct JWTCreator {
 
-    static func fetchLoginAndRegisterUrls() -> (String, String) {
-        guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
-            fatalError("Unable to locate tws-service.json in the project directory.")
-        }
-
-        do {
-            let jsonData = try Data(contentsOf: URL(fileURLWithPath: jsonFilePath))
-            guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
-                  let loginUrl = jsonDict["login_uri"],
-                  let registerUrl = jsonDict["register_uri"]
-            else {
-                fatalError("The tws-service.json is present, but it's form is corrupted.")
-            }
-            return (loginUrl, registerUrl)
-        } catch {
-            fatalError("The tws-service.json is present, but it's form is corrupted.")
-        }
-    }
-
     static func generateMainJWTToken() -> String {
         let jwtData = getJWTData()
 
