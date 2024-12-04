@@ -18,6 +18,19 @@ let project = Project(
     ),
     targets: [
         .target(
+            name: "Sample",
+            destinations: .iOS,
+            product: .app,
+            bundleId: "com.tws.sample",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .extendingDefault(with: infoPlist()),
+            sources: ["TWSSample/Sources/**"],
+            resources: ["TWSSample/Resources/**"],
+            dependencies: [
+                .target(name: "TWS")
+            ]
+        ),
+        .target(
             name: "Template",
             destinations: .iOS,
             product: .app,
