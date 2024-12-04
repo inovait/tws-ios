@@ -26,9 +26,25 @@ let project = Project(
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSSample/Sources/**"],
             resources: ["TWSSample/Resources/**"],
+            scripts: targetScripts(),
             dependencies: [
                 .target(name: "TWS")
             ]
+        ),
+        .target(
+            name: "SampleTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.tws.sampleTests",
+            deploymentTargets: .iOS(deploymentTarget()),
+            infoPlist: .default,
+            sources: ["TWSSampleTests/Sources/**"],
+            dependencies: [
+                .target(name: "Sample")
+            ],
+            settings: .settings(
+                configurations: testConfigurations()
+            )
         ),
         .target(
             name: "Template",
