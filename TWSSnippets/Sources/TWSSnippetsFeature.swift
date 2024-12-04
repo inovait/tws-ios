@@ -146,7 +146,9 @@ public struct TWSSnippetsFeature: Sendable {
                                             id: snippet.id,
                                             action: .business(.snippetUpdated(
                                                 snippet: snippet,
-                                                preloaded: snippet.hasResources(for: configuration())
+                                                preloaded: MainActor.assumeIsolated {
+                                                    snippet.hasResources(for: configuration())
+                                                }
                                             ))
                                         )
                                     )
