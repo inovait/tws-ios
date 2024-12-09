@@ -21,17 +21,14 @@ let project = Project(
             name: "Sample",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.inova.tws",
+            bundleId: "com.tws.sample",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSSample/Sources/**"],
             resources: ["TWSSample/Resources/**"],
             scripts: targetScripts(),
             dependencies: [
-                .target(name: "TWS"),
-                .external(name: "Atlantis"),
-                .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics")
+                .target(name: "TWS")
             ]
         ),
         .target(
