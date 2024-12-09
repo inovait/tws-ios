@@ -50,33 +50,6 @@ let project = Project(
             )
         ),
         .target(
-            name: "Template",
-            destinations: .iOS,
-            product: .app,
-            bundleId: "com.inova.twsPlayground",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .extendingDefault(with: infoPlistTemplate()),
-            sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
-            resources: ["Submodule_tws-cli-resources/iOS/App/Resources/**"],
-            scripts: targetScriptsTemplate(),
-            dependencies: [
-                .target(name: "TWS")
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWS.xcframework"),
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWSModels.xcframework")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
-                ],
-                defaultSettings: .recommended(excluding: [
-                    "CODE_SIGN_IDENTITY",
-                    "DEVELOPMENT_TEAM"
-                ])
-            )
-        ),
-        .target(
             name: "TWS",
             destinations: .iOS,
             product: .framework,
