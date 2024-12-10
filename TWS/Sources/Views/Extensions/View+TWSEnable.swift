@@ -30,7 +30,7 @@ extension View {
     }
 
     public func twsEnable(
-        sharedSnippet: TWSSharedSnippet
+        sharedSnippet: TWSProject
     ) -> some View {
         ModifiedContent(
             content: self,

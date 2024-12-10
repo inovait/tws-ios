@@ -92,11 +92,11 @@ public class TWSFactory {
     ///    }
     /// }
     public class func new(
-        with shared: TWSSharedSnippet
+        with shared: TWSProject
     ) -> TWSManager {
         return _new(
-            configuration: shared.configuration,
-            snippets: [shared.snippet],
+            configuration: TWSConfiguration(organizationID: "", projectID: ""),
+            snippets: shared.snippets,
             preloadedResources: nil,
             socketURL: nil
         )
