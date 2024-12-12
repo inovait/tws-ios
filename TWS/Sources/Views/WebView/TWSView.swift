@@ -27,6 +27,7 @@ public struct TWSView: View {
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
+    let overrideVisibilty: Bool
 
     /// Main contructor
     /// - Parameters:
@@ -38,17 +39,19 @@ public struct TWSView: View {
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
         cssOverrides: [TWSRawCSS] = [],
-        jsOverrides: [TWSRawJS] = []
+        jsOverrides: [TWSRawJS] = [],
+        overrideVisibilty: Bool = false
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
+        self.overrideVisibilty = overrideVisibilty
         self._state = state
     }
 
     public var body: some View {
-        if presenter.isVisible(snippet: snippet) {
-            if store?.preloaded != true {
+        if overrideVisibilty || presenter.isVisible(snippet: snippet) {
+            if store?.preloaded != true && !overrideVisibilty {
                 preloadingView()
                     .onAppear {
                         store = presenter.store(forSnippetID: snippet.id)

@@ -63,7 +63,7 @@ public struct TWSAPI {
 
                 do {
                     let sharedTokenResponse = try JSONDecoder().decode(TWSSharedToken.self, from: result.data)
-                    return sharedTokenResponse.sharedToken
+                    return sharedTokenResponse.shareToken
                 } catch {
                     throw APIError.decode(error)
                 }
@@ -71,9 +71,11 @@ public struct TWSAPI {
             getSnippetByShareToken: { _, token throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/register-shared/\(token)",
+                    path: "/register-shared",
                     host: host,
-                    queryItems: [],
+                    queryItems: [
+                        URLQueryItem(name: "shareToken", value: token)
+                    ],
                     headers: [
                         "Accept": "application/json"
                     ],

@@ -42,9 +42,8 @@ struct ProjectView: View {
         .task {
             await viewModel.startupInitTasks()
         }
-        .sheet(item: $viewModel.universalLinkLoadedProject) {
-            ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
-                .twsEnable(using: viewModel.universalLinkLoadedProject!.viewModel.manager)
+        .sheet(item: $viewModel.universalLinkLoadedSnippet) {
+            SingleSnippetView(snippet: $0)
         }
     }
 }

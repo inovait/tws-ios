@@ -22,7 +22,7 @@ class TWSViewModel {
     let destinationID = UUID()
     var tabSnippets: [TWSSnippet]
     var popupSnippets: [TWSSnippet]
-    var universalLinkLoadedProject: LoadedProjectInfo?
+    var universalLinkLoadedSnippet: TWSSnippet?
     var presentPopups: Bool = false
 
     private var clearedPopupSnippets: [TWSSnippet] = []
@@ -52,12 +52,7 @@ class TWSViewModel {
 
             switch event {
             case let .universalLinkSnippetLoaded(project):
-                self.universalLinkLoadedProject = .init(
-                    viewID: destinationID,
-                    configuration: TWSConfiguration(organizationID: "", projectID: ""),
-                    viewModel: .init(manager: TWSFactory.new(with: project)),
-                    selectedID: project.snippets[0].id
-                )
+                self.universalLinkLoadedSnippet = project.snippets[0]
 
             case .snippetsUpdated:
                 let snippets = manager.snippets()

@@ -7,5 +7,5 @@
 //
 
 public struct TWSSharedToken: Decodable {
-    public let sharedToken: String
+    public let shareToken: String
 }

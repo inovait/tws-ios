@@ -55,9 +55,8 @@ struct ContentView: View {
             else { return }
             twsViewModel.handleIncomingUrl(url)
         })
-        .sheet(item: $twsViewModel.universalLinkLoadedProject) {
-            ProjectView(viewModel: $0.viewModel, selectedID: $0.selectedID)
-                .twsEnable(using: $0.viewModel.manager)
+        .sheet(item: $twsViewModel.universalLinkLoadedSnippet) {
+            SingleSnippetView(snippet: $0)
         }
         .overlay {
             ZStack(alignment: .topTrailing) {
