@@ -91,16 +91,6 @@ public class TWSFactory {
     ///        }
     ///    }
     /// }
-    public class func new(
-        with shared: TWSProject
-    ) -> TWSManager {
-        return _new(
-            configuration: TWSConfiguration(organizationID: "", projectID: ""),
-            snippets: shared.snippets,
-            preloadedResources: nil,
-            socketURL: nil
-        )
-    }
 
     // MARK: - Internal
 
