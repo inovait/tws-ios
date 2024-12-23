@@ -23,10 +23,6 @@ let package = Package(
     name: "Dependencies",
     dependencies: [
         .package(
-            url: "https://github.com/firebase/firebase-ios-sdk.git",
-            exact: .init(11, 2, 0)
-        ),
-        .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
             exact: .init(1, 16, 1)
         ),
