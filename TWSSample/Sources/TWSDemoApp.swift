@@ -8,8 +8,8 @@ struct TWSSampleApp: App {
         WindowGroup {
             ContentView()
                 .twsEnable(configuration: .init(
-                    organizationID: "samples",
-                    projectID: "sample"
+                    organizationID: "<TWS_ORGANIZATION>",
+                    projectID: "<TWS_PROJECT>"
                 ))
                 .onAppear {
                     UIPageControl.appearance().currentPageIndicatorTintColor = .red
