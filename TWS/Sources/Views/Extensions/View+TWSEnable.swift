@@ -28,17 +28,6 @@ extension View {
             )
         )
     }
-
-    public func twsEnable(
-        sharedSnippet: TWSSharedSnippet
-    ) -> some View {
-        ModifiedContent(
-            content: self,
-            modifier: _TWSPlaceholder(
-                manager: TWSFactory.new(with: sharedSnippet)
-            )
-        )
-    }
 }
 
 private struct _TWSPlaceholder: ViewModifier {

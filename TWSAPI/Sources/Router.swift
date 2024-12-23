@@ -44,8 +44,9 @@ class Router {
 
         do {
             if request.auth {
+                let token = try await authManager.getAccessToken(false)
                 urlRequest.setValue(
-                    "Bearer \(try await authManager.getAccessToken(false))",
+                    "Bearer \(token)",
                     forHTTPHeaderField: "Authorization"
                 )
             }

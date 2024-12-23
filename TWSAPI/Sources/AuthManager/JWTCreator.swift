@@ -46,7 +46,7 @@ struct JWTCreator {
         }
         fatalError("Failed to sign the JWT")
     }
-    
+
     private static func getJWTData() -> JWTData {
         guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
             fatalError("Unable to locate tws-service.json in the project directory.")

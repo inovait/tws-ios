@@ -21,10 +21,18 @@ public struct APIDependency: Sendable {
         throw APIError.local(NSError(domain: "", code: -1))
     }
 
-    public var getSnippetBySharedId: @Sendable (
+    public var getSharedToken: @Sendable (
         TWSConfiguration,
         _ snippetId: String
-    ) async throws(APIError) -> TWSSharedSnippet = { _, _ throws(APIError) in
+    ) async throws(APIError) -> String = { _, _ throws(APIError) in
+        reportIssue("\(Self.self).getSharedToken")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
+
+    public var getSnippetBySharedToken: @Sendable (
+        TWSConfiguration,
+        _ sharedToken: String
+    ) async throws(APIError) -> TWSProject = { _, _ throws(APIError) in
         reportIssue("\(Self.self).getSnippetBySharedId")
         throw APIError.local(NSError(domain: "", code: -1))
     }
@@ -44,7 +52,8 @@ public enum APIDependencyKey: DependencyKey {
 
         return .init(
             getProject: api.getProject,
-            getSnippetBySharedId: api.getSnippetBySharedId,
+            getSharedToken: api.getSharedToken,
+            getSnippetBySharedToken: api.getSnippetByShareToken,
             getResource: api.getResource
         )
     }
