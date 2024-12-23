@@ -1,0 +1,55 @@
+//
+//  MixAndMatch_00.swift
+//  
+//
+//  Created by Miha Hozjan on 25. 11. 24.
+//
+
+import SwiftUI
+import TWS
+
+struct HomeView: View {
+
+    @Environment(TWSManager.self) var tws
+
+    var  body: some View {
+        TabView {
+            ForEach(tws.snippets()) { snippet in
+                RemoteSnippetTab(snippet: snippet)
+            }
+        }
+    }
+}
+
+struct RemoteSnippetTab: View {
+
+    let snippet: TWSSnippet
+
+    var body: some View {
+        VStack {
+            TWSView(snippet: snippet)
+
+            DevelopmentView(id: snippet.id)
+                .twsLocal()
+        }
+    }
+}
+
+struct DevelopmentView: View {
+
+    let id: String
+
+    var body: some View {
+        TWSView(
+            // A local snippet
+            snippet: .init(
+                id: id,
+                target: URL(string: "https://dev.tws.io?id=\(id)")
+            )
+        )
+
+        // Some view where we want to use remote snippets again
+        SomeView()
+            .twsLocal(false)
+    }
+}

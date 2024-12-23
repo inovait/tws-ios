@@ -18,21 +18,17 @@ let project = Project(
     ),
     targets: [
         .target(
-            name: "Playground",
+            name: "Sample",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.inova.twsPlayground",
+            bundleId: "com.inova.tws",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlist()),
-            sources: ["TWSDemo/Sources/**"],
-            resources: ["TWSDemo/Resources/**"],
-            entitlements: getEntitlements(),
+            sources: ["TWSSample/Sources/**"],
+            resources: ["TWSSample/Resources/**"],
             scripts: targetScripts(),
             dependencies: [
-                .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWS"),
-                .external(name: "Atlantis")
+                .target(name: "TWS")
             ],
             settings: .settings(
                 configurations: [
@@ -46,45 +42,18 @@ let project = Project(
                     "DEVELOPMENT_TEAM"
                 ])
             )
+
         ),
         .target(
-            name: "Template",
-            destinations: .iOS,
-            product: .app,
-            bundleId: "com.inova.twsPlayground",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .extendingDefault(with: infoPlistTemplate()),
-            sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
-            resources: ["Submodule_tws-cli-resources/iOS/App/Resources/**"],
-            entitlements: getEntitlements(),
-            scripts: targetScriptsTemplate(),
-            dependencies: [
-                .target(name: "TWS")
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWS.xcframework"),
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWSModels.xcframework")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
-                ],
-                defaultSettings: .recommended(excluding: [
-                    "CODE_SIGN_IDENTITY",
-                    "DEVELOPMENT_TEAM"
-                ])
-            )
-        ),
-        .target(
-            name: "TWSDemoTests",
+            name: "SampleTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.inova.twsTests",
+            bundleId: "com.tws.sampleTests",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .default,
-            sources: ["TWSDemoTests/Sources/**"],
+            sources: ["TWSSampleTests/Sources/**"],
             dependencies: [
-                .target(name: "Playground")
+                .target(name: "Sample")
             ],
             settings: .settings(
                 configurations: testConfigurations()
@@ -240,7 +209,8 @@ let project = Project(
             dependencies: [
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSFormatters")
+                .target(name: "TWSFormatters"),
+                .external(name: "SwiftJWT")
             ],
             settings: .settings(
                 configurations: internalConfigurations()
@@ -327,39 +297,19 @@ let project = Project(
     ],
     schemes: [
         .scheme(
-            name: "Playground",
-            buildAction: .buildAction(targets: ["Playground"]),
-            testAction: .targets(["TWSDemoTests", "TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
+            name: "Sample",
+            buildAction: .buildAction(targets: ["Sample"]),
+            testAction: .targets(["TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
             runAction: .runAction(),
-            archiveAction: .archiveAction(configuration: "Playground"),
+            archiveAction: .archiveAction(configuration: "Sample"),
             profileAction: .profileAction(),
-            analyzeAction: .analyzeAction(configuration: "Playground")
-        ),
-        .scheme(
-            name: "Template",
-            buildAction: .buildAction(targets: ["Template"]),
-            testAction: .targets([]),
-            runAction: .runAction(),
-            archiveAction: .archiveAction(configuration: "Template"),
-            profileAction: .profileAction(),
-            analyzeAction: .analyzeAction(configuration: "Template")
+            analyzeAction: .analyzeAction(configuration: "Sample")
         )
     ]
 )
 
 func deploymentTarget() -> String {
     "17.0"
-}
-
-func getEntitlements() -> Entitlements {
-    return Entitlements.dictionary([
-        "com.apple.developer.associated-domains":
-            [
-                "applinks:thewebsnippet.com",
-                "applinks:thewebsnippet.dev",
-                "applinks:spotlight.inova.si"
-            ]
-    ])
 }
 
 func infoPlist() -> [String: Plist.Value] {
@@ -372,9 +322,7 @@ func infoPlist() -> [String: Plist.Value] {
         "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
         "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app.",
         "UIFileSharingEnabled": true,
-        "LSSupportsOpeningDocumentsInPlace": true,
-        "NSLocalNetworkUsageDescription": "Atlantis would use Bonjour Service to discover Proxyman app from your local network.",
-        "NSBonjourServices": ["_Proxyman._tcp"]
+        "LSSupportsOpeningDocumentsInPlace": true
     ]
 }
 
@@ -452,36 +400,6 @@ func loggerInfoPlist() -> [String: Plist.Value] {
 }
 
 func targetScripts() -> [TargetScript] {
-    [
-        .pre(
-            script: #"""
-            if $HOME/.local/bin/mise x -- which swiftlint > /dev/null; then
-                $HOME/.local/bin/mise x -- swiftlint;
-            else
-                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
-            fi
-            """#,
-            name: "SwiftLint",
-            basedOnDependencyAnalysis: false
-        ),
-        .post(
-            script: #"""
-            "${SRCROOT}/Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
-            """#,
-            name: "Firebase Crashlystics",
-            inputPaths: [
-                "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
-                "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
-                "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
-                "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"
-            ],
-            basedOnDependencyAnalysis: false
-        )
-    ]
-}
-
-func targetScriptsTemplate() -> [TargetScript] {
     [
         .pre(
             script: #"""

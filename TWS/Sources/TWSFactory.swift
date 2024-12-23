@@ -44,64 +44,6 @@ public class TWSFactory {
         )
     }
 
-    /// Creates and returns a new instance of ``TWSManager`` using shared snippet information.
-    ///
-    /// This method is typically used when handling a universal link that contains snippet data, enabling a seamless experience for handling deep links.
-    ///
-    /// - Parameter shared: Information about the snippet opened via a universal link.
-    /// - Returns: An instance of ``TWSManager``.
-    ///
-    /// ```swift
-    /// let manager = TWSFactory.new(with: sharedSnippet)
-    /// ```
-    ///
-    /// ## Reacting to Universal Links
-    ///
-    /// When a universal link is received, you can use this helper method to create a new flow for TWS. Here’s an example implementation:
-    ///
-    /// ```swift
-    /// struct HomeView: View {
-    ///
-    ///    @Environment(TWSManager.self) var tws
-    ///    @State private var sharedSnippet: TWSSharedSnippet?
-    ///
-    ///    var body: some View {
-    ///        TabView {
-    ///            // Your main content
-    ///        }
-    ///        .task {
-    ///            // 1. Observe events triggered by universal links
-    ///            await tws.observe { event in
-    ///                switch event {
-    ///                case let .universalLinkSnippetLoaded(snippet):
-    ///                    sharedSnippet = snippet
-    ///
-    ///                case .snippetsUpdated, .stateChanged:
-    ///                    break
-    ///
-    ///                @unknown default:
-    ///                    break
-    ///                }
-    ///            }
-    ///        }
-    ///        .sheet(item: $sharedSnippet) {
-    ///            // 2. Use a helper method to create a ``TWSManager`` instance for the snippet and present it
-    ///            TWSView(snippet: $0.snippet)
-    ///                .twsEnable(sharedSnippet: $0)
-    ///        }
-    ///    }
-    /// }
-    public class func new(
-        with shared: TWSSharedSnippet
-    ) -> TWSManager {
-        return _new(
-            configuration: shared.configuration,
-            snippets: [shared.snippet],
-            preloadedResources: nil,
-            socketURL: nil
-        )
-    }
-
     // MARK: - Internal
 
     class func destroy(

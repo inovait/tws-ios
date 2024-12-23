@@ -20,3 +20,4 @@ DerivedData/
 periphery/DerivedData
 periphery_output.txt
 .DS_Store
+tws-service.json

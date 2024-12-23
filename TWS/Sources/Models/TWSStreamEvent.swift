@@ -13,7 +13,7 @@ public enum TWSStreamEvent: Sendable {
 
     /// This event is sent when a project from the universal link is processed
     /// - Parameter TWSSharedSnippetBundle: A snippet that should be preselected (opened) along with organization and project info
-    case universalLinkSnippetLoaded(TWSSharedSnippet)
+    case universalLinkSnippetLoaded(TWSProject)
 
     /// This event is sent when there are new snippets available
     case snippetsUpdated

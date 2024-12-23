@@ -56,18 +56,16 @@ final class ResourcesAggregationTests: XCTestCase {
             contentType: .html
         )] = url.absoluteString
 
-        let sharedSnippet = TWSSharedSnippet(
-            organization: .init(
-                id: "00000000-0000-0000-0000-000000000000"
-            ),
-            project: .init(
-                id: "00000000-0000-0000-0000-000000000001"
-            ),
-            snippet: .init(
-                id: "00000000-0000-0000-0000-000000000002",
-                target: url,
-                dynamicResources: attachments
-            )
+        let listenOn = URL(string: "https://listen.here.com")!
+        let project = TWSProject(
+            listenOn: listenOn,
+            snippets: [
+                .init(
+                    id: "00000000-0000-0000-0000-000000000002",
+                    target: url,
+                    dynamicResources: attachments
+                )
+            ]
         )
 
         let store = await TestStore(
@@ -75,17 +73,18 @@ final class ResourcesAggregationTests: XCTestCase {
             reducer: { TWSUniversalLinksFeature() }
             ,
             withDependencies: {
-                $0.api.getSnippetBySharedId = { @Sendable _, _ in return sharedSnippet }
+                $0.api.getSharedToken = { @Sendable _, _ in return "" }
+                $0.api.getSnippetBySharedToken = { @Sendable (_: TWSConfiguration, _: String) in return project }
                 $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
             }
         )
 
         await store.send(.business(.onUniversalLink(url))).finish()
-        await store.receive(\.business.snippetLoaded.success, sharedSnippet)
+        await store.receive(\.business.snippetLoaded.success, project)
 
         await store.receive(
             \.delegate.snippetLoaded,
-             sharedSnippet
+             project
         )
     }
 }

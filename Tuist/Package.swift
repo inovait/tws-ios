@@ -23,10 +23,6 @@ let package = Package(
     name: "Dependencies",
     dependencies: [
         .package(
-            url: "https://github.com/firebase/firebase-ios-sdk.git",
-            exact: .init(11, 2, 0)
-        ),
-        .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
             exact: .init(1, 16, 1)
         ),
@@ -35,12 +31,12 @@ let package = Package(
             exact: .init(0, 6, 2)
         ),
         .package(
-            url: "https://github.com/ProxymanApp/atlantis",
-            exact: .init(1, 25, 1)
-        ),
-        .package(
             url: "https://github.com/groue/GRMustache.swift",
             exact: .init(6, 0, 0)
+        ),
+        .package(
+            url: "https://github.com/Kitura/Swift-JWT.git",
+            exact: .init(4, 0, 0)
         )
     ]
 )

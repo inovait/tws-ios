@@ -72,25 +72,9 @@ platform :ios do
   lane :do_tests do |options|
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
-      scheme: "Playground",
+      scheme: "Sample",
       derived_data_path: derived_data_path
     )
-  end
-  
-  desc "Build adhoc app for testing"
-  lane :build_staging do |options|
-    setup_keychain
-    download_provision_profiles
-    gym(
-        workspace: "./TheWebSnippet.xcworkspace",
-        clean: true,
-        output_directory: "./Archive",
-        scheme: "Playground",
-        output_name: "TWSDemo.ipa",
-        configuration: "Staging",
-        export_method: "ad-hoc"
-    )
-    setup_delete_keychain
   end
 
   desc "Deadcode check"

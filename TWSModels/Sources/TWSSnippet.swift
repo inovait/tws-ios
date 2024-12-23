@@ -104,7 +104,7 @@ public struct TWSSnippet: Identifiable, Codable, Hashable, Sendable {
     public var engine: Engine?
 
     /// Headers associated with the snippet.
-    public let headers: [String: String]?
+    public var headers: [String: String]?
 
     /// Dynamic resources attached to the snippet, such as JavaScript or CSS files.
     @_spi(Internals) @LossyCodableList public var dynamicResources: [Attachment]?

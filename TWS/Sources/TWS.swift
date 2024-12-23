@@ -105,7 +105,7 @@ public final class TWSManager: Identifiable {
     ///
     /// To start observing events:
     ///
-    ///```swift
+    /// ```swift
     /// ZStack {
     ///     ...
     /// }
@@ -116,14 +116,14 @@ public final class TWSManager: Identifiable {
     ///         ...
     ///     }
     ///    }
-    ///}
-    ///```
+    /// }
+    /// ```
     ///
-    ///> note: If you only need to listen for updates to snippets, you can use ``TWSManager/snippets`` instead.
+    /// > note: If you only need to listen for updates to snippets, you can use ``TWSManager/snippets`` instead.
     ///
-    ///## Cancellation
+    /// ## Cancellation
     ///
-    ///Automatically stops listening when the parent task is canceled. For event types, see the``TWSStreamEvent`` enum.
+    /// Automatically stops listening when the parent task is canceled. For event types, see the``TWSStreamEvent`` enum.
     ///
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
         precondition(Thread.isMainThread, "`observe` can only be called on main thread")
@@ -193,14 +193,14 @@ public final class TWSManager: Identifiable {
     /// ```swift
     /// .onOpenURL(perform: { url in
     ///    twsViewModel.handleIncomingUrl(url)
-    ///})
-    ///// This is needed when a link is opened by scanning a QR code with the camera app.
-    ///// In that case, the `onOpenURL` is not called.
-    ///.onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
+    /// })
+    /// // This is needed when a link is opened by scanning a QR code with the camera app.
+    /// // In that case, the `onOpenURL` is not called.
+    /// .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
     ///    guard let url = userActivity.webpageURL
     ///    else { return }
     ///    twsViewModel.handleIncomingUrl(url)
-    ///})
+    /// })
     /// ```
     ///
     /// If the link is a valid TWS universal link, it will be parsed and you will be notified about it in the by subscribing to the ``TWSManager/observe(onEvent:)`` queue:
@@ -216,7 +216,7 @@ public final class TWSManager: Identifiable {
     ///         ...
     ///     }
     ///    }
-    ///}
+    /// }
     /// ```
     public func handleIncomingUrl(_ url: URL) {
         precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
