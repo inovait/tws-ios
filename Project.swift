@@ -28,8 +28,7 @@ let project = Project(
             resources: ["TWSSample/Resources/**"],
             scripts: targetScripts(),
             dependencies: [
-                .target(name: "TWS"),
-                .external(name: "Atlantis")
+                .target(name: "TWS")
             ]
         ),
         .target(
@@ -285,22 +284,13 @@ let project = Project(
     ],
     schemes: [
         .scheme(
-            name: "Playground",
-            buildAction: .buildAction(targets: ["Playground"]),
+            name: "Sample",
+            buildAction: .buildAction(targets: ["Sample"]),
             testAction: .targets(["TWSSnippetsTests", "TWSLoggerTests", "TWSUniversalLinksTests", "TWSModelsTests"], configuration: .configuration("Testing")),
             runAction: .runAction(),
-            archiveAction: .archiveAction(configuration: "Playground"),
+            archiveAction: .archiveAction(configuration: "Sample"),
             profileAction: .profileAction(),
-            analyzeAction: .analyzeAction(configuration: "Playground")
-        ),
-        .scheme(
-            name: "Template",
-            buildAction: .buildAction(targets: ["Template"]),
-            testAction: .targets([]),
-            runAction: .runAction(),
-            archiveAction: .archiveAction(configuration: "Template"),
-            profileAction: .profileAction(),
-            analyzeAction: .analyzeAction(configuration: "Template")
+            analyzeAction: .analyzeAction(configuration: "Sample")
         )
     ]
 )
@@ -319,9 +309,7 @@ func infoPlist() -> [String: Plist.Value] {
         "NSCameraUsageDescription": "This app requires access to your camera to enhance your experience by providing camera-based features while you are using the app.",
         "NSMicrophoneUsageDescription": "This app requires access to your microphone to enhance your experience by providing microphone-based features while you are using the app.",
         "UIFileSharingEnabled": true,
-        "LSSupportsOpeningDocumentsInPlace": true,
-        "NSLocalNetworkUsageDescription": "Atlantis would use Bonjour Service to discover Proxyman app from your local network.",
-        "NSBonjourServices": ["_Proxyman._tcp"]
+        "LSSupportsOpeningDocumentsInPlace": true
     ]
 }
 
@@ -399,22 +387,6 @@ func loggerInfoPlist() -> [String: Plist.Value] {
 }
 
 func targetScripts() -> [TargetScript] {
-    [
-        .pre(
-            script: #"""
-            if $HOME/.local/bin/mise x -- which swiftlint > /dev/null; then
-                $HOME/.local/bin/mise x -- swiftlint;
-            else
-                echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint";
-            fi
-            """#,
-            name: "SwiftLint",
-            basedOnDependencyAnalysis: false
-        )
-    ]
-}
-
-func targetScriptsTemplate() -> [TargetScript] {
     [
         .pre(
             script: #"""
