@@ -4,6 +4,7 @@ excluded:
   - periphery
   - DerivedData
   - Project.swift
+  - TWS/Sources/Documentation.docc/
 disabled_rules:
   - nesting
   - function_body_length

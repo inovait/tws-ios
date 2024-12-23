@@ -29,8 +29,8 @@ import Foundation
 ///            print("State changed: \(state)")
 ///        }
 ///    }
-///}
-///```
+/// }
+/// ```
 @Observable
 public final class TWSViewState {
 

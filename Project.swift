@@ -29,7 +29,20 @@ let project = Project(
             scripts: targetScripts(),
             dependencies: [
                 .target(name: "TWS")
-            ]
+            ],
+            settings: .settings(
+                configurations: [
+                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
+                    .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0", "OTHER_SWIFT_FLAGS": "-DTESTING"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
+                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
+                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
+                ],
+                defaultSettings: .recommended(excluding: [
+                    "CODE_SIGN_IDENTITY",
+                    "DEVELOPMENT_TEAM"
+                ])
+            )
+
         ),
         .target(
             name: "SampleTests",
