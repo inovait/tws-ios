@@ -18,84 +18,32 @@ let project = Project(
     ),
     targets: [
         .target(
-            name: "Playground",
-            destinations: .iOS,
-            product: .app,
-            bundleId: "com.inova.twsPlayground",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .extendingDefault(with: infoPlist()),
-            sources: ["TWSDemo/Sources/**"],
-            resources: ["TWSDemo/Resources/**"],
-            scripts: targetScripts(),
-            dependencies: [
-                .external(name: "FirebaseAnalytics"),
-                .external(name: "FirebaseCrashlytics"),
-                .target(name: "TWS"),
-                .external(name: "Atlantis")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .debug(name: "Testing", settings: ["SWIFT_VERSION": "6.0", "OTHER_SWIFT_FLAGS": "-DTESTING"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
-                ],
-                defaultSettings: .recommended(excluding: [
-                    "CODE_SIGN_IDENTITY",
-                    "DEVELOPMENT_TEAM"
-                ])
-            )
-        ),
-        .target(
             name: "Sample",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.tws.sample",
+            bundleId: "com.inova.tws",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .extendingDefault(with: infoPlist()),
             sources: ["TWSSample/Sources/**"],
             resources: ["TWSSample/Resources/**"],
+            scripts: targetScripts(),
             dependencies: [
-                .target(name: "TWS")
+                .target(name: "TWS"),
+                .external(name: "Atlantis"),
+                .external(name: "FirebaseAnalytics"),
+                .external(name: "FirebaseCrashlytics")
             ]
         ),
         .target(
-            name: "Template",
-            destinations: .iOS,
-            product: .app,
-            bundleId: "com.inova.twsPlayground",
-            deploymentTargets: .iOS(deploymentTarget()),
-            infoPlist: .extendingDefault(with: infoPlistTemplate()),
-            sources: ["Submodule_tws-cli-resources/iOS/App/Sources/**"],
-            resources: ["Submodule_tws-cli-resources/iOS/App/Resources/**"],
-            scripts: targetScriptsTemplate(),
-            dependencies: [
-                .target(name: "TWS")
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWS.xcframework"),
-//                .xcframework(path: "Submodule_tws-cli-resources/iOS/Frameworks/XCFrameworks/TWSModels.xcframework")
-            ],
-            settings: .settings(
-                configurations: [
-                    .debug(name: "Debug", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_dev.xcconfig")),
-                    .release(name: "Staging", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_staging.xcconfig")),
-                    .release(name: "Release", settings: ["SWIFT_VERSION": "6.0"], xcconfig: .relativeToRoot("config/TWSDemo_release.xcconfig"))
-                ],
-                defaultSettings: .recommended(excluding: [
-                    "CODE_SIGN_IDENTITY",
-                    "DEVELOPMENT_TEAM"
-                ])
-            )
-        ),
-        .target(
-            name: "TWSDemoTests",
+            name: "SampleTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.inova.twsTests",
+            bundleId: "com.tws.sampleTests",
             deploymentTargets: .iOS(deploymentTarget()),
             infoPlist: .default,
-            sources: ["TWSDemoTests/Sources/**"],
+            sources: ["TWSSampleTests/Sources/**"],
             dependencies: [
-                .target(name: "Playground")
+                .target(name: "Sample")
             ],
             settings: .settings(
                 configurations: testConfigurations()
