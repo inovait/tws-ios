@@ -25,7 +25,6 @@ protocol TWSPresenter {
     var preloadedResources: [TWSSnippet.Attachment: String] { get }
     var navigationProvider: NavigationProvider { get }
     var heightProvider: SnippetHeightProvider { get }
-    var isLocal: Bool { get }
 
     func isVisible(snippet: TWSSnippet) -> Bool
     func resourcesHash(for snippet: TWSSnippet) -> Int

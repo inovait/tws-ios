@@ -29,8 +29,6 @@ class LivePresenter: TWSPresenter {
 
     // MARK: - Confirming to `TWSPresenter`
 
-    var isLocal = false
-
     var preloadedResources: [TWSSnippet.Attachment: String] {
         manager?.store.snippets.preloadedResources ?? [:]
     }

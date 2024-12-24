@@ -29,7 +29,6 @@ class NoopPresenter: TWSPresenter {
     var preloadedResources: [TWSSnippet.Attachment: String] { [:] }
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
-    var isLocal = true
 
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
     func resourcesHash(for _: TWSSnippet) -> Int { 0 }

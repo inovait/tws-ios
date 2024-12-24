@@ -63,7 +63,7 @@ let project = Project(
             name: "TWS",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.inova.tws",
+            bundleId: "com.inova.twskit",
             deploymentTargets: .iOS(deploymentTarget()),
             sources: ["TWS/Sources/**"],
             resources: ["TWS/Resources/**"],

@@ -20,7 +20,6 @@ import TWS
 struct CustomInjectionExample: View {
 
     @Environment(TWSManager.self) var tws
-    @State private var alert: String?
     @State private var tab = "rawHtml"
 
     var body: some View {
