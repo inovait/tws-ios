@@ -1,9 +1,17 @@
 //
-//  TWSLoggerTests.swift
-//  TWSLoggerTests
+//  Copyright 2024 INOVA IT d.o.o.
 //
-//  Created by Luka Kit on 7. 6. 24.
-//  Copyright © 2024 Inova IT, d.o.o. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 import XCTest
@@ -33,10 +41,10 @@ final class TWSLoggerTests: XCTestCase {
         logManager.info("This is an info")
 
         let expectedLogResult =
-            "This is an error [Class 1, l30]\n" +
+            "This is an error [Class 1, l38]\n" +
             "This is a message [TWSLoggerTests/TWSLoggerTests.swift, l13]\n" +
-            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l32]\n" +
-            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l33]\n"
+            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l40]\n" +
+            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l41]\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
