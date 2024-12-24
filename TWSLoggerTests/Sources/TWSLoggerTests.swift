@@ -41,10 +41,10 @@ final class TWSLoggerTests: XCTestCase {
         logManager.info("This is an info")
 
         let expectedLogResult =
-            "This is an error [Class 1, l30]\n" +
+            "This is an error [Class 1, l38]\n" +
             "This is a message [TWSLoggerTests/TWSLoggerTests.swift, l13]\n" +
-            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l32]\n" +
-            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l33]\n"
+            "This is a warning [TWSLoggerTests/TWSLoggerTests.swift, l40]\n" +
+            "This is an info [TWSLoggerTests/TWSLoggerTests.swift, l41]\n"
 
         // Fetching the logs and checking if they're present in the log report
         do {
