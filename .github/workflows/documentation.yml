@@ -20,7 +20,7 @@ jobs:
           echo ${XCODE_VERSION}
           XCODE_VERSION=$(/usr/bin/xcodebuild -version 2>/dev/null | head -1)
           echo ${XCODE_VERSION}
-          if [ "$XCODE_VERSION" == "Xcode 16.0"  ]
+          if [ "$XCODE_VERSION" == "Xcode 16.1"  ]
           then
             echo "Version up to date"
           else
@@ -32,7 +32,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        submodules: 'true'
 
     - name: Checkout gh-pages Branch
       uses: actions/checkout@v4
