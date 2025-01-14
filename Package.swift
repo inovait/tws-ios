@@ -12,46 +12,6 @@ let package = Package(
         .library(
             name: "TWS",
             targets: ["TWS"]
-        ),
-        .library(
-            name: "TWSCore",
-            targets: ["TWSCore"]
-        ),
-        .library(
-            name: "TWSModels",
-            targets: ["TWSModels"]
-        ),
-        .library(
-            name: "TWSSnippets",
-            targets: ["TWSSnippets"]
-        ),
-        .library(
-            name: "TWSFormatters",
-            targets: ["TWSFormatters"]
-        ),
-        .library(
-            name: "TWSSnippet",
-            targets: ["TWSSnippet"]
-        ),
-        .library(
-            name: "TWSSettings",
-            targets: ["TWSSettings"]
-        ),
-        .library(
-            name: "TWSAPI",
-            targets: ["TWSAPI"]
-        ),
-        .library(
-            name: "TWSCommon",
-            targets: ["TWSCommon"]
-        ),
-        .library(
-            name: "TWSLogger",
-            targets: ["TWSLogger"]
-        ),
-        .library(
-            name: "TWSUniversalLinks",
-            targets: ["TWSUniversalLinks"]
         )
     ],
     dependencies: [
@@ -106,7 +66,10 @@ let package = Package(
                 .target(name: "TWSSnippet"),
                 .target(name: "TWSLogger")
             ],
-            path: "Sources/TWSSnippets"
+            path: "Sources/TWSSnippets",
+            swiftSettings: [
+                .define("TESTING", .when(configuration: .debug))
+            ]
         ),
         .target(
             name: "TWSFormatters",
@@ -203,14 +166,3 @@ let package = Package(
         )
     ]
 )
-
-//#if compiler(>=6)
-//  for target in package.targets where target.type != .system && target.type != .test {
-//    target.swiftSettings = target.swiftSettings ?? []
-//    target.swiftSettings?.append(contentsOf: [
-//      .enableExperimentalFeature("StrictConcurrency"),
-//      .enableUpcomingFeature("ExistentialAny"),
-//      .enableUpcomingFeature("InferSendableFromCaptures"),
-//    ])
-//  }
-//#endif
