@@ -46,7 +46,6 @@ extension TWSSnippetsFeature {
         ) {
             #if TESTING
             // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-            if NSClassFromString("XCTestCase") == nil { fatalError("Allowed only in tests") }
             self.snippets = .init(
                 uniqueElements: (snippets ?? []).map { .init(snippet: $0, preloaded: false) }
             )

@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D22B50112D368E2A00D68498"
-               BuildableName = "Samples.app"
-               BlueprintName = "Samples"
-               ReferencedContainer = "container:Samples.xcodeproj">
+               BlueprintIdentifier = "D2540D592D36A7320047A106"
+               BuildableName = "Sample.app"
+               BlueprintName = "Sample"
+               ReferencedContainer = "container:Sample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -30,34 +30,10 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Samples/Samples.xctestplan"
+            reference = "container:Sample/Sample.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D22B50212D368E2B00D68498"
-               BuildableName = "SamplesTests.xctest"
-               BlueprintName = "SamplesTests"
-               ReferencedContainer = "container:Samples.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D22B502B2D368E2B00D68498"
-               BuildableName = "SamplesUITests.xctest"
-               BlueprintName = "SamplesUITests"
-               ReferencedContainer = "container:Samples.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -73,10 +49,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D22B50112D368E2A00D68498"
-            BuildableName = "Samples.app"
-            BlueprintName = "Samples"
-            ReferencedContainer = "container:Samples.xcodeproj">
+            BlueprintIdentifier = "D2540D592D36A7320047A106"
+            BuildableName = "Sample.app"
+            BlueprintName = "Sample"
+            ReferencedContainer = "container:Sample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -90,10 +66,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D22B50112D368E2A00D68498"
-            BuildableName = "Samples.app"
-            BlueprintName = "Samples"
-            ReferencedContainer = "container:Samples.xcodeproj">
+            BlueprintIdentifier = "D2540D592D36A7320047A106"
+            BuildableName = "Sample.app"
+            BlueprintName = "Sample"
+            ReferencedContainer = "container:Sample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

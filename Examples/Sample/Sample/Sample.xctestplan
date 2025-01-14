@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "A3345EE9-4E5C-4E6D-8A0C-AD6F6D149EA9",
+      "id" : "1A2528CC-29A1-43DA-B17A-02E0BE8EAC7C",
       "name" : "Configuration 1",
       "options" : {
 
@@ -22,8 +22,8 @@
     {
       "target" : {
         "containerPath" : "container:..\/..",
-        "identifier" : "TWSUniversalLinksTests",
-        "name" : "TWSUniversalLinksTests"
+        "identifier" : "TWSModelsTests",
+        "name" : "TWSModelsTests"
       }
     },
     {
@@ -36,8 +36,8 @@
     {
       "target" : {
         "containerPath" : "container:..\/..",
-        "identifier" : "TWSModelsTests",
-        "name" : "TWSModelsTests"
+        "identifier" : "TWSUniversalLinksTests",
+        "name" : "TWSUniversalLinksTests"
       }
     }
   ],
