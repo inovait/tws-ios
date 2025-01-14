@@ -1,0 +1,45 @@
+{
+  "configurations" : [
+    {
+      "id" : "A3345EE9-4E5C-4E6D-8A0C-AD6F6D149EA9",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSLoggerTests",
+        "name" : "TWSLoggerTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSUniversalLinksTests",
+        "name" : "TWSUniversalLinksTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSSnippetsTests",
+        "name" : "TWSSnippetsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSModelsTests",
+        "name" : "TWSModelsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

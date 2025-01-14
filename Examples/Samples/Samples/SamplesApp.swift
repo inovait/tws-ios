@@ -2,7 +2,7 @@ import SwiftUI
 import TWS
 
 @main
-struct TWSSampleApp: App {
+struct SampleApp: App {
 
     var body: some Scene {
         WindowGroup {

@@ -330,7 +330,7 @@ struct WebView: UIViewRepresentable {
     private func _handleLocationPermissions(
         with controller: WKUserContentController
     ) -> JavaScriptLocationAdapter {
-        let jsURL = Bundle(for: JavaScriptLocationAdapter.self)
+        let jsURL = Bundle.module
             .url(forResource: "JavaScriptLocationInjection", withExtension: "js")!
         // swiftlint:disable:next force_try
         let jsContent = try! String(contentsOf: jsURL, encoding: .utf8)
