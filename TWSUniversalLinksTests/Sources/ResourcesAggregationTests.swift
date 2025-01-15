@@ -64,7 +64,7 @@ final class ResourcesAggregationTests: XCTestCase {
             contentType: .html
         )] = url.absoluteString
 
-        let config = TWSSharedConfiguration(id: "sharedId")
+        let config = TWSSharedConfiguration(id: "abc123")
         let listenOn = URL(string: "https://listen.here.com")!
         let project = TWSProject(
             listenOn: listenOn,
