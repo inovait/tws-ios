@@ -45,16 +45,31 @@ public struct TWSSnippetsFeature: Sendable {
             state.state = .loading
 
             return .run { [api] send in
-                do {
-                    let project = try await api.getProject(configuration())
-                    let serverDate = project.1
-
-                    await send(.business(.projectLoaded(.success(.init(
-                        project: project.0,
-                        serverDate: serverDate
-                    )))))
-                } catch {
-                    await send(.business(.projectLoaded(.failure(error))))
+                switch configuration() {
+                case let config where config is TWSBasicConfiguration:
+                    do {
+                        let project = try await api.getProject(config as! TWSBasicConfiguration)
+                        let serverDate = project.1
+                        
+                        await send(.business(.projectLoaded(.success(.init(
+                            project: project.0,
+                            serverDate: serverDate
+                        )))))
+                    } catch {
+                        await send(.business(.projectLoaded(.failure(error))))
+                    }
+                case let config where config is TWSSharedConfiguration:
+                    do {
+                        let sharedToken = try await api.getSharedToken(config as! TWSSharedConfiguration)
+                        let sharedSnippet = try await api.getSnippetBySharedToken(sharedToken)
+                        
+                        await send(.business(.projectLoaded(.success(.init(
+                            project: sharedSnippet.0,
+                            serverDate: sharedSnippet.1
+                        )))))
+                    }
+                default:
+                    return
                 }
             }
 

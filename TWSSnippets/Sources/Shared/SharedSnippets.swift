@@ -20,15 +20,15 @@ import TWSModels
 import ComposableArchitecture
 
 extension URL {
-    static func snippets(for config: TWSConfiguration) -> URL {
+    static func snippets(for config: any TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
-        .appending(component: "\(config.organizationID)_\(config.projectID)_snippets.json")
+        .appending(component: "\(config.id)_snippets.json")
     }
 }
 
 extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>> {
-    static func snippets(for config: TWSConfiguration) -> Self {
+    static func snippets(for config: any TWSConfiguration) -> Self {
         .fileStorage(.snippets(for: config))
     }
 }

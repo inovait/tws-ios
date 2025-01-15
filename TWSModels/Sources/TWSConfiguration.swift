@@ -17,36 +17,23 @@
 import Foundation
 
 /// A struct that provides all the necessary information for a ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
-public struct TWSConfiguration: Hashable, Sendable {
+public protocol TWSConfiguration: Equatable, Hashable, Sendable {
+    var id: String { get set }
+}
 
-    /// The unique identifier of the TWS organization.
-    public let organizationID: String
-
-    /// The unique identifier of the TWS project.
-    public let projectID: String
-
-    // MARK: - Initializer
-
-    /// Initializes a new ``TWSConfiguration`` with the provided organization and project IDs.
-    ///
-    /// - Parameters:
-    ///   - organizationID: An ID representing the TWS organization.
-    ///   - projectID: An ID representing the TWS project.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let config = TWSConfiguration(
-    ///     organizationID: "<ORGANIZATION_ID>",
-    ///     projectID: "<PROJECT_ID>"
-    /// )
-    /// ```
-    /// This example demonstrates how to create a configuration for a specific organization and project.
-    public init(
-        organizationID: String,
-        projectID: String
-    ) {
-        self.organizationID = organizationID
-        self.projectID = projectID
+public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
+    public var id: String
+    
+    public init(id: String) {
+        self.id = id
     }
 }
+
+public struct TWSSharedConfiguration: TWSConfiguration, Equatable {
+    public var id: String
+    
+    public init(id: String) {
+        self.id = id
+    }
+}
+

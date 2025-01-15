@@ -20,16 +20,16 @@ import ComposableArchitecture
 
 private extension URL {
 
-    static func resources(for config: TWSConfiguration) -> URL {
+    static func resources(for config: any TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
-        .appending(component: "\(config.organizationID)_\(config.projectID)_resources.json")
+        .appending(component: "\(config.id)_resources.json")
     }
 }
 
 extension PersistenceReaderKey where Self == FileStorageKey<[TWSSnippet.Attachment: String]> {
 
-    static func resources(for config: TWSConfiguration) -> Self {
+    static func resources(for config: any TWSConfiguration) -> Self {
         .fileStorage(.resources(for: config))
     }
 }

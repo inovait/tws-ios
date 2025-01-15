@@ -28,7 +28,7 @@ internal import ComposableArchitecture
 @MainActor
 public class TWSFactory {
 
-    private static var _instances = ThreadSafeDictionary<TWSConfiguration, WeakBox<TWSManager>>()
+    private static var _instances = ThreadSafeDictionary<String, WeakBox<TWSManager>>()
 
     /// Creates and returns a new instance of ``TWSManager``.
     ///
@@ -42,7 +42,7 @@ public class TWSFactory {
     /// let manager = TWSFactory.new(with: myConfiguration)
     /// ```
     public class func new(
-        with configuration: TWSConfiguration
+        with configuration: any TWSConfiguration
     ) -> TWSManager {
         _new(
             configuration: configuration,
@@ -55,9 +55,9 @@ public class TWSFactory {
     // MARK: - Internal
 
     class func destroy(
-        configuration: TWSConfiguration
+        configuration: any TWSConfiguration
     ) {
-        _instances.removeValue(forKey: configuration)
+        _instances.removeValue(forKey: configuration.id)
 
         Task { @MainActor in
             @Dependency(\.socket) var socket
@@ -68,12 +68,12 @@ public class TWSFactory {
     // MARK: - Helpers
 
     private class func _new(
-        configuration: TWSConfiguration,
+        configuration: any TWSConfiguration,
         snippets: [TWSSnippet]?,
         preloadedResources: [TWSSnippet.Attachment: String]?,
         socketURL: URL?
     ) -> TWSManager {
-        if let manager = _instances[configuration]?.box {
+        if let manager = _instances[configuration.id]?.box {
             logger.info("Reusing TWSManager for configuration: \(configuration)")
             return manager
         }
@@ -132,7 +132,7 @@ public class TWSFactory {
             configuration: configuration
         )
         logger.info("Created a new TWSManager for configuration: \(configuration)")
-        _instances[configuration] = WeakBox(manager)
+        _instances[configuration.id] = WeakBox(manager)
         return manager
     }
 }
