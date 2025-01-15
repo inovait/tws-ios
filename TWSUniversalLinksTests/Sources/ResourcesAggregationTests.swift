@@ -64,6 +64,7 @@ final class ResourcesAggregationTests: XCTestCase {
             contentType: .html
         )] = url.absoluteString
 
+        let config = TWSSharedConfiguration(id: "sharedId")
         let listenOn = URL(string: "https://listen.here.com")!
         let project = TWSProject(
             listenOn: listenOn,
@@ -81,18 +82,18 @@ final class ResourcesAggregationTests: XCTestCase {
             reducer: { TWSUniversalLinksFeature() }
             ,
             withDependencies: {
-                $0.api.getSharedToken = { @Sendable _, _ in return "" }
-                $0.api.getSnippetBySharedToken = { @Sendable (_: TWSConfiguration, _: String) in return project }
+                $0.api.getSharedToken = { @Sendable _ in return "" }
+                $0.api.getSnippetBySharedToken = { @Sendable (_: String) in return (project, nil) }
                 $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
             }
         )
 
         await store.send(.business(.onUniversalLink(url))).finish()
-        await store.receive(\.business.snippetLoaded.success, project)
+        await store.receive(\.business.snippetLoaded.success, config)
 
         await store.receive(
             \.delegate.snippetLoaded,
-             project
+             config
         )
     }
 }
