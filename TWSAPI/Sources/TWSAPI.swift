@@ -5,18 +5,16 @@ import TWSFormatters
 public struct TWSAPI {
 
     public let getProject: @Sendable (
-        TWSConfiguration
+        _ projectId: TWSBasicConfiguration
     ) async throws(APIError) -> (TWSProject, Date?)
 
     public var getSharedToken: @Sendable (
-        TWSConfiguration,
-        _ token: String
+        _ sharedId: TWSSharedConfiguration
     ) async throws(APIError) -> String
 
     public var getSnippetByShareToken: @Sendable (
-        TWSConfiguration,
         _ token: String
-    ) async throws(APIError) -> TWSProject
+    ) async throws(APIError) -> (TWSProject, Date?)
 
     public let getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
@@ -26,13 +24,10 @@ public struct TWSAPI {
         host: String
     ) -> Self {
         .init(
-            getProject: { configuration throws(APIError) in
-                // Need to transform to lowercased, otherwise server returns 404
-                let organizationID = configuration.organizationID
-                let projectID = configuration.projectID
+            getProject: { project throws(APIError) in
                 let result = try await Router.make(request: .init(
                         method: .get,
-                        path: "/organizations/\(organizationID)/projects/\(projectID)/v2/register",
+                        path: "/projects/\(project.id)/snippets",
                         host: host,
                         queryItems: [],
                         headers: [:],
@@ -49,10 +44,10 @@ public struct TWSAPI {
                     throw APIError.decode(error)
                 }
             },
-            getSharedToken: { _, token throws(APIError) in
+            getSharedToken: { shared throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/shared/\(token)",
+                    path: "/shared/\(shared.id)",
                     host: host,
                     queryItems: [],
                     headers: [
@@ -68,10 +63,10 @@ public struct TWSAPI {
                     throw APIError.decode(error)
                 }
             },
-            getSnippetByShareToken: { _, token throws(APIError) in
+            getSnippetByShareToken: { token throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
-                    path: "/register-shared",
+                    path: "/snippets/shared",
                     host: host,
                     queryItems: [
                         URLQueryItem(name: "shareToken", value: token)
@@ -83,7 +78,7 @@ public struct TWSAPI {
                 ))
 
                 do {
-                    return try JSONDecoder().decode(TWSProject.self, from: result.data)
+                    return (try JSONDecoder().decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
                 }
