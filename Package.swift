@@ -12,6 +12,10 @@ let package = Package(
         .library(
             name: "TWS",
             targets: ["TWS"]
+        ),
+        .library(
+            name: "TWSModels",
+            targets: ["TWSModels"]
         )
     ],
     dependencies: [
