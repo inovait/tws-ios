@@ -33,11 +33,8 @@ jobs:
       - name: Update App Version
         run: |
           NEW_VERSION="0.1.${{ github.run_number }}"
-          CURRENT_PROJECT_VERSION=$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' ./config/TWS.xcconfig | cut -d ' ' -f 3)
-          sed -i '' "s/^MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" ./config/TWS.xcconfig
-          cat ./config/TWS.xcconfig
           echo "MARK_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
-          echo "BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"  >> $GITHUB_ENV
+          echo "BUILD_NUMBER=1"  >> $GITHUB_ENV
           echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"
 
       - name: Run Tests
