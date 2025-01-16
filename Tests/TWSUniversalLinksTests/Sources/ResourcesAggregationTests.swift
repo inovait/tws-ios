@@ -18,7 +18,6 @@ import XCTest
 @testable import TWSUniversalLinks
 @testable import TWSCommon
 @testable @_spi(Internals) import TWSModels
-@testable import TWSAPI
 @testable import ComposableArchitecture
 
 final class ResourcesAggregationTests: XCTestCase {
