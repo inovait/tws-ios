@@ -64,7 +64,7 @@ jobs:
         with:
           buildName: "iOS Development"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Changelog.md",
+          files: "./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build
