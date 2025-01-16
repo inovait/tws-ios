@@ -37,7 +37,6 @@ extension TWSSnippetsFeature {
                 return false
             }
         }
-        
         func hash(into hasher: inout Hasher) {
             switch self {
             case .socket(let config):
@@ -54,7 +53,6 @@ extension TWSSnippetsFeature {
                 hasher.combine(snippetID)
             }
         }
-        
         case socket(any TWSConfiguration),
              reconnect(any TWSConfiguration),
              showSnippet(TWSSnippet.ID),

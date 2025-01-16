@@ -23,7 +23,6 @@ public protocol TWSConfiguration: Equatable, Hashable, Sendable {
 
 public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
     public var id: String
-    
     public init(id: String) {
         self.id = id
     }
@@ -31,9 +30,7 @@ public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
 
 public struct TWSSharedConfiguration: TWSConfiguration, Equatable {
     public var id: String
-    
     public init(id: String) {
         self.id = id
     }
 }
-
