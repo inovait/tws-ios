@@ -1,13 +1,10 @@
 build/
 XCFrameworks/
 xcuserdata/
-*.xcodeproj
-*.xcworkspace
 graph.dot
 Derived/
 **/.build
 **/Derived
-Package.resolved
 DerivedData/
 
 # fastlane specific
@@ -19,5 +16,6 @@ DerivedData/
 # periphery
 periphery/DerivedData
 periphery_output.txt
+periphery_error.log
 .DS_Store
 tws-service.json

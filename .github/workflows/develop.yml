@@ -40,12 +40,6 @@ jobs:
           echo "BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"  >> $GITHUB_ENV
           echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"
 
-      - name: Generate Project (Tuist)
-        run: |
-            tuist clean
-            tuist install
-            tuist generate --no-open
-
       - name: Run Tests
         run: |
           fastlane do_tests
