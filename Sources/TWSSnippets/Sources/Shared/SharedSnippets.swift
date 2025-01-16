@@ -20,6 +20,8 @@ import TWSModels
 import ComposableArchitecture
 
 extension URL {
+
+    // periphery:ignore - used with compiler flg
     static func snippets(for config: TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
@@ -28,6 +30,8 @@ extension URL {
 }
 
 extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>> {
+    
+    // periphery:ignore - used with compiler flg
     static func snippets(for config: TWSConfiguration) -> Self {
         .fileStorage(.snippets(for: config))
     }

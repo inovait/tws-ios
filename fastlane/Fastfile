@@ -73,7 +73,8 @@ platform :ios do
     scan(
       workspace: "./TheWebSnippet.xcworkspace",
       scheme: "Sample",
-      derived_data_path: derived_data_path
+      derived_data_path: derived_data_path,
+      destination: "platform=iOS Simulator,name=iPhone 16"
     )
   end
 
