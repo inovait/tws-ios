@@ -18,6 +18,7 @@ import Foundation
 import TWSSnippet
 import TWSModels
 import ComposableArchitecture
+import Sharing
 
 extension URL {
 
@@ -29,10 +30,10 @@ extension URL {
     }
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>> {
-    
+extension SharedKey where Self == Sharing.FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>>.Default {
+
     // periphery:ignore - used with compiler flg
     static func snippets(for config: TWSConfiguration) -> Self {
-        .fileStorage(.snippets(for: config))
+        Self[.fileStorage(.snippets(for: config)), default: .init(uniqueElements: [])]
     }
 }

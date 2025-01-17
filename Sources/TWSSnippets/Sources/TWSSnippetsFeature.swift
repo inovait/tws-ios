@@ -125,7 +125,7 @@ public struct TWSSnippetsFeature: Sendable {
             let currentResources = Set(state.preloadedResources.keys)
             let newResources = _getResources(of: project.project)
             for resource in currentResources.subtracting(newResources) {
-                state.preloadedResources.removeValue(forKey: resource)
+                state.$preloadedResources.withLock { _ = $0.removeValue(forKey: resource) }
             }
 
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
@@ -133,7 +133,7 @@ public struct TWSSnippetsFeature: Sendable {
             // Update current or add new
             for snippet in snippets {
                 if let date = project.serverDate {
-                    state.snippetDates[snippet.id] = SnippetDateInfo(serverTime: date)
+                    state.$snippetDates[snippet.id].withLock { $0 = SnippetDateInfo(serverTime: date) }
                 }
                 if currentOrder.contains(snippet.id) {
                     if state.snippets[id: snippet.id]?.snippet != snippet {
@@ -157,15 +157,23 @@ public struct TWSSnippetsFeature: Sendable {
                         )
                     }
 
+                    #if TESTING
+                    // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                     state.snippets[id: snippet.id]?.snippet = snippet
+                    #else
+                    state.$snippets[id: snippet.id].withLock { $0?.snippet = snippet }
+                    #endif
+
                     logger.info("Updated snippet: \(snippet.id)")
                 } else {
-                    state.snippets.append(
-                        .init(
-                            snippet: snippet,
-                            preloaded: false
-                        )
-                    )
+                    let new = TWSSnippetFeature.State(snippet: snippet, preloaded: false)
+
+                    #if TESTING
+                    // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+                    state.snippets.append(new)
+                    #else
+                    _ = state.$snippets.withLock { $0.append(new)}
+                    #endif
 
                     logger.info("Added snippet: \(snippet.id)")
                     effects.append(.send(.business(.snippets(.element(
@@ -178,7 +186,12 @@ public struct TWSSnippetsFeature: Sendable {
             // Remove old
 
             for id in currentOrder.subtracting(newOrder) {
+                #if TESTING
+                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                 state.snippets.remove(id: id)
+                #else
+                _ = state.$snippets.withLock { $0.remove(id: id) }
+                #endif
                 logger.info("Removed snippet: \(id)")
             }
 
@@ -280,13 +293,20 @@ public struct TWSSnippetsFeature: Sendable {
         case let .setLocalProps(props):
             let id = props.0
             let localProps = props.1
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: id]?.localProps = .dictionary(localProps)
+            #else
+            state.$snippets[id: id].withLock { $0?.localProps = .dictionary(localProps) }
+            #endif
             return .none
 
         case let .snippets(.element(_, action: .delegate(delegateAction))):
             switch delegateAction {
             case let .resourcesUpdated(resources):
-                resources.forEach { state.preloadedResources[$0.key] = $0.value }
+                resources.forEach { resource in
+                    state.$preloadedResources[resource.key].withLock { $0 = resource.value }
+                }
                 return .none
             }
 
@@ -294,11 +314,23 @@ public struct TWSSnippetsFeature: Sendable {
             return .none
 
         case .showSnippet(snippetId: let snippetId):
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: snippetId]?.isVisible = true
+            #else
+            state.$snippets[id: snippetId].withLock { $0?.isVisible = true }
+            #endif
+
             return .none
 
         case .hideSnippet(snippetId: let snippetId):
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: snippetId]?.isVisible = false
+            #else
+            state.$snippets[id: snippetId].withLock { $0?.isVisible = false }
+            #endif
+
             return .none
         }
     }
