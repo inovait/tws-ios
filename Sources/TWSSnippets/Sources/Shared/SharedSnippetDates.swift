@@ -17,6 +17,7 @@
 import Foundation
 import TWSModels
 import ComposableArchitecture
+import Sharing
 
 private extension URL {
     static func snippetDates(for config: any TWSConfiguration) -> URL {
@@ -26,8 +27,9 @@ private extension URL {
     }
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<[TWSSnippet.ID: SnippetDateInfo]> {
+
+extension SharedKey where Self == Sharing.FileStorageKey<[TWSSnippet.ID: SnippetDateInfo]>.Default {
     static func snippetDates(for config: any TWSConfiguration) -> Self {
-        .fileStorage(.snippetDates(for: config))
+        Self[.fileStorage(.snippetDates(for: config)), default: [:]]
     }
 }

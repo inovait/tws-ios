@@ -18,6 +18,7 @@ import Foundation
 import ComposableArchitecture
 import TWSModels
 import TWSSnippet
+import Sharing
 
 extension TWSSnippetsFeature {
 
@@ -28,11 +29,15 @@ extension TWSSnippetsFeature {
         // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
         public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         #else
-        @Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
+        @ObservationStateIgnored
+        @Sharing.Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         #endif
 
-        @Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
-        @Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
+        @ObservationStateIgnored
+        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+
+        @ObservationStateIgnored
+        @Sharing.Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
         public internal(set) var state: TWSLoadingState = .idle
@@ -64,10 +69,16 @@ extension TWSSnippetsFeature {
 
                 if let serverTime {
                     snippets.forEach { snippet in
-                        snippetDates[snippet.id] = SnippetDateInfo(serverTime: serverTime)
+                        $snippetDates[snippet.id].withLock { $0 = SnippetDateInfo(serverTime: serverTime) }
                     }
                 }
+
+                #if TESTING
+                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                 self.snippets = .init(uniqueElements: state)
+                #else
+                self.$snippets.withLock { $0 = .init(uniqueElements: state) }
+                #endif
             }
 
             state = self.snippets.isEmpty ? .idle : .loaded
@@ -77,7 +88,7 @@ extension TWSSnippetsFeature {
             }
 
             if let preloadedResources {
-                self.preloadedResources = preloadedResources
+                self.$preloadedResources.withLock { $0 = preloadedResources }
             }
         }
     }

@@ -387,7 +387,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.projectLoaded.success) {
             $0.snippets = .init(uniqueElements: [snippetsStates[0], snippetsStates[1], snippetsStates[2]])
             $0.socketURL = self.socketURL
-            $0.snippetDates = [:]
+            $0.$snippetDates.withLock { $0 = [:] }
             $0.state = .loaded
         }
         await store.receive(\.business.startVisibilityTimers)

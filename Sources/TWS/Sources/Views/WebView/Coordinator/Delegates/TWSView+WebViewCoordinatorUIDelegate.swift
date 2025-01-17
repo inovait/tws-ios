@@ -91,6 +91,22 @@ extension WebView.Coordinator: WKUIDelegate {
     public func webView(
         _ webView: WKWebView,
         runJavaScriptConfirmPanelWithMessage message: String,
+        initiatedByFrame frame: WKFrameInfo
+    ) async -> Bool {
+        await withCheckedContinuation { continuation in
+            _webView(
+                webView,
+                runJavaScriptConfirmPanelWithMessage: message,
+                initiatedByFrame: frame
+            ) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    private func _webView(
+        _ webView: WKWebView,
+        runJavaScriptConfirmPanelWithMessage message: String,
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping @MainActor @Sendable (Bool) -> Void
     ) {
