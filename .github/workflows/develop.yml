@@ -33,18 +33,9 @@ jobs:
       - name: Update App Version
         run: |
           NEW_VERSION="0.1.${{ github.run_number }}"
-          CURRENT_PROJECT_VERSION=$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' ./config/TWS.xcconfig | cut -d ' ' -f 3)
-          sed -i '' "s/^MARKETING_VERSION = .*/MARKETING_VERSION = $NEW_VERSION/" ./config/TWS.xcconfig
-          cat ./config/TWS.xcconfig
           echo "MARK_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
-          echo "BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"  >> $GITHUB_ENV
-          echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${CURRENT_PROJECT_VERSION}"
-
-      - name: Generate Project (Tuist)
-        run: |
-            tuist clean
-            tuist install
-            tuist generate --no-open
+          echo "BUILD_NUMBER=1"  >> $GITHUB_ENV
+          echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${BUILD_NUMBER}"
 
       - name: Run Tests
         run: |
@@ -63,10 +54,6 @@ jobs:
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 
-      - name: "Generate XCFrameworks"
-        run: |
-            ./xcframeworks_create.sh TWS TWSModels
-
       - name: "Generate changelog"
         uses: pmuraus/spotlight-changelog-generator-action@main
         with:
@@ -77,7 +64,7 @@ jobs:
         with:
           buildName: "iOS Development"
           buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
-          files: "./Changelog.md,XCFrameworks/TWS.xcframework.zip,XCFrameworks/TWSModels.xcframework.zip"
+          files: "./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build

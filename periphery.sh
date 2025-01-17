@@ -6,9 +6,16 @@ patterns_file="peripheryIgnoringPatterns.txt"
 periphery_output_file="periphery_output.txt"
 periphery_output_file_tmp="periphery_outputTmp.txt"
 
-#number of lines of empty periphery output
-emptyPeripheryNumOfLines=10
+# Expected output for a successful build
+expected_output=$(cat <<EOF
+* Inspecting project...
+* Indexing...
+* Analyzing...
+
+EOF
+)
 ###
+
 ###
 if [ -n "$1" ]; then
     index_store_path=$1
@@ -26,21 +33,21 @@ fi
 realpath "$index_store_path"
 all_filter_patterns=$(cat "$patterns_file")
 
-if periphery scan --disable-update-check --skip-build --index-store-path "$index_store_path/Index.noindex/DataStore/" --config .periphery.yml > "$periphery_output_file"; then
+if periphery scan --disable-update-check --skip-build --index-store-path "$index_store_path/Index.noindex/DataStore/" --config .periphery.yml > "$periphery_output_file" 2> periphery_error.log; then
     #remove results with pattern
     grep -vE "$all_filter_patterns" "$periphery_output_file" > "$periphery_output_file_tmp"
     mv "$periphery_output_file_tmp" "$periphery_output_file"
 
-    line_count=$(wc -l < "$periphery_output_file")
-
-    if [ "$line_count" -gt "$emptyPeripheryNumOfLines" ]; then
+    actual_output=$(cat "$periphery_output_file")
+    if [ "$actual_output" != "$expected_output" ]; then
         echo "THERE IS DEAD CODE IN PROJECT. CHECK PERIPHERY OUTPUT"
-        cat "$periphery_output_file"
+        echo "$actual_output"
         exit 1
     fi
     echo "Haven't found any deadcode"
-    cat "$periphery_output_file"
+    echo "$actual_output"
 else
-    echo "Periphery failed, reason could be that project build folder in not created or path to it is wrong"
+    echo "Periphery failed. Error output:"
+    cat periphery_error.log
     exit 1
 fi

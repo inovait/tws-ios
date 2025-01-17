@@ -34,12 +34,6 @@ jobs:
         with:
           log_level: debug
 
-      - name: Generate Project (Tuist)
-        run: |
-            tuist clean
-            tuist install
-            tuist generate --no-open
-
       - name: Run Tests
         run: |
           fastlane do_tests
