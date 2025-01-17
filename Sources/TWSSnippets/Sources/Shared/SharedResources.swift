@@ -17,6 +17,7 @@
 import Foundation
 import TWSModels
 import ComposableArchitecture
+import Sharing
 
 private extension URL {
 
@@ -27,9 +28,9 @@ private extension URL {
     }
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<[TWSSnippet.Attachment: String]> {
+extension SharedKey where Self == Sharing.FileStorageKey<[TWSSnippet.Attachment: String]>.Default {
 
     static func resources(for config: TWSConfiguration) -> Self {
-        .fileStorage(.resources(for: config))
+        Self[.fileStorage(.resources(for: config)), default: [:]]
     }
 }

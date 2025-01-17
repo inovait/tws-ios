@@ -16,6 +16,7 @@
 import ComposableArchitecture
 import TWSCommon
 import Foundation
+import TWSSnippet
 @_spi(Internals) import TWSModels
 
 extension TWSSnippetsFeature {
@@ -26,11 +27,18 @@ extension TWSSnippetsFeature {
             orderDict[id] = index
         }
 
-        state.snippets.sort(by: {
-            let idx1 = orderDict[$0.id] ?? Int.max
-            let idx2 = orderDict[$1.id] ?? Int.max
+        func _algo(lhs: TWSSnippetFeature.State, rhs: TWSSnippetFeature.State) -> Bool {
+            let idx1 = orderDict[lhs.id] ?? Int.max
+            let idx2 = orderDict[rhs.id] ?? Int.max
             return idx1 < idx2
-        })
+        }
+
+        #if TESTING
+        // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+        state.snippets.sort(by: _algo)
+        #else
+        state.$snippets.withLock { $0.sort(by: _algo)}
+        #endif
     }
 
     func listen(

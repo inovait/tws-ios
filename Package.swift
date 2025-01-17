@@ -12,16 +12,12 @@ let package = Package(
         .library(
             name: "TWS",
             targets: ["TWS"]
-        ),
-        .library(
-            name: "TWSModels",
-            targets: ["TWSModels"]
         )
     ],
     dependencies: [
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            from: .init(1, 16, 1)
+            from: .init(1, 17, 1)
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-url-routing",
