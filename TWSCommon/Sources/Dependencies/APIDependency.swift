@@ -56,7 +56,7 @@ public struct APIDependency: Sendable {
 public enum APIDependencyKey: DependencyKey {
 
     public static var liveValue: APIDependency {
-        let api = TWSAPIFactory.new(host: "api.thewebsnippet.dev")
+        let api = TWSAPIFactory.new()
 
         return .init(
             getProject: api.getProject,

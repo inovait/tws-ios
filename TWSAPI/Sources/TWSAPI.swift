@@ -22,10 +22,10 @@ public struct TWSAPI {
         TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> String
 
-    static func live(
-        host: String
-    ) -> Self {
-        .init(
+    static func live() -> Self {
+        let host = TWSSettingsProvider.getApiBaseUrl()
+        
+        return .init(
             getProject: { configuration throws(APIError) in
                 // Need to transform to lowercased, otherwise server returns 404
                 let organizationID = configuration.organizationID

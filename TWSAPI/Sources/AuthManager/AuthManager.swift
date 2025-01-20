@@ -18,8 +18,8 @@ import Foundation
 
 actor AuthManager {
 
-    private let loginUrl = "https://api.thewebsnippet.dev/auth/login"
-    private let registerUrl = "https://api.thewebsnippet.dev/auth/register"
+    private let loginUrl: String
+    private let registerUrl: String
 
     private let keychainHelper = KeychainHelper()
     private let accessTokenKey = "TWSAccessToken"
@@ -29,7 +29,11 @@ actor AuthManager {
     private var ongoingRefreshTask: Task<String, Error>?
     private var ongoingAccessTask: Task<String, Error>?
 
-    init() { }
+    init() {
+        let baseUrl = TWSSettingsProvider.getApiBaseUrl()
+        loginUrl = "\(baseUrl)/auth/login"
+        registerUrl = "\(baseUrl)/auth/register"
+    }
 
     func forceRefreshTokens() async throws {
         _ = try await getAccessToken(true)
@@ -103,7 +107,7 @@ actor AuthManager {
             }
         }
 
-        let jwtToken = JWTCreator.generateMainJWTToken()
+        let jwtToken = TWSSettingsProvider.generateMainJWTToken()
         keychainHelper.save(jwtToken, for: JWTTokenKey)
         return jwtToken
     }
