@@ -17,48 +17,51 @@
 import Foundation
 
 actor AuthManager {
-
-    private let loginUrl: String
-    private let registerUrl: String
-
+    
+    private let loginUrl: URL
+    private let registerUrl: URL
+    
     private let keychainHelper = KeychainHelper()
     private let accessTokenKey = "TWSAccessToken"
     private let refreshTokenKey = "TWSRefreshToken"
     private let JWTTokenKey = "TWSJWTToken"
-
+    
     private var ongoingRefreshTask: Task<String, Error>?
     private var ongoingAccessTask: Task<String, Error>?
-
-    init() {
-        let baseUrl = TWSSettingsProvider.getApiBaseUrl()
-        loginUrl = "\(baseUrl)/auth/login"
-        registerUrl = "\(baseUrl)/auth/register"
+    
+    init(baseUrl: TWSBaseUrl) {
+        guard !baseUrl.scheme.isEmpty, !baseUrl.host.isEmpty else {
+            fatalError("Invalid base URL provided in constructor")
+        }
+        
+        loginUrl = Self.createUrl(scheme: baseUrl.scheme, host: baseUrl.host, path: "/auth/login")
+        registerUrl = Self.createUrl(scheme: baseUrl.scheme, host: baseUrl.host, path: "/auth/register")
     }
-
+    
     func forceRefreshTokens() async throws {
         _ = try await getAccessToken(true)
     }
-
+    
     func getAccessToken(_ force: Bool) async throws -> String {
         if let ongoingTask = ongoingAccessTask {
             return try await ongoingTask.value
         }
-
+        
         let accessTask = Task { () -> String in
             if !force {
                 if let savedAccessToken = keychainHelper.get(for: accessTokenKey) {
                     return savedAccessToken
                 }
             }
-
+            
             let refreshToken = try await getRefreshToken(force)
             let accessToken = try await requestAccessToken(refreshToken)
             keychainHelper.save(accessToken, for: accessTokenKey)
             return accessToken
         }
-
+        
         ongoingAccessTask = accessTask
-
+        
         do {
             let result = try await accessTask.value
             ongoingAccessTask = nil
@@ -67,29 +70,29 @@ actor AuthManager {
             ongoingAccessTask = nil
             throw error
         }
-
+        
     }
-
+    
     private func getRefreshToken(_ force: Bool) async throws -> String {
         if let ongoingTask = ongoingRefreshTask {
             return try await ongoingTask.value
         }
-
+        
         let refreshTask = Task { () -> String in
             if !force {
                 if let savedRefreshToken = keychainHelper.get(for: refreshTokenKey) {
                     return savedRefreshToken
                 }
             }
-
+            
             let jwtToken = getJWTToken(force)
             let refreshToken = try await requestRefreshToken(jwtToken)
             keychainHelper.save(refreshToken, for: refreshTokenKey)
             return refreshToken
         }
-
+        
         ongoingRefreshTask = refreshTask
-
+        
         do {
             let result = try await refreshTask.value
             ongoingRefreshTask = nil
@@ -99,21 +102,21 @@ actor AuthManager {
             throw error
         }
     }
-
+    
     private func getJWTToken(_ force: Bool) -> String {
         if !force {
             if let savedJWTToken = keychainHelper.get(for: JWTTokenKey) {
                 return savedJWTToken
             }
         }
-
+        
         let jwtToken = TWSSettingsProvider.generateMainJWTToken()
         keychainHelper.save(jwtToken, for: JWTTokenKey)
         return jwtToken
     }
-
+    
     private func requestAccessToken(_ refreshToken: String) async throws -> String {
-        var tokenRequest = URLRequest(url: URL(string: loginUrl)!, timeoutInterval: 60)
+        var tokenRequest = URLRequest(url: loginUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
@@ -122,7 +125,7 @@ actor AuthManager {
             guard let httpResponse = response as? HTTPURLResponse else {
                 fatalError("Received a response without being an HTTPURLResponse?")
             }
-
+            
             if 200..<300 ~= httpResponse.statusCode {
                 if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let accessToken = json["authToken"] as? String {
@@ -138,9 +141,9 @@ actor AuthManager {
             throw APIError.local(error)
         }
     }
-
+    
     private func requestRefreshToken(_ jwtToken: String) async throws -> String {
-        var tokenRequest = URLRequest(url: URL(string: registerUrl)!, timeoutInterval: 60)
+        var tokenRequest = URLRequest(url: registerUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
@@ -149,7 +152,7 @@ actor AuthManager {
             guard let httpResponse = response as? HTTPURLResponse else {
                 fatalError("Received a response without being an HTTPURLResponse?")
             }
-
+            
             if 200..<300 ~= httpResponse.statusCode {
                 if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let refreshToken = json["refreshToken"] as? String {
@@ -164,5 +167,17 @@ actor AuthManager {
         } catch {
             throw APIError.local(error)
         }
+    }
+    
+    private static func createUrl(scheme: String, host: String, path: String) -> URL {
+        var components = URLComponents()
+        components.scheme = scheme
+        components.host = host
+        components.path = path
+        
+        guard let url = components.url else {
+            fatalError("Failed to construct URL with scheme: \(scheme), host: \(host), path: \(path)")
+        }
+        return url
     }
 }

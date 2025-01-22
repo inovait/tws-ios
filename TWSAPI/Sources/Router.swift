@@ -18,7 +18,7 @@ import Foundation
 
 class Router {
 
-    private static let authManager = AuthManager()
+    private static let authManager = AuthManager(baseUrl: TWSSettingsProvider.getApiBaseUrl())
 
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
@@ -30,7 +30,7 @@ class Router {
 
     class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
         var components = URLComponents()
-        components.scheme = "https"
+        components.scheme = request.scheme
         components.host = request.host
         components.path = request.path
 

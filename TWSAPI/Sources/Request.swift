@@ -21,6 +21,7 @@ struct Request {
     let method: Method
     let path: String
     let host: String
+    let scheme: String
     let queryItems: [URLQueryItem]
     let headers: [String: String]
     let auth: Bool

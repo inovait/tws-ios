@@ -20,7 +20,12 @@ private struct TWSSettings {
     let secret: String
     let privateKeyId: String
     let clientId: String
-    let baseUrl: String
+    let baseUrl: TWSBaseUrl
+}
+
+public struct TWSBaseUrl : Sendable {
+    let scheme: String
+    let host: String
 }
 
 // periphery:ignore
@@ -56,11 +61,11 @@ struct TWSSettingsProvider {
         fatalError("Failed to sign the JWT")
     }
     
-    static func getApiBaseUrl() -> String {
+    static func getApiBaseUrl() -> TWSBaseUrl {
         let twsSettings = getTWSSettings()
         let baseUrl = twsSettings.baseUrl
         
-        if !baseUrl.isEmpty {
+        if !baseUrl.host.isEmpty && !baseUrl.scheme.isEmpty {
             return baseUrl
         }
         
@@ -78,10 +83,13 @@ struct TWSSettingsProvider {
                   let secret = jsonDict["private_key"],
                   let privateKeyId = jsonDict["private_key_id"],
                   let clientId = jsonDict["client_id"],
-                  let baseUrl = jsonDict["tws_base_url"]
+                  let baseUrlString = jsonDict["tws_base_url"]
             else {
                 fatalError("The tws-service.json is present, but it's form is corrupted.")
             }
+            
+            let baseUrl = parseBaseUrl(from: baseUrlString)
+            
             return TWSSettings(
                 secret: secret,
                 privateKeyId: privateKeyId,
@@ -91,5 +99,14 @@ struct TWSSettingsProvider {
         } catch {
             fatalError("The tws-service.json is present, but it's form is corrupted.")
         }
+    }
+    
+    private static func parseBaseUrl(from baseUrlString: String) -> TWSBaseUrl {
+        guard let components = URLComponents(string: baseUrlString),
+              let scheme = components.scheme,
+              let host = components.host else {
+            fatalError("Invalid format for 'tws_base_url'. Expected a valid URL with scheme and host.")
+        }
+        return TWSBaseUrl(scheme: scheme, host: host)
     }
 }

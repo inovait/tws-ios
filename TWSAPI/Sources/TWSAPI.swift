@@ -22,9 +22,7 @@ public struct TWSAPI {
         TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> String
 
-    static func live() -> Self {
-        let host = TWSSettingsProvider.getApiBaseUrl()
-        
+    static func live(baseUrl: TWSBaseUrl) -> Self {
         return .init(
             getProject: { configuration throws(APIError) in
                 // Need to transform to lowercased, otherwise server returns 404
@@ -33,7 +31,8 @@ public struct TWSAPI {
                 let result = try await Router.make(request: .init(
                         method: .get,
                         path: "/organizations/\(organizationID)/projects/\(projectID)/v2/register",
-                        host: host,
+                        host: baseUrl.host,
+                        scheme: baseUrl.scheme,
                         queryItems: [],
                         headers: [:],
                         auth: true
@@ -53,7 +52,8 @@ public struct TWSAPI {
                 let result = try await Router.make(request: .init(
                     method: .get,
                     path: "/shared/\(token)",
-                    host: host,
+                    host: baseUrl.host,
+                    scheme: baseUrl.scheme,
                     queryItems: [],
                     headers: [
                         "Accept": "application/json"
@@ -72,7 +72,8 @@ public struct TWSAPI {
                 let result = try await Router.make(request: .init(
                     method: .get,
                     path: "/register-shared",
-                    host: host,
+                    host: baseUrl.host,
+                    scheme: baseUrl.scheme,
                     queryItems: [
                         URLQueryItem(name: "shareToken", value: token)
                     ],
@@ -93,6 +94,7 @@ public struct TWSAPI {
                     method: .get,
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
+                    scheme: attachment.url.scheme ?? "",
                     queryItems: [],
                     headers: headers,
                     auth: false
