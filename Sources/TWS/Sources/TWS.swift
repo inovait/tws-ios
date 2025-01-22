@@ -237,7 +237,7 @@ public final class TWSManager: Identifiable {
             .compactMap {
                 switch $0 {
                 case .snippetsUpdated: return _React.snippets
-                case .universalLinkSnippetLoaded: return nil
+                case .universalLinkConfigurationLoaded: return nil
                 case .stateChanged: return .state
                 }
             }

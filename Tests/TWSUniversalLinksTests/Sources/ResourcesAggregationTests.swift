@@ -88,10 +88,10 @@ final class ResourcesAggregationTests: XCTestCase {
         )
 
         await store.send(.business(.onUniversalLink(url))).finish()
-        await store.receive(\.business.snippetLoaded.success, config)
+        await store.receive(\.business.configurationLoaded.success, config)
 
         await store.receive(
-            \.delegate.snippetLoaded,
+            \.delegate.configurationLoaded,
              config
         )
     }

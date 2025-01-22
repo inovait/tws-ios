@@ -32,12 +32,12 @@ public struct TWSUniversalLinksFeature: Sendable {
         @CasePathable
         public enum BusinessAction {
             case onUniversalLink(URL)
-            case snippetLoaded(Result<TWSSharedConfiguration, Error>)
+            case configurationLoaded(Result<TWSSharedConfiguration, Error>)
         }
 
         @CasePathable
         public enum DelegateAction {
-            case snippetLoaded(TWSSharedConfiguration)
+            case configurationLoaded(TWSSharedConfiguration)
         }
 
         case business(BusinessAction)
@@ -57,7 +57,7 @@ public struct TWSUniversalLinksFeature: Sendable {
                 switch try TWSUniversalLinkRouter.route(for: url) {
                 case let .snippet(id):
                     return .run { send in
-                        await send(.business(.snippetLoaded(.success(TWSSharedConfiguration(id: id)))))
+                        await send(.business(.configurationLoaded(.success(TWSSharedConfiguration(id: id)))))
                     }
                 }
             } catch {
@@ -66,12 +66,12 @@ public struct TWSUniversalLinksFeature: Sendable {
                 return .none
             }
 
-        case let .business(.snippetLoaded(.success(config))):
+        case let .business(.configurationLoaded(.success(config))):
             logger.info("Universal link: snippet loaded successfully")
 
-            return .send(.delegate(.snippetLoaded(config)))
+            return .send(.delegate(.configurationLoaded(config)))
 
-        case let .business(.snippetLoaded(.failure(error))):
+        case let .business(.configurationLoaded(.failure(error))):
             logger.err("Universal link: load failed: \(error.localizedDescription)")
             return .none
 
