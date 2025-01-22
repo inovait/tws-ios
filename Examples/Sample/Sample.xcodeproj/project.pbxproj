@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		86F4EE5F2D3A5B8E00A0991D /* TWS in Frameworks */ = {isa = PBXBuildFile; productRef = 86F4EE5E2D3A5B8E00A0991D /* TWS */; };
 		D2540D852D36A77B0047A106 /* TWS in Frameworks */ = {isa = PBXBuildFile; productRef = D2540D842D36A77B0047A106 /* TWS */; };
 /* End PBXBuildFile section */
 
@@ -29,7 +28,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2540D852D36A77B0047A106 /* TWS in Frameworks */,
-				86F4EE5F2D3A5B8E00A0991D /* TWS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +71,6 @@
 			name = Sample;
 			packageProductDependencies = (
 				D2540D842D36A77B0047A106 /* TWS */,
-				86F4EE5E2D3A5B8E00A0991D /* TWS */,
 			);
 			productName = Sample;
 			productReference = D2540D5A2D36A7320047A106 /* Sample.app */;
@@ -104,7 +101,6 @@
 			mainGroup = D2540D512D36A7320047A106;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				86F4EE5D2D3A5B8E00A0991D /* XCRemoteSwiftPackageReference "tws-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D2540D5B2D36A7320047A106 /* Products */;
@@ -353,23 +349,7 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		86F4EE5D2D3A5B8E00A0991D /* XCRemoteSwiftPackageReference "tws-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/inovait/tws-ios";
-			requirement = {
-				branch = develop;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		86F4EE5E2D3A5B8E00A0991D /* TWS */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 86F4EE5D2D3A5B8E00A0991D /* XCRemoteSwiftPackageReference "tws-ios" */;
-			productName = TWS;
-		};
 		D2540D842D36A77B0047A106 /* TWS */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TWS;
