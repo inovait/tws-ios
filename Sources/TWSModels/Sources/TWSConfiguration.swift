@@ -16,20 +16,22 @@
 
 import Foundation
 
-/// A struct that provides all the necessary information for a ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
+/// A protocol that represents a configuration required by ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
 public protocol TWSConfiguration: Equatable, Hashable, Sendable {
-    var id: String { get set }
+    let id: String { get }
 }
 
+/// A configuration type that enables ``TWSManager`` to fetch all snippets associated with a specific project ID. A valid tws-service.json file is required.
 public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
-    public var id: String
+    public let id: String
     public init(id: String) {
         self.id = id
     }
 }
 
+/// A configuration type, that enables ``TWSManager`` to fetch shared snippet using share token. A valid tws-service.json file is not required.
 public struct TWSSharedConfiguration: TWSConfiguration, Equatable {
-    public var id: String
+    public let id: String
     public init(id: String) {
         self.id = id
     }
