@@ -16,10 +16,16 @@
 import SwiftJWT
 import Foundation
 
-private struct JWTData {
+private struct TWSBuildSettings {
     let secret: String
     let privateKeyId: String
     let clientId: String
+    let baseUrl: TWSBaseUrl
+}
+
+public struct TWSBaseUrl : Sendable {
+    let scheme: String
+    let host: String
 }
 
 // periphery:ignore
@@ -31,21 +37,21 @@ private struct Payload: Claims {
     // swiftlint:enable identifier_name
 }
 
-struct JWTCreator {
+struct TWSBuildSettingsProvider {
 
     static func generateMainJWTToken() -> String {
-        let jwtData = getJWTData()
+        let tWSBuildSettings = getTWSBuildSettings()
 
-        let header = Header(kid: jwtData.privateKeyId)
+        let header = Header(kid: tWSBuildSettings.privateKeyId)
         let payload = Payload(
             exp: "211100000000",
-            iss: jwtData.clientId,
-            client_id: jwtData.clientId
+            iss: tWSBuildSettings.clientId,
+            client_id: tWSBuildSettings.clientId
         )
 
         var jwt = JWT(header: header, claims: payload)
 
-        guard let privateKey = jwtData.secret.data(using: .utf8) else {
+        guard let privateKey = tWSBuildSettings.secret.data(using: .utf8) else {
             fatalError("JWT signing failed")
         }
         let jwtSigner = JWTSigner.rs256(privateKey: privateKey)
@@ -54,8 +60,19 @@ struct JWTCreator {
         }
         fatalError("Failed to sign the JWT")
     }
+    
+    static func getTWSBaseUrl() -> TWSBaseUrl {
+        let twsBuildSettings = getTWSBuildSettings()
+        let baseUrl = twsBuildSettings.baseUrl
+        
+        if !baseUrl.host.isEmpty && !baseUrl.scheme.isEmpty {
+            return baseUrl
+        }
+        
+        fatalError("TWS base url is not in correct format")
+    }
 
-    private static func getJWTData() -> JWTData {
+    private static func getTWSBuildSettings() -> TWSBuildSettings {
         guard let jsonFilePath = Bundle.main.path(forResource: "tws-service", ofType: "json") else {
             fatalError("Unable to locate tws-service.json in the project directory.")
         }
@@ -65,17 +82,32 @@ struct JWTCreator {
             guard let jsonDict = try JSONSerialization.jsonObject(with: jsonData) as? [String: String],
                   let secret = jsonDict["private_key"],
                   let privateKeyId = jsonDict["private_key_id"],
-                  let clientId = jsonDict["client_id"]
+                  let clientId = jsonDict["client_id"],
+                  let baseUrlString = jsonDict["tws_base_url"]
             else {
                 fatalError("The tws-service.json is present, but it's form is corrupted.")
             }
-            return JWTData(
+            
+            let baseUrl = parseBaseUrl(baseUrlString: baseUrlString)
+            
+            return TWSBuildSettings(
                 secret: secret,
                 privateKeyId: privateKeyId,
-                clientId: clientId
+                clientId: clientId,
+                baseUrl: baseUrl
             )
         } catch {
             fatalError("The tws-service.json is present, but it's form is corrupted.")
         }
+    }
+    
+    private static func parseBaseUrl(baseUrlString: String) -> TWSBaseUrl {
+        guard let component = URLComponents(string: baseUrlString),
+              let scheme = component.scheme,
+              let host = component.host else {
+            fatalError("Invalid format for 'tws_base_url'. Expected a valid URL with scheme and host.")
+        }
+        
+        return TWSBaseUrl(scheme: scheme, host: host)
     }
 }

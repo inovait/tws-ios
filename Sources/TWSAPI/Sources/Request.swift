@@ -19,6 +19,7 @@ import Foundation
 struct Request {
 
     let method: Method
+    let scheme: String
     let path: String
     let host: String
     let queryItems: [URLQueryItem]
