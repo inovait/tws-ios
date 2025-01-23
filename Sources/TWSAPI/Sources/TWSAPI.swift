@@ -21,14 +21,15 @@ public struct TWSAPI {
     ) async throws(APIError) -> String
 
     static func live(
-        host: String
+        baseUrl: TWSBaseUrl
     ) -> Self {
         .init(
             getProject: { project throws(APIError) in
                 let result = try await Router.make(request: .init(
                         method: .get,
+                        scheme: baseUrl.scheme,
                         path: "/projects/\(project.id)/snippets",
-                        host: host,
+                        host: baseUrl.host,
                         queryItems: [],
                         headers: [:],
                         auth: true
@@ -47,8 +48,9 @@ public struct TWSAPI {
             getSharedToken: { shared throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
+                    scheme: baseUrl.scheme,
                     path: "/shared/\(shared.id)",
-                    host: host,
+                    host: baseUrl.host,
                     queryItems: [],
                     headers: [
                         "Accept": "application/json"
@@ -66,8 +68,9 @@ public struct TWSAPI {
             getSnippetByShareToken: { token throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
+                    scheme: baseUrl.scheme,
                     path: "/snippets/shared",
-                    host: host,
+                    host: baseUrl.host,
                     queryItems: [
                         URLQueryItem(name: "shareToken", value: token)
                     ],
@@ -86,6 +89,7 @@ public struct TWSAPI {
             getResource: { attachment, headers throws(APIError) in
                 let result = try await Router.make(request: .init(
                     method: .get,
+                    scheme: attachment.url.scheme ?? "https",
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
                     queryItems: [],
