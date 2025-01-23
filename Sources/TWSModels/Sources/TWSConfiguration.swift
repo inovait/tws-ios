@@ -18,7 +18,7 @@ import Foundation
 
 /// A protocol that represents a configuration required by ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
 public protocol TWSConfiguration: Equatable, Hashable, Sendable {
-    let id: String { get }
+    var id: String { get }
 }
 
 /// A configuration type that enables ``TWSManager`` to fetch all snippets associated with a specific project ID. A valid tws-service.json file is required.

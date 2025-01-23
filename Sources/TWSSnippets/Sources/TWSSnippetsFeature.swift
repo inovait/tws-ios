@@ -269,7 +269,7 @@ public struct TWSSnippetsFeature: Sendable {
                 logger.info("The task used for listening to socket has completed. Closing connection.")
                 await socket.closeConnection(connectionID)
             }
-            .cancellable(id: CancelID.socket(configuration()))
+            .cancellable(id: CancelID.socket(configuration().id))
             .concatenate(with: .send(.business(.delayReconnect)))
 
         case let .isSocketConnected(isConnected):
@@ -287,7 +287,7 @@ public struct TWSSnippetsFeature: Sendable {
                     logger.err("Reconnecting failed: \(error)")
                 }
             }
-            .cancellable(id: CancelID.reconnect(configuration()))
+            .cancellable(id: CancelID.reconnect(configuration().id))
 
         case .reconnectTriggered:
             state.socketURL = nil
@@ -295,11 +295,11 @@ public struct TWSSnippetsFeature: Sendable {
 
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")
-            return .cancel(id: CancelID.socket(configuration()))
+            return .cancel(id: CancelID.socket(configuration().id))
 
         case .stopReconnecting:
             logger.warn("Requested to stop reconnecting to the socket")
-            return .cancel(id: CancelID.reconnect(configuration()))
+            return .cancel(id: CancelID.reconnect(configuration().id))
 
         // MARK: - Other
 
