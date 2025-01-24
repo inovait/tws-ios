@@ -33,8 +33,6 @@ private struct Payload: Claims {
     let exp: String
     let iss: String
     // swiftlint:disable identifier_name
-    let client_id: String
-    // swiftlint:enable identifier_name
 }
 
 struct TWSBuildSettingsProvider {
@@ -45,8 +43,7 @@ struct TWSBuildSettingsProvider {
         let header = Header(kid: tWSBuildSettings.privateKeyId)
         let payload = Payload(
             exp: "211100000000",
-            iss: tWSBuildSettings.clientId,
-            client_id: tWSBuildSettings.clientId
+            iss: tWSBuildSettings.clientId
         )
 
         var jwt = JWT(header: header, claims: payload)
