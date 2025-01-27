@@ -45,16 +45,29 @@ public struct TWSSnippetsFeature: Sendable {
             state.state = .loading
 
             return .run { [api] send in
-                do {
-                    let project = try await api.getProject(configuration())
-                    let serverDate = project.1
-
-                    await send(.business(.projectLoaded(.success(.init(
-                        project: project.0,
-                        serverDate: serverDate
-                    )))))
-                } catch {
-                    await send(.business(.projectLoaded(.failure(error))))
+                switch configuration() {
+                case let config as TWSBasicConfiguration:
+                    do {
+                        let project = try await api.getProject(config)
+                        let serverDate = project.1
+                        await send(.business(.projectLoaded(.success(.init(
+                            project: project.0,
+                            serverDate: serverDate
+                        )))))
+                    } catch {
+                        await send(.business(.projectLoaded(.failure(error))))
+                    }
+                case let config as TWSSharedConfiguration:
+                    do {
+                        let sharedToken = try await api.getSharedToken(config)
+                        let sharedSnippet = try await api.getSnippetBySharedToken(sharedToken)
+                        await send(.business(.projectLoaded(.success(.init(
+                            project: sharedSnippet.0,
+                            serverDate: sharedSnippet.1
+                        )))))
+                    }
+                default:
+                    return
                 }
             }
 
@@ -256,7 +269,7 @@ public struct TWSSnippetsFeature: Sendable {
                 logger.info("The task used for listening to socket has completed. Closing connection.")
                 await socket.closeConnection(connectionID)
             }
-            .cancellable(id: CancelID.socket(configuration()))
+            .cancellable(id: CancelID.socket(configuration().id))
             .concatenate(with: .send(.business(.delayReconnect)))
 
         case let .isSocketConnected(isConnected):
@@ -274,7 +287,7 @@ public struct TWSSnippetsFeature: Sendable {
                     logger.err("Reconnecting failed: \(error)")
                 }
             }
-            .cancellable(id: CancelID.reconnect(configuration()))
+            .cancellable(id: CancelID.reconnect(configuration().id))
 
         case .reconnectTriggered:
             state.socketURL = nil
@@ -282,11 +295,11 @@ public struct TWSSnippetsFeature: Sendable {
 
         case .stopListeningForChanges:
             logger.warn("Requested to stop listening for changes")
-            return .cancel(id: CancelID.socket(configuration()))
+            return .cancel(id: CancelID.socket(configuration().id))
 
         case .stopReconnecting:
             logger.warn("Requested to stop reconnecting to the socket")
-            return .cancel(id: CancelID.reconnect(configuration()))
+            return .cancel(id: CancelID.reconnect(configuration().id))
 
         // MARK: - Other
 

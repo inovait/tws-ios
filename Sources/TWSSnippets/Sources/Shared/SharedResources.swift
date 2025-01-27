@@ -21,16 +21,15 @@ import Sharing
 
 private extension URL {
 
-    static func resources(for config: TWSConfiguration) -> URL {
+    static func resources(for config: any TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
-        .appending(component: "\(config.organizationID)_\(config.projectID)_resources.json")
+        .appending(component: "\(config.id)_resources.json")
     }
 }
 
 extension SharedKey where Self == Sharing.FileStorageKey<[TWSSnippet.Attachment: String]>.Default {
-
-    static func resources(for config: TWSConfiguration) -> Self {
+    static func resources(for config: any TWSConfiguration) -> Self {
         Self[.fileStorage(.resources(for: config)), default: [:]]
     }
 }

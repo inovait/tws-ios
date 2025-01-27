@@ -32,20 +32,17 @@ public struct TWSUniversalLinksFeature: Sendable {
         @CasePathable
         public enum BusinessAction {
             case onUniversalLink(URL)
-            case snippetLoaded(Result<TWSProject, Error>)
+            case configurationLoaded(Result<TWSSharedConfiguration, Error>)
         }
 
         @CasePathable
         public enum DelegateAction {
-            case snippetLoaded(TWSProject)
+            case configurationLoaded(TWSSharedConfiguration)
         }
 
         case business(BusinessAction)
         case delegate(DelegateAction)
     }
-
-    @Dependency(\.api) var api
-    @Dependency(\.configuration) var configuration
 
     public init() { }
 
@@ -59,17 +56,8 @@ public struct TWSUniversalLinksFeature: Sendable {
             do {
                 switch try TWSUniversalLinkRouter.route(for: url) {
                 case let .snippet(id):
-                    return .run { [api, configuration] send in
-                        do {
-                            let sharedToken = try await api.getSharedToken(configuration(), snippetId: id)
-                            let sharedSnippets = try await api.getSnippetBySharedToken(
-                                configuration(),
-                                sharedToken: sharedToken
-                            )
-                            await send(.business(.snippetLoaded(.success(sharedSnippets))))
-                        } catch {
-                            await send(.business(.snippetLoaded(.failure(error))))
-                        }
+                    return .run { send in
+                        await send(.business(.configurationLoaded(.success(TWSSharedConfiguration(id: id)))))
                     }
                 }
             } catch {
@@ -78,11 +66,12 @@ public struct TWSUniversalLinksFeature: Sendable {
                 return .none
             }
 
-        case let .business(.snippetLoaded(.success(snippet))):
+        case let .business(.configurationLoaded(.success(config))):
             logger.info("Universal link: snippet loaded successfully")
-            return .send(.delegate(.snippetLoaded(snippet)))
 
-        case let .business(.snippetLoaded(.failure(error))):
+            return .send(.delegate(.configurationLoaded(config)))
+
+        case let .business(.configurationLoaded(.failure(error))):
             logger.err("Universal link: load failed: \(error.localizedDescription)")
             return .none
 

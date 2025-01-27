@@ -45,7 +45,7 @@ extension TWSSnippetsFeature {
         connectionID: UUID,
         stream: AsyncStream<WebSocketEvent>,
         send: Send<TWSSnippetsFeature.Action>,
-        configuration: TWSConfiguration
+        configuration: any TWSConfiguration
     ) async throws {
         mainLoop: for await event in stream {
             switch event {

@@ -20,15 +20,16 @@ import ComposableArchitecture
 import Sharing
 
 private extension URL {
-    static func snippetDates(for config: TWSConfiguration) -> URL {
+    static func snippetDates(for config: any TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
-        .appending(component: "\(config.organizationID)_\(config.projectID)_snippets_dates.json")
+        .appending(component: "\(config.id)_snippets_dates.json")
     }
 }
 
+
 extension SharedKey where Self == Sharing.FileStorageKey<[TWSSnippet.ID: SnippetDateInfo]>.Default {
-    static func snippetDates(for config: TWSConfiguration) -> Self {
+    static func snippetDates(for config: any TWSConfiguration) -> Self {
         Self[.fileStorage(.snippetDates(for: config)), default: [:]]
     }
 }
