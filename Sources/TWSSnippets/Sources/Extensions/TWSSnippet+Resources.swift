@@ -21,7 +21,7 @@ import ComposableArchitecture
 extension TWSSnippet {
 
     @MainActor
-    func hasResources(for configuration: TWSConfiguration) -> Bool {
+    func hasResources(for configuration: any TWSConfiguration) -> Bool {
         var headers = [Attachment: [String: String]]()
         let preloaded = SharedReader(wrappedValue: [:], .resources(for: configuration))
         let attachments = self.allResources(headers: &headers)

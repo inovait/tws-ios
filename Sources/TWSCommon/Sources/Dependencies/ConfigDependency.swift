@@ -20,9 +20,9 @@ import ComposableArchitecture
 
 public struct ConfigDependency: Sendable {
 
-    public var configuration: @Sendable () -> TWSConfiguration
+    public var configuration: @Sendable () -> any TWSConfiguration
 
-    public func callAsFunction() -> TWSConfiguration {
+    public func callAsFunction() -> any TWSConfiguration {
         configuration()
     }
 }
@@ -37,8 +37,7 @@ public enum ConfigDependencyKey: DependencyKey {
 
     public static var testValue: ConfigDependency {
         let id1 = "00000000-0000-0000-0000-000000000000"
-        let id2 = "00000000-0000-0000-0000-000000000001"
-        return .init(configuration: { .init(organizationID: id1, projectID: id2) })
+        return .init(configuration: { TWSBasicConfiguration(id: id1) })
     }
 }
 

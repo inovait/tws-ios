@@ -16,37 +16,23 @@
 
 import Foundation
 
-/// A struct that provides all the necessary information for a ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
-public struct TWSConfiguration: Hashable, Sendable {
+/// A protocol that represents a configuration required by ``TWSManager`` to retrieve snippets and establish a socket connection for updates.
+public protocol TWSConfiguration: Equatable, Hashable, Sendable {
+    var id: String { get }
+}
 
-    /// The unique identifier of the TWS organization.
-    public let organizationID: String
+/// A configuration type that enables ``TWSManager`` to fetch all snippets associated with a specific project ID. A valid tws-service.json file is required.
+public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
+    public let id: String
+    public init(id: String) {
+        self.id = id
+    }
+}
 
-    /// The unique identifier of the TWS project.
-    public let projectID: String
-
-    // MARK: - Initializer
-
-    /// Initializes a new ``TWSConfiguration`` with the provided organization and project IDs.
-    ///
-    /// - Parameters:
-    ///   - organizationID: An ID representing the TWS organization.
-    ///   - projectID: An ID representing the TWS project.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let config = TWSConfiguration(
-    ///     organizationID: "<ORGANIZATION_ID>",
-    ///     projectID: "<PROJECT_ID>"
-    /// )
-    /// ```
-    /// This example demonstrates how to create a configuration for a specific organization and project.
-    public init(
-        organizationID: String,
-        projectID: String
-    ) {
-        self.organizationID = organizationID
-        self.projectID = projectID
+/// A configuration type, that enables ``TWSManager`` to fetch shared snippet using share token. A valid tws-service.json file is not required.
+public struct TWSSharedConfiguration: TWSConfiguration, Equatable {
+    public let id: String
+    public init(id: String) {
+        self.id = id
     }
 }

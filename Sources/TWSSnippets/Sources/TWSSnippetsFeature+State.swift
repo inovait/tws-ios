@@ -43,7 +43,7 @@ extension TWSSnippetsFeature {
         public internal(set) var state: TWSLoadingState = .idle
 
         public init(
-            configuration: TWSConfiguration,
+            configuration: any TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
             preloadedResources: [TWSSnippet.Attachment: String]? = nil,
             socketURL: URL? = nil,

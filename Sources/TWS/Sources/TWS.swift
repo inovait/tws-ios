@@ -41,8 +41,8 @@ internal import TWSSnippet
 @Observable
 public final class TWSManager: Identifiable {
 
-    /// The configuration object used to initialize the manager and to access the current project's information.
-    public let configuration: TWSConfiguration
+    /// The configuration object used to initialize the manager..
+    public let configuration: any TWSConfiguration
 
     /// A property that provides access to the list of loaded snippets and their current loading state.
     ///
@@ -66,7 +66,7 @@ public final class TWSManager: Identifiable {
     init(
         store: StoreOf<TWSCoreFeature>,
         observer: AnyPublisher<TWSStreamEvent, Never>,
-        configuration: TWSConfiguration
+        configuration: any TWSConfiguration
     ) {
         self.store = store
         self.observer = observer.share().eraseToAnyPublisher()
@@ -237,7 +237,7 @@ public final class TWSManager: Identifiable {
             .compactMap {
                 switch $0 {
                 case .snippetsUpdated: return _React.snippets
-                case .universalLinkSnippetLoaded: return nil
+                case .universalLinkConfigurationLoaded: return nil
                 case .stateChanged: return .state
                 }
             }

@@ -20,25 +20,25 @@ import TWSModels
 
 public struct SocketDependency: Sendable {
 
-    public var get: @Sendable (TWSConfiguration, URL) async -> UUID
+    public var get: @Sendable (any TWSConfiguration, URL) async -> UUID
     public var connect: @Sendable (UUID) async throws(SocketMessageReadError) -> AsyncStream<WebSocketEvent>
     public var listen: @Sendable (UUID) async throws -> Void
     public var closeConnection: @Sendable (UUID) async -> Void
-    public var abort: @Sendable (TWSConfiguration) async -> Void
+    public var abort: @Sendable (any TWSConfiguration) async -> Void
 }
 
 public enum SocketDependencyKey: DependencyKey {
 
     public static var liveValue: SocketDependency {
         let storage = ActorIsolatedDictionary<UUID, SocketConnector>([:])
-        let configuration = ActorIsolatedDictionary<TWSConfiguration, UUID>([:])
+        let configuration = ActorIsolatedDictionary<String, UUID>([:])
 
         return .init(
             get: { [storage, configuration] config, url in
                 let id = UUID()
                 let socket = SocketConnector(url: url)
                 await storage.setValue(socket, forKey: id)
-                await configuration.setValue(id, forKey: config)
+                await configuration.setValue(id, forKey: config.id)
                 return id
             },
             connect: { [storage] id throws(SocketMessageReadError) in
@@ -61,7 +61,7 @@ public enum SocketDependencyKey: DependencyKey {
             },
             abort: { [storage, configuration] config in
                 guard
-                    let connection = await configuration.getValue(forKey: config),
+                    let connection = await configuration.getValue(forKey: config.id),
                     let socket = await storage.getValue(forKey: connection)
                 else {
                     assertionFailure("A manager has deinited, but there is no connection left to be nilled?")
@@ -69,7 +69,7 @@ public enum SocketDependencyKey: DependencyKey {
                 }
 
                 await socket.closeConnection()
-                await configuration.removeValue(forKey: config)
+                await configuration.removeValue(forKey: config.id)
                 await storage.removeValue(forKey: connection)
             }
         )

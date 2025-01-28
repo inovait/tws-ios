@@ -27,7 +27,7 @@ extension View {
     }
 
     public func twsEnable(
-        configuration: TWSConfiguration
+        configuration: any TWSConfiguration
     ) -> some View {
         ModifiedContent(
             content: self,

@@ -23,9 +23,9 @@ extension TWSSnippetsFeature {
     // This is because TCA uses combine pipelines, which means the same hashable value
     // could potentially leak to all active stores.
     enum CancelID: Hashable {
-        case socket(TWSConfiguration),
-             reconnect(TWSConfiguration),
-             showSnippet(TWSSnippet.ID),
-             hideSnippet(TWSSnippet.ID)
+        case socket(String)
+        case reconnect(String)
+        case showSnippet(TWSSnippet.ID)
+        case hideSnippet(TWSSnippet.ID)
     }
 }

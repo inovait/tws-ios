@@ -21,19 +21,17 @@ import ComposableArchitecture
 import Sharing
 
 extension URL {
-
-    // periphery:ignore - used with compiler flg
-    static func snippets(for config: TWSConfiguration) -> URL {
+    static func snippets(for config: any TWSConfiguration) -> URL {
         .documentsDirectory
         .appendingPathComponent(cacheFolder)
-        .appending(component: "\(config.organizationID)_\(config.projectID)_snippets.json")
+        .appending(component: "\(config.id)_snippets.json")
     }
 }
 
 extension SharedKey where Self == Sharing.FileStorageKey<IdentifiedArrayOf<TWSSnippetFeature.State>>.Default {
 
     // periphery:ignore - used with compiler flg
-    static func snippets(for config: TWSConfiguration) -> Self {
+    static func snippets(for config: any TWSConfiguration) -> Self {
         Self[.fileStorage(.snippets(for: config)), default: .init(uniqueElements: [])]
     }
 }

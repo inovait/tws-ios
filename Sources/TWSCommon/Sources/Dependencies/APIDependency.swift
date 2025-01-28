@@ -23,24 +23,22 @@ import ComposableArchitecture
 public struct APIDependency: Sendable {
 
     public var getProject: @Sendable (
-        TWSConfiguration
+        TWSBasicConfiguration
     ) async throws(APIError) -> (TWSProject, Date?) = { _ throws(APIError) in
         reportIssue("\(Self.self).getProject")
         throw APIError.local(NSError(domain: "", code: -1))
     }
 
     public var getSharedToken: @Sendable (
-        TWSConfiguration,
-        _ snippetId: String
-    ) async throws(APIError) -> String = { _, _ throws(APIError) in
+        TWSSharedConfiguration
+    ) async throws(APIError) -> String = {_ throws(APIError) in
         reportIssue("\(Self.self).getSharedToken")
         throw APIError.local(NSError(domain: "", code: -1))
     }
 
     public var getSnippetBySharedToken: @Sendable (
-        TWSConfiguration,
         _ sharedToken: String
-    ) async throws(APIError) -> TWSProject = { _, _ throws(APIError) in
+    ) async throws(APIError) -> (TWSProject, Date?) = { _ throws(APIError) in
         reportIssue("\(Self.self).getSnippetBySharedId")
         throw APIError.local(NSError(domain: "", code: -1))
     }
