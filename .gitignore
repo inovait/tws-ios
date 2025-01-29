@@ -6,7 +6,6 @@ Derived/
 **/.build
 **/Derived
 DerivedData/
-.swiftpm/
 
 # fastlane specific
 **/fastlane/report.xml
