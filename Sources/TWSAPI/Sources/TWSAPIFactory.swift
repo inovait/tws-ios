@@ -18,9 +18,7 @@ import Foundation
 
 public class TWSAPIFactory {
 
-    public class func new(
-        host: String
-    ) -> TWSAPI {
-        .live(host: host)
+    public class func new() -> TWSAPI {
+        .live(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
     }
 }

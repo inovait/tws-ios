@@ -18,8 +18,8 @@ import Foundation
 
 actor AuthManager {
 
-    private let loginUrl = "https://api.thewebsnippet.dev/auth/login"
-    private let registerUrl = "https://api.thewebsnippet.dev/auth/register"
+    private let loginUrl: URL
+    private let registerUrl: URL
 
     private let keychainHelper = KeychainHelper()
     private let accessTokenKey = "TWSAccessToken"
@@ -29,7 +29,14 @@ actor AuthManager {
     private var ongoingRefreshTask: Task<String, Error>?
     private var ongoingAccessTask: Task<String, Error>?
 
-    init() { }
+    init(baseUrl: TWSBaseUrl) {
+        guard !baseUrl.scheme.isEmpty, !baseUrl.host.isEmpty else {
+            fatalError("Invalid base URL provided in constructor")
+        }
+
+        loginUrl = Self.createUrl(scheme: baseUrl.scheme, host: baseUrl.host, path: "/auth/login")
+        registerUrl = Self.createUrl(scheme: baseUrl.scheme, host: baseUrl.host, path: "/auth/register")
+    }
 
     func forceRefreshTokens() async throws {
         _ = try await getAccessToken(true)
@@ -103,13 +110,13 @@ actor AuthManager {
             }
         }
 
-        let jwtToken = JWTCreator.generateMainJWTToken()
+        let jwtToken = TWSBuildSettingsProvider.generateMainJWTToken()
         keychainHelper.save(jwtToken, for: JWTTokenKey)
         return jwtToken
     }
 
     private func requestAccessToken(_ refreshToken: String) async throws -> String {
-        var tokenRequest = URLRequest(url: URL(string: loginUrl)!, timeoutInterval: 60)
+        var tokenRequest = URLRequest(url: loginUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
@@ -136,7 +143,7 @@ actor AuthManager {
     }
 
     private func requestRefreshToken(_ jwtToken: String) async throws -> String {
-        var tokenRequest = URLRequest(url: URL(string: registerUrl)!, timeoutInterval: 60)
+        var tokenRequest = URLRequest(url: registerUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
@@ -160,5 +167,18 @@ actor AuthManager {
         } catch {
             throw APIError.local(error)
         }
+    }
+    
+    private static func createUrl(scheme: String, host: String, path: String) -> URL {
+        var components = URLComponents()
+        components.scheme = scheme
+        components.host = host
+        components.path = path
+
+        guard let url = components.url else {
+            fatalError("Failed to construct URL with scheme: \(scheme), host: \(host), path: \(path)")
+        }
+        
+        return url
     }
 }
