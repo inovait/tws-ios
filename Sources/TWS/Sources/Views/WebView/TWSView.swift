@@ -77,6 +77,10 @@ public struct TWSView: View {
                     .id(snippet.id)
                     // The actual URL changed for the same Snippet ~ redraw is required
                     .id(snippet.target)
+                    // Engine type changed, mustache has to be reprocessed
+                    .id(snippet.engine)
+                    // Snippet properties have updated, mustache has to be reprocessed
+                    .id(snippet.props)
                     // The payload of dynamic resources can change
                     .id(presenter.resourcesHash(for: snippet))
                     // The HTML payload can change
