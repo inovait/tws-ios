@@ -81,6 +81,8 @@ public struct TWSView: View {
                     .id(presenter.resourcesHash(for: snippet))
                     // The internal payload of the target URL has changed ~ redraw is required
                     .id(presenter.updateCount(for: snippet))
+                    // The HTML payload can change
+                    .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
                     // Only for default location provider; starting on appear/foreground; stopping on disappear/background
                     .conditionallyActivateDefaultLocationBehavior(
                         locationServicesBridge: locationServicesBridge,
