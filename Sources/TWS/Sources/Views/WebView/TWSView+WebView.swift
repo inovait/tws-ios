@@ -131,27 +131,13 @@ struct WebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         navigator.delegate = context.coordinator
 
-        context.coordinator.pullToRefresh.enable(on: webView)
-
-        let key = TWSSnippet.Attachment(url: url, contentType: .html)
-        if let preloaded = preloadedResources[key] {
-            logger.debug("Load from raw HTML: \(url.absoluteString)")
-            var htmlToLoad = preloaded
-            if snippet.engine == .mustache {
-                let mustacheRenderer = MustacheRenderer()
-                let convertedProps = mustacheRenderer.convertDictPropsToData(snippet.props)
-                htmlToLoad = mustacheRenderer.renderMustache(preloaded, convertedProps, addDefaultValues: true)
-            }
-            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
-        } else {
-            logger.debug("Load from url: \(url.absoluteString)")
-            var urlRequest = URLRequest(url: self.url)
-            snippet.headers?.forEach { header in
-                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
-            }
-            webView.load(urlRequest)
+        // process content on reloads
+        context.coordinator.pullToRefresh.enable(on: webView) {
+            loadProcessedContent(webView: webView)
         }
 
+        // Process content on first load
+        loadProcessedContent(webView: webView)
         context.coordinator.observe(heightOf: webView)
         context.coordinator.webView = webView
 
@@ -254,6 +240,23 @@ struct WebView: UIViewRepresentable {
             }
         }
     }
+    
+    private func loadProcessedContent(webView: WKWebView) {
+        let key = TWSSnippet.Attachment(url: url, contentType: .html)
+        
+        if let preloaded = preloadedResources[key] {
+            logger.debug("Load from raw HTML: \(url.absoluteString)")
+            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
+            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
+        } else {
+            logger.debug("Load from url: \(url.absoluteString)")
+            var urlRequest = URLRequest(url: self.url)
+            snippet.headers?.forEach { header in
+                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+            }
+            webView.load(urlRequest)
+        }
+    }
 
     private func _rawInjectCSS(
         to controller: WKUserContentController,
@@ -344,4 +347,15 @@ struct WebView: UIViewRepresentable {
 
         return jsLocationServices
     }
+    
+    private func _handleMustacheProccesing(preloadedHTML: String, snippet: TWSSnippet) -> String {
+        if snippet.engine == .mustache {
+            let mustacheRenderer = MustacheRenderer()
+            let convertedProps = mustacheRenderer.convertDictPropsToData(snippet.props)
+            return mustacheRenderer.renderMustache(preloadedHTML, convertedProps, addDefaultValues: true)
+        }
+        
+        return preloadedHTML
+    }
+
 }
