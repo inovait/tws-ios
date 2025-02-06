@@ -10,12 +10,11 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, preloaded, isPreloading, updateCount, isVisible, customProps
+            case snippet, preloaded, isPreloading, isVisible, customProps
         }
 
         public var snippet: TWSSnippet
         public var preloaded: Bool
-        public var updateCount = 0
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
 
@@ -41,7 +40,6 @@ public struct TWSSnippetFeature: Sendable {
 
             isVisible = true
             isPreloading = false
-            updateCount = 0
             localProps = .dictionary([:])
         }
 
@@ -51,7 +49,6 @@ public struct TWSSnippetFeature: Sendable {
             try container.encode(preloaded, forKey: .preloaded)
             try container.encode(isPreloading, forKey: .isPreloading)
             try container.encode(isVisible, forKey: .isVisible)
-            try container.encode(updateCount, forKey: .updateCount)
             try container.encode(localProps, forKey: .customProps)
         }
     }
@@ -90,7 +87,6 @@ public struct TWSSnippetFeature: Sendable {
                 logger.info("Snippet updated from \(state.snippet) to \(snippet).")
             } else {
                 logger.info("Snippet's payload changed")
-                state.updateCount += 1
             }
 
             logger.info("Snippet is preloaded: \(preloaded)")

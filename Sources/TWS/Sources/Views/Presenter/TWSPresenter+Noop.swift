@@ -32,7 +32,6 @@ class NoopPresenter: TWSPresenter {
 
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
     func resourcesHash(for _: TWSSnippet) -> Int { 0 }
-    func updateCount(for snippet: TWSSnippet) -> Int { 0 }
     func handleIncomingUrl(_ url: URL) { }
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { nil }
 }

@@ -55,10 +55,6 @@ class LivePresenter: TWSPresenter {
         _resourcesHash(resources: manager?.store.snippets.preloadedResources, of: snippet)
     }
 
-    func updateCount(for snippet: TWSSnippet) -> Int {
-        manager?.store.snippets.snippets[id: snippet.id]?.updateCount ?? 0
-    }
-
     func handleIncomingUrl(_ url: URL) {
         manager?.handleIncomingUrl(url)
     }
