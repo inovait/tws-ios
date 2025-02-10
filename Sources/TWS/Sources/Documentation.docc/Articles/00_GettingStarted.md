@@ -4,28 +4,18 @@ Learn how to integrate TWS into your project, turn your webpage into a native ap
 
 ## Adding the TWS as a dependency
 
-> Note: Currently, TWS does not support integration via Swift Package Manager (SPM). However, SPM support is in development and will be added in a future release. Stay tuned for updates!
+### Integrate TWS with SPM
 
-### Integrate TWS as XCFramework
+1. **Add package dependency**
 
-1. **Download the frameworks**
+    * Open your Xcode project and navigate navigate to File -> Add Package Dependencies...
+    * Add a dependency to [TWS repository](https://github.com/inovait/tws-ios)
+    * Set up a dependency rule to the version you want to include.
+    * Add a target and add the package
 
-    Download both `TWS.xcframework` adn `TWSModels.xcframework` from this [link](https://spotlight.inova.si/the-web-snippet/builds/iOS%20Release?shared=TBDa6YTvbeZCKd4ruAL7CBfBkM8)
+2. **Resolve package versions**
 
-2. **Add the frameworks to your project**
-
-    * Open your Xcode project and navigate to your app's target settings
-    * Under the `General`, scroll to the `Frameworks, Libraries, and Embedded Content` section
-    * Click the `+` button and select `Add other...` -> `Add files...`
-    * Choose both `TWS.xcframework` and `TWSModels.xcframework` and click `Add`
-
-3. **Embed the frameworks**
-
-    After adding the frameworks, ensure they are listed under the Embed Frameworks section with the option Embed & Sign enabled. This ensures that the frameworks are correctly included in your app bundle.
-
-4. **Verify integration**
-
-    Clean and build your project (Cmd + Shift + K and then Cmd + B) to ensure the frameworks are integrated correctly. Check for any build errors related to missing frameworks or incorrect embedding settings.
+    Download should start immediately, but you can also navigate to File -> Packages -> Resolve package versions to ensure the correct version is downloaded.
 
 ## Displaying your first snippet
 
@@ -41,12 +31,11 @@ import TWS
 struct ContentView: View {
     var body: some View {
         VStack {
-            Text("Hello, world!")
+            HomeView()
         }
         // 2. Inject the ``TWSManager`` into the view hierarchy
-        .twsEnable(configuration: .init(
-            organizationID: "<ORGANIZATION_ID>",
-            projectID: "<PROJECT_ID>"
+        .twsEnable(configuration: TWSBasicConfiguration(
+            id: "<PROJECT_ID>"
         ))
     }
 }
@@ -74,4 +63,4 @@ struct HomeView: View {
 }
 ```
 
-> Note: It's important to ensure that the instance of the ``TWSManager`` remains alive. If you use one of the SwiftUI extensions, such as ``SwiftUICore/View/twsEnable(configuration:)`` or ``SwiftUICore/View/twsEnable(sharedSnippet:)``, the manager will stay alive as long as the view exists. Alternatively, you can use ``TWSFactory/new(with:)-7y9q7`` or ``TWSFactory/new(with:)-7u4v8`` to create an instance and inject it into the view via ``SwiftUICore/View/twsEnable(using:)``. Keep in mind that creating a new ``TWSManager`` with the same configuration will not produce a new instance but will instead return a shared one.
+> Note: It's important to ensure that the instance of the ``TWSManager`` remains alive. If you use the SwiftUI extensions ``SwiftUICore/View/twsEnable(configuration:)``, the manager will stay alive as long as the view exists. Alternatively, you can use ``TWSFactory/new(with:)`` to create an instance and inject it into the view via ``SwiftUICore/View/twsEnable(using:)``. Keep in mind that creating a new ``TWSManager`` with the same configuration will not produce a new instance but will instead return a shared one.

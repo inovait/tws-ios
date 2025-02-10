@@ -60,5 +60,10 @@ import SwiftUI
 @MainActor
 public protocol TWSViewInterceptor: AnyObject, Sendable {
 
+    /// Intercepts the URL, before the web view loads it.
+    ///
+    /// - Parameters:
+    ///   - url: A URL that was intercepted.
+    /// - Returns: True indicates that this url was handled, false indicates that web view should load the URL normally.
     func handleUrl(_ url: URL) -> Bool
 }
