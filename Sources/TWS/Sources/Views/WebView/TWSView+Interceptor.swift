@@ -64,6 +64,6 @@ public protocol TWSViewInterceptor: AnyObject, Sendable {
     ///
     /// - Parameters:
     ///   - url: A URL that was intercepted.
-    /// - Returns: True indicates that this url was handled, false indicates that web view should load the URL normally.
+    /// - Returns: A boolean where true indicates that this url was handled, false indicates that web view should load the URL normally.
     func handleUrl(_ url: URL) -> Bool
 }
