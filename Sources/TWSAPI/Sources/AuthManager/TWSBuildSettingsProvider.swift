@@ -28,21 +28,21 @@ public struct TWSBaseUrl : Sendable {
     let host: String
 }
 
-// periphery:ignore
-private struct Payload: Claims {
-    let exp: String
-    let iss: String
-    // swiftlint:disable identifier_name
-}
-
-struct TWSBuildSettingsProvider {
+public struct TWSBuildSettingsProvider {
+    
+    // periphery:ignore
+    struct Payload: Claims, Equatable {
+        let exp: String
+        let iss: String
+        // swiftlint:disable identifier_name
+    }
 
     static func generateMainJWTToken() -> String {
         let tWSBuildSettings = getTWSBuildSettings()
 
         let header = Header(kid: tWSBuildSettings.privateKeyId)
         let payload = Payload(
-            exp: "211100000000",
+            exp: "9999999999999",
             iss: tWSBuildSettings.clientId
         )
 
@@ -106,5 +106,18 @@ struct TWSBuildSettingsProvider {
         }
         
         return TWSBaseUrl(scheme: scheme, host: host)
+    }
+    
+    static func decodeJWT(_ jwtToken: String) -> JWT<Payload> {
+        let jwtParts = jwtToken.split(separator: ".")
+        let decoder = JSONDecoder()
+        do {
+            let headers = try decoder.decode(Header.self, from: Data(base64Encoded: String(jwtParts[0])) ?? Data())
+            let payload = try decoder.decode(Payload.self, from: Data(base64Encoded: String(jwtParts[1])) ?? Data())
+            
+            return JWT(header: headers, claims: payload)
+        } catch {
+            return JWT(header: Header(), claims: Payload(exp: "", iss: ""))
+        }
     }
 }

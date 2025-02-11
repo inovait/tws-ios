@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import SwiftJWT
 
 actor AuthManager {
 
@@ -38,6 +39,19 @@ actor AuthManager {
         registerUrl = Self.createUrl(scheme: baseUrl.scheme, host: baseUrl.host, path: "/auth/register")
     }
 
+    func shouldRefreshTokens() -> Bool {
+        // Observe service account change if cached and generated jwt tokens are not equal
+        let newJwt = TWSBuildSettingsProvider.decodeJWT(TWSBuildSettingsProvider.generateMainJWTToken())
+        let oldJwt = TWSBuildSettingsProvider.decodeJWT(keychainHelper.get(for: JWTTokenKey)!)
+        
+        if(!areJWTEqual(oldJwt, newJwt)) {
+            logger.debug("Service account has changed, refreshing tokens")
+            return true
+        }
+        logger.debug("Service account hasn't changed, no need to refresh JWT")
+        return false
+    }
+    
     func forceRefreshTokens() async throws {
         _ = try await getAccessToken(true)
     }
@@ -181,4 +195,9 @@ actor AuthManager {
         
         return url
     }
+    
+    private func areJWTEqual(_ jwt1: JWT<TWSBuildSettingsProvider.Payload>, _ jwt2: JWT<TWSBuildSettingsProvider.Payload>) -> Bool {
+        return jwt1.header.kid == jwt2.header.kid && jwt1.claims == jwt2.claims
+    }
+    
 }
