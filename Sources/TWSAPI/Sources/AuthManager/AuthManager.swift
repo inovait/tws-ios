@@ -42,7 +42,7 @@ actor AuthManager {
     func shouldRefreshTokens() -> Bool {
         // Observe service account change if cached and generated jwt tokens are not equal
         let newJwt = TWSBuildSettingsProvider.decodeJWT(TWSBuildSettingsProvider.generateMainJWTToken())
-        let oldJwt = TWSBuildSettingsProvider.decodeJWT(keychainHelper.get(for: JWTTokenKey)!)
+        let oldJwt = TWSBuildSettingsProvider.decodeJWT(keychainHelper.get(for: JWTTokenKey) ?? "")
         
         if(!areJWTEqual(oldJwt, newJwt)) {
             logger.debug("Service account has changed, refreshing tokens")
