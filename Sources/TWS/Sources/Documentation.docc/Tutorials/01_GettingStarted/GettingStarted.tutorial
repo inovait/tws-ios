@@ -5,7 +5,7 @@
     
     @Section(title: "Connect with the TWS portal") {
         @ContentAndMedia {
-            The fundamental building block for managing and interacting with snippets in TWS is creating and configuring a project on the [TWS portal](https://thewebsnippet.dev). A project serves as the core unit for organizing and managing snippets, allowing you to structure and customize functionality for your application.
+            The fundamental building block for managing and interacting with snippets in TWS is creating and configuring a project on the [TWS portal](). A project serves as the core unit for organizing and managing snippets, allowing you to structure and customize functionality for your application.
 
             This includes retrieving your organization and project IDs, adding snippets to the project, modifying their properties, and integrating them seamlessly into your app. By managing these elements through the TWS portal, you can ensure consistency and scalability across your application's features.
 
