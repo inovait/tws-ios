@@ -91,3 +91,9 @@ class DefaultInterceptor: TWSViewInterceptor {
         return false
     }
 }
+
+extension [TWSSnippet] {
+    func sortByTabSortKey() -> [TWSSnippet] {
+        return self.sorted(by: { $0.props?["tabSortKey"]?.string ?? "" < $1.props?["tabSortKey"]?.string ?? "" })
+    }
+}

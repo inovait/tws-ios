@@ -27,7 +27,7 @@ struct CustomTabsExample: View {
             ForEach(
                 tws.snippets()
                     .filter { Set(["customTabs", "customPages", "homePage"]).contains($0.id) }
-                    .sorted(by: { customSort($0, $1) })
+                    .sortByTabSortKey()
             ) { snippet in
                 TWSView(snippet: snippet)
                     .tabItem {
@@ -46,16 +46,5 @@ struct CustomTabsExample: View {
                     .tag(snippet.id)
             }
         }
-    }
-
-    private func customSort(_ lhs: TWSSnippet, _ rhs: TWSSnippet) -> Bool {
-        guard
-            let idxl = lhs.props?["tabSortKey"]?.int,
-            let idxr = rhs.props?["tabSortKey"]?.int
-        else {
-            return true
-        }
-
-        return idxl < idxr
     }
 }
