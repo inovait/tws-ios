@@ -33,4 +33,9 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         assert(webView != nil)
         webView?.reload()
     }
+    
+    func load(url: URL) {
+        assert(webView != nil)
+        webView?.load(URLRequest(url: url))
+    }
 }

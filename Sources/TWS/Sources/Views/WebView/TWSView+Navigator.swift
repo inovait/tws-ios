@@ -22,6 +22,7 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateBack()
     func navigateForward()
     func reload()
+    func load(url: URL)
 }
 
 /// A class that handles navigation actions such as going back, going forward, or reloading within a ``TWSView``.
@@ -98,5 +99,10 @@ public class TWSViewNavigator: Sendable {
     /// Triggers the delegate to reload the current view.
     public func reload() {
         delegate?.reload()
+    }
+    
+    /// Triggers the delegate to load the specified url.
+    public func load(url: URL) {
+        delegate?.load(url: url)
     }
 }
