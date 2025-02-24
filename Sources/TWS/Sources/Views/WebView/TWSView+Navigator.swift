@@ -104,7 +104,7 @@ public class TWSViewNavigator: Sendable {
     
     /// Triggers the delegate to load the specified url.
     public func load(url: URL) {
-        delegate?.load(url: url)
+        delegate?.navigateTo(url: url)
     }
     
     /// Returns currently loaded url.
