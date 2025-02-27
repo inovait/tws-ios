@@ -14,26 +14,15 @@
 //  limitations under the License.
 //
 
-//
-// Section 1: Payload
-//
-
-function createPayload(type, url) {
-    return JSON.stringify({
-        type: type,
-        url: url
-    })
-}
 
 //
-// Section 2: messaging swift about pushState changes
+// Messaging swift about pushState changes
 //
 
 // Observe history.pushState and recieve new url
 window.history.pushState = ( f => function pushState(){
     var ret = f.apply(this, arguments);
     const currentUrl = window.location.href
-    const payload = createPayload("pushState", currentUrl)
-    window.webkit.messageHandlers.historyObserver.postMessage(payload);
+    window.webkit.messageHandlers.historyObserver.postMessage(currentUrl);
     return ret;
 })(window.history.pushState);

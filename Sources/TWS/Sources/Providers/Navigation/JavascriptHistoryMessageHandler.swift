@@ -26,15 +26,12 @@ class JavaScriptHistoryMessageHandler: NSObject, WKScriptMessageHandler {
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "historyObserver" {
-            guard
-                let payload = message.body as? String,
-                let data = payload.data(using: .utf8),
-                let message = try? JSONDecoder().decode(JSHistoryMessage.self, from: data)
+            guard let payload = message.body as? String
             else {
-                assertionFailure("Failed to decode a message")
+                assertionFailure("No url recieved")
                 return
             }
-            guard let url = URL(string: message.url) else { return }
+            guard let url = URL(string: payload) else { return }
             Task { await adapter.coordinator?.pushState(url: url) }
         }
     }
@@ -46,9 +43,4 @@ actor JavaScriptHistoryAdapter {
     func bind(coordinator: WebView.Coordinator) {
         self.coordinator = coordinator
     }
-}
-
-fileprivate struct JSHistoryMessage: Decodable {
-    var url: String
-    var type: String
 }
