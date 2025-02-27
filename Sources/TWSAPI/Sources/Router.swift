@@ -52,7 +52,7 @@ class Router {
 
         do {
             if request.auth {
-                let token = try await authManager.getAccessToken(false)
+                let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
                 urlRequest.setValue(
                     "Bearer \(token)",
                     forHTTPHeaderField: "Authorization"
