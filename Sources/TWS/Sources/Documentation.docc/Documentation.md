@@ -21,7 +21,7 @@ Effortlessly transform your website into a mobile app with our SDK:
 
 * **Enhanced WebView**
 
-    Utilize our open-source WebView component with built-in features like caching, geolocation, cookie handling, and more
+    Utilize our open-source TWSView component with built-in features like caching, geolocation, cookie handling, and more
 
 * **Hybrid Development**
 
