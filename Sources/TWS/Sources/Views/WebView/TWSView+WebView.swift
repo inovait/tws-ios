@@ -247,7 +247,7 @@ struct WebView: UIViewRepresentable {
         if let preloaded = preloadedResources[key] {
             logger.debug("Load from raw HTML: \(url.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
-            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
+            webView.loadSimulatedRequest(URLRequest(url: self.url), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(url.absoluteString)")
             var urlRequest = URLRequest(url: self.url)
