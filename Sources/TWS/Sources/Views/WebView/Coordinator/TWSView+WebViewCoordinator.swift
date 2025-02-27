@@ -34,9 +34,9 @@ extension WebView {
         let navigationProvider: NavigationProvider
         let downloadCompleted: ((TWSDownloadState) -> Void)?
         let interceptor: TWSViewInterceptor?
-
         var pullToRefresh: PullToRefresh!
         weak var webView: WKWebView?
+        var backForwardStack: BackForwardStack
 
         init(
             _ parent: WebView,
@@ -51,7 +51,8 @@ extension WebView {
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
-
+            self.backForwardStack = .init(currentURL: parent.url)
+            
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
