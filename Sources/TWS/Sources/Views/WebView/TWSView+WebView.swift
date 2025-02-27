@@ -113,9 +113,6 @@ struct WebView: UIViewRepresentable {
 
         // Location Permissions
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
-        
-        // Used to observe url changes in webpage ( used to update history for SPA applications that do not trigger loading)
-        let historyApi = _handleHistoryChanges(with: controller)
 
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
@@ -129,15 +126,6 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        
-        let leftSwipe = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleSwipeLeft))
-        leftSwipe.direction = .left
-        let rightSwipe = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleSwipeRight))
-        rightSwipe.direction = .right
-        
-        webView.addGestureRecognizer(leftSwipe)
-        webView.addGestureRecognizer(rightSwipe)
-        
         navigator.delegate = context.coordinator
 
         // process content on reloads
@@ -160,11 +148,6 @@ struct WebView: UIViewRepresentable {
                 webView: webView,
                 to: locationServicesBridge
             )
-        }
-        
-        // Binding for pushState messages
-        Task {
-            await historyApi.bind(coordinator: context.coordinator)
         }
 
         return webView
@@ -361,22 +344,6 @@ struct WebView: UIViewRepresentable {
         return jsLocationServices
     }
     
-    private func _handleHistoryChanges(
-        with controller: WKUserContentController
-    ) -> JavaScriptHistoryAdapter {
-        let jsURL = Bundle.module.url(forResource: "JavaScriptHistoryAPI", withExtension: "js")!
-        let jsContent = try! String(contentsOf: jsURL, encoding: .utf8)
-        controller.addUserScript(.init(source: jsContent, injectionTime: .atDocumentStart, forMainFrameOnly: false))
-        let jsHistoryServices = JavaScriptHistoryAdapter()
-        
-        controller.add(
-            JavaScriptHistoryMessageHandler(adapter: jsHistoryServices),
-            name: "historyObserver"
-        )
-        
-        return jsHistoryServices
-    }
-    
     private func _handleMustacheProccesing(preloadedHTML: String, snippet: TWSSnippet) -> String {
         if snippet.engine == .mustache {
             let mustacheRenderer = MustacheRenderer()
@@ -385,15 +352,5 @@ struct WebView: UIViewRepresentable {
         }
         
         return preloadedHTML
-    }
-}
-
-extension WebView.Coordinator {
-    @objc func handleSwipeLeft() {
-        self.navigateForward()
-    }
-    
-    @objc func handleSwipeRight() {
-        self.navigateBack()
     }
 }

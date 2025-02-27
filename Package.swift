@@ -43,8 +43,7 @@ let package = Package(
             ],
             path: "Sources/TWS",
             resources: [
-                .copy("Resources/JavaScriptLocationInjection.js"),
-                .copy("Resources/JavaScriptHistoryAPI.js")
+                .copy("Resources/JavaScriptLocationInjection.js")
             ]
         ),
         .target(
