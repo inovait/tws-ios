@@ -21,12 +21,18 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
 
     func navigateBack() {
         assert(webView != nil)
-        webView?.goBack()
+        guard let previousURL = popState() else { return }
+        webView?.load(URLRequest(url: previousURL))
     }
 
     func navigateForward() {
         assert(webView != nil)
-        webView?.goForward()
+        guard !backForwardStack.forwardstack.isEmpty else { return }
+    
+        backForwardStack.backstack.append(backForwardStack.currentURL)
+        backForwardStack.currentURL = backForwardStack.forwardstack.popLast()!
+        
+        webView?.load(URLRequest(url: backForwardStack.currentURL))
     }
 
     func reload() {
@@ -34,8 +40,28 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         webView?.reload()
     }
     
-    func load(url: URL) {
+    func navigateTo(url: URL) {
         assert(webView != nil)
+        pushState(url: backForwardStack.currentURL)
+        backForwardStack.currentURL = url
         webView?.load(URLRequest(url: url))
+    }
+    
+    func currentURL() -> URL? {
+        assert(webView != nil)
+        return backForwardStack.currentURL
+    }
+    
+    func pushState(url: URL) {
+        backForwardStack.backstack.append(backForwardStack.currentURL)
+        backForwardStack.currentURL = url
+        backForwardStack.forwardstack.removeAll()
+    }
+    
+    private func popState() -> URL? {
+        guard let last = backForwardStack.backstack.popLast() else { return nil }
+        backForwardStack.forwardstack.append(backForwardStack.currentURL)
+        backForwardStack.currentURL = last
+        return last
     }
 }
