@@ -30,6 +30,7 @@ struct WebView: UIViewRepresentable {
 
     var id: String { snippet.id }
     var url: URL { snippet.target }
+    var currentlyLoadedURL: URL
     let snippet: TWSSnippet
     let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
@@ -83,6 +84,7 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
+        self.currentlyLoadedURL = snippet.target
     }
 
     func makeUIView(context: Context) -> WKWebView {

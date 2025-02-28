@@ -79,6 +79,7 @@ extension WebView {
 
                     prevHeight = newHeight
                     if let currentPage = webView.url {
+                        self.parent.currentlyLoadedURL = currentPage
                         let hash = WebPageDescription(currentPage)
                         self.snippetHeightProvider.set(
                             height: newHeight,

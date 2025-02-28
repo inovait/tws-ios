@@ -41,6 +41,6 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     
     func currentURL() -> URL? {
         assert(webView != nil)
-        return webView?.url
+        return self.parent.currentlyLoadedURL
     }
 }
