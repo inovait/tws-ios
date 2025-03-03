@@ -36,6 +36,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
             if let title = result as? String, error == nil {
                 DispatchQueue.main.async { [weak self] in
                     self?.parent.pageTitle = title
+                    if let url = webView.url {
+                        self?.parent.loadedURL = url
+                        self?.parent.visibleURL = url
+                    }
                 }
             }
         }

@@ -36,11 +36,11 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     
     func navigateTo(url: URL) {
         assert(webView != nil)
-        webView?.load(URLRequest(url: url))
-    }
-    
-    func currentURL() -> URL? {
-        assert(webView != nil)
-        return self.parent.currentlyLoadedURL
+        webView?.evaluateJavaScript(
+            """
+            window.history.pushState({}, '', '\(url)');
+            window.dispatchEvent(new Event('popstate'));
+            """
+        )
     }
 }

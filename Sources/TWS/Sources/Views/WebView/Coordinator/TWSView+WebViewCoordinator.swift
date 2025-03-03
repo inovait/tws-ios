@@ -24,6 +24,7 @@ extension WebView {
 
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
+        var urlObserver: NSKeyValueObservation?
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
@@ -79,7 +80,6 @@ extension WebView {
 
                     prevHeight = newHeight
                     if let currentPage = webView.url {
-                        self.parent.currentlyLoadedURL = currentPage
                         let hash = WebPageDescription(currentPage)
                         self.snippetHeightProvider.set(
                             height: newHeight,
@@ -92,6 +92,18 @@ extension WebView {
                     DispatchQueue.main.async { [weak self] in
                         self?.parent.dynamicHeight = newHeight
                     }
+                }
+            }
+        }
+        
+        func observe(currentURLOf webview: WKWebView) {
+            urlObserver = webview.observe(\.url, options: [.new]) { _, change in
+                MainActor.assumeIsolated {
+                    guard
+                        let unwrapped = change.newValue,
+                        let url = unwrapped
+                    else { return }
+                    self.parent.visibleURL = url
                 }
             }
         }

@@ -23,10 +23,9 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateForward()
     func reload()
     func navigateTo(url: URL)
-    func currentURL() -> URL?
 }
 
-/// A class that handles navigation actions such as going back, going forward, or reloading within a ``TWSView``.
+/// A class that handles navigation actions such as navigating to a certain URL programmatically, going back, going forward, or reloading within a ``TWSView``.
 ///
 /// This class enables performing navigation actions while observing the ability to navigate backward or forward in the view hierarchy.
 ///
@@ -41,6 +40,12 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 ///     var body: some View {
 ///         VStack(alignment: .leading) {
 ///             HStack {
+///                 Button {
+///                     navigator.navigateTo(url: snippet.target)
+///                 } label: {
+///                      Text("Home")
+///                 }
+///
 ///                 Button {
 ///                     navigator.goBack()
 ///                 } label: {
@@ -103,12 +108,7 @@ public class TWSViewNavigator: Sendable {
     }
     
     /// Triggers the delegate to load the specified url.
-    public func load(url: URL) {
+    public func navigateTo(url: URL) {
         delegate?.navigateTo(url: url)
-    }
-    
-    /// Returns currently loaded url.
-    public func currentURL() -> URL? {
-        delegate?.currentURL()
     }
 }
