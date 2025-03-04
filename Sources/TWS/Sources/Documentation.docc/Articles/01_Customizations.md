@@ -1,4 +1,4 @@
-# Stylings and customisations
+# Stylings and customizations
 
 Discover how to customize TWS to align with your app’s design and functionality by tailoring services and views for a seamless user experience.
 
@@ -78,13 +78,13 @@ ZStack {
 })
 ```
 
-## 2. Extending WebView Functionality
+## 2. Extending TWSView Functionality
 
-Custom WebView handling allows for extending the default behavior by adding features such as managing navigation actions (e.g., going back and forward) and intercepting web requests. This enables greater control over the browsing experience, allowing you to customize how content is loaded, managed, and interacted with. The flexibility of this approach ensures that additional functionalities can be seamlessly incorporated as your needs evolve.
+Custom TWSView handling allows for extending the default behavior by adding features such as managing navigation actions (e.g., going back and forward) and intercepting web requests. This enables greater control over the browsing experience, allowing you to customize how content is loaded, managed, and interacted with. The flexibility of this approach ensures that additional functionalities can be seamlessly incorporated as your needs evolve.
 
 ### 2.1 Navigation
 
-Use the following extension to add custom navigation functionality to your WebView, such as going back, going forward, and reloading the view.
+Use the following extension to add custom navigation functionality to your TWSView, such as going back, going forward, and reloading the view.
 
 > Note: Overriding this will affect all descendant views.
 
@@ -171,17 +171,19 @@ struct ContentView: View {
 
 ## 3. Services Integration
 
-Custom services such as location, microphone, and camera can be seamlessly integrated into your WebView to enhance the user experience. By adding these services, you can enable native functionality within your web content, allowing for a more interactive and personalized experience. This flexibility ensures that you can customize and extend the capabilities of your WebView as needed, providing a richer, more native-like experience.
+Custom services such as location, microphone, and camera can be seamlessly integrated into your TWSView to enhance the user experience. By adding these services, you can enable native functionality within your web content, allowing for a more interactive and personalized experience. This flexibility ensures that you can customize and extend the capabilities of your TWSView as needed, providing a richer, more native-like experience.
 
 ## Location services
 
-To integrate location services into your WebView, conform to the `LocationServicesBridge` protocol, which enables communication between the native iOS environment and the JavaScript running inside the WebView. By implementing this protocol, you can handle location permissions, retrieve the current position, and manage continuous location updates. This provides a seamless way to access and control location-based data while ensuring that permissions are properly managed.
+To integrate location services into your TWSView, conform to the ``LocationServicesBridge`` protocol, which enables communication between the native iOS environment and the JavaScript running inside the web view. By implementing this protocol, you can handle location permissions, retrieve the current position, and manage continuous location updates. This provides a seamless way to access and control location-based data while ensuring that permissions are properly managed.
 
 > Note: Overriding this will affect all descendant views.
+>
+> Default implementation is already provided.
 
-To use your custom location services, simply inject your implementation using the ``twsBind(locationServiceBridge:)`` helper function, which binds the service to the WebView and makes it available for interaction.
+To use your custom location services, simply inject your implementation using the ``TWSView/twsBind(locationServiceBridge:)`` helper function, which binds the service to the TWSView and makes it available for interaction.
 
-By adopting the LocationServicesBridge protocol, you gain fine-grained control over location data, allowing you to customize how location information is retrieved and managed within your WebView environment.
+By adopting the LocationServicesBridge protocol, you gain fine-grained control over location data, allowing you to customize how location information is retrieved and managed within your TWSView environment.
 
 #### Usage
 
@@ -190,19 +192,21 @@ ZStack {
 
 }
 .twsBind(
-    locatinServiceBridge: ... // 👈 An implemantation, confirming to `LocationServicesBridge`
+    locationServiceBridge: ... // 👈 An implemantation, confirming to `LocationServicesBridge`
 )
 ```
 
 ## Camera and Microphone Services
 
-To integrate camera and microphone services into your WebView, conform to the ``CameraMicrophoneServicesBridge`` protocol, which enables communication between the native iOS environment and the JavaScript running inside the WebView. This protocol facilitates the management of camera and microphone permissions and provides a straightforward interface for controlling these services.
+To integrate camera and microphone services into your TWSView, conform to the ``CameraMicrophoneServicesBridge`` protocol, which enables communication between the native iOS environment and the JavaScript running inside the web view. This protocol facilitates the management of camera and microphone permissions and provides a straightforward interface for controlling these services.
 
-By implementing this protocol, you can check the status of camera and microphone permissions and handle any permission-related issues before interacting with these devices, ensuring smooth and secure access to camera and microphone functionality within the WebView.
+By implementing this protocol, you can check the status of camera and microphone permissions and handle any permission-related issues before interacting with these devices, ensuring smooth and secure access to camera and microphone functionality within the TWSView.
 
 > Note: Overriding this will affect all descendant views.
+>
+> Default implementation is already provided.
 
-To use your custom camera and microphone services, inject your implementation using the ``SwiftUICore/View/twsBind(cameraMicrophoneServiceBridge:)`` helper function, which binds the service to the WebView and makes it available for interaction with the JavaScript code.
+To use your custom camera and microphone services, inject your implementation using the ``SwiftUICore/View/twsBind(cameraMicrophoneServiceBridge:)`` helper function, which binds the service to the TWSView and makes it available for interaction with the JavaScript code.
 
 Adopting the ``CameraMicrophoneServicesBridge`` protocol allows you to gain fine-grained control over camera and microphone access, ensuring that permissions are handled correctly and users are provided with the appropriate interactions for these native services.
 

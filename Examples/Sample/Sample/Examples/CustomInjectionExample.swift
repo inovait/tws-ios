@@ -27,6 +27,7 @@ struct CustomInjectionExample: View {
             ForEach(
                 tws.snippets()
                     .filter { Set(["rawHtml", "injectingCSS", "injectingJavascript", "resultingPage"]).contains($0.id) }
+                    .sortByTabSortKey()
             ) { snippet in
                 TWSView(snippet: snippet)
                     .tag(snippet.id)

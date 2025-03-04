@@ -12,31 +12,31 @@
             @Step {
                 Create a local instance of a snippet.
                 
-                @Code(name: "HomeView.swift", file: "LocalSnippet_00")
+                @Code(name: "HomeView.swift", file: "LocalSnippet_00.swift")
             }
             
             @Step {
                 When needed, modify the URL of a snippet directly.
                 
-                @Code(name: "HomeView.swift", file: "LocalSnippet_01")
+                @Code(name: "HomeView.swift", file: "LocalSnippet_01.swift")
             }
             
             @Step {
                 If you want to attach headers to the request, set them by modifying the `headers` parameter.
                 
-                @Code(name: "HomeView.swift", file: "LocalSnippet_02")
+                @Code(name: "HomeView.swift", file: "LocalSnippet_02.swift")
             }
             
             @Step {
                 If you want to use [Mustache](https://mustache.github.io/mustache.5.html) processing, first change the engine to Mustache and then add the variables.
                 
-                @Code(name: "HomeView.swift", file: "LocalSnippet_03")
+                @Code(name: "HomeView.swift", file: "LocalSnippet_03.swift")
             }
             
             @Step {
                 Displaying a local snippet is as simple as rendering it in a `TWSView`.
                 
-                @Code(name: "HomeView.swift", file: "LocalSnippet_04")
+                @Code(name: "HomeView.swift", file: "LocalSnippet_04.swift")
             }
         }
     }
