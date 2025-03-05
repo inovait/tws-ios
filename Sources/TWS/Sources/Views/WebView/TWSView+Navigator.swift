@@ -23,6 +23,7 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateForward()
     func reload()
     func navigateTo(url: URL)
+    func evaluateJavaScript(script: String)
 }
 
 /// A class that handles navigation actions such as navigating to a certain URL programmatically, going back, going forward, or reloading within a ``TWSView``.
@@ -110,5 +111,9 @@ public class TWSViewNavigator: Sendable {
     /// Triggers the delegate to load the specified url.
     public func navigateTo(url: URL) {
         delegate?.navigateTo(url: url)
+    }
+    
+    public func evaluateJavascript(script: String) {
+        delegate?.evaluateJavaScript(script: script)
     }
 }

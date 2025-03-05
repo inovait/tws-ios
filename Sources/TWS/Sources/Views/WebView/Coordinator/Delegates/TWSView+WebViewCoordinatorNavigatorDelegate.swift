@@ -43,4 +43,9 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
             """
         )
     }
+    
+    func evaluateJavaScript(script: String) {
+        assert(webView != nil)
+        webView?.evaluateJavaScript(script)
+    }
 }
