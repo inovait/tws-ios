@@ -103,7 +103,7 @@ extension WebView {
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    self.parent.visibleURL = url
+                    self.parent.currentURL = url
                 }
             }
         }

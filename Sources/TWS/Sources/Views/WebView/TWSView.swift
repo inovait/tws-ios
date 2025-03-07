@@ -168,7 +168,7 @@ private struct _TWSView: View {
             canGoForward: $navigator.canGoForward,
             loadingState: $state.loadingState,
             downloadCompleted: onDownloadCompleted,
-            visibleURL: $state.visibleURL,
+            currentURL: $state.currentURL,
             loadedURL: $state.loadedURL
         )
         // Used for Authentication via Safari

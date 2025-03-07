@@ -27,7 +27,7 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
-    @Binding var visibleURL: URL?
+    @Binding var currentURL: URL?
     @Binding var loadedURL: URL?
 
     var id: String { snippet.id }
@@ -65,7 +65,7 @@ struct WebView: UIViewRepresentable {
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        visibleURL: Binding<URL?>,
+        currentURL: Binding<URL?>,
         loadedURL: Binding<URL?>
     ) {
         self.snippet = snippet
@@ -87,7 +87,7 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
-        self._visibleURL = visibleURL
+        self._currentURL = currentURL
         self._loadedURL = loadedURL
     }
 

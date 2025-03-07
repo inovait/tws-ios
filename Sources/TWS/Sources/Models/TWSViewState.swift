@@ -36,7 +36,7 @@ import Foundation
 ///        .onChange(of: state.loadingState) { _, state in
 ///            print("State changed: \(state)")
 ///        }
-///        .onChange(of: state.visibleURL) { _, url in
+///        .onChange(of: state.currentURL) { _, url in
 ///            print("Now displaying: \(url)")
 ///        }
 ///    }
@@ -58,7 +58,7 @@ public final class TWSViewState {
     public var loadedURL: URL? = nil
     
     /// URL that is currently displayed in TWSView
-    public var visibleURL: URL? = nil
+    public var currentURL: URL? = nil
     
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page
