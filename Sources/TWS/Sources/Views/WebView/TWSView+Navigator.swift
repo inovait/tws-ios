@@ -22,7 +22,7 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateBack()
     func navigateForward()
     func reload()
-    func navigateTo(url: URL)
+    func pushState(path: String)
     func evaluateJavaScript(script: String)
 }
 
@@ -42,7 +42,7 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 ///         VStack(alignment: .leading) {
 ///             HStack {
 ///                 Button {
-///                     navigator.navigateTo(url: snippet.target)
+///                     navigator.pushState(path: "/home")
 ///                 } label: {
 ///                      Text("Home")
 ///                 }
@@ -108,11 +108,13 @@ public class TWSViewNavigator: Sendable {
         delegate?.reload()
     }
     
-    /// Triggers the delegate to load the specified url.
-    public func navigateTo(url: URL) {
-        delegate?.navigateTo(url: url)
+    /// Triggers the delegate to inject pushState JavaScript into webView.
+    /// Used for navigating SPA web page.
+    public func pushState(path: String) {
+        delegate?.pushState(path: path)
     }
     
+    /// Triggers  the delegate to inject custom JavaScript into webView.
     public func evaluateJavascript(script: String) {
         delegate?.evaluateJavaScript(script: script)
     }
