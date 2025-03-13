@@ -43,6 +43,7 @@ jobs:
       run: >
         rm -rf docs-out/.git;
         rm -rf docs-out/main;
+        rm -rf docs-out/docs;
         KEEP_LAST_VERSIONS=4;
 
         git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +$((KEEP_LAST_VERSIONS + 1)) | while read -r tag; do
@@ -86,13 +87,24 @@ jobs:
                 -quiet
 
               # Transform the documentation for static hosting
-              echo "⚙️  Transforming to static webpage: $tag";
-              $(xcrun --find docc) process-archive \
-                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
-                --output-path docs-out/"$tag" \
-                --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for TWS @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
+              
+              if [ "$tag" == "main" ]; then
+                echo "⚙️  Transforming to static webpage: main;
+                $(xcrun --find docc) process-archive \
+                    transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
+                    --output-path docs-out/docs \
+                    --hosting-base-path /tws-ios/docs \
+                    && echo "✅ Documentation generated for TWS @ "$tag" release." \
+                    || echo "⚠️ Documentation skipped for TWS @ "$tag".";
+              else
+                  echo "⚙️  Transforming to static webpage: $tag";
+                  $(xcrun --find docc) process-archive \
+                    transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
+                    --output-path docs-out/"$tag" \
+                    --hosting-base-path /tws-ios/"$tag" \
+                    && echo "✅ Documentation generated for TWS @ "$tag" release." \
+                    || echo "⚠️ Documentation skipped for TWS @ "$tag".";
+              fi
 
               # Remove build folder
               rm -rf _build
