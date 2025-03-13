@@ -72,7 +72,7 @@ jobs:
           -derivedDataPath _build \
           -quiet
 
-        echo "⚙️  Transforming to static webpage: main;
+        echo "⚙️  Transforming to static webpage: main";
         $(xcrun --find docc) process-archive \
           transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
           --output-path docs-out/docs \
