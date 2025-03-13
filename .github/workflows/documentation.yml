@@ -62,10 +62,6 @@ jobs:
         rm -rf "docs-out/main";
         git checkout .;
         git checkout main;
-        
-        tuist clean
-        tuist install
-        tuist generate --no-open
 
         echo "🔨 Main Build Started";
         xcodebuild \
@@ -101,10 +97,6 @@ jobs:
 
               echo "Current directory: $(pwd)";
               echo "Files in directory: $(ls -la)";
-
-              tuist clean
-              tuist install
-              tuist generate --no-open
 
               # Generate documentation using xcodebuild and DocC
               echo "🔨 Build Started";
