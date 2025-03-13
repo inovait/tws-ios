@@ -121,7 +121,6 @@ jobs:
               rm -rf _build
             fi;
           done
-          mv docs-out/main docs-out/docs
 
     - name: Publish documentation to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@4.1.7
