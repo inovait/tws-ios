@@ -88,8 +88,8 @@ jobs:
 
               # Transform the documentation for static hosting
               
-              if [ "$tag" == "main" ]; then
 
+              if [ "$tag" == "main" ] then
                 echo "⚙️  Transforming to static webpage: main documentation.";
                 echo "Main documentation will be put in docs folder";
                 $(xcrun --find docc) process-archive \
