@@ -89,7 +89,7 @@ jobs:
               # Transform the documentation for static hosting
               
               if [ "$tag" == "main" ]; then
-                echo "⚙️  Transforming to static webpage: main;
+                echo "⚙️  Transforming to static webpage: main";
                 $(xcrun --find docc) process-archive \
                     transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
                     --output-path docs-out/docs \
@@ -104,7 +104,7 @@ jobs:
                     --hosting-base-path /tws-ios/"$tag" \
                     && echo "✅ Documentation generated for TWS @ "$tag" release." \
                     || echo "⚠️ Documentation skipped for TWS @ "$tag".";
-              fi
+              fi;
 
               # Remove build folder
               rm -rf _build
