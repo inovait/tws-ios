@@ -22,9 +22,11 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateBack()
     func navigateForward()
     func reload()
+    func pushState(path: String)
+    func evaluateJavaScript(script: String)
 }
 
-/// A class that handles navigation actions such as going back, going forward, or reloading within a ``TWSView``.
+/// A class that handles navigation actions such as navigating to a certain URL programmatically, going back, going forward, or reloading within a ``TWSView``.
 ///
 /// This class enables performing navigation actions while observing the ability to navigate backward or forward in the view hierarchy.
 ///
@@ -39,6 +41,12 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 ///     var body: some View {
 ///         VStack(alignment: .leading) {
 ///             HStack {
+///                 Button {
+///                     navigator.pushState(path: "/home")
+///                 } label: {
+///                      Text("Home")
+///                 }
+///
 ///                 Button {
 ///                     navigator.goBack()
 ///                 } label: {
@@ -98,5 +106,16 @@ public class TWSViewNavigator: Sendable {
     /// Triggers the delegate to reload the current view.
     public func reload() {
         delegate?.reload()
+    }
+    
+    /// Triggers the delegate to inject pushState JavaScript into webView.
+    /// Used for navigating SPA web page.
+    public func pushState(path: String) {
+        delegate?.pushState(path: path)
+    }
+    
+    /// Triggers  the delegate to inject custom JavaScript into webView.
+    public func evaluateJavascript(script: String) {
+        delegate?.evaluateJavaScript(script: script)
     }
 }
