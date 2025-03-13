@@ -27,6 +27,7 @@ struct CustomMustacheExample: View {
             ForEach(
                 tws.snippets()
                     .filter { Set(["aboutMustache", "howToMustache"]).contains($0.id) }
+                    .sortByTabSortKey()
             ) { snippet in
                 TWSView(snippet: snippet)
                     .tag(snippet.id)

@@ -28,7 +28,6 @@ protocol TWSPresenter {
 
     func isVisible(snippet: TWSSnippet) -> Bool
     func resourcesHash(for snippet: TWSSnippet) -> Int
-    func updateCount(for snippet: TWSSnippet) -> Int
     func handleIncomingUrl(_ url: URL)
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?
 }

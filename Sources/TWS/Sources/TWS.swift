@@ -12,7 +12,7 @@ internal import TWSSnippet
 ///
 /// ## Initialization
 ///
-/// You can create an instance of the manager in two ways: either by using the ``TWSFactory/new(with:)-7y9q7`` or ``TWSFactory/new(with:)-7u4v8`` methods on the ``TWSFactory``. Alternatively, you can utilize SwiftUI View extensions, such as ``SwiftUICore/View/twsEnable(configuration:)`` or ``SwiftUICore/View/twsEnable(sharedSnippet:)``. These extensions internally create the manager using the factory and inject it into the view hierarchy.
+/// You can create an instance of the manager by using the ``TWSFactory/new(with:)`` method on the ``TWSFactory``. Alternatively, you can utilize SwiftUI View extension ``SwiftUICore/View/twsEnable(configuration:)``. This extension creates the manager internally using the factory and injects it into the view hierarchy.
 ///
 /// > Note: You are responsible for keeping the instance alive. When using the SwiftUI extension, the instance will remain alive as long as the view is active.
 ///
@@ -41,7 +41,7 @@ internal import TWSSnippet
 @Observable
 public final class TWSManager: Identifiable {
 
-    /// The configuration object used to initialize the manager..
+    /// The configuration object used to initialize the manager.
     public let configuration: any TWSConfiguration
 
     /// A property that provides access to the list of loaded snippets and their current loading state.
@@ -123,7 +123,7 @@ public final class TWSManager: Identifiable {
     ///
     /// ## Cancellation
     ///
-    /// Automatically stops listening when the parent task is canceled. For event types, see the``TWSStreamEvent`` enum.
+    /// Automatically stops listening when the parent task is canceled. For event types, see the ``TWSStreamEvent`` enum.
     ///
     public func observe(onEvent: @MainActor @Sendable @escaping (TWSStreamEvent) -> Void) async {
         precondition(Thread.isMainThread, "`observe` can only be called on main thread")
@@ -163,7 +163,7 @@ public final class TWSManager: Identifiable {
     }
 
     /// Generates a report of all logs from the current session and returns a file URL.
-    /// - Parameter reportFiltering: AA function to filter and transform log entries into strings for the report
+    /// - Parameter reportFiltering: A function to filter and transform log entries into strings for the report file
     /// - Returns: An optional URL pointing to the generated log file
     /// - Throws: An error if the bundle identifier is unavailable or the report generation fails.
     public func getLogsReport(reportFiltering: @Sendable @escaping (TWSLogEntryLog) -> String) async throws -> URL? {
@@ -203,7 +203,7 @@ public final class TWSManager: Identifiable {
     /// })
     /// ```
     ///
-    /// If the link is a valid TWS universal link, it will be parsed and you will be notified about it in the by subscribing to the ``TWSManager/observe(onEvent:)`` queue:
+    /// If the link is a valid TWS universal link, it will be parsed and you will be notified about it by subscribing to the ``TWSManager/observe(onEvent:)`` queue:
     ///
     /// ```swift
     /// ZStack {
