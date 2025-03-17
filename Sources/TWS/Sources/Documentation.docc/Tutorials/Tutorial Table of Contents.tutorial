@@ -8,8 +8,8 @@
         
         @Image(source: appIcon-200x200, alt: "TWS Logo")
         
-        @TutorialReference(tutorial: "doc:GettingStarted")
         @TutorialReference(tutorial: "doc:LocalSnippet")
+        @TutorialReference(tutorial: "doc:RemoteSnippet")
         @TutorialReference(tutorial: "doc:MixAndMatch")
     }
 }
