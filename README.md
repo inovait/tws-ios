@@ -21,7 +21,7 @@ import SwiftUI
 import TWS
 
 struct HomeScreen: View {
-    let myWebPage: TWSSnippet = TWSSnippet(id: "xyz", target: "www.google.com")
+    let myWebPage: TWSSnippet = TWSSnippet(id: "xyz", target: URL(string: "https://www.google.com")!)
     
     var body: some View {
         TWSView(snippet: myWebPage)
