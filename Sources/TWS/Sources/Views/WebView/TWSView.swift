@@ -58,55 +58,57 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        if overrideVisibilty || presenter.isVisible(snippet: snippet) {
-            if store?.preloaded != true && !overrideVisibilty {
-                preloadingView()
-                    .onAppear {
-                        store = presenter.store(forSnippetID: snippet.id)
-                        store?.send(.business(.preload))
-                    }
-            } else {
-                ZStack {
-                    _TWSView(
-                        snippet: snippet,
-                        cssOverrides: cssOverrides,
-                        jsOverrides: jsOverrides,
-                        displayID: displayID,
-                        state: $state
-                    )
-                    .id(snippet.id)
-                    // The actual URL changed for the same Snippet ~ redraw is required
-                    .id(snippet.target)
-                    // Engine type changed, mustache has to be reprocessed
-                    .id(snippet.engine)
-                    // Snippet properties have updated, mustache has to be reprocessed
-                    .id(snippet.props)
-                    // The payload of dynamic resources can change
-                    .id(presenter.resourcesHash(for: snippet))
-                    // The HTML payload can change
-                    .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
-                    // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-                    .conditionallyActivateDefaultLocationBehavior(
-                        locationServicesBridge: locationServicesBridge,
-                        snippet: snippet,
-                        displayID: displayID
-                    )
-
+        ZStack {
+            if overrideVisibilty || presenter.isVisible(snippet: snippet) {
+                if let store = store, store.preloaded == false && !overrideVisibilty {
+                    preloadingView()
+                } else {
                     ZStack {
-                        switch state.loadingState {
-                        case .idle, .loading:
-                            loadingView()
-
-                        case .loaded:
-                            EmptyView()
-
-                        case let .failed(error):
-                            errorView(error)
+                        _TWSView(
+                            snippet: snippet,
+                            cssOverrides: cssOverrides,
+                            jsOverrides: jsOverrides,
+                            displayID: displayID,
+                            state: $state
+                        )
+                        .id(snippet.id)
+                        // The actual URL changed for the same Snippet ~ redraw is required
+                        .id(snippet.target)
+                        // Engine type changed, mustache has to be reprocessed
+                        .id(snippet.engine)
+                        // Snippet properties have updated, mustache has to be reprocessed
+                        .id(snippet.props)
+                        // The payload of dynamic resources can change
+                        .id(presenter.resourcesHash(for: snippet))
+                        // The HTML payload can change
+                        .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
+                        // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                        .conditionallyActivateDefaultLocationBehavior(
+                            locationServicesBridge: locationServicesBridge,
+                            snippet: snippet,
+                            displayID: displayID
+                        )
+                        
+                        ZStack {
+                            switch state.loadingState {
+                            case .idle, .loading:
+                                loadingView()
+                                
+                            case .loaded:
+                                EmptyView()
+                                
+                            case let .failed(error):
+                                errorView(error)
+                            }
                         }
+                        .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                     }
-                    .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                 }
             }
+        }
+        .onAppear {
+            store = presenter.store(forSnippetID: snippet.id)
+            store?.send(.business(.preload))
         }
     }
 }
