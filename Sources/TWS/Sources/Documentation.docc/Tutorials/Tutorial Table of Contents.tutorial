@@ -12,4 +12,13 @@
         @TutorialReference(tutorial: "doc:RemoteSnippet")
         @TutorialReference(tutorial: "doc:MixAndMatch")
     }
+    
+    @Chapter(name: "Customizing TWSView") {
+        Learn how to customize TWSView from loading and error views to url interceptors and coordinators
+        
+        @Image(source: appIcon-200x200, alt: "TWS Logo")
+        
+        @TutorialReference(tutorial: "doc:CustomizingViews")
+        @TutorialReference(tutorial: "doc:CustomInterceptor")
+    }
 }

@@ -47,8 +47,8 @@ Effortlessly transform your website into a mobile app with our SDK:
 ### Tutorials
 
 - <doc:Tutorial-Table-of-Contents>
-- <doc:RemoteSnippet>
 - <doc:LocalSnippet>
+- <doc:RemoteSnippet>
 - <doc:MixAndMatch>
 
 ## See Also
