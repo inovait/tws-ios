@@ -109,7 +109,10 @@ public struct TWSBuildSettingsProvider {
     }
     
     static func decodeJWT(_ jwtToken: String) -> JWT<Payload> {
+        guard !jwtToken.isEmpty else { return JWT(header: Header(), claims: Payload(exp: "", iss: "")) }
+        
         let jwtParts = jwtToken.split(separator: ".")
+        guard jwtParts.count == 3 else { return JWT(header: Header(), claims: Payload(exp: "", iss: "")) }
         let decoder = JSONDecoder()
         do {
             let headers = try decoder.decode(Header.self, from: Data(base64Encoded: String(jwtParts[0])) ?? Data())
