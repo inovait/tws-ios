@@ -37,8 +37,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
                 DispatchQueue.main.async { [weak self] in
                     self?.parent.pageTitle = title
                     if let url = webView.url {
-                        self?.parent.loadedURL = url
-                        self?.parent.currentURL = url
+                        self?.parent.lastLoadedUrl = url
+                        self?.parent.currentUrl = url
                     }
                 }
             }

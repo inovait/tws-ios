@@ -27,8 +27,8 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
-    @Binding var currentURL: URL?
-    @Binding var loadedURL: URL?
+    @Binding var currentUrl: URL?
+    @Binding var lastLoadedUrl: URL?
 
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
@@ -65,8 +65,8 @@ struct WebView: UIViewRepresentable {
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        currentURL: Binding<URL?>,
-        loadedURL: Binding<URL?>
+        currentUrl: Binding<URL?>,
+        lastLoadedUrl: Binding<URL?>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -87,8 +87,8 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
-        self._currentURL = currentURL
-        self._loadedURL = loadedURL
+        self._currentUrl = currentUrl
+        self._lastLoadedUrl = lastLoadedUrl
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -142,7 +142,7 @@ struct WebView: UIViewRepresentable {
         // Process content on first load
         loadProcessedContent(webView: webView)
         context.coordinator.observe(heightOf: webView)
-        context.coordinator.observe(currentURLOf: webView)
+        context.coordinator.observe(currentUrlOf: webView)
         context.coordinator.webView = webView
 
         updateState(for: webView, loadingState: .loading)

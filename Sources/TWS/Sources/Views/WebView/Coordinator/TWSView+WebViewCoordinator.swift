@@ -96,14 +96,14 @@ extension WebView {
             }
         }
         
-        func observe(currentURLOf webview: WKWebView) {
+        func observe(currentUrlOf webview: WKWebView) {
             urlObserver = webview.observe(\.url, options: [.new]) { _, change in
                 MainActor.assumeIsolated {
                     guard
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    self.parent.currentURL = url
+                    self.parent.currentUrl = url
                 }
             }
         }

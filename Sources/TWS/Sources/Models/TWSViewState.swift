@@ -36,7 +36,7 @@ import Foundation
 ///        .onChange(of: state.loadingState) { _, state in
 ///            print("State changed: \(state)")
 ///        }
-///        .onChange(of: state.currentURL) { _, url in
+///        .onChange(of: state.currentUrl) { _, url in
 ///            print("Now displaying: \(url)")
 ///        }
 ///    }
@@ -55,10 +55,10 @@ public final class TWSViewState {
     /// multi-page applications load each time there is a redirect, while single-page applications change their URL but don't load.
     
     /// URL that was last loaded into TWSView
-    public var loadedURL: URL? = nil
+    public var lastLoadedUrl: URL? = nil
     
     /// URL that is currently displayed in TWSView
-    public var currentURL: URL? = nil
+    public var currentUrl: URL? = nil
     
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page

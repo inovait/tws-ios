@@ -168,8 +168,8 @@ private struct _TWSView: View {
             canGoForward: $navigator.canGoForward,
             loadingState: $state.loadingState,
             downloadCompleted: onDownloadCompleted,
-            currentURL: $state.currentURL,
-            loadedURL: $state.loadedURL
+            currentUrl: $state.currentUrl,
+            lastLoadedUrl: $state.lastLoadedUrl
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
