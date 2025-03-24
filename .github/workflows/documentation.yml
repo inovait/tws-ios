@@ -43,61 +43,32 @@ jobs:
       run: >
         rm -rf docs-out/.git;
         rm -rf docs-out/main;
-        KEEP_LAST_VERSIONS=4;
-
-        git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | tail -n +$((KEEP_LAST_VERSIONS + 1)) | while read -r tag; do
-          if [ -d "docs-out/$tag" ]; then
-            echo "Deleting old version: docs-out/$tag";
-            rm -rf "docs-out/$tag";
-          else
-            echo "Directory docs-out/$tag does not exist";
-          fi;
-        done;
+        rm -rf docs-out/docs;
         
-        TAGS=$(echo "main"; git tag -l --sort=-v:refname | grep -e "^\d\+\.\d\+.\d\+" | head -$KEEP_LAST_VERSIONS);
-        echo "Tags being processed: ${TAGS[@]}";
+        git checkout .;
+        git checkout main;
 
-        for tag in $TAGS;
-          do
-            if [ -d "docs-out/$tag/data/documentation/tws" ] 
-            then 
-              echo "✅ Documentation for "$tag" already exists.";
-            else 
-              echo "⏳ Generating documentation for TWS @ "$tag" release.";
-              rm -rf "docs-out/$tag";
-              git checkout .;
-              git checkout "$tag";
+        echo "🔨 Main Build Started";
+        xcodebuild \
+          -workspace TheWebSnippet.xcworkspace \
+          -scheme TWS \
+          -destination 'generic/platform=iOS' \
+          docbuild \
+          -derivedDataPath _build \
+          -quiet
 
-              echo "Current directory: $(pwd)";
-              echo "Files in directory: $(ls -la)";
-
-              tuist clean
-              tuist install
-              tuist generate --no-open
-
-              # Generate documentation using xcodebuild and DocC
-              echo "🔨 Build Started";
-              xcodebuild \
-                -workspace TheWebSnippet.xcworkspace \
-                -scheme TWS \
-                -destination 'generic/platform=iOS' \
-                docbuild \
-                -derivedDataPath _build \
-                -quiet
-
-              # Transform the documentation for static hosting
-              echo "⚙️  Transforming to static webpage: $tag";
-              $(xcrun --find docc) process-archive \
-                transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
-                --output-path docs-out/"$tag" \
-                --hosting-base-path /tws-ios/"$tag" \
-                && echo "✅ Documentation generated for TWS @ "$tag" release." \
-                || echo "⚠️ Documentation skipped for TWS @ "$tag".";
-
-              # Remove build folder
-              rm -rf _build
-            fi;
-          done
+        echo "⚙️  Transforming to static webpage: main";
+        $(xcrun --find docc) process-archive \
+          transform-for-static-hosting _build/Build/Products/Debug-iphoneos/TWS.doccarchive \
+          --output-path docs-out/docs \
+          --hosting-base-path /tws-ios \
+          && echo "✅ Documentation generated for TWS @ main release." \
+          || echo "⚠️ Documentation skipped for TWS @ main.";
+          
+        echo "<script>window.location.href += \"/documentation/tws\"</script>" > docs-out/docs/index.html;
+        
+        # Remove build folder
+        rm -rf _build;
 
     - name: Publish documentation to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@4.1.7
