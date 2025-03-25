@@ -163,7 +163,7 @@ public final class TWSManager: Identifiable {
     }
 
     /// Generates a report of all logs from the current session and returns a file URL.
-    /// - Parameter reportFiltering: A function to filter and transform log entries into strings for the reportfind
+    /// - Parameter reportFiltering: A function to filter and transform log entries into strings for the report file
     /// - Returns: An optional URL pointing to the generated log file
     /// - Throws: An error if the bundle identifier is unavailable or the report generation fails.
     public func getLogsReport(reportFiltering: @Sendable @escaping (TWSLogEntryLog) -> String) async throws -> URL? {
