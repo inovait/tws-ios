@@ -42,8 +42,8 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         )
     }
     
-    func evaluateJavaScript(script: String) {
+    func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
         assert(webView != nil)
-        webView?.evaluateJavaScript(script)
+        webView?.evaluateJavaScript(script, completionHandler: completionHandler)
     }
 }
