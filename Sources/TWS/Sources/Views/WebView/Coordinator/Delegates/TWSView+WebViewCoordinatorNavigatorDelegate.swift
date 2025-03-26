@@ -18,6 +18,11 @@ import Foundation
 import WebKit
 
 extension WebView.Coordinator: TWSViewNavigatorDelegate {
+    func load(url: URLRequest) {
+        assert(webView != nil)
+        webView?.load(url)
+    }
+    
     func navigateBack() {
         assert(webView != nil)
         webView?.goBack()

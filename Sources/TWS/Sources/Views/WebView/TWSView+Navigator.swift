@@ -19,6 +19,7 @@ import SwiftUI
 @MainActor
 protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 
+    func load(url: URLRequest)
     func navigateBack()
     func navigateForward()
     func reload()
@@ -114,8 +115,13 @@ public class TWSViewNavigator: Sendable {
         delegate?.pushState(path: path)
     }
     
-    /// Triggers  the delegate to inject custom JavaScript into webView.
+    /// Triggers the delegate to inject custom JavaScript into webView, completion handler is an optional parameter that allows for handling success and error of the executed JavaScript.
     public func evaluateJavascript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
         delegate?.evaluateJavaScript(script: script, completionHandler: completionHandler)
+    }
+    
+    /// Triggers the delegate to load specified url into the webView.
+    public func load(url: URLRequest) {
+        delegate?.load(url: url)
     }
 }
