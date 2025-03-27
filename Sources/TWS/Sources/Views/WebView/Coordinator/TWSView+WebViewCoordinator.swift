@@ -24,6 +24,7 @@ extension WebView {
 
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
+        var urlObserver: NSKeyValueObservation?
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
@@ -34,7 +35,6 @@ extension WebView {
         let navigationProvider: NavigationProvider
         let downloadCompleted: ((TWSDownloadState) -> Void)?
         let interceptor: TWSViewInterceptor?
-
         var pullToRefresh: PullToRefresh!
         weak var webView: WKWebView?
 
@@ -51,7 +51,7 @@ extension WebView {
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
-
+            
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
@@ -92,6 +92,18 @@ extension WebView {
                     DispatchQueue.main.async { [weak self] in
                         self?.parent.dynamicHeight = newHeight
                     }
+                }
+            }
+        }
+        
+        func observe(currentUrlOf webview: WKWebView) {
+            urlObserver = webview.observe(\.url, options: [.new]) { _, change in
+                MainActor.assumeIsolated {
+                    guard
+                        let unwrapped = change.newValue,
+                        let url = unwrapped
+                    else { return }
+                    self.parent.currentUrl = url
                 }
             }
         }

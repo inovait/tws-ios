@@ -27,9 +27,11 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoForward: Bool
     @Binding var loadingState: TWSLoadingState
     @Binding var pageTitle: String
+    @Binding var currentUrl: URL?
+    @Binding var lastLoadedUrl: URL?
 
     var id: String { snippet.id }
-    var url: URL { snippet.target }
+    var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
     let preloadedResources: [TWSSnippet.Attachment: String]
     let locationServicesBridge: LocationServicesBridge
@@ -62,7 +64,9 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         loadingState: Binding<TWSLoadingState>,
-        downloadCompleted: ((TWSDownloadState) -> Void)?
+        downloadCompleted: ((TWSDownloadState) -> Void)?,
+        currentUrl: Binding<URL?>,
+        lastLoadedUrl: Binding<URL?>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -83,6 +87,8 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
+        self._currentUrl = currentUrl
+        self._lastLoadedUrl = lastLoadedUrl
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -112,10 +118,7 @@ struct WebView: UIViewRepresentable {
         )
 
         // Location Permissions
-
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
-
-        //
 
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
@@ -139,14 +142,14 @@ struct WebView: UIViewRepresentable {
         // Process content on first load
         loadProcessedContent(webView: webView)
         context.coordinator.observe(heightOf: webView)
+        context.coordinator.observe(currentUrlOf: webView)
         context.coordinator.webView = webView
 
         updateState(for: webView, loadingState: .loading)
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
-
+        
         // Binding for permissions
-
         Task {
             await locationPermissionsHandler.bind(
                 webView: webView,
@@ -187,7 +190,7 @@ struct WebView: UIViewRepresentable {
         if regainedNetworkConnection, case .failed = loadingState {
             if uiView.url == nil {
                 updateState(for: uiView, loadingState: .loading)
-                uiView.load(URLRequest(url: self.url))
+                uiView.load(URLRequest(url: self.targetURL))
                 stateUpdated = true
             } else if !uiView.isLoading {
                 uiView.reload()
@@ -242,15 +245,15 @@ struct WebView: UIViewRepresentable {
     }
     
     private func loadProcessedContent(webView: WKWebView) {
-        let key = TWSSnippet.Attachment(url: url, contentType: .html)
+        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
         
         if let preloaded = preloadedResources[key] {
-            logger.debug("Load from raw HTML: \(url.absoluteString)")
+            logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
-            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
+            webView.loadSimulatedRequest(URLRequest(url: self.targetURL), responseHTML: htmlToLoad)
         } else {
-            logger.debug("Load from url: \(url.absoluteString)")
-            var urlRequest = URLRequest(url: self.url)
+            logger.debug("Load from url: \(targetURL.absoluteString)")
+            var urlRequest = URLRequest(url: self.targetURL)
             snippet.headers?.forEach { header in
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
             }
@@ -357,5 +360,4 @@ struct WebView: UIViewRepresentable {
         
         return preloadedHTML
     }
-
 }

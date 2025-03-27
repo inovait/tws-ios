@@ -18,7 +18,7 @@ import Foundation
 
 /// A class that represents the state of a ``TWSView``.
 ///
-/// This class stores information about the snippet's title and its current loading state. It is used by ``TWSView`` to manage and observe changes in the snippet's state.
+/// This class stores information about the snippet's title, its current loading state, URL of currently visible page and URL that was initially loaded. It is used by ``TWSView`` to manage and observe changes in the snippet's state.
 ///
 /// ```swift
 /// struct SomeView: View {
@@ -36,6 +36,9 @@ import Foundation
 ///        .onChange(of: state.loadingState) { _, state in
 ///            print("State changed: \(state)")
 ///        }
+///        .onChange(of: state.currentUrl) { _, url in
+///            print("Now displaying: \(url)")
+///        }
 ///    }
 /// }
 /// ```
@@ -48,6 +51,15 @@ public final class TWSViewState {
     /// An instance of ``TWSLoadingState`` that tells you the state of the snippet
     public var loadingState: TWSLoadingState
 
+    /// Note: distinction between loaded and visible URL is important when dealing with multi-page applications vs single-page applications.
+    /// multi-page applications load each time there is a redirect, while single-page applications change their URL but don't load.
+    
+    /// URL that was last loaded into TWSView
+    public var lastLoadedUrl: URL? = nil
+    
+    /// URL that is currently displayed in TWSView
+    public var currentUrl: URL? = nil
+    
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page
     /// - Parameter loadingState: the initial state for the loading state
