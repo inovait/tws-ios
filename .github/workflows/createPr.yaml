@@ -3,7 +3,7 @@ on: create
 jobs:
   build:
     name: Create new PR
-    runs-on: "node"
+    runs-on: "macOS15.0-xcode16.2"
     env:
       OWNER_NAME: ${{github.actor}}
       OWNER_MESSAGE: ${{github.event.ref}}
