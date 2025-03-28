@@ -35,10 +35,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         webView.evaluateJavaScript("document.title") { (result, error) in
             if let title = result as? String, error == nil {
                 DispatchQueue.main.async { [weak self] in
-                    self?.parent.pageTitle = title
+                    self?.parent.state.title = title
                     if let url = webView.url {
-                        self?.parent.lastLoadedUrl = url
-                        self?.parent.currentUrl = url
+                        self?.parent.state.lastLoadedUrl = url
+                        self?.parent.state.currentUrl = url
                     }
                 }
             }

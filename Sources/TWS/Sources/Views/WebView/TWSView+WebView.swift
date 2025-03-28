@@ -25,10 +25,7 @@ struct WebView: UIViewRepresentable {
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
-    @Binding var loadingState: TWSLoadingState
-    @Binding var pageTitle: String
-    @Binding var currentUrl: URL?
-    @Binding var lastLoadedUrl: URL?
+    @Bindable var state: TWSViewState
 
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
@@ -56,17 +53,14 @@ struct WebView: UIViewRepresentable {
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
-        pageTitle: Binding<String>,
         openURL: URL?,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
         onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        currentUrl: Binding<URL?>,
-        lastLoadedUrl: Binding<URL?>
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -77,7 +71,6 @@ struct WebView: UIViewRepresentable {
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
-        self._pageTitle = pageTitle
         self.openURL = openURL
         self.snippetHeightProvider = snippetHeightProvider
         self.navigationProvider = navigationProvider
@@ -85,10 +78,8 @@ struct WebView: UIViewRepresentable {
         self._dynamicHeight = dynamicHeight
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
-        self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
-        self._currentUrl = currentUrl
-        self._lastLoadedUrl = lastLoadedUrl
+        self._state = state
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -132,7 +123,10 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        navigator.delegate = context.coordinator
+        
+        if navigator.delegate == nil {
+            navigator.delegate = context.coordinator
+        }
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
@@ -166,12 +160,16 @@ struct WebView: UIViewRepresentable {
             snippetHeightProvider: snippetHeightProvider,
             navigationProvider: navigationProvider,
             downloadCompleted: downloadCompleted,
-            interceptor: interceptor
+            interceptor: interceptor,
+            presentedUrl: $state.presentedUrl
         )
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         logger.debug("DEINIT WKWebView \(uiView.hash)")
+        uiView.navigationDelegate = nil
+        uiView.uiDelegate = nil
+        uiView.configuration.userContentController.removeAllScriptMessageHandlers()
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
@@ -187,7 +185,7 @@ struct WebView: UIViewRepresentable {
         let regainedNetworkConnection = !context.coordinator.isConnectedToNetwork && isConnectedToNetwork
         var stateUpdated: Bool?
 
-        if regainedNetworkConnection, case .failed = loadingState {
+        if regainedNetworkConnection, case .failed = state.loadingState {
             if uiView.url == nil {
                 updateState(for: uiView, loadingState: .loading)
                 uiView.load(URLRequest(url: self.targetURL))
@@ -206,13 +204,7 @@ struct WebView: UIViewRepresentable {
 
             context.coordinator.redirectedToSafari = false
 
-            do {
-                try navigationProvider.continueNavigation(with: openURL, from: uiView)
-            } catch NavigationError.viewControllerNotFound {
-                uiView.load(URLRequest(url: openURL))
-            } catch {
-                logger.err("Failed to continue navigation: \(error)")
-            }
+            uiView.load(URLRequest(url: openURL))
         }
 
         // Update state
@@ -239,7 +231,7 @@ struct WebView: UIViewRepresentable {
             }
 
             if let loadingState {
-                self.loadingState = loadingState
+                self.state.loadingState = loadingState
             }
         }
     }
