@@ -29,6 +29,15 @@ public struct SocketDependency: Sendable {
 
 public enum SocketDependencyKey: DependencyKey {
 
+    public static var testValue: SocketDependency {
+        return .init(
+            get: { _,_ in return UUID()},
+            connect: { _ in return AsyncStream<WebSocketEvent>.makeStream().stream},
+            listen: { _ in},
+            closeConnection: { _ in},
+            abort: { _ in }
+        )
+    }
     public static var liveValue: SocketDependency {
         let storage = ActorIsolatedDictionary<UUID, SocketConnector>([:])
         let configuration = ActorIsolatedDictionary<String, UUID>([:])
