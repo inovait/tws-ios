@@ -136,7 +136,11 @@ struct WebView: UIViewRepresentable {
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
-            loadProcessedContent(webView: webView)
+            if let currentUrl = currentUrl, currentUrl != targetURL {
+                webView.load(URLRequest(url: currentUrl))
+            } else {
+                loadProcessedContent(webView: webView)
+            }
         }
 
         // Process content on first load
