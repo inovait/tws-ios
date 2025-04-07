@@ -93,6 +93,7 @@ public struct TWSView: View {
                         )
                         .sheet(item: $state.presentedUrl, id: \.absoluteString, onDismiss: { state.presentedUrl = nil }) { url in
                             TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url))
+                                .twsLocal()
                         }
                         
                         ZStack {
