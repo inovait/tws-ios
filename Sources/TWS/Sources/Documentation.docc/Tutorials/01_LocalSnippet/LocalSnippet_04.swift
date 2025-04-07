@@ -6,7 +6,7 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            SnippetView(
+            TWSView(
                 snippet: localSnippet()
             )
         }

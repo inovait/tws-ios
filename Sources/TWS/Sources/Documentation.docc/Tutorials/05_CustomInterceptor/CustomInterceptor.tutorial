@@ -1,0 +1,51 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Intercepting URL requests") {
+        Learn how to intercept desired URLs and use them in native flows
+    }
+    
+    @Section(title: "Custom interceptors") {
+        @ContentAndMedia {
+            TWSView has an ability to catch URL requests before they are loaded into the view. This gives you the capability to catch that URL and trigger a native flow.
+        }
+        
+        @Steps {
+            @Step {
+                Lets take code from previous tutorial as base.
+                
+                @Code(name: "CustomView.swift", file: "CustomInterceptor_00.swift")
+            }
+            
+            @Step {
+                To use a custom interceptor we need to implement a class that conforms TWSViewInterceptor protocol.
+                
+                @Code(name: "CustomView.swift", file: "CustomInterceptor_01.swift")
+            }
+            
+            @Step {
+                Imagine that https://www.myWebPage.com has two paths for which we want to implement a native screen instead of displaying them in TWSView.
+                
+                Those paths are /helloWorld which displays hello World text and /greetUser/{username} which displays a greeting for a user.
+                
+                @Code(name: "CustomView.swift", file: "CustomInterceptor_02.swift")
+            }
+            
+            @Step {
+                Add a representation of the current destination to the implementation.
+                Create an instance of your interceptor and bind it to TWSView.
+                
+                @Code(name: "CustomView.swift", file: "CustomInterceptor_03.swift")
+            }
+            
+            @Step {
+                Now we add views for corresponding destinations and we are done.
+                
+                Every time TWSView tries to load 
+                `https://www.myWebPage.com/helloWorld` or 
+                `https://www.myWebPage.com/greetUser/{userName}` 
+                our custom flow will be triggered.
+                
+                @Code(name: "CustomView.swift", file: "CustomInterceptor_04.swift")
+            }
+        }
+    }
+}

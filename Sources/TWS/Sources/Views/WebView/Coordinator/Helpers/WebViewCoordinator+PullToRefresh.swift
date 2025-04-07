@@ -23,6 +23,7 @@ extension WebView.Coordinator {
 
         private weak var webView: WKWebView?
         private var refreshRequest: PullToRefreshRequest?
+
         private var reload : (() async -> Void)? = nil
 
 

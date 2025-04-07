@@ -1,5 +1,5 @@
 @Tutorial(time: 2) {
-    @Intro(title: "Use snippets locally") {
+    @Intro(title: "Display your first local snippet") {
         Learn how to work with TWS snippets locally without connecting to our backend service. This tutorial will guide you through the steps to display a webpage snippet in your app, bypassing the backend, and focusing solely on rendering and showcasing the snippet content.
     }
     
