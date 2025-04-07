@@ -23,7 +23,8 @@ extension WebView.Coordinator {
 
         private weak var webView: WKWebView?
         private var refreshRequest: PullToRefreshRequest?
-        private var reload : (() async -> Void) = {}
+
+        private var reload : (() async -> Void)? = nil
 
 
         func enable(on webView: WKWebView, reload: @escaping () async -> Void) {
@@ -71,8 +72,11 @@ extension WebView.Coordinator {
 
         @objc private func _reloadWebView(_ sender: UIRefreshControl) {
             Task { [weak sender] in
-                await _fire()
-                await reload()
+                if let reload = reload {
+                    await reload()
+                } else {
+                    await _fire()
+                }
                 sender?.endRefreshing()
             }
         }

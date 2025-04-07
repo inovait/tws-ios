@@ -16,6 +16,7 @@
 
 import Foundation
 import WebKit
+import SwiftUI
 
 extension WebView {
 
@@ -29,6 +30,7 @@ extension WebView {
         var redirectedToSafari = false
         var openURL: URL?
         var downloadInfo = TWSDownloadInfo()
+        @Binding var presentedUrl : URL?
 
         let id = UUID().uuidString.suffix(4)
         let snippetHeightProvider: SnippetHeightProvider
@@ -43,7 +45,8 @@ extension WebView {
             snippetHeightProvider: SnippetHeightProvider,
             navigationProvider: NavigationProvider,
             downloadCompleted: ((TWSDownloadState) -> Void)?,
-            interceptor: TWSViewInterceptor?
+            interceptor: TWSViewInterceptor?,
+            presentedUrl: Binding<URL?>
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
@@ -51,7 +54,7 @@ extension WebView {
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
-            
+            self._presentedUrl = presentedUrl
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
@@ -59,6 +62,7 @@ extension WebView {
         deinit {
             heightObserver?.invalidate()
             heightObserver = nil
+            self.webView = nil
             logger.debug("DEINIT Coordinator for WKWebView \(id)")
         }
 
@@ -71,7 +75,7 @@ extension WebView {
                 \.contentSize,
                 options: [.new]
             ) { [weak self] _, change in
-                MainActor.assumeIsolated {
+                MainActor.assumeIsolated { [weak self] in
                     guard
                         let self = self,
                         let newHeight = change.newValue?.height,
@@ -97,13 +101,13 @@ extension WebView {
         }
         
         func observe(currentUrlOf webview: WKWebView) {
-            urlObserver = webview.observe(\.url, options: [.new]) { _, change in
-                MainActor.assumeIsolated {
+            urlObserver = webview.observe(\.url, options: [.new]) { [weak self] _, change in
+                MainActor.assumeIsolated { [weak self] in
                     guard
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    self.parent.currentUrl = url
+                    self?.parent.state.currentUrl = url
                 }
             }
         }

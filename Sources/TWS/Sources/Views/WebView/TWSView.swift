@@ -31,6 +31,7 @@ public struct TWSView: View {
 
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
+    @State private var presentedTWSViewState: TWSViewState = .init()
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -59,6 +60,8 @@ public struct TWSView: View {
 
     public var body: some View {
         ZStack {
+            @Bindable var state = presentedTWSViewState
+        
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
@@ -88,6 +91,10 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
+                        .sheet(item: $state.presentedUrl, id: \.absoluteString, onDismiss: { state.presentedUrl = nil }) { url in
+                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url))
+                                .twsLocal()
+                        }
                         
                         ZStack {
                             switch state.loadingState {
@@ -158,7 +165,6 @@ private struct _TWSView: View {
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
-            pageTitle: $state.title,
             openURL: openURL,
             snippetHeightProvider: presenter.heightProvider,
             navigationProvider: presenter.navigationProvider,
@@ -168,10 +174,8 @@ private struct _TWSView: View {
             },
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
-            loadingState: $state.loadingState,
             downloadCompleted: onDownloadCompleted,
-            currentUrl: $state.currentUrl,
-            lastLoadedUrl: $state.lastLoadedUrl
+            state: $state
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
