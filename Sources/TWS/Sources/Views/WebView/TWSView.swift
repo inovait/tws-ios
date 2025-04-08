@@ -60,7 +60,7 @@ public struct TWSView: View {
 
     public var body: some View {
         ZStack {
-            @Bindable var state = presentedTWSViewState
+            @Bindable var childState = presentedTWSViewState
         
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
@@ -92,7 +92,7 @@ public struct TWSView: View {
                             displayID: displayID
                         )
                         .sheet(item: $state.presentedUrl, id: \.absoluteString, onDismiss: { state.presentedUrl = nil }) { url in
-                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url))
+                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState)
                                 .twsLocal()
                         }
                         
