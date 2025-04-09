@@ -52,7 +52,12 @@ class LivePresenter: TWSPresenter {
     }
 
     func resourcesHash(for snippet: TWSSnippet) -> Int {
-        _resourcesHash(resources: manager?.store.snippets.preloadedResources, of: snippet)
+        var hasher = Hasher()
+        hasher.combine(_resourcesHash(resources: manager?.store.snippets.preloadedResources, of: snippet))
+        hasher.combine(_localHeadersHash(of: snippet))
+        hasher.combine(_localPropsHash(of: snippet))
+        
+        return hasher.finalize()
     }
 
     func handleIncomingUrl(_ url: URL) {
@@ -75,6 +80,22 @@ class LivePresenter: TWSPresenter {
         let resources = resources ?? [:]
         var hasher = Hasher()
         snippet.dynamicResources?.forEach { hasher.combine(resources[$0]) }
+        return hasher.finalize()
+    }
+    
+    private func _localHeadersHash(of snippet: TWSSnippet) -> Int {
+        let headers = manager?.store.snippets.snippets[id: snippet.id]?.localHeaders ?? [:]
+        var hasher = Hasher()
+        headers.forEach { hasher.combine(headers[$0.key]) }
+        
+        return hasher.finalize()
+    }
+    
+    private func _localPropsHash(of snippet: TWSSnippet) -> Int {
+        let props = manager?.store.snippets.snippets[id: snippet.id]?.localProps ?? .none
+        var hasher = Hasher()
+        props.hash(into: &hasher)
+        
         return hasher.finalize()
     }
 }
