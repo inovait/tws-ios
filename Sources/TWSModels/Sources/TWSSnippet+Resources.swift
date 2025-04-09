@@ -20,7 +20,8 @@ import Foundation
 public extension TWSSnippet {
 
     func allResources(
-        headers: inout [TWSSnippet.Attachment: [String: String]]
+        headers: inout [TWSSnippet.Attachment: [String: String]],
+        localHeaders: [String: String] = [:]
     ) -> [TWSSnippet.Attachment] {
         let attachments = dynamicResources ?? []
         let homepage = TWSSnippet.Attachment.init(
@@ -28,8 +29,7 @@ public extension TWSSnippet {
             contentType: .html
         )
 
-        headers = [homepage: self.headers ?? [:]]
-
+        headers = [homepage: self.headers?.merging(localHeaders, uniquingKeysWith: { $1 }) ?? [:]]
         return [homepage] + attachments
     }
 }

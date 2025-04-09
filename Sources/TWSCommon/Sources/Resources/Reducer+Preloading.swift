@@ -24,11 +24,11 @@ public extension Reducer {
 
     func preloadResources(
         for snippet: TWSSnippet,
-        using api: APIDependency
+        using api: APIDependency,
+        withHeaders localHeaders: [String: String] = [:]
     ) async -> [TWSSnippet.Attachment: String] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
-        let resources = snippet.allResources(headers: &headers)
-
+        let resources = snippet.allResources(headers: &headers, localHeaders: localHeaders)
         return await _preloadResources(
             resources: resources,
             headers: headers,

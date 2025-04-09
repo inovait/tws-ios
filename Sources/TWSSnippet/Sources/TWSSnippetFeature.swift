@@ -10,13 +10,14 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, preloaded, isPreloading, isVisible, customProps
+            case snippet, preloaded, isPreloading, isVisible, customProps, customHeaders
         }
 
         public var snippet: TWSSnippet
         public var preloaded: Bool
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
+        public var localHeaders: [String: String] = [:]
 
         var isPreloading = false
 
@@ -41,6 +42,7 @@ public struct TWSSnippetFeature: Sendable {
             isVisible = true
             isPreloading = false
             localProps = .dictionary([:])
+            localHeaders = [:]
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -50,6 +52,7 @@ public struct TWSSnippetFeature: Sendable {
             try container.encode(isPreloading, forKey: .isPreloading)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(localProps, forKey: .customProps)
+            try container.encode(localHeaders, forKey: .customHeaders)
         }
     }
 
@@ -103,9 +106,9 @@ public struct TWSSnippetFeature: Sendable {
         case .business(.preload):
             guard !state.isPreloading else { return .none }
             state.isPreloading = true
-
-            return .run { [api, snippet = state.snippet] send in
-                let resources = await preloadResources(for: snippet, using: api)
+            
+            return .run { [api, snippet = state.snippet, localHeaders = state.localHeaders] send in
+                let resources = await preloadResources(for: snippet, using: api, withHeaders: localHeaders)
                 await send(.business(.preloadCompleted(resources)))
             }
 
