@@ -33,9 +33,14 @@ extension TWSSnippetsFeature {
         @Sharing.Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         #endif
 
+        #if TESTING
+        // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+        public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        #else
         @ObservationStateIgnored
         @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
-
+        #endif
+        
         @ObservationStateIgnored
         @Sharing.Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
@@ -58,7 +63,13 @@ extension TWSSnippetsFeature {
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             #endif
 
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+            self.preloadedResources = preloadedResources ?? [:]
+            #else
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
+            #endif
+            
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
@@ -88,7 +99,11 @@ extension TWSSnippetsFeature {
             }
 
             if let preloadedResources {
+                #if TESTING
+                self.preloadedResources = preloadedResources
+                #else
                 self.$preloadedResources.withLock { $0 = preloadedResources }
+                #endif
             }
         }
     }

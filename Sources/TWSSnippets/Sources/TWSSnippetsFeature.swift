@@ -138,7 +138,12 @@ public struct TWSSnippetsFeature: Sendable {
             let currentResources = Set(state.preloadedResources.keys)
             let newResources = _getResources(of: project.project)
             for resource in currentResources.subtracting(newResources) {
+                #if TESTING
+                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+                state.preloadedResources.removeValue(forKey: resource)
+                #else
                 state.$preloadedResources.withLock { _ = $0.removeValue(forKey: resource) }
+                #endif
             }
 
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
@@ -313,12 +318,29 @@ public struct TWSSnippetsFeature: Sendable {
             state.$snippets[id: id].withLock { $0?.localProps = .dictionary(localProps) }
             #endif
             return .none
+            
+        case let .setLocalHeaders(headers):
+            let id = headers.0
+            let localHeaders = headers.1
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+            state.snippets[id: id]?.localHeaders = localHeaders
+            #else
+            state.$snippets[id: id].withLock { $0?.localHeaders = localHeaders}
+            #endif
+            
+            return .send(.business(.snippets(.element(id: id, action: .business(.preload)))))
 
         case let .snippets(.element(_, action: .delegate(delegateAction))):
             switch delegateAction {
             case let .resourcesUpdated(resources):
                 resources.forEach { resource in
+                    #if TESTING
+                    // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+                    state.preloadedResources[resource.key] = resource.value
+                    #else
                     state.$preloadedResources[resource.key].withLock { $0 = resource.value }
+                    #endif
                 }
                 return .none
             }
