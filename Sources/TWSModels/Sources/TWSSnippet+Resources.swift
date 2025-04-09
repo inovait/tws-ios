@@ -29,7 +29,7 @@ public extension TWSSnippet {
             contentType: .html
         )
 
-        headers = [homepage: self.headers?.merging(localHeaders, uniquingKeysWith: { $1 }) ?? [:]]
+        headers = [homepage: self.headers?.merging(localHeaders, uniquingKeysWith: { $1 }) ?? localHeaders]
         return [homepage] + attachments
     }
 }
