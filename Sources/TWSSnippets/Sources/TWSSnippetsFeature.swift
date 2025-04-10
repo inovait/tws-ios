@@ -189,10 +189,6 @@ public struct TWSSnippetsFeature: Sendable {
                     #endif
 
                     logger.info("Added snippet: \(snippet.id)")
-                    effects.append(.send(.business(.snippets(.element(
-                        id: snippet.id,
-                        action: .business(.preload)
-                    )))))
                 }
             }
 

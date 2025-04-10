@@ -65,6 +65,9 @@ public struct TWSView: View {
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
+                        .onAppear {
+                            store.send(.business(.preload))
+                        }
                 } else {
                     ZStack {
                         _TWSView(
@@ -115,7 +118,6 @@ public struct TWSView: View {
         }
         .onAppear {
             store = presenter.store(forSnippetID: snippet.id)
-            store?.send(.business(.preload))
         }
     }
 }
