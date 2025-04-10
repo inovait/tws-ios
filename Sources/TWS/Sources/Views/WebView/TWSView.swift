@@ -32,6 +32,8 @@ public struct TWSView: View {
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
     @State private var presentedTWSViewState: TWSViewState = .init()
+    @State private var presentedUrl: URL? = nil
+    @State private var parentSnippet: TWSSnippet? = nil
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -57,11 +59,24 @@ public struct TWSView: View {
         self.overrideVisibilty = overrideVisibilty
         self._state = state
     }
+    
+    private init(
+        snippet: TWSSnippet,
+        state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
+        parentSnippet: TWSSnippet
+    ) {
+        self.snippet = snippet
+        self._state = state
+        self.parentSnippet = parentSnippet
+        self.cssOverrides = []
+        self.jsOverrides = []
+        self.overrideVisibilty = false
+    }
 
     public var body: some View {
         ZStack {
             @Bindable var childState = presentedTWSViewState
-        
+            
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
@@ -72,7 +87,9 @@ public struct TWSView: View {
                             cssOverrides: cssOverrides,
                             jsOverrides: jsOverrides,
                             displayID: displayID,
-                            state: $state
+                            state: $state,
+                            presentedURL: $presentedUrl,
+                            parentSnippet: $parentSnippet
                         )
                         .id(snippet.id)
                         // The actual URL changed for the same Snippet ~ redraw is required
@@ -91,8 +108,8 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
-                        .sheet(item: $state.presentedUrl, id: \.absoluteString, onDismiss: { state.presentedUrl = nil }) { url in
-                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState)
+                        .sheet(item: $presentedUrl, id: \.absoluteString, onDismiss: { presentedUrl = nil }) { url in
+                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet)
                                 .twsLocal()
                         }
                         
@@ -129,7 +146,9 @@ private struct _TWSView: View {
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
     @Bindable var state: TWSViewState
-
+    @Binding var presentedURL: URL?
+    @Binding var parentSnippet: TWSSnippet?
+    
     @State var height: CGFloat = 16
     @State private var networkObserver = NetworkMonitor()
     @State private var openURL: URL?
@@ -144,13 +163,17 @@ private struct _TWSView: View {
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID id: String,
-        state: Bindable<TWSViewState>
+        state: Bindable<TWSViewState>,
+        presentedURL: Binding<URL?>,
+        parentSnippet: Binding<TWSSnippet?>
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._state = state
+        self._presentedURL = presentedURL
+        self._parentSnippet = parentSnippet
     }
 
     var body: some View {
@@ -175,7 +198,9 @@ private struct _TWSView: View {
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
             downloadCompleted: onDownloadCompleted,
-            state: $state
+            state: $state,
+            presentedUrl: $presentedURL,
+            parentSnippet: $parentSnippet
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
