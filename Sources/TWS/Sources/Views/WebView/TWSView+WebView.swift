@@ -124,7 +124,7 @@ struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         
-        if navigator.delegate == nil {
+        if state.presentedUrl == nil {
             navigator.delegate = context.coordinator
         }
 
