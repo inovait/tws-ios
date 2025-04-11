@@ -138,7 +138,12 @@ public struct TWSSnippetsFeature: Sendable {
             let currentResources = Set(state.preloadedResources.keys)
             let newResources = _getResources(of: project.project)
             for resource in currentResources.subtracting(newResources) {
+                #if TESTING
+                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+                state.preloadedResources.removeValue(forKey: resource)
+                #else
                 state.$preloadedResources.withLock { _ = $0.removeValue(forKey: resource) }
+                #endif
             }
 
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
@@ -314,7 +319,11 @@ public struct TWSSnippetsFeature: Sendable {
             switch delegateAction {
             case let .resourcesUpdated(resources):
                 resources.forEach { resource in
+                    #if TESTING
+                    state.preloadedResources[resource.key] = resource.value
+                    #else
                     state.$preloadedResources[resource.key].withLock { $0 = resource.value }
+                    #endif
                 }
                 return .none
             }

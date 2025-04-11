@@ -66,7 +66,7 @@ public struct TWSView: View {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
                         .onAppear {
-                            store.send(.business(.preload))
+                            store.send(.view(.openedTWSView))
                         }
                 } else {
                     ZStack {

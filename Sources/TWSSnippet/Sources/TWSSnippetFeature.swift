@@ -63,6 +63,11 @@ public struct TWSSnippetFeature: Sendable {
             case preload
             case preloadCompleted([TWSSnippet.Attachment: String])
         }
+        
+        @CasePathable
+        public enum View {
+            case openedTWSView
+        }
 
         @CasePathable
         public enum Delegate {
@@ -71,6 +76,7 @@ public struct TWSSnippetFeature: Sendable {
 
         case business(Business)
         case delegate(Delegate)
+        case view(View)
     }
 
     @Dependency(\.api) var api
@@ -79,6 +85,9 @@ public struct TWSSnippetFeature: Sendable {
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
+        case .view(.openedTWSView):
+            return .send(.business(.preload))
+            
         case let .business(.snippetUpdated(snippet, preloaded)):
             state.snippet = snippet
             state.preloaded = preloaded
