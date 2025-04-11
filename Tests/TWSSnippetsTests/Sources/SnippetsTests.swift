@@ -337,7 +337,7 @@ final class SnippetsTests: XCTestCase {
             $0.state = .loading
         }
         
-        await store.receive(\.business.projectLoaded) {
+        await store.receive(\.business.projectLoaded.success) {
             $0.socketURL = self.socketURL
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0, preloaded: false) })
             $0.state = .loaded
@@ -376,8 +376,88 @@ final class SnippetsTests: XCTestCase {
                 .init(url: snippets[1].target, contentType: .html) : snippets[1].target.absoluteString
             ]
         }
+    }
     
+    @MainActor
+    func testResourceChanged() async throws {
+        let s1ID = "1"
+
+        let snippets: [TWSSnippet] = [
+            .init(id: s1ID, target: URL(string: "https://www.google.com")!)
+        ]
+
+        let state = TWSSnippetsFeature.State(configuration: configuration)
+        let project = TWSProject(listenOn: socketURL, snippets: snippets)
+        let bundle = TWSProjectBundle(project: project, serverDate: nil)
+
+        let store = TestStore(
+            initialState: state,
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getProject = { _ in (project, nil)}
+                $0.api.getResource = { url,_ in return url.url.absoluteString }
+                $0.date.now = Date()
+            }
+        )
         
+        await store.send(.business(.load)) {
+            $0.state = .loading
+        }
+        
+        await store.receive(\.business.projectLoaded) {
+            $0.socketURL = self.socketURL
+            $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0, preloaded: false) })
+            $0.state = .loaded
+        }
+        await store.receive(\.business.startVisibilityTimers)
+        
+        // Open first snippet
+        await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        // Observe preloaded resources, only first should appear
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [ .init(url: snippets[0].target, contentType: .html) : snippets[0].target.absoluteString]
+        }
+        
+        let changedSnippets: [TWSSnippet] = [
+            TWSSnippet(id: s1ID, target: URL(string: "https://www.24ur.com")!)
+        ]
+        let changedProject = TWSProject(listenOn: socketURL, snippets: changedSnippets)
+        store.dependencies.api.getProject = { _ in (changedProject, nil)}
+        
+        await store.send(\.business.load) {
+            $0.state = .loading
+        }
+        await store.receive(\.business.projectLoaded.success) {
+            $0.socketURL = self.socketURL
+            $0.snippets = .init(uniqueElements: changedSnippets.map { .init(snippet: $0, preloaded: true) })
+            $0.preloadedResources = [:]
+            $0.state = .loaded
+        }
+        await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.snippets[id: s1ID].business.snippetUpdated) {
+            $0.snippets[id: s1ID]?.preloaded = false
+        }
+        
+        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        
+        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.isPreloading = false
+        }
+        
+        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [ .init(url: changedSnippets[0].target, contentType: .html) : changedSnippets[0].target.absoluteString]
+        }
     }
 }
 
