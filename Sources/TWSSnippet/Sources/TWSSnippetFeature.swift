@@ -14,18 +14,16 @@ public struct TWSSnippetFeature: Sendable {
         }
 
         public var snippet: TWSSnippet
-        public var preloaded: Bool
+        public var preloaded: Bool = false
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
 
         var isPreloading = false
 
         public init(
-            snippet: TWSSnippet,
-            preloaded: Bool
+            snippet: TWSSnippet
         ) {
             self.snippet = snippet
-            self.preloaded = preloaded
         }
 
         public init(from decoder: any Decoder) throws {
@@ -34,10 +32,9 @@ public struct TWSSnippetFeature: Sendable {
             // MARK: - Persistent properties ~ match with init
 
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
-            preloaded = try container.decode(Bool.self, forKey: .preloaded)
 
             // MARK: - Non-persistent properties - Reset on init
-
+            preloaded = false
             isVisible = true
             isPreloading = false
             localProps = .dictionary([:])
@@ -57,7 +54,7 @@ public struct TWSSnippetFeature: Sendable {
 
         @CasePathable
         public enum Business {
-            case snippetUpdated(snippet: TWSSnippet, preloaded: Bool)
+            case snippetUpdated(snippet: TWSSnippet)
             case showSnippet
             case hideSnippet
             case preload
@@ -88,9 +85,9 @@ public struct TWSSnippetFeature: Sendable {
         case .view(.openedTWSView):
             return .send(.business(.preload))
             
-        case let .business(.snippetUpdated(snippet, preloaded)):
+        case let .business(.snippetUpdated(snippet)):
             state.snippet = snippet
-            state.preloaded = preloaded
+            state.preloaded = false
             state.isVisible = true
             if snippet != state.snippet {
                 logger.info("Snippet updated from \(state.snippet) to \(snippet).")
@@ -98,8 +95,7 @@ public struct TWSSnippetFeature: Sendable {
                 logger.info("Snippet's payload changed")
             }
 
-            logger.info("Snippet is preloaded: \(preloaded)")
-            return .send(.business(.preload))
+            return .none
 
         case .business(.hideSnippet):
             state.isVisible = false

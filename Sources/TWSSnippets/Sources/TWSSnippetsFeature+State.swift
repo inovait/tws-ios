@@ -56,7 +56,7 @@ extension TWSSnippetsFeature {
             #if TESTING
             // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             self.snippets = .init(
-                uniqueElements: (snippets ?? []).map { .init(snippet: $0, preloaded: false) }
+                uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
             self.preloadedResources = preloadedResources ?? [:]
             #else
@@ -67,8 +67,7 @@ extension TWSSnippetsFeature {
 
             if let snippets {
                 let state = snippets.map { TWSSnippetFeature.State(
-                    snippet: $0,
-                    preloaded: false
+                    snippet: $0
                 )}
 
                 if let serverTime {

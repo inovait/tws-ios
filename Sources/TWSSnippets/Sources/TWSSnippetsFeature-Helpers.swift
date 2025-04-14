@@ -83,8 +83,7 @@ extension TWSSnippetsFeature {
                                     .element(
                                         id: message.id,
                                         action: .business(.snippetUpdated(
-                                            snippet: snippet,
-                                            preloaded: snippet.hasResources(for: configuration)
+                                            snippet: snippet
                                         ))
                                     )
                                 )
