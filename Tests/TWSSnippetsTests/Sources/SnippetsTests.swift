@@ -321,7 +321,6 @@ final class SnippetsTests: XCTestCase {
 
         let state = TWSSnippetsFeature.State(configuration: configuration)
         let project = TWSProject(listenOn: socketURL, snippets: snippets)
-        let bundle = TWSProjectBundle(project: project, serverDate: nil)
 
         let store = TestStore(
             initialState: state,
@@ -495,13 +494,13 @@ final class SnippetsTests: XCTestCase {
             .init(id: s1ID, target: URL(string: "https://www.google.com")!)
         ]
         
-        var staticResources = "Static Resource"
+        let staticResources = "Static Resource"
         
         // Mock persistant storages
         var cachedSnippets: [TWSSnippet] = []
         var cachedPreloadedResources: [TWSSnippet.Attachment: String] = [:]
         
-        var storeFirstLaunch = TestStore(
+        let storeFirstLaunch = TestStore(
             initialState: TWSSnippetsFeature.State(
                 configuration: configuration,
                 snippets: cachedSnippets,

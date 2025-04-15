@@ -259,8 +259,7 @@ public struct TWSSnippetsFeature: Sendable {
                     try await listen(
                         connectionID: connectionID,
                         stream: stream,
-                        send: send,
-                        configuration: config
+                        send: send
                     )
                 } catch {
                     logger.info("Stopped listening: \(error)")
