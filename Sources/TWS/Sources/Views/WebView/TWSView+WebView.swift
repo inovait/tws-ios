@@ -215,7 +215,9 @@ struct WebView: UIViewRepresentable {
             context.coordinator.redirectedToSafari = false
             
             print("URL to open: \(openURL), from snippet with target \(targetURL)")
-            navigator.load(url: URLRequest(url: openURL))
+            // Try closing any presented views
+            presentedUrl = nil
+            //navigator.load(url: URLRequest(url: openURL))
             uiView.load(URLRequest(url: openURL))
         }
 
