@@ -143,8 +143,13 @@ struct WebView: UIViewRepresentable {
             }
         }
 
-        // Process content on first load
-        loadProcessedContent(webView: webView)
+        if let navigationAction = state.navigationAction {
+            webView.load(navigationAction.request)
+        } else {
+            // Process content on first load
+            loadProcessedContent(webView: webView)
+        }
+        
         context.coordinator.observe(heightOf: webView)
         context.coordinator.observe(currentUrlOf: webView)
         context.coordinator.webView = webView
@@ -171,7 +176,8 @@ struct WebView: UIViewRepresentable {
             navigationProvider: navigationProvider,
             downloadCompleted: downloadCompleted,
             interceptor: interceptor,
-            presentedUrl: $presentedUrl
+            presentedUrl: $presentedUrl,
+            state: $state
         )
     }
 

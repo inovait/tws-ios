@@ -31,6 +31,7 @@ extension WebView {
         var openURL: URL?
         var downloadInfo = TWSDownloadInfo()
         @Binding var presentedUrl : URL?
+        @Bindable var state: TWSViewState
 
         let id = UUID().uuidString.suffix(4)
         let snippetHeightProvider: SnippetHeightProvider
@@ -46,7 +47,8 @@ extension WebView {
             navigationProvider: NavigationProvider,
             downloadCompleted: ((TWSDownloadState) -> Void)?,
             interceptor: TWSViewInterceptor?,
-            presentedUrl: Binding<URL?>
+            presentedUrl: Binding<URL?>,
+            state: Bindable<TWSViewState>
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
@@ -55,6 +57,7 @@ extension WebView {
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
             self._presentedUrl = presentedUrl
+            self._state = state
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }

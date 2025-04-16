@@ -32,6 +32,7 @@ extension WebView.Coordinator: WKUIDelegate {
         logger.debug(msg)
 
         presentedUrl = navigationAction.request.url
+        state.navigationAction = navigationAction
         return nil
     }
 
