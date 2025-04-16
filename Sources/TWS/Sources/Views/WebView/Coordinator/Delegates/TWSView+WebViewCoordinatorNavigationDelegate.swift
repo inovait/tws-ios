@@ -142,6 +142,14 @@ extension WebView.Coordinator: WKNavigationDelegate {
             decisionHandler(.download, preferences)
             return
         }
+        
+        if let url = navigationAction.request.url, let scheme = url.scheme, !WKWebView.handlesURLScheme(scheme) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            }
+            decisionHandler(.cancel, preferences)
+            return
+        }
 
         decisionHandler(.allow, preferences)
     }
