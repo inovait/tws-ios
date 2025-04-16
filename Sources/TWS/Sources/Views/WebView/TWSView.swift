@@ -18,6 +18,7 @@ import SwiftUI
 @_spi(Internals) import TWSModels
 internal import ComposableArchitecture
 internal import TWSSnippet
+import WebKit
 
 /// The main view to use to display snippets
 public struct TWSView: View {
@@ -34,6 +35,7 @@ public struct TWSView: View {
     @State private var presentedTWSViewState: TWSViewState = .init()
     @State private var presentedUrl: URL? = nil
     @State private var parentSnippet: TWSSnippet? = nil
+    @State private var navigationAction: WKNavigationAction? = nil
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -63,10 +65,12 @@ public struct TWSView: View {
     private init(
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
-        parentSnippet: TWSSnippet
+        parentSnippet: TWSSnippet,
+        navigationAction: WKNavigationAction? = nil
     ) {
         self.snippet = snippet
         self._state = state
+        self.navigationAction = navigationAction
         self.parentSnippet = parentSnippet
         self.cssOverrides = []
         self.jsOverrides = []
@@ -109,7 +113,7 @@ public struct TWSView: View {
                             displayID: displayID
                         )
                         .sheet(item: $presentedUrl, id: \.absoluteString, onDismiss: { presentedUrl = nil }) { url in
-                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet)
+                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet, navigationAction: state.navigationAction)
                                 .twsLocal()
                         }
                         
