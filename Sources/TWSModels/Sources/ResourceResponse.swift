@@ -1,4 +1,4 @@
-//
+////
 //  Copyright 2024 INOVA IT d.o.o.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,13 @@
 //
 
 import Foundation
-import TWSModels
-internal import ComposableArchitecture
-internal import TWSSnippet
 
-@MainActor
-protocol TWSPresenter {
-
-    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { get }
-    var navigationProvider: NavigationProvider { get }
-    var heightProvider: SnippetHeightProvider { get }
-
-    func isVisible(snippet: TWSSnippet) -> Bool
-    func resourcesHash(for snippet: TWSSnippet) -> Int
-    func handleIncomingUrl(_ url: URL)
-    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?
+public struct ResourceResponse: Sendable, Equatable, Codable, Hashable {
+    public let responseUrl: URL?
+    public let data: String
+    
+    public init(responseUrl: URL?, data: String) {
+        self.responseUrl = responseUrl
+        self.data = data
+    }
 }

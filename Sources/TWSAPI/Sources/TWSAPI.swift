@@ -18,7 +18,7 @@ public struct TWSAPI {
 
     public let getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
-    ) async throws(APIError) -> String
+    ) async throws(APIError) -> ResourceResponse
 
     static func live(
         baseUrl: TWSBaseUrl
@@ -87,18 +87,20 @@ public struct TWSAPI {
                 }
             },
             getResource: { attachment, headers throws(APIError) in
+                let queryItems = URLComponents(url: attachment.url, resolvingAgainstBaseURL: false)?.queryItems
+                
                 let result = try await Router.make(request: .init(
                     method: .get,
                     scheme: attachment.url.scheme ?? "https",
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
-                    queryItems: [],
+                    queryItems: queryItems ?? [],
                     headers: headers,
                     auth: false
                 ))
 
                 if let payload = String(data: result.data, encoding: .utf8) {
-                    return payload
+                    return ResourceResponse(responseUrl: result.responseUrl, data: payload)
                 }
 
                 throw .decode(NSError(domain: "invalid-string", code: -1))

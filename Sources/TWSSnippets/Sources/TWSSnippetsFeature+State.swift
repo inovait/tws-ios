@@ -34,7 +34,7 @@ extension TWSSnippetsFeature {
         #endif
 
         @ObservationStateIgnored
-        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
 
         @ObservationStateIgnored
         @Sharing.Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
@@ -45,7 +45,7 @@ extension TWSSnippetsFeature {
         public init(
             configuration: any TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
-            preloadedResources: [TWSSnippet.Attachment: String]? = nil,
+            preloadedResources: [TWSSnippet.Attachment: ResourceResponse]? = nil,
             socketURL: URL? = nil,
             serverTime: Date? = nil
         ) {

@@ -32,7 +32,7 @@ struct WebView: UIViewRepresentable {
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
-    let preloadedResources: [TWSSnippet.Attachment: String]
+    let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
@@ -47,7 +47,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
-        preloadedResources: [TWSSnippet.Attachment: String],
+        preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
@@ -220,9 +220,6 @@ struct WebView: UIViewRepresentable {
 
             context.coordinator.redirectedToSafari = false
             
-            print("URL to open: \(openURL), from snippet with target \(targetURL)")
-            
-            // Load url either in a presented Child view or in a view with no children
             if parentSnippet != nil {
                 uiView.load(URLRequest(url: openURL))
             } else if parentSnippet == nil && presentedUrl == nil {
@@ -265,8 +262,8 @@ struct WebView: UIViewRepresentable {
         
         if let preloaded = preloadedResources[key] {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
-            webView.loadSimulatedRequest(URLRequest(url: self.targetURL), responseHTML: htmlToLoad)
+            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
+            webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
             var urlRequest = URLRequest(url: self.targetURL)
@@ -280,7 +277,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectCSS(
         to controller: WKUserContentController,
         rawCSS: [TWSRawCSS],
-        andPreloadedAttachments resources: [TWSSnippet.Attachment: String],
+        andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -291,7 +288,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .css }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawCSS($0.value) }
+            .map { TWSRawCSS($0.value.data) }
 
         for css in preloaded + rawCSS {
             let value = css.value
@@ -320,7 +317,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectJS(
         to controller: WKUserContentController,
         rawJS: [TWSRawJS],
-        andPreloadedResources resources: [TWSSnippet.Attachment: String],
+        andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -331,7 +328,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .javascript }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawJS($0.value) }
+            .map { TWSRawJS($0.value.data) }
 
         for jvs in preloaded + rawJS {
             let value = jvs.value
