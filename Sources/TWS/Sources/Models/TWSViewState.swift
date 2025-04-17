@@ -61,8 +61,6 @@ public final class TWSViewState {
     /// URL that is currently displayed in TWSView
     public var currentUrl: URL? = nil
     
-    public var navigationAction: WKNavigationAction? = nil
-    
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page
     /// - Parameter loadingState: the initial state for the loading state

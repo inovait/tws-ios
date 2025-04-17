@@ -28,6 +28,7 @@ struct WebView: UIViewRepresentable {
     @Bindable var state: TWSViewState
     @Binding var presentedUrl: URL?
     @Binding var parentSnippet: TWSSnippet?
+    @Binding var navigation: URLRequest?
 
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
@@ -64,7 +65,8 @@ struct WebView: UIViewRepresentable {
         downloadCompleted: ((TWSDownloadState) -> Void)?,
         state: Bindable<TWSViewState>,
         presentedUrl: Binding<URL?>,
-        parentSnippet: Binding<TWSSnippet?>
+        parentSnippet: Binding<TWSSnippet?>,
+        navigation: Binding<URLRequest?>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -86,6 +88,7 @@ struct WebView: UIViewRepresentable {
         self._state = state
         self._presentedUrl = presentedUrl
         self._parentSnippet = parentSnippet
+        self._navigation = navigation
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -143,8 +146,8 @@ struct WebView: UIViewRepresentable {
             }
         }
 
-        if let navigationAction = state.navigationAction {
-            webView.load(navigationAction.request)
+        if let request = navigation, parentSnippet != nil {
+            webView.load(request)
         } else {
             // Process content on first load
             loadProcessedContent(webView: webView)
@@ -177,7 +180,8 @@ struct WebView: UIViewRepresentable {
             downloadCompleted: downloadCompleted,
             interceptor: interceptor,
             presentedUrl: $presentedUrl,
-            state: $state
+            state: $state,
+            navigation: $navigation
         )
     }
 

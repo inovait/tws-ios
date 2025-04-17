@@ -35,7 +35,7 @@ public struct TWSView: View {
     @State private var presentedTWSViewState: TWSViewState = .init()
     @State private var presentedUrl: URL? = nil
     @State private var parentSnippet: TWSSnippet? = nil
-    @State private var navigationAction: WKNavigationAction? = nil
+    @State private var navigation: URLRequest? = nil
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -66,11 +66,11 @@ public struct TWSView: View {
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
         parentSnippet: TWSSnippet,
-        navigationAction: WKNavigationAction? = nil
+        navigation: URLRequest? = nil
     ) {
         self.snippet = snippet
         self._state = state
-        self.navigationAction = navigationAction
+        self.navigation = navigation
         self.parentSnippet = parentSnippet
         self.cssOverrides = []
         self.jsOverrides = []
@@ -93,7 +93,8 @@ public struct TWSView: View {
                             displayID: displayID,
                             state: $state,
                             presentedURL: $presentedUrl,
-                            parentSnippet: $parentSnippet
+                            parentSnippet: $parentSnippet,
+                            navigation: $navigation
                         )
                         .id(snippet.id)
                         // The actual URL changed for the same Snippet ~ redraw is required
@@ -113,9 +114,10 @@ public struct TWSView: View {
                             displayID: displayID
                         )
                         .sheet(item: $presentedUrl, id: \.absoluteString, onDismiss: { presentedUrl = nil }) { url in
-                            childState.navigationAction = navigationAction
-                            return TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet, navigationAction: state.navigationAction)
-                                .twsLocal()
+                            if let navigation {
+                                TWSView(snippet: TWSSnippet(id: url.debugDescription, target: url), state: $childState, parentSnippet: snippet, navigation: navigation)
+                                    .twsLocal()
+                            }
                         }
                         
                         ZStack {
@@ -153,6 +155,7 @@ private struct _TWSView: View {
     @Bindable var state: TWSViewState
     @Binding var presentedURL: URL?
     @Binding var parentSnippet: TWSSnippet?
+    @Binding var navigation: URLRequest?
     
     @State var height: CGFloat = 16
     @State private var networkObserver = NetworkMonitor()
@@ -170,7 +173,8 @@ private struct _TWSView: View {
         displayID id: String,
         state: Bindable<TWSViewState>,
         presentedURL: Binding<URL?>,
-        parentSnippet: Binding<TWSSnippet?>
+        parentSnippet: Binding<TWSSnippet?>,
+        navigation: Binding<URLRequest?>
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
@@ -179,6 +183,7 @@ private struct _TWSView: View {
         self._state = state
         self._presentedURL = presentedURL
         self._parentSnippet = parentSnippet
+        self._navigation = navigation
     }
 
     var body: some View {
@@ -205,7 +210,8 @@ private struct _TWSView: View {
             downloadCompleted: onDownloadCompleted,
             state: $state,
             presentedUrl: $presentedURL,
-            parentSnippet: $parentSnippet
+            parentSnippet: $parentSnippet,
+            navigation: $navigation
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }

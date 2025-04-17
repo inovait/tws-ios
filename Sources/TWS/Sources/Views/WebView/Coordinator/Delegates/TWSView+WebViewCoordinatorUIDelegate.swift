@@ -30,9 +30,9 @@ extension WebView.Coordinator: WKUIDelegate {
         msg += ", window features: \(windowFeatures)"
 
         logger.debug(msg)
-
+        
         presentedUrl = navigationAction.request.url
-        state.navigationAction = navigationAction
+        navigation = navigationAction.request
         return nil
     }
 
