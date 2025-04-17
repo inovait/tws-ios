@@ -113,7 +113,8 @@ public struct TWSView: View {
                             displayID: displayID
                         )
                         .sheet(item: $presentedUrl, id: \.absoluteString, onDismiss: { presentedUrl = nil }) { url in
-                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet, navigationAction: state.navigationAction)
+                            childState.navigationAction = navigationAction
+                            return TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState, parentSnippet: snippet, navigationAction: state.navigationAction)
                                 .twsLocal()
                         }
                         
