@@ -221,11 +221,13 @@ struct WebView: UIViewRepresentable {
             context.coordinator.redirectedToSafari = false
             
             if parentSnippet != nil {
-                uiView.load(URLRequest(url: openURL))
-            } else if parentSnippet == nil && presentedUrl == nil {
-                uiView.load(URLRequest(url: openURL))
+                do {
+                    print("URL to open \(openURL)")
+                    try uiView.load(URLRequest(url: openURL))
+                } catch {
+                    print("load failed: \(error)")
+                }
             }
-                        
         }
 
         // Update state
