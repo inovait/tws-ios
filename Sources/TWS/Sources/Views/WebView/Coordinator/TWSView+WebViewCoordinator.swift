@@ -30,8 +30,6 @@ extension WebView {
         var redirectedToSafari = false
         var openURL: URL?
         var downloadInfo = TWSDownloadInfo()
-        @Binding var navigation: URLRequest?
-        @Binding var presentedUrl : URL?
         @Bindable var state: TWSViewState
 
         let id = UUID().uuidString.suffix(4)
@@ -48,9 +46,7 @@ extension WebView {
             navigationProvider: NavigationProvider,
             downloadCompleted: ((TWSDownloadState) -> Void)?,
             interceptor: TWSViewInterceptor?,
-            presentedUrl: Binding<URL?>,
             state: Bindable<TWSViewState>,
-            navigation: Binding<URLRequest?>
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
@@ -58,9 +54,7 @@ extension WebView {
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
-            self._presentedUrl = presentedUrl
             self._state = state
-            self._navigation = navigation
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
@@ -113,7 +107,10 @@ extension WebView {
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    self?.parent.state.currentUrl = url
+                    guard let coordinator = self else { return }
+                    if coordinator.parent.wkWebView == webview {
+                        coordinator.parent.state.currentUrl = url
+                    }
                 }
             }
         }

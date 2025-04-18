@@ -26,9 +26,8 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Bindable var state: TWSViewState
-    @Binding var presentedUrl: URL?
-    @Binding var parentSnippet: TWSSnippet?
-    @Binding var navigation: URLRequest?
+    // This helps distinguish between parent and modal views
+    @State var wkWebView: WKWebView? = nil
 
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
@@ -63,10 +62,7 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        state: Bindable<TWSViewState>,
-        presentedUrl: Binding<URL?>,
-        parentSnippet: Binding<TWSSnippet?>,
-        navigation: Binding<URLRequest?>
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -86,9 +82,6 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self.downloadCompleted = downloadCompleted
         self._state = state
-        self._presentedUrl = presentedUrl
-        self._parentSnippet = parentSnippet
-        self._navigation = navigation
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -132,10 +125,6 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        
-        if parentSnippet == nil {
-            navigator.delegate = context.coordinator
-        }
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
@@ -146,13 +135,8 @@ struct WebView: UIViewRepresentable {
             }
         }
 
-        if let request = navigation, parentSnippet != nil {
-            webView.load(request)
-        } else {
-            // Process content on first load
-            loadProcessedContent(webView: webView)
-        }
-        
+        // Process content on first load
+        loadProcessedContent(webView: webView)
         context.coordinator.observe(heightOf: webView)
         context.coordinator.observe(currentUrlOf: webView)
         context.coordinator.webView = webView
@@ -168,7 +152,12 @@ struct WebView: UIViewRepresentable {
                 to: locationServicesBridge
             )
         }
-
+        
+        // Hold reference to created WKWebView to know which view is parent and which are presentable children
+        Task {
+            wkWebView = webView
+        }
+        
         return webView
     }
 
@@ -179,9 +168,7 @@ struct WebView: UIViewRepresentable {
             navigationProvider: navigationProvider,
             downloadCompleted: downloadCompleted,
             interceptor: interceptor,
-            presentedUrl: $presentedUrl,
-            state: $state,
-            navigation: $navigation
+            state: $state
         )
     }
 
@@ -220,17 +207,16 @@ struct WebView: UIViewRepresentable {
         if
             context.coordinator.redirectedToSafari,
             let openURL,
-            openURL != context.coordinator.openURL {
-
+            openURL != context.coordinator.openURL
+            {
             context.coordinator.redirectedToSafari = false
             
-            if parentSnippet != nil {
-                do {
-                    print("URL to open \(openURL)")
-                    try uiView.load(URLRequest(url: openURL))
-                } catch {
-                    print("load failed: \(error)")
-                }
+            do {
+                try navigationProvider.continueNavigation(with: openURL, from: uiView)
+            } catch NavigationError.viewControllerNotFound {
+                uiView.load(URLRequest(url: openURL))
+            } catch {
+                logger.err("Failed to continue navigation: \(error)")
             }
         }
 

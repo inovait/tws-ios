@@ -31,14 +31,40 @@ extension WebView.Coordinator: WKUIDelegate {
 
         logger.debug(msg)
         
-        presentedUrl = navigationAction.request.url
-        navigation = navigationAction.request
-        return nil
+        let newWebView = WKWebView(frame: webView.frame, configuration: configuration)
+        newWebView.allowsBackForwardNavigationGestures = true
+        newWebView.scrollView.bounces = false
+        newWebView.scrollView.isScrollEnabled = true
+        newWebView.navigationDelegate = self
+        newWebView.uiDelegate = self
+        newWebView.load(navigationAction.request)
+
+        do {
+            try navigationProvider.present(
+                webView: newWebView,
+                on: webView,
+                animated: true,
+                completion: nil
+            )
+
+            return newWebView
+        } catch {
+            logger.err("[UI \(webView.hash)] Failed to create a new web view: \(error)")
+            return nil
+        }
     }
 
     public func webViewDidClose(_ webView: WKWebView) {
         logger.debug("[UI \(webView.hash)] Web view did close")
-        presentedUrl = nil
+        do {
+            try navigationProvider.didClose(
+                webView: webView,
+                animated: true,
+                completion: nil
+            )
+        } catch {
+            logger.err("[UI \(webView.hash)] Failed to close the web view: \(webView)")
+        }
     }
 
     public func webView(
