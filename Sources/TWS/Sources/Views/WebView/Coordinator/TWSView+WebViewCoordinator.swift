@@ -46,7 +46,7 @@ extension WebView {
             navigationProvider: NavigationProvider,
             downloadCompleted: ((TWSDownloadState) -> Void)?,
             interceptor: TWSViewInterceptor?,
-            state: Bindable<TWSViewState>,
+            state: Bindable<TWSViewState>
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider

@@ -83,7 +83,7 @@ final class ResourcesAggregationTests: XCTestCase {
             withDependencies: {
                 $0.api.getSharedToken = { @Sendable _ in return "" }
                 $0.api.getSnippetBySharedToken = { @Sendable (_: String) in return (project, nil) }
-                $0.api.getResource = { attachment, _ in return attachment.url.absoluteString }
+                $0.api.getResource = { attachment, _ in return ResourceResponse(responseUrl: attachment.url, data: attachment.url.absoluteString)  }
             }
         )
 
