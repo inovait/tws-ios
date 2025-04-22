@@ -45,7 +45,7 @@ public struct APIDependency: Sendable {
 
     public var getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
-    ) async throws(APIError) -> String = { _, _ throws(APIError) in
+    ) async throws(APIError) -> ResourceResponse = { _, _ throws(APIError) in
         reportIssue("\(Self.self).loadResource")
         throw APIError.local(NSError(domain: "", code: -1))
     }
@@ -67,13 +67,13 @@ public enum APIDependencyKey: DependencyKey {
 
     public static var testValue: APIDependency {
         .init { _ in
-            unimplemented("\(Self.self).getProject", placeholder: (.init(listenOn: URL(string: "")!, snippets: []), nil))
+            unimplemented("\(Self.self).getProject", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
         } getSharedToken: { _ in
             unimplemented("\(Self.self).getSharedToken", placeholder: "")
         } getSnippetBySharedToken: { _ in
-            unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "")!, snippets: []), nil))
+            unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
         } getResource: { _, _ in
-            unimplemented("\(Self.self).getResource", placeholder: "")
+            unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
         }
     }
 }

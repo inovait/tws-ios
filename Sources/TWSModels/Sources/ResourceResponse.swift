@@ -1,4 +1,4 @@
-//
+////
 //  Copyright 2024 INOVA IT d.o.o.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,12 @@
 
 import Foundation
 
-enum NavigationError: Error {
-
-    case parentNotFound
-    case viewControllerNotFound
-    case presentedViewControllerNotFound
-    case alreadyPresenting
+public struct ResourceResponse: Sendable, Equatable, Codable, Hashable {
+    public let responseUrl: URL?
+    public let data: String
+    
+    public init(responseUrl: URL?, data: String) {
+        self.responseUrl = responseUrl
+        self.data = data
+    }
 }

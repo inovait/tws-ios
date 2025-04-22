@@ -25,13 +25,14 @@ struct WebView: UIViewRepresentable {
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
-    @Binding var loadingState: TWSLoadingState
-    @Binding var pageTitle: String
+    @Bindable var state: TWSViewState
+    // This helps distinguish between parent and modal views
+    @State var wkWebView: WKWebView? = nil
 
     var id: String { snippet.id }
-    var url: URL { snippet.target }
+    var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
-    let preloadedResources: [TWSSnippet.Attachment: String]
+    let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
@@ -46,7 +47,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
-        preloadedResources: [TWSSnippet.Attachment: String],
+        preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
@@ -54,15 +55,14 @@ struct WebView: UIViewRepresentable {
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
-        pageTitle: Binding<String>,
         openURL: URL?,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
         onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
-        loadingState: Binding<TWSLoadingState>,
-        downloadCompleted: ((TWSDownloadState) -> Void)?
+        downloadCompleted: ((TWSDownloadState) -> Void)?,
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -73,7 +73,6 @@ struct WebView: UIViewRepresentable {
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
-        self._pageTitle = pageTitle
         self.openURL = openURL
         self.snippetHeightProvider = snippetHeightProvider
         self.navigationProvider = navigationProvider
@@ -81,8 +80,8 @@ struct WebView: UIViewRepresentable {
         self._dynamicHeight = dynamicHeight
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward
-        self._loadingState = loadingState
         self.downloadCompleted = downloadCompleted
+        self._state = state
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -112,10 +111,7 @@ struct WebView: UIViewRepresentable {
         )
 
         // Location Permissions
-
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
-
-        //
 
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
@@ -133,27 +129,36 @@ struct WebView: UIViewRepresentable {
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
-            loadProcessedContent(webView: webView)
+            if let currentUrl = state.currentUrl, currentUrl != targetURL {
+                webView.load(URLRequest(url: currentUrl))
+            } else {
+                loadProcessedContent(webView: webView)
+            }
         }
 
         // Process content on first load
         loadProcessedContent(webView: webView)
         context.coordinator.observe(heightOf: webView)
+        context.coordinator.observe(currentUrlOf: webView)
         context.coordinator.webView = webView
 
         updateState(for: webView, loadingState: .loading)
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
-
+        
         // Binding for permissions
-
         Task {
             await locationPermissionsHandler.bind(
                 webView: webView,
                 to: locationServicesBridge
             )
         }
-
+        
+        // Hold reference to created WKWebView to know which view is parent and which are presentable children
+        Task {
+            wkWebView = webView
+        }
+        
         return webView
     }
 
@@ -163,12 +168,16 @@ struct WebView: UIViewRepresentable {
             snippetHeightProvider: snippetHeightProvider,
             navigationProvider: navigationProvider,
             downloadCompleted: downloadCompleted,
-            interceptor: interceptor
+            interceptor: interceptor,
+            state: $state
         )
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         logger.debug("DEINIT WKWebView \(uiView.hash)")
+        uiView.navigationDelegate = nil
+        uiView.uiDelegate = nil
+        uiView.configuration.userContentController.removeAllScriptMessageHandlers()
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
@@ -184,10 +193,10 @@ struct WebView: UIViewRepresentable {
         let regainedNetworkConnection = !context.coordinator.isConnectedToNetwork && isConnectedToNetwork
         var stateUpdated: Bool?
 
-        if regainedNetworkConnection, case .failed = loadingState {
+        if regainedNetworkConnection, case .failed = state.loadingState {
             if uiView.url == nil {
                 updateState(for: uiView, loadingState: .loading)
-                uiView.load(URLRequest(url: self.url))
+                uiView.load(URLRequest(url: self.targetURL))
                 stateUpdated = true
             } else if !uiView.isLoading {
                 uiView.reload()
@@ -199,10 +208,10 @@ struct WebView: UIViewRepresentable {
         if
             context.coordinator.redirectedToSafari,
             let openURL,
-            openURL != context.coordinator.openURL {
-
+            openURL != context.coordinator.openURL
+            {
             context.coordinator.redirectedToSafari = false
-
+            
             do {
                 try navigationProvider.continueNavigation(with: openURL, from: uiView)
             } catch NavigationError.viewControllerNotFound {
@@ -236,21 +245,21 @@ struct WebView: UIViewRepresentable {
             }
 
             if let loadingState {
-                self.loadingState = loadingState
+                self.state.loadingState = loadingState
             }
         }
     }
     
     private func loadProcessedContent(webView: WKWebView) {
-        let key = TWSSnippet.Attachment(url: url, contentType: .html)
+        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
         
         if let preloaded = preloadedResources[key] {
-            logger.debug("Load from raw HTML: \(url.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
-            webView.loadHTMLString(htmlToLoad, baseURL: self.url)
+            logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
+            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
+            webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
-            logger.debug("Load from url: \(url.absoluteString)")
-            var urlRequest = URLRequest(url: self.url)
+            logger.debug("Load from url: \(targetURL.absoluteString)")
+            var urlRequest = URLRequest(url: self.targetURL)
             snippet.headers?.forEach { header in
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
             }
@@ -261,7 +270,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectCSS(
         to controller: WKUserContentController,
         rawCSS: [TWSRawCSS],
-        andPreloadedAttachments resources: [TWSSnippet.Attachment: String],
+        andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -272,7 +281,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .css }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawCSS($0.value) }
+            .map { TWSRawCSS($0.value.data) }
 
         for css in preloaded + rawCSS {
             let value = css.value
@@ -301,7 +310,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectJS(
         to controller: WKUserContentController,
         rawJS: [TWSRawJS],
-        andPreloadedResources resources: [TWSSnippet.Attachment: String],
+        andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -312,7 +321,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .javascript }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawJS($0.value) }
+            .map { TWSRawJS($0.value.data) }
 
         for jvs in preloaded + rawJS {
             let value = jvs.value
@@ -357,5 +366,4 @@ struct WebView: UIViewRepresentable {
         
         return preloadedHTML
     }
-
 }

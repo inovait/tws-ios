@@ -1,0 +1,39 @@
+@Tutorial(time: 3) {
+    @Intro(title: "Customize views to fit your application") {
+        Learn how to customize your view to fit your applications profile.
+        Customize loading, preloading and error views.
+    }
+    
+    @Section(title: "Custom loading and error views") {
+        @ContentAndMedia {
+            In this tutorial you will learn how to inject custom views into TWSView to customize loading and error screens.
+        }
+        
+        @Steps {
+            @Step {
+                First lets display a snippet.
+                
+                @Code(name: "CustomView.swift", file: "CustomizingViews_00.swift")
+            }
+            
+            @Step {
+                Lets create a view that will be displayed while the page is loading.
+                
+                @Code(name: "LoadingView.swift", file: "CustomizingViews_01.swift")
+            }
+            
+            @Step {
+                And now a view for the errors.
+                
+                @Code(name: "ErrorView.swift", file: "CustomizingViews_02.swift")
+            }
+            
+            @Step {
+                Now to bring it all together we will bind these two views to TWSView, which will enable them to be used when snippet is reporting an error or being loaded into the frame.
+                > Note: We used LoadingView for both loadingView and preloadingView, because it is best if these two are the same.
+                
+                @Code(name: "CustomView.swift", file: "CustomizingViews_03.swift")
+            }
+        }
+    }
+}

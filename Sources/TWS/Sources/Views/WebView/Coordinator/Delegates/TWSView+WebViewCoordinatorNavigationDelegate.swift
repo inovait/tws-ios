@@ -33,9 +33,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
 
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
-            if let title = result as? String, error == nil {
+            if let title = result as? String, error == nil, self.parent.wkWebView == webView {
                 DispatchQueue.main.async { [weak self] in
-                    self?.parent.pageTitle = title
+                    self?.parent.state.title = title
+                    if let url = webView.url {
+                        self?.parent.state.lastLoadedUrl = url
+                        self?.parent.state.currentUrl = url
+                    }
                 }
             }
         }

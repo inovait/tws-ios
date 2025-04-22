@@ -18,7 +18,11 @@ import Foundation
 import WebKit
 
 extension WebView.Coordinator: TWSViewNavigatorDelegate {
-
+    func load(url: URLRequest) {
+        assert(webView != nil)
+        webView?.load(url)
+    }
+    
     func navigateBack() {
         assert(webView != nil)
         webView?.goBack()
@@ -32,5 +36,19 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     func reload() {
         assert(webView != nil)
         webView?.reload()
+    }
+    
+    func pushState(path: String) {
+        webView?.evaluateJavaScript(
+            """
+            window.history.pushState({}, '', '\(path)');
+            window.dispatchEvent(new Event('popstate'));
+            """
+        )
+    }
+    
+    func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
+        assert(webView != nil)
+        webView?.evaluateJavaScript(script, completionHandler: completionHandler)
     }
 }

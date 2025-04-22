@@ -30,7 +30,7 @@ extension WebView.Coordinator: WKUIDelegate {
         msg += ", window features: \(windowFeatures)"
 
         logger.debug(msg)
-
+        
         let newWebView = WKWebView(frame: webView.frame, configuration: configuration)
         newWebView.allowsBackForwardNavigationGestures = true
         newWebView.scrollView.bounces = false

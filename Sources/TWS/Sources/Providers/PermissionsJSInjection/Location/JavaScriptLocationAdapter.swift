@@ -42,7 +42,10 @@ class JavaScriptLocationMessageHandler: NSObject, WKScriptMessageHandler {
             return
         }
 
-        Task { await adapter._handle(message: message) }
+        Task { [weak self] in
+            guard let self else { return }
+            await self.adapter._handle(message: message)
+        }
     }
 }
 

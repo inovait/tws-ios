@@ -44,6 +44,7 @@ protocol NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError)
+
 }
 
 class NavigationProviderImpl: NavigationProvider {
@@ -87,12 +88,13 @@ class NavigationProviderImpl: NavigationProvider {
         parent.present(alert, animated: animated, completion: completion)
         return true
     }
-
+    
     func didClose(
         webView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
+        
         guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
         else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
@@ -106,6 +108,7 @@ class NavigationProviderImpl: NavigationProvider {
         else { throw .presentedViewControllerNotFound }
         webView.load(URLRequest(url: url))
     }
+
 }
 
 // MARK: - Helpers
@@ -129,4 +132,12 @@ private struct DestinationInfo {
     weak var viewController: UIViewController?
     weak var presentedWebView: WKWebView?
     weak var parentWebView: WKWebView?
+}
+
+enum NavigationError: Error {
+
+    case parentNotFound
+    case viewControllerNotFound
+    case presentedViewControllerNotFound
+    case alreadyPresenting
 }

@@ -4,7 +4,7 @@ Transform Your Website into a Powerful Mobile App in Minutes.
 
 @Metadata {
     @CallToAction(
-        url: "https://github.com/inovait/tws-ios", 
+        url: "https://inovait.github.io/tws-ios", 
         purpose: link
     )
     
@@ -47,8 +47,8 @@ Effortlessly transform your website into a mobile app with our SDK:
 ### Tutorials
 
 - <doc:Tutorial-Table-of-Contents>
-- <doc:GettingStarted>
 - <doc:LocalSnippet>
+- <doc:RemoteSnippet>
 - <doc:MixAndMatch>
 
 ## See Also

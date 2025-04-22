@@ -16,6 +16,7 @@
 
 import Foundation
 import WebKit
+import SwiftUI
 
 extension WebView {
 
@@ -24,17 +25,18 @@ extension WebView {
 
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
+        var urlObserver: NSKeyValueObservation?
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
         var downloadInfo = TWSDownloadInfo()
+        @Bindable var state: TWSViewState
 
         let id = UUID().uuidString.suffix(4)
         let snippetHeightProvider: SnippetHeightProvider
         let navigationProvider: NavigationProvider
         let downloadCompleted: ((TWSDownloadState) -> Void)?
         let interceptor: TWSViewInterceptor?
-
         var pullToRefresh: PullToRefresh!
         weak var webView: WKWebView?
 
@@ -43,7 +45,8 @@ extension WebView {
             snippetHeightProvider: SnippetHeightProvider,
             navigationProvider: NavigationProvider,
             downloadCompleted: ((TWSDownloadState) -> Void)?,
-            interceptor: TWSViewInterceptor?
+            interceptor: TWSViewInterceptor?,
+            state: Bindable<TWSViewState>
         ) {
             self.parent = parent
             self.snippetHeightProvider = snippetHeightProvider
@@ -51,7 +54,7 @@ extension WebView {
             self.downloadCompleted = downloadCompleted
             self.pullToRefresh = PullToRefresh()
             self.interceptor = interceptor
-
+            self._state = state
             super.init()
             logger.debug("INIT Coordinator for WKWebView \(parent.id)-\(id)")
         }
@@ -59,6 +62,7 @@ extension WebView {
         deinit {
             heightObserver?.invalidate()
             heightObserver = nil
+            self.webView = nil
             logger.debug("DEINIT Coordinator for WKWebView \(id)")
         }
 
@@ -71,7 +75,7 @@ extension WebView {
                 \.contentSize,
                 options: [.new]
             ) { [weak self] _, change in
-                MainActor.assumeIsolated {
+                MainActor.assumeIsolated { [weak self] in
                     guard
                         let self = self,
                         let newHeight = change.newValue?.height,
@@ -91,6 +95,21 @@ extension WebView {
                     // Mandatory to hop the thread, because of UI layout change
                     DispatchQueue.main.async { [weak self] in
                         self?.parent.dynamicHeight = newHeight
+                    }
+                }
+            }
+        }
+        
+        func observe(currentUrlOf webview: WKWebView) {
+            urlObserver = webview.observe(\.url, options: [.new]) { [weak self] _, change in
+                MainActor.assumeIsolated { [weak self] in
+                    guard
+                        let unwrapped = change.newValue,
+                        let url = unwrapped
+                    else { return }
+                    guard let coordinator = self else { return }
+                    if coordinator.parent.wkWebView == webview {
+                        coordinator.parent.state.currentUrl = url
                     }
                 }
             }

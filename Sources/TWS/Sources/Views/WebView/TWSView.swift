@@ -18,6 +18,7 @@ import SwiftUI
 @_spi(Internals) import TWSModels
 internal import ComposableArchitecture
 internal import TWSSnippet
+import WebKit
 
 /// The main view to use to display snippets
 public struct TWSView: View {
@@ -31,6 +32,7 @@ public struct TWSView: View {
 
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
+    @State private var presentedTWSViewState: TWSViewState = .init()
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -58,55 +60,61 @@ public struct TWSView: View {
     }
 
     public var body: some View {
-        if overrideVisibilty || presenter.isVisible(snippet: snippet) {
-            if store?.preloaded != true && !overrideVisibilty {
-                preloadingView()
-                    .onAppear {
-                        store = presenter.store(forSnippetID: snippet.id)
-                        store?.send(.business(.preload))
-                    }
-            } else {
-                ZStack {
-                    _TWSView(
-                        snippet: snippet,
-                        cssOverrides: cssOverrides,
-                        jsOverrides: jsOverrides,
-                        displayID: displayID,
-                        state: $state
-                    )
-                    .id(snippet.id)
-                    // The actual URL changed for the same Snippet ~ redraw is required
-                    .id(snippet.target)
-                    // Engine type changed, mustache has to be reprocessed
-                    .id(snippet.engine)
-                    // Snippet properties have updated, mustache has to be reprocessed
-                    .id(snippet.props)
-                    // The payload of dynamic resources can change
-                    .id(presenter.resourcesHash(for: snippet))
-                    // The HTML payload can change
-                    .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
-                    // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-                    .conditionallyActivateDefaultLocationBehavior(
-                        locationServicesBridge: locationServicesBridge,
-                        snippet: snippet,
-                        displayID: displayID
-                    )
-
-                    ZStack {
-                        switch state.loadingState {
-                        case .idle, .loading:
-                            loadingView()
-
-                        case .loaded:
-                            EmptyView()
-
-                        case let .failed(error):
-                            errorView(error)
+        ZStack {
+            @Bindable var childState = presentedTWSViewState
+            
+            if overrideVisibilty || presenter.isVisible(snippet: snippet) {
+                if let store = store, store.preloaded == false && !overrideVisibilty {
+                    preloadingView()
+                        .onAppear {
+                            store.send(.view(.openedTWSView))
                         }
+                } else {
+                    ZStack {
+                        _TWSView(
+                            snippet: snippet,
+                            cssOverrides: cssOverrides,
+                            jsOverrides: jsOverrides,
+                            displayID: displayID,
+                            state: $state
+                        )
+                        .id(snippet.id)
+                        // The actual URL changed for the same Snippet ~ redraw is required
+                        .id(snippet.target)
+                        // Engine type changed, mustache has to be reprocessed
+                        .id(snippet.engine)
+                        // Snippet properties have updated, mustache has to be reprocessed
+                        .id(snippet.props)
+                        // The payload of dynamic resources can change
+                        .id(presenter.resourcesHash(for: snippet))
+                        // The HTML payload can change
+                        .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
+                        // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                        .conditionallyActivateDefaultLocationBehavior(
+                            locationServicesBridge: locationServicesBridge,
+                            snippet: snippet,
+                            displayID: displayID
+                        )
+                        
+                        ZStack {
+                            switch state.loadingState {
+                            case .idle, .loading:
+                                loadingView()
+                                
+                            case .loaded:
+                                EmptyView()
+                                
+                            case let .failed(error):
+                                errorView(error)
+                            }
+                        }
+                        .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                     }
-                    .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                 }
             }
+        }
+        .onAppear {
+            store = presenter.store(forSnippetID: snippet.id)
         }
     }
 }
@@ -120,7 +128,7 @@ private struct _TWSView: View {
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
     @Bindable var state: TWSViewState
-
+    
     @State var height: CGFloat = 16
     @State private var networkObserver = NetworkMonitor()
     @State private var openURL: URL?
@@ -156,7 +164,6 @@ private struct _TWSView: View {
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,
-            pageTitle: $state.title,
             openURL: openURL,
             snippetHeightProvider: presenter.heightProvider,
             navigationProvider: presenter.navigationProvider,
@@ -166,8 +173,8 @@ private struct _TWSView: View {
             },
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
-            loadingState: $state.loadingState,
-            downloadCompleted: onDownloadCompleted
+            downloadCompleted: onDownloadCompleted,
+            state: $state
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
