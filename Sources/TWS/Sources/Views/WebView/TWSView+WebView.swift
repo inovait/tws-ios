@@ -125,6 +125,7 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        navigator.delegate = context.coordinator
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
