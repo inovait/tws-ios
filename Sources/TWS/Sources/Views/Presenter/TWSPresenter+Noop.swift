@@ -26,7 +26,7 @@ class NoopPresenter: TWSPresenter {
 
     // MARK: - Confirming to `TWSPresenter`
 
-    var preloadedResources: [TWSSnippet.Attachment: String] { [:] }
+    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { [:] }
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
 

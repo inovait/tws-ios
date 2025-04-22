@@ -18,6 +18,7 @@ import SwiftUI
 @_spi(Internals) import TWSModels
 internal import ComposableArchitecture
 internal import TWSSnippet
+import WebKit
 
 /// The main view to use to display snippets
 public struct TWSView: View {
@@ -61,7 +62,7 @@ public struct TWSView: View {
     public var body: some View {
         ZStack {
             @Bindable var childState = presentedTWSViewState
-        
+            
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
@@ -91,10 +92,6 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
-                        .sheet(item: $state.presentedUrl, id: \.absoluteString, onDismiss: { state.presentedUrl = nil }) { url in
-                            TWSView(snippet: TWSSnippet(id: url.absoluteString, target: url), state: $childState)
-                                .twsLocal()
-                        }
                         
                         ZStack {
                             switch state.loadingState {
@@ -129,7 +126,7 @@ private struct _TWSView: View {
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
     @Bindable var state: TWSViewState
-
+    
     @State var height: CGFloat = 16
     @State private var networkObserver = NetworkMonitor()
     @State private var openURL: URL?

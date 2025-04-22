@@ -57,7 +57,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in (project, nil)}
-                $0.api.getResource = { _, _ in return "" }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -129,7 +129,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _, _ in return "" }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -209,7 +209,7 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _, _ in return "" }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -288,7 +288,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _, _ in return "" }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -373,7 +373,7 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[1], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _, _ in return "" }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )

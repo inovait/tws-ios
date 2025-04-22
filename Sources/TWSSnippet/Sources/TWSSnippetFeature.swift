@@ -61,12 +61,12 @@ public struct TWSSnippetFeature: Sendable {
             case showSnippet
             case hideSnippet
             case preload
-            case preloadCompleted([TWSSnippet.Attachment: String])
+            case preloadCompleted([TWSSnippet.Attachment: ResourceResponse])
         }
 
         @CasePathable
         public enum Delegate {
-            case resourcesUpdated([TWSSnippet.Attachment: String])
+            case resourcesUpdated([TWSSnippet.Attachment: ResourceResponse])
         }
 
         case business(Business)
