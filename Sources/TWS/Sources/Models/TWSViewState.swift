@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import WebKit
 
 /// A class that represents the state of a ``TWSView``.
 ///
@@ -59,9 +60,6 @@ public final class TWSViewState {
     
     /// URL that is currently displayed in TWSView
     public var currentUrl: URL? = nil
-    
-    /// URL that will be presented with a sheet
-    public var presentedUrl: URL?
     
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page

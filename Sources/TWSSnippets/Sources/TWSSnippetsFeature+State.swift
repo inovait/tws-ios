@@ -34,10 +34,11 @@ extension TWSSnippetsFeature {
         #endif
             
         #if TESTING
-        public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         #else
         @ObservationStateIgnored
-        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+
+        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         #endif
         
         @ObservationStateIgnored
@@ -49,7 +50,7 @@ extension TWSSnippetsFeature {
         public init(
             configuration: any TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
-            preloadedResources: [TWSSnippet.Attachment: String]? = nil,
+            preloadedResources: [TWSSnippet.Attachment: ResourceResponse]? = nil,
             socketURL: URL? = nil,
             serverTime: Date? = nil
         ) {
