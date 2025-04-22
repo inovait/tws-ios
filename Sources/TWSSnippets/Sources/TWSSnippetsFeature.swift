@@ -138,7 +138,12 @@ public struct TWSSnippetsFeature: Sendable {
             let currentResources = Set(state.preloadedResources.keys)
             let newResources = _getResources(of: project.project)
             for resource in currentResources.subtracting(newResources) {
+                #if TESTING
+                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+                state.preloadedResources.removeValue(forKey: resource)
+                #else
                 state.$preloadedResources.withLock { _ = $0.removeValue(forKey: resource) }
+                #endif
             }
 
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
@@ -158,18 +163,17 @@ public struct TWSSnippetsFeature: Sendable {
                                         .element(
                                             id: snippet.id,
                                             action: .business(.snippetUpdated(
-                                                snippet: snippet,
-                                                preloaded: MainActor.assumeIsolated {
-                                                    snippet.hasResources(for: configuration())
-                                                }
+                                                snippet: snippet
                                             ))
                                         )
                                     )
                                 )
                             )
                         )
+                        logger.info("Updated snippet: \(snippet.id)")
+                    } else {
+                        logger.info("Saved snippet: \(snippet.id)")
                     }
-
                     #if TESTING
                     // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                     state.snippets[id: snippet.id]?.snippet = snippet
@@ -177,9 +181,9 @@ public struct TWSSnippetsFeature: Sendable {
                     state.$snippets[id: snippet.id].withLock { $0?.snippet = snippet }
                     #endif
 
-                    logger.info("Updated snippet: \(snippet.id)")
+                    
                 } else {
-                    let new = TWSSnippetFeature.State(snippet: snippet, preloaded: false)
+                    let new = TWSSnippetFeature.State(snippet: snippet)
 
                     #if TESTING
                     // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
@@ -189,10 +193,6 @@ public struct TWSSnippetsFeature: Sendable {
                     #endif
 
                     logger.info("Added snippet: \(snippet.id)")
-                    effects.append(.send(.business(.snippets(.element(
-                        id: snippet.id,
-                        action: .business(.preload)
-                    )))))
                 }
             }
 
@@ -259,8 +259,7 @@ public struct TWSSnippetsFeature: Sendable {
                     try await listen(
                         connectionID: connectionID,
                         stream: stream,
-                        send: send,
-                        configuration: config
+                        send: send
                     )
                 } catch {
                     logger.info("Stopped listening: \(error)")
@@ -318,7 +317,11 @@ public struct TWSSnippetsFeature: Sendable {
             switch delegateAction {
             case let .resourcesUpdated(resources):
                 resources.forEach { resource in
+                    #if TESTING
+                    state.preloadedResources[resource.key] = resource.value
+                    #else
                     state.$preloadedResources[resource.key].withLock { $0 = resource.value }
+                    #endif
                 }
                 return .none
             }

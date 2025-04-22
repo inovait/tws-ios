@@ -29,6 +29,7 @@ private extension URL {
 }
 
 extension SharedKey where Self == Sharing.FileStorageKey<[TWSSnippet.Attachment: ResourceResponse]>.Default {
+    // periphery:ignore - used with compiler flg
     static func resources(for config: any TWSConfiguration) -> Self {
         Self[.fileStorage(.resources(for: config)), default: [:]]
     }

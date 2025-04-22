@@ -44,8 +44,7 @@ extension TWSSnippetsFeature {
     func listen(
         connectionID: UUID,
         stream: AsyncStream<WebSocketEvent>,
-        send: Send<TWSSnippetsFeature.Action>,
-        configuration: any TWSConfiguration
+        send: Send<TWSSnippetsFeature.Action>
     ) async throws {
         mainLoop: for await event in stream {
             switch event {
@@ -83,8 +82,7 @@ extension TWSSnippetsFeature {
                                     .element(
                                         id: message.id,
                                         action: .business(.snippetUpdated(
-                                            snippet: snippet,
-                                            preloaded: snippet.hasResources(for: configuration)
+                                            snippet: snippet
                                         ))
                                     )
                                 )
