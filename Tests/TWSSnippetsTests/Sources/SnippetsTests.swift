@@ -602,6 +602,71 @@ final class SnippetsTests: XCTestCase {
             XCTAssert(cachedPreloadedResources != $0.preloadedResources)
         }
     }
+    
+    @MainActor
+    func testLocalHeaders() async throws {
+        let url = URL(string: "https://www.example.com")!
+        let s1ID = "1"
+        let snippet = TWSSnippet(id: s1ID, target: url, headers: ["remote": "value"])
+        
+        let store = TestStore(
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getProject = { [socketURL] _ in
+                    (TWSProject(listenOn: socketURL, snippets: [snippet]), nil)
+                }
+                $0.api.getResource = { attachment, headers in return .init(responseUrl: url, data: headers.keys.sorted().formatted())}
+                $0.date.now = Date()
+            }
+        )
+        
+        await store.send(.business(.load)) { state in
+            state.state = .loading
+        }
+        
+        await store.receive(\.business.projectLoaded.success) {
+            $0.snippets = .init(uniqueElements: [snippet].map { .init(snippet: $0) })
+            $0.socketURL = self.socketURL
+            $0.state = .loaded
+        }
+        await store.receive(\.business.startVisibilityTimers)
+
+        await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
+        
+        await store.receive(\.business.snippets[id: snippet.id].business.preload) {
+            $0.snippets[id: snippet.id]?.isPreloading = true
+        }
+        
+        await store.receive(\.business.snippets[id: snippet.id].business.preloadCompleted) {
+            $0.snippets[id: snippet.id]?.isPreloading = false
+            $0.snippets[id: snippet.id]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: snippet.id].delegate.resourcesUpdated) {
+            $0.preloadedResources = [TWSSnippet.Attachment.init(url: url, contentType: .html): .init(responseUrl: url, data: "remote")]
+        }
+        
+        // when local header is set the whole preload flow should be redone, so that html is fetched with headers
+        await store.send(.business(.setLocalHeaders(headers: (snippet.id, ["local": "value"])))) {
+            $0.snippets[id: snippet.id]?.localHeaders = ["local": "value"]
+        }
+        
+        await store.receive(\.business.snippets[id: snippet.id].business.preload) {
+            $0.snippets[id: snippet.id]?.isPreloading = true
+        }
+        
+        await store.receive(\.business.snippets[id: snippet.id].business.preloadCompleted) {
+            $0.snippets[id: snippet.id]?.isPreloading = false
+            $0.snippets[id: snippet.id]?.preloaded = true
+        }
+        await store.receive(\.business.snippets[id: snippet.id].delegate.resourcesUpdated) {
+            $0.preloadedResources = [TWSSnippet.Attachment.init(url: url, contentType: .html): .init(responseUrl: url, data: "local and remote")]
+        }
+        
+    }
+        
+    
+    
 }
 
 // swiftlint:enable file_length

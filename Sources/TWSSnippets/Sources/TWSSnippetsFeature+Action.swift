@@ -37,6 +37,7 @@ extension TWSSnippetsFeature {
             case isSocketConnected(Bool)
             case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case setLocalProps(props: (TWSSnippet.ID, [String: TWSSnippet.Props]))
+            case setLocalHeaders(headers: (TWSSnippet.ID, [String: String]))
             case showSnippet(snippetId: TWSSnippet.ID)
             case hideSnippet(snippetId: TWSSnippet.ID)
         }
