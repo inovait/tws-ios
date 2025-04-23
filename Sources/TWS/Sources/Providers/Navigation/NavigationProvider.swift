@@ -66,8 +66,7 @@ class NavigationProviderImpl: NavigationProvider {
         newViewController.view = webView
         _presentedVC = .init(
             viewController: newViewController,
-            presentedWebView: webView,
-            parentWebView: originWebView
+            presentedWebView: webView
         )
 
         parent.present(newViewController, animated: animated, completion: completion)
@@ -129,7 +128,6 @@ struct DestinationInfo {
 
     weak var viewController: UIViewController?
     weak var presentedWebView: WebViewWithErrorOverlay?
-    weak var parentWebView: WKWebView?
 }
 
 enum NavigationError: Error {
