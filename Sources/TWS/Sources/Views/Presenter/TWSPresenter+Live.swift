@@ -29,7 +29,7 @@ class LivePresenter: TWSPresenter {
 
     // MARK: - Confirming to `TWSPresenter`
 
-    var preloadedResources: [TWSSnippet.Attachment: String] {
+    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] {
         manager?.store.snippets.preloadedResources ?? [:]
     }
 
@@ -69,12 +69,12 @@ class LivePresenter: TWSPresenter {
     // MARK: - Helper methods
 
     private func _resourcesHash(
-        resources: [TWSSnippet.Attachment: String]?,
+        resources: [TWSSnippet.Attachment: ResourceResponse]?,
         of snippet: TWSSnippet
     ) -> Int {
         let resources = resources ?? [:]
         var hasher = Hasher()
-        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]) }
+        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]?.data) }
         return hasher.finalize()
     }
 }

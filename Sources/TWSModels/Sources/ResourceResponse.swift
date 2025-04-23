@@ -1,4 +1,4 @@
-//
+////
 //  Copyright 2024 INOVA IT d.o.o.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +15,13 @@
 //
 
 import Foundation
-import ComposableArchitecture
-@_spi(Internals) import TWSModels
 
-extension TWSSnippet {
-
-    @MainActor
-    func hasResources(for configuration: any TWSConfiguration) -> Bool {
-        var headers = [Attachment: [String: String]]()
-        let preloaded = SharedReader(wrappedValue: [:], .resources(for: configuration))
-        let attachments = self.allResources(headers: &headers)
-        return attachments.allSatisfy { preloaded[$0].wrappedValue != nil }
+public struct ResourceResponse: Sendable, Equatable, Codable, Hashable {
+    public let responseUrl: URL?
+    public let data: String
+    
+    public init(responseUrl: URL?, data: String) {
+        self.responseUrl = responseUrl
+        self.data = data
     }
 }
