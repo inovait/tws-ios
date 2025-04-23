@@ -92,12 +92,6 @@ class WebViewWithErrorOverlay: UIView {
 
     // MARK: - Public API
 
-    func load(url: URL) {
-        let request = URLRequest(url: url)
-        webView.load(request)
-        hideError()
-    }
-
     func showError(message: String?) {
         errorOverlay.text = message ?? "Something went wrong"
         errorOverlay.isHidden = false

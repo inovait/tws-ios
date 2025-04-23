@@ -36,14 +36,12 @@ protocol NavigationProvider {
     ) -> Bool
 
     func didClose(
-        webView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError)
 
     func continueNavigation(
-        with url: URL,
-        from: WKWebView
+        with url: URL
     ) throws(NavigationError)
 
 }
@@ -91,11 +89,9 @@ class NavigationProviderImpl: NavigationProvider {
     }
     
     func didClose(
-        webView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
-        
         guard let viewController = _presentedVC?.viewController
         else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
@@ -104,11 +100,11 @@ class NavigationProviderImpl: NavigationProvider {
 
     func continueNavigation(
         with url: URL,
-        from: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVC?.presentedWebView
+        guard let presentedWebViewController = _presentedVC?.presentedWebView
         else { throw .presentedViewControllerNotFound }
-        webView.webView.load(URLRequest(url: url))
+        
+        presentedWebViewController.webView.load(URLRequest(url: url))
     }
 
 }
