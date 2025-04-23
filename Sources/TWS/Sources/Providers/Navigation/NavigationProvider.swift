@@ -99,7 +99,7 @@ class NavigationProviderImpl: NavigationProvider {
     }
 
     func continueNavigation(
-        with url: URL,
+        with url: URL
     ) throws(NavigationError) {
         guard let presentedWebViewController = _presentedVC?.presentedWebView
         else { throw .presentedViewControllerNotFound }

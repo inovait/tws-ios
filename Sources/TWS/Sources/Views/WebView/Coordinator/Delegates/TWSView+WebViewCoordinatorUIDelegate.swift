@@ -60,7 +60,6 @@ extension WebView.Coordinator: WKUIDelegate {
         logger.debug("[UI \(webView.hash)] Web view did close")
         do {
             try navigationProvider.didClose(
-                webView: webView,
                 animated: true,
                 completion: nil
             )

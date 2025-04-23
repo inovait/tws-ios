@@ -213,7 +213,7 @@ struct WebView: UIViewRepresentable {
             context.coordinator.redirectedToSafari = false
             
             do {
-                try navigationProvider.continueNavigation(with: openURL, from: uiView)
+                try navigationProvider.continueNavigation(with: openURL)
             } catch NavigationError.viewControllerNotFound {
                 uiView.load(URLRequest(url: openURL))
             } catch {
