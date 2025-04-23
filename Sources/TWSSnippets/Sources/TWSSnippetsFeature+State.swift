@@ -33,12 +33,13 @@ extension TWSSnippetsFeature {
         @Sharing.Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         #endif
 
+            
         #if TESTING
         // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-        public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         #else
         @ObservationStateIgnored
-        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: String]
+        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         #endif
         
         @ObservationStateIgnored
@@ -50,32 +51,26 @@ extension TWSSnippetsFeature {
         public init(
             configuration: any TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
-            preloadedResources: [TWSSnippet.Attachment: String]? = nil,
+            preloadedResources: [TWSSnippet.Attachment: ResourceResponse]? = nil,
             socketURL: URL? = nil,
             serverTime: Date? = nil
         ) {
             #if TESTING
             // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             self.snippets = .init(
-                uniqueElements: (snippets ?? []).map { .init(snippet: $0, preloaded: false) }
+                uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
-            #else
-            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            #endif
-
-            #if TESTING
-            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             self.preloadedResources = preloadedResources ?? [:]
             #else
+            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
             _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
             #endif
-            
+
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
                 let state = snippets.map { TWSSnippetFeature.State(
-                    snippet: $0,
-                    preloaded: false
+                    snippet: $0
                 )}
 
                 if let serverTime {

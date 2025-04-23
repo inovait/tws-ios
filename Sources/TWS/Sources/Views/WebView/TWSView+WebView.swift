@@ -26,13 +26,13 @@ struct WebView: UIViewRepresentable {
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
     @Bindable var state: TWSViewState
-    @Binding var presentedUrl: URL?
-    @Binding var parentSnippet: TWSSnippet?
+    // This helps distinguish between parent and modal views
+    @State var wkWebView: WKWebView? = nil
 
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
-    let preloadedResources: [TWSSnippet.Attachment: String]
+    let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let cssOverrides: [TWSRawCSS]
@@ -47,7 +47,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
-        preloadedResources: [TWSSnippet.Attachment: String],
+        preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         cssOverrides: [TWSRawCSS],
@@ -62,9 +62,7 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        state: Bindable<TWSViewState>,
-        presentedUrl: Binding<URL?>,
-        parentSnippet: Binding<TWSSnippet?>
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -84,8 +82,6 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self.downloadCompleted = downloadCompleted
         self._state = state
-        self._presentedUrl = presentedUrl
-        self._parentSnippet = parentSnippet
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -129,10 +125,7 @@ struct WebView: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        
-        if parentSnippet == nil {
-            navigator.delegate = context.coordinator
-        }
+        navigator.delegate = context.coordinator
 
         // process content on reloads
         context.coordinator.pullToRefresh.enable(on: webView) {
@@ -160,7 +153,12 @@ struct WebView: UIViewRepresentable {
                 to: locationServicesBridge
             )
         }
-
+        
+        // Hold reference to created WKWebView to know which view is parent and which are presentable children
+        Task {
+            wkWebView = webView
+        }
+        
         return webView
     }
 
@@ -171,7 +169,7 @@ struct WebView: UIViewRepresentable {
             navigationProvider: navigationProvider,
             downloadCompleted: downloadCompleted,
             interceptor: interceptor,
-            presentedUrl: $presentedUrl
+            state: $state
         )
     }
 
@@ -210,11 +208,17 @@ struct WebView: UIViewRepresentable {
         if
             context.coordinator.redirectedToSafari,
             let openURL,
-            openURL != context.coordinator.openURL {
-
+            openURL != context.coordinator.openURL
+            {
             context.coordinator.redirectedToSafari = false
-
-            uiView.load(URLRequest(url: openURL))
+            
+            do {
+                try navigationProvider.continueNavigation(with: openURL, from: uiView)
+            } catch NavigationError.viewControllerNotFound {
+                uiView.load(URLRequest(url: openURL))
+            } catch {
+                logger.err("Failed to continue navigation: \(error)")
+            }
         }
 
         // Update state
@@ -251,8 +255,8 @@ struct WebView: UIViewRepresentable {
         
         if let preloaded = preloadedResources[key] {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded, snippet: snippet)
-            webView.loadSimulatedRequest(URLRequest(url: self.targetURL), responseHTML: htmlToLoad)
+            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
+            webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
             var urlRequest = URLRequest(url: self.targetURL)
@@ -266,7 +270,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectCSS(
         to controller: WKUserContentController,
         rawCSS: [TWSRawCSS],
-        andPreloadedAttachments resources: [TWSSnippet.Attachment: String],
+        andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -277,7 +281,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .css }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawCSS($0.value) }
+            .map { TWSRawCSS($0.value.data) }
 
         for css in preloaded + rawCSS {
             let value = css.value
@@ -306,7 +310,7 @@ struct WebView: UIViewRepresentable {
     private func _rawInjectJS(
         to controller: WKUserContentController,
         rawJS: [TWSRawJS],
-        andPreloadedResources resources: [TWSSnippet.Attachment: String],
+        andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
         forMainFrameOnly: Bool = false
@@ -317,7 +321,7 @@ struct WebView: UIViewRepresentable {
         let preloaded = resources
             .filter { $0.key.contentType == .javascript }
             .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawJS($0.value) }
+            .map { TWSRawJS($0.value.data) }
 
         for jvs in preloaded + rawJS {
             let value = jvs.value

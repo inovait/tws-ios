@@ -26,7 +26,7 @@ public extension Reducer {
         for snippet: TWSSnippet,
         using api: APIDependency,
         withHeaders localHeaders: [String: String] = [:]
-    ) async -> [TWSSnippet.Attachment: String] {
+    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = snippet.allResources(headers: &headers, localHeaders: localHeaders)
         return await _preloadResources(
@@ -39,7 +39,7 @@ public extension Reducer {
     func preloadResources(
         for project: TWSProject,
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: String] {
+    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = project.allResources(headers: &headers)
 
@@ -53,7 +53,7 @@ public extension Reducer {
     func preloadResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: String] {
+    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = sharedSnippet.allResources(headers: &headers)
 
@@ -70,17 +70,17 @@ public extension Reducer {
         resources: [TWSSnippet.Attachment],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: String] {
+    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         return await withTaskGroup(
-            of: (TWSSnippet.Attachment, String)?.self,
-            returning: [TWSSnippet.Attachment: String].self
+            of: (TWSSnippet.Attachment, ResourceResponse)?.self,
+            returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { [api] group in
             // Use a set to download each resource only once, even if it is used in multiple snippets
             for resource in Set(resources) {
                 group.addTask { [resource] in
                     do {
                         let payload = try await api.getResource(resource, headers[resource] ?? [:])
-                        if !payload.isEmpty { return (resource, payload) }
+                        if !payload.data.isEmpty { return (resource, payload) }
                         return nil
                     } catch {
                         return nil
@@ -88,7 +88,7 @@ public extension Reducer {
                 }
             }
 
-            var results: [TWSSnippet.Attachment: String] = [:]
+            var results: [TWSSnippet.Attachment: ResourceResponse] = [:]
             for await result in group {
                 guard let result else { continue }
                 results[result.0] = result.1

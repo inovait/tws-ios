@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import WebKit
 
 /// A class that represents the state of a ``TWSView``.
 ///

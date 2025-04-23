@@ -73,7 +73,8 @@ class Router {
                 }
                 return .init(
                     data: result.0,
-                    dateOfResponse: serverDate
+                    dateOfResponse: serverDate,
+                    responseUrl: result.1.url
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
@@ -96,6 +97,7 @@ struct APIResult {
 
     let data: Data
     let dateOfResponse: Date?
+    let responseUrl: URL?
 }
 
 public enum APIError: Error {

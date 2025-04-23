@@ -22,7 +22,7 @@ internal import TWSSnippet
 @MainActor
 protocol TWSPresenter {
 
-    var preloadedResources: [TWSSnippet.Attachment: String] { get }
+    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { get }
     var navigationProvider: NavigationProvider { get }
     var heightProvider: SnippetHeightProvider { get }
 
