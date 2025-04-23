@@ -19,9 +19,10 @@ import WebKit
 
 @MainActor
 protocol NavigationProvider {
-
+    var _presentedVC: DestinationInfo? { get set }
+    
     func present(
-        webView: WKWebView,
+        webView: WebViewWithErrorOverlay,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -49,10 +50,10 @@ protocol NavigationProvider {
 
 class NavigationProviderImpl: NavigationProvider {
 
-    private var _presentedVCs = [WKWebView: DestinationInfo]()
+    var _presentedVC: DestinationInfo? = nil
 
     func present(
-        webView: WKWebView,
+        webView: WebViewWithErrorOverlay,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -65,7 +66,7 @@ class NavigationProviderImpl: NavigationProvider {
 
         let newViewController = UIViewController()
         newViewController.view = webView
-        _presentedVCs[webView] = .init(
+        _presentedVC = .init(
             viewController: newViewController,
             presentedWebView: webView,
             parentWebView: originWebView
@@ -95,18 +96,19 @@ class NavigationProviderImpl: NavigationProvider {
         completion: (() -> Void)?
     ) throws(NavigationError) {
         
-        guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
+        guard let viewController = _presentedVC?.viewController
         else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
+        _presentedVC = nil
     }
 
     func continueNavigation(
         with url: URL,
         from: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from })?.presentedWebView
+        guard let webView = _presentedVC?.presentedWebView
         else { throw .presentedViewControllerNotFound }
-        webView.load(URLRequest(url: url))
+        webView.webView.load(URLRequest(url: url))
     }
 
 }
@@ -127,10 +129,10 @@ private extension UIView {
     }
 }
 
-private struct DestinationInfo {
+struct DestinationInfo {
 
     weak var viewController: UIViewController?
-    weak var presentedWebView: WKWebView?
+    weak var presentedWebView: WebViewWithErrorOverlay?
     weak var parentWebView: WKWebView?
 }
 
