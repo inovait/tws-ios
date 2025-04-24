@@ -44,6 +44,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
+    let injectionFilterRegex: String?
 
     init(
         snippet: TWSSnippet,
@@ -62,7 +63,8 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        state: Bindable<TWSViewState>
+        state: Bindable<TWSViewState>,
+        injectionFilterRegex: String?
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -82,18 +84,14 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self.downloadCompleted = downloadCompleted
         self._state = state
+        self.injectionFilterRegex = injectionFilterRegex
     }
 
     func makeUIView(context: Context) -> WKWebView {
         let controller = WKUserContentController()
 
         #if DEBUG
-        _rawInjectJS(
-            to: controller,
-            rawJS: [interceptConsoleLogs(controller: controller)],
-            andPreloadedResources: [:],
-            forSnippet: snippet
-        )
+        controller.addUserScript(WKUserScript(source: interceptConsoleLogs(controller: controller).value, injectionTime: .atDocumentStart, forMainFrameOnly: false))
         #endif
 
         _rawInjectCSS(
@@ -273,7 +271,7 @@ struct WebView: UIViewRepresentable {
         andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
+        forMainFrameOnly: Bool = true
     ) {
         precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
 
@@ -296,9 +294,11 @@ struct WebView: UIViewRepresentable {
             var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
             targ.appendChild(style);
             """
+            
+            let wrappedSource = patternMatchingWrapperValue(script: source, pattern: injectionFilterRegex)
 
             let script = WKUserScript(
-                source: source,
+                source: wrappedSource,
                 injectionTime: injectionTime,
                 forMainFrameOnly: forMainFrameOnly
             )
@@ -313,7 +313,7 @@ struct WebView: UIViewRepresentable {
         andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
+        forMainFrameOnly: Bool = true
     ) {
         precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
 
@@ -327,12 +327,13 @@ struct WebView: UIViewRepresentable {
             let value = jvs.value
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
+            let wrappedValue = patternMatchingWrapperValue(script: value, pattern: injectionFilterRegex)
+            
             let script = WKUserScript(
-                source: value,
+                source: wrappedValue,
                 injectionTime: injectionTime,
                 forMainFrameOnly: forMainFrameOnly
             )
-
             controller.addUserScript(script)
         }
     }
@@ -365,5 +366,33 @@ struct WebView: UIViewRepresentable {
         }
         
         return preloadedHTML
+    }
+    
+    private func escapedRegex(regex: String?) -> String? {
+        guard let regex else { return nil }
+        
+        let escaped = regex
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "/", with: "\\/")
+        return escaped
+    }
+    
+    private func patternMatchingWrapperValue(script: String, pattern: String?) -> String {
+        let escapedPattern = escapedRegex(regex: pattern)
+        
+        guard let escapedPattern else {
+            return """
+                if (window.location.href === '\(snippet.target.absoluteString)') {
+                    \(script)
+                }
+                """
+        }
+        
+        return """
+            if(/\(escapedPattern)/.test(window.location.href)) {
+                \(script)
+            }
+            """
     }
 }
