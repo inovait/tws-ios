@@ -142,7 +142,7 @@ private extension UIView {
     }
 }
 
-struct DestinationInfo {
+private struct DestinationInfo {
 
     weak var viewController: UIViewController?
     weak var presentedWebView: WebViewWithErrorOverlay?
