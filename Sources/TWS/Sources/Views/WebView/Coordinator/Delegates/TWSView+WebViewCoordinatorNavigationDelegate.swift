@@ -57,7 +57,11 @@ extension WebView.Coordinator: WKNavigationDelegate {
         if parent.wkWebView == webView {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
-            self.navigationProvider._presentedVC?.presentedWebView?.showError(message: error.localizedDescription)
+            do {
+                try navigationProvider.showError(message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
         }
     }
 
@@ -80,7 +84,11 @@ extension WebView.Coordinator: WKNavigationDelegate {
         if parent.wkWebView == webView {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
-            self.navigationProvider._presentedVC?.presentedWebView?.showError(message: error.localizedDescription)
+            do {
+                try navigationProvider.showError(message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
         }
     }
 
