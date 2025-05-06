@@ -380,15 +380,16 @@ struct WebView: UIViewRepresentable {
     
     private func patternMatchingWrapperValue(script: String, pattern: String?) -> String {
         let escapedPattern = escapedRegex(regex: pattern)
+        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
+        let resolvedUrl = preloadedResources[key]?.responseUrl?.absoluteString ?? targetURL.absoluteString
         
         guard let escapedPattern else {
             return """
-                if (window.location.href === '\(snippet.target.absoluteString)') {
+                if (window.location.href === '\(resolvedUrl)') {
                     \(script)
                 }
                 """
         }
-        
         return """
             if(/\(escapedPattern)/.test(window.location.href)) {
                 \(script)
