@@ -68,8 +68,7 @@ class NavigationProviderImpl: NavigationProvider {
         guard parent.presentedViewController == nil
         else { throw NavigationError.alreadyPresenting }
 
-        let newViewController = UIViewController()
-        newViewController.view = webView
+        let newViewController = webView
         _presentedVCs[webView.webView] = .init(
             viewController: newViewController,
             presentedWebView: webView,
