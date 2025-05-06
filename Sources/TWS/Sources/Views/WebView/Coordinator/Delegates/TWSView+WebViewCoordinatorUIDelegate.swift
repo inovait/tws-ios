@@ -38,10 +38,12 @@ extension WebView.Coordinator: WKUIDelegate {
         newWebView.navigationDelegate = self
         newWebView.uiDelegate = self
         newWebView.load(navigationAction.request)
-
+        
+        let webViewWithErrorOverlay = WebViewWithErrorOverlay(webView: newWebView)
+        
         do {
             try navigationProvider.present(
-                webView: newWebView,
+                webView: webViewWithErrorOverlay,
                 on: webView,
                 animated: true,
                 completion: nil

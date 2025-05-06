@@ -19,9 +19,9 @@ import WebKit
 
 @MainActor
 protocol NavigationProvider {
-
+    
     func present(
-        webView: WKWebView,
+        webView: WebViewWithErrorOverlay,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -44,15 +44,20 @@ protocol NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError)
+    
+    func showError(
+        message: Error,
+        on: WKWebView
+    ) throws(NavigationError)
 
 }
 
 class NavigationProviderImpl: NavigationProvider {
 
-    private var _presentedVCs = [WKWebView: DestinationInfo]()
+    private var _presentedVCs = [WKWebView : DestinationInfo]()
 
     func present(
-        webView: WKWebView,
+        webView: WebViewWithErrorOverlay,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -63,9 +68,8 @@ class NavigationProviderImpl: NavigationProvider {
         guard parent.presentedViewController == nil
         else { throw NavigationError.alreadyPresenting }
 
-        let newViewController = UIViewController()
-        newViewController.view = webView
-        _presentedVCs[webView] = .init(
+        let newViewController = webView
+        _presentedVCs[webView.webView] = .init(
             viewController: newViewController,
             presentedWebView: webView,
             parentWebView: originWebView
@@ -94,7 +98,6 @@ class NavigationProviderImpl: NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
-        
         guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
         else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
@@ -104,9 +107,20 @@ class NavigationProviderImpl: NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from })?.presentedWebView
+        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from})?.presentedWebView?.webView
         else { throw .presentedViewControllerNotFound }
+        
         webView.load(URLRequest(url: url))
+    }
+    
+    func showError(
+        message: Error,
+        on: WKWebView
+    ) throws(NavigationError) {
+        guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView?.webView == on })?.presentedWebView
+        else { throw .presentedViewControllerNotFound }
+        
+        webView.showError(message: message.localizedDescription)
     }
 
 }
@@ -130,7 +144,7 @@ private extension UIView {
 private struct DestinationInfo {
 
     weak var viewController: UIViewController?
-    weak var presentedWebView: WKWebView?
+    weak var presentedWebView: WebViewWithErrorOverlay?
     weak var parentWebView: WKWebView?
 }
 
