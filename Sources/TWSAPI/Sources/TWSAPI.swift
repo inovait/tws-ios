@@ -1,8 +1,9 @@
 import Foundation
-import TWSModels
+@_spi(Internals) import TWSModels
 import TWSFormatters
 
 public struct TWSAPI {
+    private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
 
     public let getProject: @Sendable (
         _ projectId: TWSBasicConfiguration
@@ -97,7 +98,7 @@ public struct TWSAPI {
                     queryItems: queryItems ?? [],
                     headers: headers,
                     auth: false
-                ))
+                ), includeAccessToken: attachment.contentType == .html)
 
                 if let payload = String(data: result.data, encoding: .utf8) {
                     return ResourceResponse(responseUrl: result.responseUrl, data: payload)
