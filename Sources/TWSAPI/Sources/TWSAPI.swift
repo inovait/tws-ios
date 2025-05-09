@@ -3,7 +3,6 @@ import Foundation
 import TWSFormatters
 
 public struct TWSAPI {
-    private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
 
     public let getProject: @Sendable (
         _ projectId: TWSBasicConfiguration
