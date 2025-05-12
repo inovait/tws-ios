@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import TWSModels
 
 class Router {
 
@@ -67,14 +68,27 @@ class Router {
 
             if 200..<300 ~= httpResult.statusCode {
                 var serverDate: Date?
+                var cookies: [HTTPCookieWrapper] = []
+                
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
                     serverDate = dateFormatter.date(from: serverDateHeader)
                 }
+                
+                if let responseHeaders = httpResult.allHeaderFields as? [String: String] {
+                    let httpCookies = HTTPCookie.cookies(withResponseHeaderFields: responseHeaders, for: httpResult.url ?? url)
+                    
+                    for cookie in httpCookies {
+                        guard let wrappedHttpCookie = HTTPCookieWrapper(cookie: cookie) else { continue }
+                        cookies.append(wrappedHttpCookie)
+                    }
+                }
+
                 return .init(
                     data: result.0,
                     dateOfResponse: serverDate,
-                    responseUrl: result.1.url
+                    responseUrl: result.1.url,
+                    cookies: cookies
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
@@ -98,6 +112,7 @@ struct APIResult {
     let data: Data
     let dateOfResponse: Date?
     let responseUrl: URL?
+    let cookies: [HTTPCookieWrapper]
 }
 
 public enum APIError: Error {

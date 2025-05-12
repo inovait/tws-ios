@@ -116,6 +116,7 @@ struct WebView: UIViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
         configuration.userContentController = controller
+        configuration.websiteDataStore.httpCookieStore.add(context.coordinator)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
@@ -256,6 +257,10 @@ struct WebView: UIViewRepresentable {
         if let preloaded = preloadedResources[key] {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
+            preloaded.cookies.forEach { cookie in
+                guard let httpCookie = cookie.toHTTPCookie() else { return }
+                webView.configuration.websiteDataStore.httpCookieStore.setCookie(httpCookie)
+            }
             webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
