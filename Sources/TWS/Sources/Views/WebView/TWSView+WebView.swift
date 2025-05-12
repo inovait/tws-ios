@@ -116,7 +116,6 @@ struct WebView: UIViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
         configuration.userContentController = controller
-        configuration.websiteDataStore.httpCookieStore.add(context.coordinator)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
