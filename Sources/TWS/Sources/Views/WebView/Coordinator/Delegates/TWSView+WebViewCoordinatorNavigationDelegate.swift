@@ -54,7 +54,15 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg +=  " error: \(error.localizedDescription)"
 
         logger.debug(msg)
-        parent.updateState(for: webView, loadingState: .failed(error))
+        if parent.wkWebView == webView {
+            parent.updateState(for: webView, loadingState: .failed(error))
+        } else {
+            do {
+                try navigationProvider.showError(message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
+        }
     }
 
     func webView(
@@ -73,7 +81,15 @@ extension WebView.Coordinator: WKNavigationDelegate {
         if nsError.code == 102 || nsError.code == NSURLErrorCancelled {
             return
         }
-        parent.updateState(for: webView, loadingState: .failed(error))
+        if parent.wkWebView == webView {
+            parent.updateState(for: webView, loadingState: .failed(error))
+        } else {
+            do {
+                try navigationProvider.showError(message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
+        }
     }
 
     func webView(
