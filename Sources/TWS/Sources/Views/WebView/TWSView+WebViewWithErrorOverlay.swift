@@ -26,6 +26,8 @@ class WebViewWithErrorOverlay: UIViewController {
     private var errorMessage: UILabel
     private var closeButton: UIButton
     private var reloadButton: UIButton
+    private var activityIndicator: UIActivityIndicatorView
+    private var popupDelegate: PopupNavigationDelegate?
 
     // MARK: - Init
     init(webView: WKWebView, navigationProvider: NavigationProvider) {
@@ -72,6 +74,14 @@ class WebViewWithErrorOverlay: UIViewController {
             return reloadButton
         }()
         
+        self.activityIndicator = {
+            let activityIndicator = UIActivityIndicatorView(style: .large)
+            activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+            activityIndicator.startAnimating()
+            activityIndicator.tintColor = .black
+            return activityIndicator
+        }()
+        
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -83,6 +93,7 @@ class WebViewWithErrorOverlay: UIViewController {
         self.reloadButton = UIButton(type: .system)
         self.errorMessage = UILabel()
         self.warningImage = UIImageView()
+        self.activityIndicator = UIActivityIndicatorView()
         super.init(coder: coder)
     }
     
@@ -101,6 +112,8 @@ class WebViewWithErrorOverlay: UIViewController {
     override func viewDidLoad() {
         let nc = NotificationCenter.default
         nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
+        webView.navigationDelegate = popupDelegate
         setupSubviews()
     }
     
@@ -114,6 +127,8 @@ class WebViewWithErrorOverlay: UIViewController {
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
         view.addSubview(errorOverlay)
+        view.addSubview(activityIndicator)
+        
         errorOverlay.addSubview(stackView)
         errorOverlay.addSubview(closeButton)
         errorOverlay.addSubview(reloadButton)
@@ -143,8 +158,10 @@ class WebViewWithErrorOverlay: UIViewController {
             closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
             
             reloadButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            reloadButton.centerYAnchor.constraint(equalTo: errorMessage.bottomAnchor, constant: 20)
+            reloadButton.centerYAnchor.constraint(equalTo: errorMessage.bottomAnchor, constant: 20),
             
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
     
@@ -156,6 +173,11 @@ class WebViewWithErrorOverlay: UIViewController {
     @objc private func reloadPage() {
         webView.reload()
         hideError()
+    }
+    
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
     }
 
     // MARK: - Public API
@@ -177,5 +199,30 @@ class WebViewWithErrorOverlay: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+class PopupNavigationDelegate: NSObject, WKNavigationDelegate {
+    let onEndNavigation: () -> Void
+    let coordinator: WKNavigationDelegate?
+    
+    init(coordinator: WKNavigationDelegate?, onEndNavigation: @escaping () -> Void) {
+        self.coordinator = coordinator
+        self.onEndNavigation = onEndNavigation
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        onEndNavigation()
+        coordinator?.webView?(webView, didFinish: navigation)
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        onEndNavigation()
+        coordinator?.webView?(webView, didFail: navigation, withError: error)
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        onEndNavigation()
+        coordinator?.webView?(webView, didFailProvisionalNavigation: navigation, withError: error)
     }
 }
