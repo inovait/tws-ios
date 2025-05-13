@@ -21,6 +21,7 @@ import WebKit
 class WebViewWithErrorOverlay: UIViewController {
     let webView: WKWebView
     private var errorOverlay: UIView
+    private var warningImage: UIImageView
     private var errorMessage: UILabel
     private var closeButton: UIButton
     private var reloadButton: UIButton
@@ -30,15 +31,24 @@ class WebViewWithErrorOverlay: UIViewController {
         self.webView = webView
         self.errorOverlay = {
             let errorOverlay = UIView()
-            errorOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+            errorOverlay.backgroundColor = UIColor.white
             errorOverlay.translatesAutoresizingMaskIntoConstraints = false
             errorOverlay.isHidden = true
             return errorOverlay
         }()
+        
+        self.warningImage = {
+            let image = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill") ?? UIImage())
+            image.tintColor = .black
+            image.frame.size = CGSize(width: 50, height: 50)
+            image.translatesAutoresizingMaskIntoConstraints = false
+            return image
+        }()
+        
         self.errorMessage = {
             let label = UILabel()
             label.text = "Something went wrong"
-            label.textColor = .white
+            label.textColor = .black
             label.textAlignment = .center
             label.numberOfLines = 0
             label.lineBreakMode = .byWordWrapping
@@ -69,6 +79,7 @@ class WebViewWithErrorOverlay: UIViewController {
         self.closeButton = UIButton(type: .system)
         self.reloadButton = UIButton(type: .system)
         self.errorMessage = UILabel()
+        self.warningImage = UIImageView()
         super.init(coder: coder)
     }
 
@@ -79,10 +90,16 @@ class WebViewWithErrorOverlay: UIViewController {
     }
     
     private func setupSubviews() {
+        let stackView = UIStackView(arrangedSubviews: [warningImage, errorMessage])
+        stackView.axis = .vertical
+        stackView.spacing = 16
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
         view.addSubview(errorOverlay)
-        errorOverlay.addSubview(errorMessage)
+        errorOverlay.addSubview(stackView)
         errorOverlay.addSubview(closeButton)
         errorOverlay.addSubview(reloadButton)
         
@@ -98,11 +115,14 @@ class WebViewWithErrorOverlay: UIViewController {
             errorOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             errorOverlay.topAnchor.constraint(equalTo: view.topAnchor),
             errorOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            errorMessage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            errorMessage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            errorMessage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            errorMessage.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            warningImage.widthAnchor.constraint(equalToConstant: 50),
+            warningImage.heightAnchor.constraint(equalToConstant: 50),
             
             closeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
             closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
