@@ -45,7 +45,6 @@ public struct TWSView: View {
     ///   - state: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
-    ///   - injectionFilterRegex: A regex deciding whether to inject snippets dynamic resources for certain URL or not. Dynamic resources get injected for a URL when it matches the regex . By default resources are injected only in to the target URL page of the snippet.
     public init(
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
