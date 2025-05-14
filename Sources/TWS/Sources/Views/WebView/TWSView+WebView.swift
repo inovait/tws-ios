@@ -44,6 +44,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
+    let enablePullToRefresh: Bool
 
     init(
         snippet: TWSSnippet,
@@ -62,7 +63,8 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        state: Bindable<TWSViewState>
+        state: Bindable<TWSViewState>,
+        enablePullToRefresh: Bool
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -82,7 +84,7 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self.downloadCompleted = downloadCompleted
         self._state = state
-
+        self.enablePullToRefresh = enablePullToRefresh
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -123,12 +125,14 @@ struct WebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         navigator.delegate = context.coordinator
 
-        // process content on reloads
-        context.coordinator.pullToRefresh.enable(on: webView) {
-            if let currentUrl = state.currentUrl, currentUrl != targetURL {
-                webView.load(URLRequest(url: currentUrl))
-            } else {
-                loadProcessedContent(webView: webView)
+        if enablePullToRefresh {
+            // process content on reloads
+            context.coordinator.pullToRefresh.enable(on: webView) {
+                if let currentUrl = state.currentUrl, currentUrl != targetURL {
+                    webView.load(URLRequest(url: currentUrl))
+                } else {
+                    loadProcessedContent(webView: webView)
+                }
             }
         }
 
