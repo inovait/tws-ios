@@ -20,6 +20,7 @@ import TWSModels
 class Router {
 
     private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
+    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: RedirectHandler(), delegateQueue: nil)
 
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
@@ -29,7 +30,7 @@ class Router {
         return newDateFormatter
     }()
 
-    class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
+    class func make(request: Request, retryEnabled: Bool = true, includeAccessToken: Bool = false) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = request.scheme
         components.host = request.host
@@ -52,14 +53,19 @@ class Router {
         logger.info(urlRequest.debugDescription)
 
         do {
+            let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
+            if includeAccessToken {
+                urlRequest.setValue(
+                    "Bearer \(token)",
+                    forHTTPHeaderField: "x-tws-access-token")
+            }
             if request.auth {
-                let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
                 urlRequest.setValue(
                     "Bearer \(token)",
                     forHTTPHeaderField: "Authorization"
                 )
             }
-            let result = try await URLSession.shared.data(for: urlRequest)
+            let result = try await urlSession.data(for: urlRequest)
             guard
                 let httpResult = result.1 as? HTTPURLResponse
             else {
