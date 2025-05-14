@@ -44,7 +44,6 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
-    let injectionFilterRegex: String?
 
     init(
         snippet: TWSSnippet,
@@ -63,8 +62,7 @@ struct WebView: UIViewRepresentable {
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
-        state: Bindable<TWSViewState>,
-        injectionFilterRegex: String?
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.preloadedResources = preloadedResources
@@ -84,7 +82,7 @@ struct WebView: UIViewRepresentable {
         self._canGoForward = canGoForward
         self.downloadCompleted = downloadCompleted
         self._state = state
-        self.injectionFilterRegex = injectionFilterRegex
+
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -295,7 +293,7 @@ struct WebView: UIViewRepresentable {
             targ.appendChild(style);
             """
             
-            let wrappedSource = patternMatchingWrapperValue(script: source, pattern: injectionFilterRegex)
+            let wrappedSource = checkInjectionUrlWrapper(script: source)
 
             let script = WKUserScript(
                 source: wrappedSource,
@@ -327,7 +325,7 @@ struct WebView: UIViewRepresentable {
             let value = jvs.value
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let wrappedValue = patternMatchingWrapperValue(script: value, pattern: injectionFilterRegex)
+            let wrappedValue = checkInjectionUrlWrapper(script: value)
             
             let script = WKUserScript(
                 source: wrappedValue,
@@ -368,30 +366,12 @@ struct WebView: UIViewRepresentable {
         return preloadedHTML
     }
     
-    private func escapedRegex(regex: String?) -> String? {
-        guard let regex else { return nil }
-        
-        let escaped = regex
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-            .replacingOccurrences(of: "/", with: "\\/")
-        return escaped
-    }
-    
-    private func patternMatchingWrapperValue(script: String, pattern: String?) -> String {
-        let escapedPattern = escapedRegex(regex: pattern)
+    private func checkInjectionUrlWrapper(script: String) -> String {
         let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
         let resolvedUrl = preloadedResources[key]?.responseUrl?.absoluteString ?? targetURL.absoluteString
-        
-        guard let escapedPattern else {
-            return """
-                if (window.location.href === '\(resolvedUrl)') {
-                    \(script)
-                }
-                """
-        }
+
         return """
-            if(/\(escapedPattern)/.test(window.location.href)) {
+            if (window.location.href === '\(resolvedUrl)') {
                 \(script)
             }
             """

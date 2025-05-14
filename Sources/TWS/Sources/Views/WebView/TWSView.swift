@@ -38,7 +38,6 @@ public struct TWSView: View {
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let overrideVisibilty: Bool
-    let injectionFilterRegex: String?
 
     /// Main contructor
     /// - Parameters:
@@ -52,15 +51,13 @@ public struct TWSView: View {
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
-        overrideVisibilty: Bool = false,
-        injectionFilterRegex: String? = nil
+        overrideVisibilty: Bool = false
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.overrideVisibilty = overrideVisibilty
         self._state = state
-        self.injectionFilterRegex = injectionFilterRegex
     }
 
     public var body: some View {
@@ -80,8 +77,7 @@ public struct TWSView: View {
                             cssOverrides: cssOverrides,
                             jsOverrides: jsOverrides,
                             displayID: displayID,
-                            state: $state,
-                            injectionFilterRegex: injectionFilterRegex
+                            state: $state
                         )
                         .id(snippet.id)
                         // The actual URL changed for the same Snippet ~ redraw is required
@@ -142,22 +138,19 @@ private struct _TWSView: View {
     let cssOverrides: [TWSRawCSS]
     let jsOverrides: [TWSRawJS]
     let displayID: String
-    let injectionFilterRegex: String?
 
     init(
         snippet: TWSSnippet,
         cssOverrides: [TWSRawCSS],
         jsOverrides: [TWSRawJS],
         displayID id: String,
-        state: Bindable<TWSViewState>,
-        injectionFilterRegex: String?
+        state: Bindable<TWSViewState>
     ) {
         self.snippet = snippet
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._state = state
-        self.injectionFilterRegex = injectionFilterRegex
     }
 
     var body: some View {
@@ -182,8 +175,7 @@ private struct _TWSView: View {
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
             downloadCompleted: onDownloadCompleted,
-            state: $state,
-            injectionFilterRegex: injectionFilterRegex
+            state: $state
         )
         // Used for Authentication via Safari
         .onOpenURL { url in openURL = url }
