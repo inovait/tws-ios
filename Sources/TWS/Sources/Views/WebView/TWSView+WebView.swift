@@ -91,12 +91,7 @@ struct WebView: UIViewRepresentable {
         let controller = WKUserContentController()
 
         #if DEBUG
-        _rawInjectJS(
-            to: controller,
-            rawJS: [interceptConsoleLogs(controller: controller)],
-            andPreloadedResources: [:],
-            forSnippet: snippet
-        )
+        controller.addUserScript(WKUserScript(source: interceptConsoleLogs(controller: controller).value, injectionTime: .atDocumentStart, forMainFrameOnly: false))
         #endif
 
         _rawInjectCSS(
@@ -278,7 +273,7 @@ struct WebView: UIViewRepresentable {
         andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
+        forMainFrameOnly: Bool = true
     ) {
         precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
 
@@ -301,9 +296,11 @@ struct WebView: UIViewRepresentable {
             var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
             targ.appendChild(style);
             """
+            
+            let wrappedSource = checkInjectionUrlWrapper(script: source)
 
             let script = WKUserScript(
-                source: source,
+                source: wrappedSource,
                 injectionTime: injectionTime,
                 forMainFrameOnly: forMainFrameOnly
             )
@@ -318,7 +315,7 @@ struct WebView: UIViewRepresentable {
         andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
         forSnippet snippet: TWSSnippet,
         injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = false
+        forMainFrameOnly: Bool = true
     ) {
         precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
 
@@ -332,12 +329,13 @@ struct WebView: UIViewRepresentable {
             let value = jvs.value
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
+            let wrappedValue = checkInjectionUrlWrapper(script: value)
+            
             let script = WKUserScript(
-                source: value,
+                source: wrappedValue,
                 injectionTime: injectionTime,
                 forMainFrameOnly: forMainFrameOnly
             )
-
             controller.addUserScript(script)
         }
     }
@@ -370,5 +368,16 @@ struct WebView: UIViewRepresentable {
         }
         
         return preloadedHTML
+    }
+    
+    private func checkInjectionUrlWrapper(script: String) -> String {
+        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
+        let resolvedUrl = preloadedResources[key]?.responseUrl?.absoluteString ?? targetURL.absoluteString
+
+        return """
+            if (window.location.href === '\(resolvedUrl)') {
+                \(script)
+            }
+            """
     }
 }
