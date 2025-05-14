@@ -46,6 +46,7 @@ public struct TWSView: View {
     ///   - state: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
+    ///   - enablePullToRefresh: Flag used to determine whether pull to refresh action should be enabled.
     public init(
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
