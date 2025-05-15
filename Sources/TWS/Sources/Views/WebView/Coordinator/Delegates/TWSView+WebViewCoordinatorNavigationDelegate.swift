@@ -158,6 +158,21 @@ extension WebView.Coordinator: WKNavigationDelegate {
             decisionHandler(.download, preferences)
             return
         }
+        
+        if let url = navigationAction.request.url, let scheme = url.scheme, !WKWebView.handlesURLScheme(scheme) {
+            logger.info("Trying to open as intent: \(url)")
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url) { didOpen in
+                    if didOpen {
+                        logger.info("Intent opened succesfully")
+                    } else {
+                        logger.info("Could not open intent")
+                    }
+                }
+            }
+            decisionHandler(.cancel, preferences)
+            return
+        }
 
         decisionHandler(.allow, preferences)
     }

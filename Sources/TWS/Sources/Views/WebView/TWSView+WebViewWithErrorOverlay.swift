@@ -20,6 +20,7 @@ import WebKit
 
 class WebViewWithErrorOverlay: UIViewController {
     let webView: WKWebView
+    let navigationProvider: NavigationProvider
     private var errorOverlay: UIView
     private var warningImage: UIImageView
     private var errorMessage: UILabel
@@ -29,8 +30,9 @@ class WebViewWithErrorOverlay: UIViewController {
     private var popupDelegate: PopupNavigationDelegate?
 
     // MARK: - Init
-    init(webView: WKWebView) {
+    init(webView: WKWebView, navigationProvider: NavigationProvider) {
         self.webView = webView
+        self.navigationProvider = navigationProvider
         self.errorOverlay = {
             let errorOverlay = UIView()
             errorOverlay.backgroundColor = UIColor.white
@@ -85,6 +87,7 @@ class WebViewWithErrorOverlay: UIViewController {
 
     required init?(coder: NSCoder) {
         self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        self.navigationProvider = NavigationProviderImpl()
         self.errorOverlay = UIView(frame: .zero)
         self.closeButton = UIButton(type: .system)
         self.reloadButton = UIButton(type: .system)
@@ -93,10 +96,22 @@ class WebViewWithErrorOverlay: UIViewController {
         self.activityIndicator = UIActivityIndicatorView()
         super.init(coder: coder)
     }
+    
+    @objc private func appMovedToForeground() {
+        if self.webView.url == nil {
+            do {
+                try navigationProvider.didClose(webView: webView, animated: true, completion: nil)
+            } catch {
+                logger.err("[UI \(webView.hash)] Failed to close the web view: \(webView)")
+            }
+        }
+    }
 
     // MARK: - Setup
 
     override func viewDidLoad() {
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
         webView.navigationDelegate = popupDelegate
         setupSubviews()
@@ -181,10 +196,13 @@ class WebViewWithErrorOverlay: UIViewController {
         errorOverlay.isHidden = true
         reloadButton.isHidden = true
     }
-
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
-class PopupNavigationDelegate: NSObject, WKNavigationDelegate{
+class PopupNavigationDelegate: NSObject, WKNavigationDelegate {
     let onEndNavigation: () -> Void
     let coordinator: WKNavigationDelegate?
     
