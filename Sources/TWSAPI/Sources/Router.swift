@@ -74,12 +74,12 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
-                var cookies: [HTTPCookieWrapper] = []
+                var cookies: Set<HTTPCookieWrapper> = .init()
                 var resolvedUrlsSet: Set<URL> = await redirectDelegate.collectAndDump(for: url)
                 
                 resolvedUrlsSet.forEach {
                     if let httpCookies = HTTPCookieStorage.shared.cookies(for: $0) {
-                        cookies.append(contentsOf: httpCookies.compactMap { HTTPCookieWrapper(cookie: $0) })
+                        cookies.formUnion(httpCookies.compactMap { HTTPCookieWrapper(cookie: $0) })
                     }
                 }
                 
@@ -93,7 +93,7 @@ class Router {
                     data: result.0,
                     dateOfResponse: serverDate,
                     responseUrl: result.1.url,
-                    cookies: cookies
+                    cookies: Array(cookies)
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
