@@ -15,11 +15,13 @@
 //
 
 import Foundation
+import TWSModels
 
 class Router {
 
     private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
-    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: RedirectHandler(), delegateQueue: nil)
+    private static let redirectDelegate = RedirectHandler()
+    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: redirectDelegate, delegateQueue: nil)
 
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
@@ -72,15 +74,26 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
+                var cookies: Set<HTTPCookieWrapper> = .init()
+                var resolvedUrlsSet: Set<URL> = await redirectDelegate.collectAndDump(for: url)
+                
+                resolvedUrlsSet.forEach {
+                    if let httpCookies = HTTPCookieStorage.shared.cookies(for: $0) {
+                        cookies.formUnion(httpCookies.compactMap { HTTPCookieWrapper(cookie: $0) })
+                    }
+                }
+                
                 var serverDate: Date?
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
                     serverDate = dateFormatter.date(from: serverDateHeader)
                 }
+                
                 return .init(
                     data: result.0,
                     dateOfResponse: serverDate,
-                    responseUrl: result.1.url
+                    responseUrl: result.1.url,
+                    cookies: Array(cookies)
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
@@ -104,6 +117,7 @@ struct APIResult {
     let data: Data
     let dateOfResponse: Date?
     let responseUrl: URL?
+    let cookies: [HTTPCookieWrapper]
 }
 
 public enum APIError: Error {

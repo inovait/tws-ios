@@ -39,6 +39,13 @@
         "identifier" : "TWSUniversalLinksTests",
         "name" : "TWSUniversalLinksTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "RouterTests",
+        "name" : "RouterTests"
+      }
     }
   ],
   "version" : 1
