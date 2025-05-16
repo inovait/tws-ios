@@ -61,6 +61,8 @@ public final class TWSViewState {
     /// URL that is currently displayed in TWSView
     public var currentUrl: URL? = nil
     
+    internal var isProvided: Bool = true
+    
     /// Initialiezes a class that ``TWSView`` uses to store information in
     /// - Parameter title: default title of the page
     /// - Parameter loadingState: the initial state for the loading state
@@ -70,5 +72,21 @@ public final class TWSViewState {
     ) {
         self.title = title
         self.loadingState = loadingState
+    }
+    
+    @_spi(Internals)
+    public init(
+        title: String = "",
+        loadingState: TWSLoadingState = .idle,
+        isProvided: Bool = true) {
+            self.title = title
+            self.loadingState = loadingState
+            self.isProvided = isProvided
+    }
+}
+
+extension TWSViewState {
+    public static func defaultState() -> TWSViewState {
+        return .init(loadingState: .loaded, isProvided: false)
     }
 }
