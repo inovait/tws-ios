@@ -58,7 +58,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
             do {
-                try navigationProvider.showError(message: error, on: webView)
+                try navigationProvider.showError(errorView: self.parent.errorView, message: error, on: webView)
             } catch {
                 logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
             }
@@ -85,7 +85,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
             do {
-                try navigationProvider.showError(message: error, on: webView)
+                try navigationProvider.showError(errorView: self.parent.errorView ,message: error, on: webView)
             } catch {
                 logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
             }
