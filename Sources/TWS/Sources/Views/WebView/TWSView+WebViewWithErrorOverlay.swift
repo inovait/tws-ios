@@ -120,14 +120,3 @@ class PopupNavigationDelegate: NSObject, WKNavigationDelegate {
         coordinator?.webView?(webView, didFailProvisionalNavigation: navigation, withError: error)
     }
 }
-
-
-
-struct ErrorViewWrapper: View {
-    @Environment(\.errorView) var errorView
-    let error: Error
-    
-    var body: some View {
-        errorView(error)
-    }
-}
