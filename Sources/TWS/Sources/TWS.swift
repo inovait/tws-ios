@@ -161,6 +161,19 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`set(customProps:,to:)` can only be called on main thread")
         store.send(.snippets(.business(.setLocalProps(props: (id, localProps)))))
     }
+    
+    /// Adds a custom set of headers to be sent along with the target URL. This affects only the specified snippet
+    ///
+    /// - Parameters:
+    ///   - localHeaders: A dictionary containing the local headers to inject in key : value format
+    ///   - id: The identifier of the snippet to assosiate with this dictionary.
+    /// This method attaches the specified headers to the snippets target request. If any keys are duplicated local keys override remote keys.
+    ///
+    /// > important: This setting is not persisted between app launches. Ensure the correct headers are set during each app launch.
+    public func set(localHeaders: [String: String], to id: TWSSnippet.ID) {
+        precondition(Thread.isMainThread, "`set(localHeaders:,to:)` can only be called on main thread")
+        store.send(.snippets(.business(.setLocalHeaders(headers: (id, localHeaders)))))
+    }
 
     /// Generates a report of all logs from the current session and returns a file URL.
     /// - Parameter reportFiltering: A function to filter and transform log entries into strings for the report file

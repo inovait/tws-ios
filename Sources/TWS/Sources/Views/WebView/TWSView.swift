@@ -32,7 +32,6 @@ public struct TWSView: View {
 
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
-    @State private var presentedTWSViewState: TWSViewState = .init()
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -65,7 +64,6 @@ public struct TWSView: View {
 
     public var body: some View {
         ZStack {
-            @Bindable var childState = presentedTWSViewState
             
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
