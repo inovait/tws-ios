@@ -16,6 +16,7 @@
 
 import UIKit
 import WebKit
+import SwiftUI
 
 @MainActor
 protocol NavigationProvider {
@@ -46,6 +47,7 @@ protocol NavigationProvider {
     ) throws(NavigationError)
     
     func showError(
+        errorView: (@MainActor @Sendable (Error) -> AnyView),
         message: Error,
         on: WKWebView
     ) throws(NavigationError)
@@ -62,6 +64,7 @@ class NavigationProviderImpl: NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
+
         guard let parent = originWebView.parentViewController()
         else { throw NavigationError.parentNotFound }
 
@@ -114,13 +117,14 @@ class NavigationProviderImpl: NavigationProvider {
     }
     
     func showError(
+        errorView: (@MainActor @Sendable (Error) -> AnyView),
         message: Error,
         on: WKWebView
     ) throws(NavigationError) {
         guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView?.webView == on })?.presentedWebView
         else { throw .presentedViewControllerNotFound }
         
-        webView.showError(message: message.localizedDescription)
+        webView.showError(err: message, errorView: errorView)
     }
 
 }
