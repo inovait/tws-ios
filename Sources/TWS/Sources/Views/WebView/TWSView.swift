@@ -32,7 +32,6 @@ public struct TWSView: View {
 
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
-    @State private var presentedTWSViewState: TWSViewState = .init()
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
