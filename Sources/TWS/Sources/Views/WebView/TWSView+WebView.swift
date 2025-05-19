@@ -256,7 +256,6 @@ struct WebView: UIViewRepresentable {
         if let preloaded = preloadedResources[key] {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
-            _handleCookieSyncing(cookies: preloaded.cookies, to: webView)
             webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
@@ -265,14 +264,6 @@ struct WebView: UIViewRepresentable {
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
             }
             webView.load(urlRequest)
-        }
-    }
-    
-    private func _handleCookieSyncing(cookies: [HTTPCookieWrapper],to webView: WKWebView) {
-        cookies.forEach {
-            if let httpCookie = $0.toHTTPCookie() {
-                webView.configuration.websiteDataStore.httpCookieStore.setCookie(httpCookie)
-            }
         }
     }
 

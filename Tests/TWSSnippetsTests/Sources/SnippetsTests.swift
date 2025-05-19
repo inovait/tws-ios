@@ -58,7 +58,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in (project, nil)}
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, cookies: [], data:  "") }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -105,7 +105,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, cookies: [], data:  "") }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -159,7 +159,7 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, cookies: [], data:  "") }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -212,7 +212,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in (TWSProject(listenOn: socketURL, snippets: snippets), nil)}
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, cookies: [], data:  "") }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -272,7 +272,7 @@ final class SnippetsTests: XCTestCase {
                 $0.api.getProject = { [socketURL] _ in
                     (TWSProject(listenOn: socketURL, snippets: [snippets[0], snippets[1], snippets[2]]), nil)
                 }
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, cookies: [], data:  "") }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: nil, data:  "") }
                 $0.date.now = Date()
             }
         )
@@ -327,7 +327,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in (project, nil)}
-                $0.api.getResource = { url, _ in return ResourceResponse(responseUrl: url.url, cookies: [], data: url.url.absoluteString)  }
+                $0.api.getResource = { url, _ in return ResourceResponse(responseUrl: url.url, data: url.url.absoluteString)  }
                 $0.date.now = Date()
             }
         )
@@ -356,7 +356,7 @@ final class SnippetsTests: XCTestCase {
         }
         // Observe preloaded resources, only first should appear
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [ .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, cookies: [], data: snippets[0].target.absoluteString)]
+            $0.preloadedResources = [ .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
         }
         
         // Open second snippet
@@ -371,8 +371,8 @@ final class SnippetsTests: XCTestCase {
         // Observe preloaded resources again, two resources appear
         await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated) {
             $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, cookies: [], data: snippets[0].target.absoluteString),
-                .init(url: snippets[1].target, contentType: .html) : .init(responseUrl: snippets[1].target, cookies: [], data: snippets[1].target.absoluteString)
+                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString),
+                .init(url: snippets[1].target, contentType: .html) : .init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString)
             ]
         }
     }
@@ -396,7 +396,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in (project, nil)}
-                $0.api.getResource = { url,_ in ResourceResponse(responseUrl: url.url, cookies: [], data: url.url.absoluteString) }
+                $0.api.getResource = { url,_ in ResourceResponse(responseUrl: url.url, data: url.url.absoluteString) }
                 $0.date.now = Date()
                 $0.socket.get = { _, _ in .init() }
                 $0.socket.connect = { _ in stream.stream }
@@ -439,7 +439,7 @@ final class SnippetsTests: XCTestCase {
 
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
             $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, cookies: [], data: snippets[0].target.absoluteString)
+                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
             ]
         }
         
@@ -474,8 +474,8 @@ final class SnippetsTests: XCTestCase {
 
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
             $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html): .init(responseUrl: snippets[0].target, cookies: [], data: snippets[0].target.absoluteString),
-                .init(url: changedURL, contentType: .html): .init(responseUrl: changedURL, cookies: [], data: changedURL.absoluteString)
+                .init(url: snippets[0].target, contentType: .html): .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString),
+                .init(url: changedURL, contentType: .html): .init(responseUrl: changedURL, data: changedURL.absoluteString)
             ]
         }
         
@@ -510,7 +510,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in return (.init(listenOn: socketURL, snippets: remoteSnippets), nil)}
-                $0.api.getResource = { [staticResources] _, _ in return ResourceResponse(responseUrl: url, cookies: [], data: staticResources) }
+                $0.api.getResource = { [staticResources] _, _ in return ResourceResponse(responseUrl: url, data: staticResources) }
                 $0.date.now = Date()
             })
         
@@ -539,7 +539,7 @@ final class SnippetsTests: XCTestCase {
         
         await storeFirstLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
             $0.preloadedResources = [
-                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, cookies: [], data: staticResources),
+                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: staticResources),
             ]
             cachedPreloadedResources = $0.preloadedResources
         }
@@ -560,7 +560,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { [socketURL] _ in return (.init(listenOn: socketURL, snippets: remoteSnippets), nil)}
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: url, cookies: [], data: changedStaticResources) }
+                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: url, data: changedStaticResources) }
                 $0.date.now = Date()
             })
         
@@ -595,77 +595,11 @@ final class SnippetsTests: XCTestCase {
         
         await storeSecondLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
             $0.preloadedResources = [
-                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, cookies: [], data: changedStaticResources)
+                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: changedStaticResources)
             ]
             
             // Preloaded resource got removed and new one added
             XCTAssert(cachedPreloadedResources != $0.preloadedResources)
-        }
-    }
-    
-    @MainActor
-    func testRetrieveSetCookiesHeaders() async throws {
-        // Remote snippets
-        let s1ID = "1"
-        let url = URL(string: "https://www.google.com")!
-        
-        let remoteSnippets: [TWSSnippet] = [
-            .init(id: s1ID, target: url)
-        ]
-        
-        let state = TWSSnippetsFeature.State(configuration: configuration)
-        let project = TWSProject(listenOn: socketURL, snippets: remoteSnippets)
-
-        let cookies: [HTTPCookieWrapper] = [
-            .init(cookie: .init(properties: [
-                .name: "testCookie",
-                .value: "testValue",
-                .domain: "www.google.com",
-                .path: "/",
-                .expires: Date.distantPast
-            ])!)!
-        ]
-        
-        let store = TestStore(
-            initialState: state,
-            reducer: { TWSSnippetsFeature() },
-            withDependencies: {
-                $0.api.getProject = { _ in (project, nil)}
-                $0.api.getResource = { url, _ in return ResourceResponse(responseUrl: url.url, cookies: cookies, data: url.url.absoluteString)  }
-                $0.date.now = Date()
-            }
-        )
-        
-        // Send response for the first time
-        await store.send(.business(.load)) { state in
-            state.state = .loading
-        }
-
-        // Receive remote snippets
-        await store.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: remoteSnippets.map { .init(snippet: $0) })
-            $0.socketURL = self.socketURL
-            $0.state = .loaded
-        }
-
-        await store.receive(\.business.startVisibilityTimers)
-        
-        await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
-        
-        await store.receive(\.business.snippets[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
-        }
-        
-        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-        }
-        
-        // Expect cookies to be sent along the preloaded resource response
-        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: url, contentType: .html) : .init(responseUrl: url, cookies: cookies, data: url.absoluteString)
-            ]
         }
     }
 }

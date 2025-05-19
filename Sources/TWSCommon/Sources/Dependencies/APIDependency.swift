@@ -73,7 +73,7 @@ public enum APIDependencyKey: DependencyKey {
         } getSnippetBySharedToken: { _ in
             unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
         } getResource: { _, _ in
-            unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, cookies: [], data: ""))
+            unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
         }
     }
 }

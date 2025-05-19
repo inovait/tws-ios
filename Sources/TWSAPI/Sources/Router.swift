@@ -16,6 +16,7 @@
 
 import Foundation
 import TWSModels
+import WebKit
 
 class Router {
 
@@ -74,12 +75,12 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
-                var cookies: Set<HTTPCookieWrapper> = .init()
-                var resolvedUrlsSet: Set<URL> = await redirectDelegate.collectAndDump(for: url)
-                
-                resolvedUrlsSet.forEach {
-                    if let httpCookies = HTTPCookieStorage.shared.cookies(for: $0) {
-                        cookies.formUnion(httpCookies.compactMap { HTTPCookieWrapper(cookie: $0) })
+                if let resolvedUrl = result.1.url,
+                   let httpCookies = HTTPCookieStorage.shared.cookies(for: resolvedUrl) {
+                    httpCookies.forEach { cookie in
+                        Task { @MainActor in
+                            await WKWebsiteDataStore.default().httpCookieStore.setCookie(cookie)
+                        }
                     }
                 }
                 
@@ -92,8 +93,7 @@ class Router {
                 return .init(
                     data: result.0,
                     dateOfResponse: serverDate,
-                    responseUrl: result.1.url,
-                    cookies: Array(cookies)
+                    responseUrl: result.1.url
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
@@ -117,7 +117,6 @@ struct APIResult {
     let data: Data
     let dateOfResponse: Date?
     let responseUrl: URL?
-    let cookies: [HTTPCookieWrapper]
 }
 
 public enum APIError: Error {

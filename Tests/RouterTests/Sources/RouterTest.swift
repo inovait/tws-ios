@@ -16,13 +16,17 @@
 
 import XCTest
 import Foundation
+import WebKit
 @testable import TWSAPI
+
 
 class RouterTest: XCTestCase {
     
     @MainActor func testRetrieveIntermediateUrls() async throws {
-        HTTPCookieStorage.shared.cookies?.forEach { cookie in
-            HTTPCookieStorage.shared.deleteCookie(cookie)
+        let cookiesToDelete = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
+        
+        for cookie in cookiesToDelete {
+            await WKWebsiteDataStore.default().httpCookieStore.deleteCookie(cookie)
         }
         
         let config = URLSessionConfiguration.default
@@ -33,15 +37,6 @@ class RouterTest: XCTestCase {
         
         let url2 = ResultSet.secondUrl
         let concurrentUrlRequest = URLRequest(url: url2)
-        
-        let firstRedirectUrl = ResultSet.firstRedirectUrl
-        let secondRedirectUrl = ResultSet.secondRedirectUrl
-        let thirdRedirectUrl = ResultSet.thirdRedirectUrl
-        let resolvedUrl = ResultSet.resolvedUrl
-        
-        let setCookies = ResultSet.cookieHeaders
-        
-        let expectedUrlsResult = [url, firstRedirectUrl, secondRedirectUrl, thirdRedirectUrl, resolvedUrl]
         
         let delegate = RedirectHandler()
         
@@ -58,14 +53,25 @@ class RouterTest: XCTestCase {
         
         // Make another request
         do {
-            let task = try await session.data(for: urlRequest)
+            let _ = try await session.data(for: urlRequest)
         } catch {
             throw error
         }
         
+        var expectedCookies: [HTTPCookie] = []
+        ResultSet.cookieHeaders.enumerated().map { (index, item) in
+            expectedCookies.append(contentsOf: HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": item], for: ResultSet.redirects[index]).map{ cookie in
+                var propretyDict = cookie.properties
+                propretyDict?.updateValue(1, forKey: .version)
+                return HTTPCookie(properties: propretyDict!)!
+            })
+        }
+        
         // Collect the result
-        let resultUrls = await delegate.collectAndDump(for: url)
-        XCTAssert(Set(resultUrls) == Set(expectedUrlsResult))
+        let cookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
+        
+        XCTAssert(Set(expectedCookies) == Set(cookies))
+        
         
     }
 }
@@ -150,6 +156,13 @@ struct ResultSet {
     static let secondRedirectUrl = URL(string: "https://www.secondredirect.com")!
     static let thirdRedirectUrl = URL(string: "https://www.thirdredirect.com")!
     static let resolvedUrl = URL(string: "https://www.resolvedUrl.com")!
+    
+    static let redirects: [URL] = [
+        initialUrl,
+        firstRedirectUrl,
+        secondRedirectUrl,
+        thirdRedirectUrl
+    ]
     
     static let cookieHeaders = [
         "sessionId=abc123; Path=/; HttpOnly; Expires=Fri, 31 Dec 9999 23:59:59 GMT",

@@ -100,7 +100,7 @@ public struct TWSAPI {
                 ), includeAccessToken: attachment.contentType == .html)
 
                 if let payload = String(data: result.data, encoding: .utf8) {
-                    return ResourceResponse(responseUrl: result.responseUrl, cookies: result.cookies, data: payload)
+                    return ResourceResponse(responseUrl: result.responseUrl, data: payload)
                 }
 
                 throw .decode(NSError(domain: "invalid-string", code: -1))
