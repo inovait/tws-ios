@@ -602,6 +602,111 @@ final class SnippetsTests: XCTestCase {
             XCTAssert(cachedPreloadedResources != $0.preloadedResources)
         }
     }
+    
+    @MainActor
+    func testPreloadTiming() async throws {
+        let snippetUrl = URL(string: "https://www.test.com")!
+        let dynamicResourceURL1 = URL(string: "https://www.test.com/dynamicResource/1")!
+        let dynamicResourceURL2 = URL(string: "https://www.test.com/dynamicResource/2")!
+        
+        let snippet: TWSSnippet = .init(
+            id: "1",
+            target: snippetUrl,
+            dynamicResources: [
+                .init(url: dynamicResourceURL1, contentType: .css),
+                .init(url: dynamicResourceURL2, contentType: .javascript)
+            ])
+        
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        let urlSession = URLSession(configuration: config)
+        
+        let reducer = TWSSnippetFeature()
+        let store = TestStore(
+            initialState: TWSSnippetFeature.State(snippet: snippet),
+            reducer: { reducer },
+            withDependencies: {
+                $0.api.getResource = { attachment, headers in
+                    do {
+                        try await urlSession.data(from: attachment.url)
+                    } catch {}
+                    return ResourceResponse(responseUrl: attachment.url, data: attachment.url.absoluteString)}
+                $0.date.now = Date()
+            })
+        
+        let preloadedResources = await reducer.preloadResources(for: snippet, using: store.dependencies.api)
+        for a in TimeStampedRequests.stampedRequests {
+            print(a.key)
+            print("\(a.value.start) - \(a.value.finish)")
+        }
+        
+        let timestampsForTarget = TimeStampedRequests.stampedRequests[snippetUrl]!
+        
+        for timestamp in TimeStampedRequests.stampedRequests.filter { $0.key != snippetUrl } {
+            XCTAssert(timestampsForTarget.finish < timestamp.value.start)
+        }
+    }
+}
+
+struct TimeStampedRequests {
+    private static let queue = DispatchQueue(label: "TimeStampedRequests.queue")
+    nonisolated(unsafe) private(set) static var stampedRequests: [URL: TimestampedRequest] = [:]
+    
+    static func markStart(url: URL) {
+        queue.sync {
+            stampedRequests.updateValue(.init(), forKey: url)
+        }
+    }
+    
+    static func markFinished(url: URL) {
+        queue.sync {
+            var currentValue = stampedRequests[url]!
+            currentValue.finish = Date().timeIntervalSince1970
+            stampedRequests.updateValue(currentValue, forKey: url)
+        }
+    }
+    
+    class TimestampedRequest {
+        let start: Double
+        var finish: Double
+        
+        init() {
+            self.start = Date().timeIntervalSince1970
+            self.finish = Date.distantFuture.timeIntervalSince1970
+        }
+    }
+}
+
+class MockURLProtocol: URLProtocol {
+    var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data)) = { req in
+        return (HTTPURLResponse(url: req.url!, mimeType: nil, expectedContentLength: 0, textEncodingName: nil), req.url!.absoluteString.data(using: .utf8)!)
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        return true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        return request
+    }
+
+    override func startLoading() {
+        do {
+            let (response, data) = try requestHandler(request)
+            TimeStampedRequests.markStart(url: request.url!)
+            
+            
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+            TimeStampedRequests.markFinished(url: request.url!)
+            
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }
 
 // swiftlint:enable file_length
