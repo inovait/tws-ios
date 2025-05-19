@@ -71,30 +71,52 @@ public extension Reducer {
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
-        return await withTaskGroup(
+        let allResources = Set(resources)
+        // Create two taskGroups to ensure html is fetched first, and sets the cookies, before other resources are fetched
+        let htmlResources = await withTaskGroup(
             of: (TWSSnippet.Attachment, ResourceResponse)?.self,
             returning: [TWSSnippet.Attachment: ResourceResponse].self
-        ) { [api] group in
-            // Use a set to download each resource only once, even if it is used in multiple snippets
-            for resource in Set(resources) {
-                group.addTask { [resource] in
-                    do {
-                        let payload = try await api.getResource(resource, headers[resource] ?? [:])
-                        if !payload.data.isEmpty { return (resource, payload) }
-                        return nil
-                    } catch {
-                        return nil
-                    }
+        ) { group in
+            let htmlResources = allResources.filter { res in res.contentType == .html }
+            
+            return await fetchResourcesFor(htmlResources, with: headers, group: &group, using: api)
+        }
+        
+        let otherResources = await withTaskGroup(
+            of: (TWSSnippet.Attachment, ResourceResponse)?.self,
+            returning: [TWSSnippet.Attachment: ResourceResponse].self
+        ) { group in
+            let otherResources = allResources.filter { res in res.contentType != .html }
+            return await fetchResourcesFor(otherResources, with: headers, group: &group, using: api)
+        }
+        
+        return htmlResources.merging(otherResources, uniquingKeysWith: { first, second in first })
+    }
+    
+    private func fetchResourcesFor(
+        _ resources: Set<TWSSnippet.Attachment>,
+        with headers: [TWSSnippet.Attachment: [String: String]],
+        group: inout TaskGroup<(TWSSnippet.Attachment, ResourceResponse)?>,
+        using api: APIDependency
+    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+        for resource in resources {
+            group.addTask { [resource] in
+                do {
+                    let payload = try await api.getResource(resource, headers[resource] ?? [:])
+                    if !payload.data.isEmpty { return (resource, payload) }
+                    return nil
+                } catch {
+                    return nil
                 }
             }
-
-            var results: [TWSSnippet.Attachment: ResourceResponse] = [:]
-            for await result in group {
-                guard let result else { continue }
-                results[result.0] = result.1
-            }
-
-            return results
         }
+
+        var results: [TWSSnippet.Attachment: ResourceResponse] = [:]
+        for await result in group {
+            guard let result else { continue }
+            results[result.0] = result.1
+        }
+        return results
     }
 }
+
