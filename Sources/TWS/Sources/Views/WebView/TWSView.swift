@@ -22,17 +22,16 @@ import WebKit
 
 /// The main view to use to display snippets
 public struct TWSView: View {
-
     @Environment(\.presenter) private var presenter
     @Environment(\.locationServiceBridge) private var locationServicesBridge
     @Environment(\.loadingView) private var loadingView
     @Environment(\.preloadingView) private var preloadingView
     @Environment(\.errorView) private var errorView
-    @Bindable var state: TWSViewState
+    @Bindable var bindableState: TWSViewState
+    @State var internalState = TWSViewState()
 
     @State private var displayID = UUID().uuidString
     @State private var store: StoreOf<TWSSnippetFeature>?
-    @State private var presentedTWSViewState: TWSViewState = .init()
 
     let snippet: TWSSnippet
     let cssOverrides: [TWSRawCSS]
@@ -49,7 +48,7 @@ public struct TWSView: View {
     ///   - enablePullToRefresh: Flag used to determine whether pull to refresh action should be enabled.
     public init(
         snippet: TWSSnippet,
-        state: Bindable<TWSViewState> = .init(.init(loadingState: .loaded)),
+        state: Bindable<TWSViewState> = .init(TWSViewState.defaultState()),
         cssOverrides: [TWSRawCSS] = [],
         jsOverrides: [TWSRawJS] = [],
         overrideVisibilty: Bool = false,
@@ -59,14 +58,14 @@ public struct TWSView: View {
         self.cssOverrides = cssOverrides
         self.jsOverrides = jsOverrides
         self.overrideVisibilty = overrideVisibilty
-        self._state = state
+        self._bindableState = state
         self.enablePullToRefresh = enablePullToRefresh
     }
 
     public var body: some View {
-        ZStack {
-            @Bindable var childState = presentedTWSViewState
-            
+        @Bindable var state = if (bindableState.isProvided) { bindableState } else { internalState }
+        
+        return ZStack {
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
                 if let store = store, store.preloaded == false && !overrideVisibilty {
                     preloadingView()
