@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import TWSModels
 import WebKit
 
 class Router {
