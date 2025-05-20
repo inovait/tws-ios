@@ -15,11 +15,13 @@
 //
 
 import Foundation
+import WebKit
 
 class Router {
 
     private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
-    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: RedirectHandler(), delegateQueue: nil)
+    private static let redirectDelegate = RedirectHandler()
+    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: redirectDelegate, delegateQueue: nil)
 
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
@@ -72,11 +74,21 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
+                if let resolvedUrl = result.1.url,
+                   let httpCookies = HTTPCookieStorage.shared.cookies(for: resolvedUrl) {
+                    httpCookies.forEach { cookie in
+                        Task { @MainActor in
+                            await WKWebsiteDataStore.default().httpCookieStore.setCookie(cookie)
+                        }
+                    }
+                }
+                
                 var serverDate: Date?
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
                     serverDate = dateFormatter.date(from: serverDateHeader)
                 }
+                
                 return .init(
                     data: result.0,
                     dateOfResponse: serverDate,

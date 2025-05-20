@@ -163,6 +163,13 @@ let package = Package(
                 .target(name: "TWSUniversalLinks")
             ],
             path: "Tests/TWSUniversalLinksTests"
+        ),
+        .testTarget(
+            name: "RouterTests",
+            dependencies: [
+                .target(name: "TWSAPI")
+            ],
+            path: "Tests/RouterTests"
         )
     ]
 )

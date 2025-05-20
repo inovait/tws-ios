@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import WebKit
 
 final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     
@@ -23,9 +24,22 @@ final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegat
                         willPerformHTTPRedirection response: HTTPURLResponse,
                         newRequest request: URLRequest,
                         completionHandler: @escaping (URLRequest?) -> Void) {
-        
+        #if DEBUG
+        logger.info("Redirecting request from \(response.url?.absoluteString ?? "unknown") to \(request.url?.absoluteString ?? "unknown")")
+        #endif
         var redirectedRequest = request
-        // remove our access token from any redirected request
+        
+        Task { @MainActor in
+            if let headerFields = response.allHeaderFields as? [String: String],
+               let url = response.url {
+                let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+                cookies.forEach {
+                    WKWebsiteDataStore.default().httpCookieStore.setCookie($0)
+                }
+            }
+        }
+        
+        // remove tws access token from any redirected request
         redirectedRequest.setValue(nil, forHTTPHeaderField: "x-tws-access-token")
         completionHandler(redirectedRequest)
     }
