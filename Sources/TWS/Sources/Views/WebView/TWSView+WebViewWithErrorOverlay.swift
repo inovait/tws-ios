@@ -21,12 +21,14 @@ import SwiftUI
 
 class WebViewWithErrorOverlay: UIViewController {
     let webView: WKWebView
+    let navigationProvider: NavigationProvider
     private var activityIndicator: UIActivityIndicatorView
     private var popupDelegate: PopupNavigationDelegate?
     
     // MARK: - Init
-    init(webView: WKWebView) {
+    init(webView: WKWebView, navigationProvider: NavigationProvider) {
         self.webView = webView
+        self.navigationProvider = navigationProvider
         
         self.activityIndicator = {
             let activityIndicator = UIActivityIndicatorView(style: .large)
@@ -42,12 +44,25 @@ class WebViewWithErrorOverlay: UIViewController {
     required init?(coder: NSCoder) {
         self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         self.activityIndicator = UIActivityIndicatorView()
+        self.navigationProvider = NavigationProviderImpl()
         super.init(coder: coder)
+    }
+    
+    @objc private func appMovedToForeground() {
+        if self.webView.url == nil {
+            do {
+                try navigationProvider.didClose(webView: webView, animated: true, completion: nil)
+            } catch {
+                logger.err("[UI \(webView.hash)] Failed to close the web view: \(webView)")
+            }
+        }
     }
 
     // MARK: - Setup
 
     override func viewDidLoad() {
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
         webView.navigationDelegate = popupDelegate
         setupSubviews()
@@ -93,6 +108,10 @@ class WebViewWithErrorOverlay: UIViewController {
                 errView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
             ])
         }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

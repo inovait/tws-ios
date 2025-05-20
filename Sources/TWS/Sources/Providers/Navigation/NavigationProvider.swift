@@ -22,7 +22,7 @@ import SwiftUI
 protocol NavigationProvider {
     
     func present(
-        webView: WebViewWithErrorOverlay,
+        webView: WKWebView,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -59,7 +59,7 @@ class NavigationProviderImpl: NavigationProvider {
     private var _presentedVCs = [WKWebView : DestinationInfo]()
 
     func present(
-        webView: WebViewWithErrorOverlay,
+        webView: WKWebView,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -71,14 +71,15 @@ class NavigationProviderImpl: NavigationProvider {
         guard parent.presentedViewController == nil
         else { throw NavigationError.alreadyPresenting }
 
-        let newViewController = webView
-        _presentedVCs[webView.webView] = .init(
-            viewController: newViewController,
+        let webViewWithErrorOverlay = WebViewWithErrorOverlay(webView: webView, navigationProvider: self)
+        
+        _presentedVCs[webView] = .init(
+            viewController: webViewWithErrorOverlay,
             presentedWebView: webView,
             parentWebView: originWebView
         )
 
-        parent.present(newViewController, animated: animated, completion: completion)
+        parent.present(webViewWithErrorOverlay, animated: animated, completion: completion)
     }
 
     func present(
@@ -110,7 +111,7 @@ class NavigationProviderImpl: NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from})?.presentedWebView?.webView
+        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from})?.presentedWebView
         else { throw .presentedViewControllerNotFound }
         
         webView.load(URLRequest(url: url))
@@ -121,7 +122,7 @@ class NavigationProviderImpl: NavigationProvider {
         message: Error,
         on: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView?.webView == on })?.presentedWebView
+        guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView == on })?.viewController as? WebViewWithErrorOverlay
         else { throw .presentedViewControllerNotFound }
         
         webView.showError(err: message, errorView: errorView)
@@ -148,7 +149,7 @@ private extension UIView {
 private struct DestinationInfo {
 
     weak var viewController: UIViewController?
-    weak var presentedWebView: WebViewWithErrorOverlay?
+    weak var presentedWebView: WKWebView?
     weak var parentWebView: WKWebView?
 }
 
