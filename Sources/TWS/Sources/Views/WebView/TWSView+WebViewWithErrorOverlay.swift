@@ -24,12 +24,14 @@ class WebViewWithErrorOverlay: UIViewController {
     let navigationProvider: NavigationProvider
     private var activityIndicator: UIActivityIndicatorView
     private var popupDelegate: PopupNavigationDelegate?
+    let locationServiceBridge = DefaultLocationServicesManager()
+    let jsLocationServices = JavaScriptLocationAdapter()
+    
     
     // MARK: - Init
     init(webView: WKWebView, navigationProvider: NavigationProvider) {
         self.webView = webView
         self.navigationProvider = navigationProvider
-        
         self.activityIndicator = {
             let activityIndicator = UIActivityIndicatorView(style: .large)
             activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -61,6 +63,12 @@ class WebViewWithErrorOverlay: UIViewController {
     // MARK: - Setup
 
     override func viewDidLoad() {
+        JavaScriptLocationMessageHandler.addObserver(for: jsLocationServices)
+
+        Task {
+            await jsLocationServices.bind(webView: self.webView, to: locationServiceBridge)
+        }
+        
         let nc = NotificationCenter.default
         nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
@@ -111,6 +119,10 @@ class WebViewWithErrorOverlay: UIViewController {
     }
     
     deinit {
+        let tempLocationService = jsLocationServices
+        Task { @MainActor in
+            JavaScriptLocationMessageHandler.removeObserver(for: tempLocationService)
+        }
         NotificationCenter.default.removeObserver(self)
     }
 }

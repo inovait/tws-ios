@@ -353,8 +353,9 @@ struct WebView: UIViewRepresentable {
         controller.addUserScript(.init(source: jsContent, injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
         let jsLocationServices = JavaScriptLocationAdapter()
+        JavaScriptLocationMessageHandler.addObserver(for: jsLocationServices)
         controller.add(
-            JavaScriptLocationMessageHandler(adapter: jsLocationServices),
+            JavaScriptLocationMessageHandler(),
             name: "locationHandler"
         )
 
