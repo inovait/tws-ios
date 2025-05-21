@@ -55,11 +55,7 @@ class Router {
 
         do {
             let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
-            if includeAccessToken {
-                urlRequest.setValue(
-                    "Bearer \(token)",
-                    forHTTPHeaderField: "x-tws-access-token")
-            }
+
             if request.auth {
                 urlRequest.setValue(
                     "Bearer \(token)",
