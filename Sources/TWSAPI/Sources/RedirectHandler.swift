@@ -39,8 +39,6 @@ final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegat
             }
         }
         
-        // remove tws access token from any redirected request
-        redirectedRequest.setValue(nil, forHTTPHeaderField: "x-tws-access-token")
         completionHandler(redirectedRequest)
     }
 }
