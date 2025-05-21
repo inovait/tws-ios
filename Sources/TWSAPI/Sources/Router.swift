@@ -31,7 +31,7 @@ class Router {
         return newDateFormatter
     }()
 
-    class func make(request: Request, retryEnabled: Bool = true, includeAccessToken: Bool = false) async throws(APIError) -> APIResult {
+    class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
         var components = URLComponents()
         components.scheme = request.scheme
         components.host = request.host
