@@ -110,7 +110,7 @@ public struct TWSSnippetFeature: Sendable {
             state.isPreloading = true
 
             return .run { [api, snippet = state.snippet] send in
-                let resources = await preloadResources(for: snippet, using: api)
+                let resources = await preloadAndInjectResources(for: snippet, using: api)
                 await send(.business(.preloadCompleted(resources)))
             }
 

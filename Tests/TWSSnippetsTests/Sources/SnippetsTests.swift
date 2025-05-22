@@ -634,7 +634,7 @@ final class SnippetsTests: XCTestCase {
                 $0.date.now = Date()
             })
         
-        let preloadedResources = await reducer.preloadResources(for: snippet, using: store.dependencies.api)
+        let preloadedResources = await reducer.preloadAndInjectResources(for: snippet, using: store.dependencies.api)
         for a in TimeStampedRequests.stampedRequests {
             print(a.key)
             print("\(a.value.start) - \(a.value.finish)")

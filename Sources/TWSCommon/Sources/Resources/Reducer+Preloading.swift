@@ -22,42 +22,43 @@ public extension Reducer {
 
     // MARK: - Loading resources
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for snippet: TWSSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
+        
         let resources = snippet.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
             headers: headers,
             using: api
         )
     }
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for project: TWSProject,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = project.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
             headers: headers,
             using: api
         )
     }
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = sharedSnippet.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
             headers: headers,
             using: api
@@ -66,14 +67,14 @@ public extension Reducer {
 
     // MARK: - Helpers
 
-    private func _preloadResources(
+    private func _preloadAndInjectResources(
         resources: [TWSSnippet.Attachment],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         let allResources = Set(resources)
         // Create two taskGroups to ensure html is fetched first, and sets the cookies, before other resources are fetched
-        let htmlResources = await withTaskGroup(
+        var htmlResources = await withTaskGroup(
             of: (TWSSnippet.Attachment, ResourceResponse)?.self,
             returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { group in
@@ -90,7 +91,69 @@ public extension Reducer {
             return await fetchResourcesFor(otherResources, with: headers, group: &group, using: api)
         }
         
-        return htmlResources.merging(otherResources, uniquingKeysWith: { first, second in first })
+        htmlResources = htmlResources.mapValues { value in
+            var modifiedData = value.data
+            injectResources(into: &modifiedData, resources: otherResources)
+            return ResourceResponse(responseUrl: value.responseUrl, data: modifiedData)
+        }
+        
+        return htmlResources
+    }
+    
+    private func injectResources(into html: inout String, resources: [TWSSnippet.Attachment: ResourceResponse]) {
+        print("resources to inject: \(resources)")
+        resources.forEach { resource in
+            switch resource.key.contentType {
+            case .css:
+                injectCSS(for: &html, css: resource.value.data)
+            case .javascript:
+                injectJavaScript(for: &html, javascript: resource.value.data)
+            case .html:
+                break
+            }
+        }
+        
+    }
+    
+    private func injectCSS(for html: inout String, css: String) {
+        let linkTag = "<style>\(css)</style>"
+        
+        if html.contains("<head>") {
+            html = html.replacingOccurrences(of: "</head>", with: "\(linkTag)</head>")
+        } else {
+            if let htmlTagRegex = try? NSRegularExpression(pattern: "<html\\b[^>]*>", options: [.caseInsensitive]) {
+                let range = NSRange(html.startIndex..., in: html)
+                
+                if let match = htmlTagRegex.firstMatch(in: html, options: [], range: range),
+                    let matchRange = Range(match.range, in: html) {
+                    let insertionIndex = matchRange.upperBound
+                    html.insert(contentsOf: linkTag, at: insertionIndex)
+                } else {
+                    html = "\(html)\(linkTag)"
+                }
+            }
+            
+        }
+    }
+    
+    private func injectJavaScript(for html: inout String, javascript: String) {
+        let scriptTag = "<script>\(javascript)</script>"
+        
+        if html.contains("<head>") {
+            html = html.replacingOccurrences(of: "</head>", with: "\(scriptTag)</head>")
+        } else {
+            if let htmlTagRegex = try? NSRegularExpression(pattern: "<html\\b[^>]*>", options: [.caseInsensitive]) {
+                let range = NSRange(html.startIndex..., in: html)
+                
+                if let match = htmlTagRegex.firstMatch(in: html, options: [], range: range),
+                   let matchRange = Range(match.range, in: html) {
+                    let insertionIndex = matchRange.upperBound
+                    html.insert(contentsOf: scriptTag, at: insertionIndex)
+                } else {
+                    html = "\(scriptTag)\(html)"
+                }
+            }
+        }
     }
     
     private func fetchResourcesFor(
