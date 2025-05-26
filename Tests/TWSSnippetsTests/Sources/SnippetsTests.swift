@@ -351,6 +351,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets[id: s1ID]?.isPreloading = true
         }
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
@@ -365,6 +366,8 @@ final class SnippetsTests: XCTestCase {
             $0.snippets[id: s2ID]?.isPreloading = true
         }
         await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
+            $0.snippets[id: s2ID]?.preloadedResources = [.init(url: snippets[1].target, contentType: .html) : .init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString)]
             $0.snippets[id: s2ID]?.isPreloading = false
             $0.snippets[id: s2ID]?.preloaded = true
         }
@@ -433,6 +436,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
@@ -468,6 +472,8 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
+            $0.snippets[id: s1ID]?.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString), .init(url: changedURL, contentType: .html): .init(responseUrl: changedURL, data: changedURL.absoluteString)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
@@ -533,6 +539,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets[id: s1ID]?.isPreloading = true
         }
         await storeFirstLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.preloadedResources = [.init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: staticResources)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
@@ -589,6 +596,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await storeSecondLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.preloadedResources = [.init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: changedStaticResources)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
