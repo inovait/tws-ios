@@ -24,7 +24,8 @@ public extension Reducer {
 
     func preloadAndInjectResources(
         for snippet: TWSSnippet,
-        using api: APIDependency
+        using api: APIDependency,
+        localResources: [TWSRawDynamicResource] = []
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         
@@ -32,6 +33,7 @@ public extension Reducer {
 
         return await _preloadAndInjectResources(
             resources: resources,
+            localResources: localResources,
             headers: headers,
             using: api
         )
@@ -69,6 +71,7 @@ public extension Reducer {
 
     private func _preloadAndInjectResources(
         resources: [TWSSnippet.Attachment],
+        localResources: [TWSRawDynamicResource] = [],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
@@ -94,6 +97,7 @@ public extension Reducer {
         htmlResources = htmlResources.mapValues { value in
             var modifiedData = value.data
             injectResources(into: &modifiedData, resources: otherResources)
+            injectLocalResource(into: &modifiedData, resources: localResources)
             return ResourceResponse(responseUrl: value.responseUrl, data: modifiedData)
         }
         
@@ -101,7 +105,6 @@ public extension Reducer {
     }
     
     private func injectResources(into html: inout String, resources: [TWSSnippet.Attachment: ResourceResponse]) {
-        print("resources to inject: \(resources)")
         resources.forEach { resource in
             switch resource.key.contentType {
             case .css:
@@ -112,7 +115,17 @@ public extension Reducer {
                 break
             }
         }
-        
+    }
+    
+    private func injectLocalResource(into html: inout String, resources: [TWSRawDynamicResource]) {
+        resources.forEach { resource in
+            switch resource {
+            case .css(let css):
+                injectCSS(for: &html, css: css.value)
+            case .js(let js):
+                injectJavaScript(for: &html, javascript: js.value)
+            }
+        }
     }
     
     private func injectCSS(for html: inout String, css: String) {

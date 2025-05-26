@@ -34,8 +34,7 @@ public struct TWSView: View {
     @State private var store: StoreOf<TWSSnippetFeature>?
 
     let snippet: TWSSnippet
-    let cssOverrides: [TWSRawCSS]
-    let jsOverrides: [TWSRawJS]
+    let overrides: [TWSRawDynamicResource]
     let overrideVisibilty: Bool
     let enablePullToRefresh: Bool
 
@@ -43,20 +42,17 @@ public struct TWSView: View {
     /// - Parameters:
     ///   - snippet: The snippet you want to display
     ///   - state: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
-    ///   - cssOverrides: An array of raw CSS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
-    ///   - jsOverrides: An array of raw JS strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
+    ///   - overrides: An array of raw CSS/JavaScript strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - enablePullToRefresh: Flag used to determine whether pull to refresh action should be enabled.
     public init(
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(TWSViewState.defaultState()),
-        cssOverrides: [TWSRawCSS] = [],
-        jsOverrides: [TWSRawJS] = [],
+        overrides: [TWSRawDynamicResource] = [],
         overrideVisibilty: Bool = false,
         enablePullToRefresh: Bool = false
     ) {
         self.snippet = snippet
-        self.cssOverrides = cssOverrides
-        self.jsOverrides = jsOverrides
+        self.overrides = overrides
         self.overrideVisibilty = overrideVisibilty
         self._bindableState = state
         self.enablePullToRefresh = enablePullToRefresh
@@ -76,8 +72,6 @@ public struct TWSView: View {
                     ZStack {
                         _TWSView(
                             snippet: snippet,
-                            cssOverrides: cssOverrides,
-                            jsOverrides: jsOverrides,
                             displayID: displayID,
                             state: $state,
                             enablePullToRefresh: enablePullToRefresh
@@ -99,7 +93,12 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
-                        
+                        .onAppear {
+                            if let presenter = presenter as? NoopPresenter {
+                                presenter.updatePreloadedAssets()
+                            }
+                        }
+
                         ZStack {
                             switch state.loadingState {
                             case .idle, .loading:
@@ -118,7 +117,10 @@ public struct TWSView: View {
             }
         }
         .onAppear {
+            // NoopPresenter is used for local snippets
+            (presenter as? NoopPresenter)?.saveLocalSnippet(snippet, withResources: overrides)
             store = presenter.store(forSnippetID: snippet.id)
+            store?.send(.business(.setLocalDynamicResources(overrides)))
         }
     }
 }
@@ -138,22 +140,16 @@ private struct _TWSView: View {
     @State private var openURL: URL?
 
     let snippet: TWSSnippet
-    let cssOverrides: [TWSRawCSS]
-    let jsOverrides: [TWSRawJS]
     let displayID: String
     let enablePullToRefresh: Bool
     
     init(
         snippet: TWSSnippet,
-        cssOverrides: [TWSRawCSS],
-        jsOverrides: [TWSRawJS],
         displayID id: String,
         state: Bindable<TWSViewState>,
         enablePullToRefresh: Bool
     ) {
         self.snippet = snippet
-        self.cssOverrides = cssOverrides
-        self.jsOverrides = jsOverrides
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._state = state
         self.enablePullToRefresh = enablePullToRefresh
@@ -166,8 +162,6 @@ private struct _TWSView: View {
             preloadedResources: presenter.preloadedResources,
             locationServicesBridge: locationServiceBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
-            cssOverrides: cssOverrides,
-            jsOverrides: jsOverrides,
             displayID: displayID,
             isConnectedToNetwork: networkObserver.isConnected,
             dynamicHeight: $height,

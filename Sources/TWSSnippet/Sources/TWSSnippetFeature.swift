@@ -10,13 +10,15 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, preloaded, isPreloading, isVisible, customProps
+            case snippet, preloaded, isPreloading, isVisible, customProps, preloadedResources
         }
 
         public var snippet: TWSSnippet
         public var preloaded: Bool = false
         public var isVisible = true
+        public var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] = [:]
         public var localProps: TWSSnippet.Props = .dictionary([:])
+        public var localDynamicResources: [TWSRawDynamicResource] = []
 
         var isPreloading = false
 
@@ -32,12 +34,14 @@ public struct TWSSnippetFeature: Sendable {
             // MARK: - Persistent properties ~ match with init
 
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
+            preloadedResources = try container.decode([TWSSnippet.Attachment: ResourceResponse].self, forKey: .preloadedResources)
 
             // MARK: - Non-persistent properties - Reset on init
             preloaded = false
             isVisible = true
             isPreloading = false
             localProps = .dictionary([:])
+            localDynamicResources = []
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -47,6 +51,7 @@ public struct TWSSnippetFeature: Sendable {
             try container.encode(isPreloading, forKey: .isPreloading)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(localProps, forKey: .customProps)
+            try container.encode(preloadedResources, forKey: .preloadedResources)
         }
     }
 
@@ -59,6 +64,7 @@ public struct TWSSnippetFeature: Sendable {
             case hideSnippet
             case preload
             case preloadCompleted([TWSSnippet.Attachment: ResourceResponse])
+            case setLocalDynamicResources([TWSRawDynamicResource])
         }
         
         @CasePathable
@@ -104,17 +110,22 @@ public struct TWSSnippetFeature: Sendable {
         case .business(.showSnippet):
             state.isVisible = true
             return .none
-
+            
+        case .business(.setLocalDynamicResources(let dynamicResources)):
+            state.localDynamicResources = dynamicResources
+            return .none
+            
         case .business(.preload):
             guard !state.isPreloading else { return .none }
             state.isPreloading = true
 
-            return .run { [api, snippet = state.snippet] send in
-                let resources = await preloadAndInjectResources(for: snippet, using: api)
+            return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
+                let resources = await preloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
                 await send(.business(.preloadCompleted(resources)))
             }
 
         case let .business(.preloadCompleted(resources)):
+            state.preloadedResources.merge(resources, uniquingKeysWith: { first, second in return second})
             state.preloaded = true
             state.isPreloading = false
             return .send(.delegate(.resourcesUpdated(resources)))

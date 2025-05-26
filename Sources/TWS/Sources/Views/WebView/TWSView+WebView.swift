@@ -36,8 +36,6 @@ struct WebView: UIViewRepresentable {
     let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
-    let cssOverrides: [TWSRawCSS]
-    let jsOverrides: [TWSRawJS]
     let displayID: String
     let isConnectedToNetwork: Bool
     let openURL: URL?
@@ -52,8 +50,6 @@ struct WebView: UIViewRepresentable {
         preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
-        cssOverrides: [TWSRawCSS],
-        jsOverrides: [TWSRawJS],
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
@@ -71,8 +67,6 @@ struct WebView: UIViewRepresentable {
         self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
-        self.cssOverrides = cssOverrides
-        self.jsOverrides = jsOverrides
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight

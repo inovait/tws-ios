@@ -39,7 +39,8 @@ let package = Package(
                 .product(name: "Mustache", package: "GRMustache.swift"),
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSLocal")
             ],
             path: "Sources/TWS",
             resources: [
@@ -58,6 +59,13 @@ let package = Package(
             ],
             path: "Sources/TWSCore"
         ),
+        .target(
+            name: "TWSLocal",
+            dependencies: [
+                .target(name: "TWSModels"),
+                .target(name: "TWSSnippet")
+            ],
+            path: "Sources/TWSLocal"),
         .target(
             name: "TWSSnippets",
             dependencies: [
