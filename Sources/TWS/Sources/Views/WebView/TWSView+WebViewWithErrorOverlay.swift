@@ -75,7 +75,7 @@ class WebViewWithErrorOverlay: UIViewController {
         
         let nc = NotificationCenter.default
         nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
-        self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() }, closeError: { [weak self] in self?.closeError() })
+        self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
         webView.navigationDelegate = popupDelegate
         setupSubviews()
     }
@@ -151,14 +151,12 @@ class WebViewWithErrorOverlay: UIViewController {
 }
 
 class PopupNavigationDelegate: NSObject, WKNavigationDelegate {
-    let closeError: () -> Void
     let onEndNavigation: () -> Void
     let coordinator: WKNavigationDelegate?
     
-    init(coordinator: WKNavigationDelegate?, onEndNavigation: @escaping () -> Void, closeError: @escaping () -> Void) {
+    init(coordinator: WKNavigationDelegate?, onEndNavigation: @escaping () -> Void) {
         self.coordinator = coordinator
         self.onEndNavigation = onEndNavigation
-        self.closeError = closeError
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
