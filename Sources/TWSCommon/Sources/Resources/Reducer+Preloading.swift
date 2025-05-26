@@ -127,48 +127,7 @@ public extension Reducer {
             }
         }
     }
-    
-    private func injectCSS(for html: inout String, css: String) {
-        let linkTag = "<style>\(css)</style>"
         
-        if html.contains("<head>") {
-            html = html.replacingOccurrences(of: "</head>", with: "\(linkTag)</head>")
-        } else {
-            if let htmlTagRegex = try? NSRegularExpression(pattern: "<html\\b[^>]*>", options: [.caseInsensitive]) {
-                let range = NSRange(html.startIndex..., in: html)
-                
-                if let match = htmlTagRegex.firstMatch(in: html, options: [], range: range),
-                    let matchRange = Range(match.range, in: html) {
-                    let insertionIndex = matchRange.upperBound
-                    html.insert(contentsOf: linkTag, at: insertionIndex)
-                } else {
-                    html = "\(html)\(linkTag)"
-                }
-            }
-            
-        }
-    }
-    
-    private func injectJavaScript(for html: inout String, javascript: String) {
-        let scriptTag = "<script>\(javascript)</script>"
-        
-        if html.contains("<head>") {
-            html = html.replacingOccurrences(of: "</head>", with: "\(scriptTag)</head>")
-        } else {
-            if let htmlTagRegex = try? NSRegularExpression(pattern: "<html\\b[^>]*>", options: [.caseInsensitive]) {
-                let range = NSRange(html.startIndex..., in: html)
-                
-                if let match = htmlTagRegex.firstMatch(in: html, options: [], range: range),
-                   let matchRange = Range(match.range, in: html) {
-                    let insertionIndex = matchRange.upperBound
-                    html.insert(contentsOf: scriptTag, at: insertionIndex)
-                } else {
-                    html = "\(scriptTag)\(html)"
-                }
-            }
-        }
-    }
-    
     private func fetchResourcesFor(
         _ resources: Set<TWSSnippet.Attachment>,
         with headers: [TWSSnippet.Attachment: [String: String]],

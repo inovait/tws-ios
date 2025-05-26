@@ -178,6 +178,13 @@ let package = Package(
                 .target(name: "TWSAPI")
             ],
             path: "Tests/RouterTests"
+        ),
+        .testTarget(
+            name: "InjectionTests",
+            dependencies: [
+                .target(name: "TWSCommon")
+            ],
+            path: "Tests/InjectionTests"
         )
     ]
 )
