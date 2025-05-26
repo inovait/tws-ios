@@ -56,7 +56,7 @@ extension View {
 
     /// Installs an error view to be displayed in case ``TWSView`` fails to load a webpage.
     ///
-    /// - Parameter errorView: A closure that returns the view to be displayed for an error
+    /// - Parameter errorView: A closure that returns the view to be displayed for an error, exposes a reload action callback, that can be bound on a button
     /// - Returns: A view that wraps the current view and includes the error view.
     ///
     /// ## Usage of AnyView
@@ -64,7 +64,7 @@ extension View {
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
     public func twsBind(
-        errorView: @Sendable @MainActor @escaping (Error) -> AnyView
+        errorView: @Sendable @MainActor @escaping (Error, _ reloadCallback: @escaping () -> Void) -> AnyView
     ) -> some View {
         ModifiedContent(
             content: self,
@@ -95,7 +95,7 @@ private struct AttachPreloadingView: ViewModifier {
 
 private struct AttachErrorView: ViewModifier {
 
-    let errorView: @Sendable @MainActor (Error) -> AnyView
+    let errorView: @Sendable @MainActor (Error, @escaping () -> Void) -> AnyView
 
     func body(content: Content) -> some View {
         content
@@ -116,7 +116,7 @@ extension EnvironmentValues {
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
-    @Entry var errorView: @Sendable @MainActor (Error) -> AnyView = { error in
+    @Entry var errorView: @Sendable @MainActor (Error, _ reloadCallback: @escaping () -> Void) -> AnyView = { error, reload in
         AnyView(
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -125,6 +125,12 @@ extension EnvironmentValues {
                 Text(error.localizedDescription)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
+                
+                if (error as NSError).code == NSURLErrorNotConnectedToInternet {
+                    Button(action: reload) {
+                        Text("Reload")
+                    }
+                }
             }
         )
     }
