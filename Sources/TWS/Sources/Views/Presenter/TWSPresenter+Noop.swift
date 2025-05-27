@@ -22,37 +22,25 @@ import TWSLocal
 
 
 class NoopPresenter: TWSPresenter {
-    let localManager = TWSLocalManager()
-    
     private let _heightProvider = SnippetHeightProviderImpl()
     private let _navigationProvider = NavigationProviderImpl()
 
     // MARK: - Confirming to `TWSPresenter`
 
-    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { localManager.getPreloadedAssets() }
+    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { TWSLocalSnippetsManager.getPreloadedResources() }
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
 
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
     func resourcesHash(for snippet: TWSSnippet) -> Int {
         var hasher = Hasher()
-        localManager.getPreloadedAssets().forEach { asset in hasher.combine(asset.value)}
+        TWSLocalSnippetsManager.getPreloadedResources().forEach { asset in hasher.combine(asset.value) }
         return hasher.finalize()
     }
     func handleIncomingUrl(_ url: URL) { }
-    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { localManager.getSnippetFeature(id: id) }
+    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
     
     func saveLocalSnippet(_ snippet: TWSSnippet, withResources resources: [TWSRawDynamicResource]) {
-        localManager.saveLocalSnippet(snippet, withResources: resources)
-    }
-    
-    func updatePreloadedAssets() {
-        print("update assets")
-        for snippet in localManager.getSnippetFeatures() {
-            
-            for resource in snippet.value.preloadedResources {
-                localManager.updatePreloadedAssets(for: resource.key, with: resource.value)
-            }
-        }
+        TWSLocalSnippetsManager.saveLocalSnippet(snippet, withResources: resources)
     }
 }

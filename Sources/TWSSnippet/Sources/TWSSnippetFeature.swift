@@ -10,13 +10,12 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, preloaded, isPreloading, isVisible, customProps, preloadedResources
+            case snippet, preloaded, isPreloading, isVisible, customProps
         }
 
         public var snippet: TWSSnippet
         public var preloaded: Bool = false
         public var isVisible = true
-        public var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] = [:]
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
 
@@ -34,7 +33,6 @@ public struct TWSSnippetFeature: Sendable {
             // MARK: - Persistent properties ~ match with init
 
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
-            preloadedResources = try container.decode([TWSSnippet.Attachment: ResourceResponse].self, forKey: .preloadedResources)
 
             // MARK: - Non-persistent properties - Reset on init
             preloaded = false
@@ -51,7 +49,6 @@ public struct TWSSnippetFeature: Sendable {
             try container.encode(isPreloading, forKey: .isPreloading)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(localProps, forKey: .customProps)
-            try container.encode(preloadedResources, forKey: .preloadedResources)
         }
     }
 
@@ -125,7 +122,6 @@ public struct TWSSnippetFeature: Sendable {
             }
 
         case let .business(.preloadCompleted(resources)):
-            state.preloadedResources.merge(resources, uniquingKeysWith: { first, second in return second})
             state.preloaded = true
             state.isPreloading = false
             return .send(.delegate(.resourcesUpdated(resources)))

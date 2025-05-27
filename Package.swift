@@ -65,7 +65,10 @@ let package = Package(
                 .target(name: "TWSModels"),
                 .target(name: "TWSSnippet")
             ],
-            path: "Sources/TWSLocal"),
+            path: "Sources/TWSLocal",
+            swiftSettings: [
+                .define("TESTING", .when(configuration: .debug))
+            ]),
         .target(
             name: "TWSSnippets",
             dependencies: [
@@ -147,7 +150,8 @@ let package = Package(
         .testTarget(
             name: "TWSSnippetsTests",
             dependencies: [
-                .target(name: "TWSSnippets")
+                .target(name: "TWSSnippets"),
+                .target(name: "TWSLocal")
             ],
             path: "Tests/TWSSnippetsTests"
         ),

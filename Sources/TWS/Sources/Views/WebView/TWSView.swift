@@ -93,12 +93,7 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
-                        .onAppear {
-                            if let presenter = presenter as? NoopPresenter {
-                                presenter.updatePreloadedAssets()
-                            }
-                        }
-
+                        
                         ZStack {
                             switch state.loadingState {
                             case .idle, .loading:
