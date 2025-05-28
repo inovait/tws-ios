@@ -20,12 +20,7 @@ import WebKit
 
 class JavaScriptLocationMessageHandler: NSObject, WKScriptMessageHandler {
 
-    private let adapter: JavaScriptLocationAdapter
-
-    init(adapter: JavaScriptLocationAdapter) {
-        self.adapter = adapter
-    }
-
+    static private var adapters: [JavaScriptLocationAdapter] = []
     // MARK: - Confirming to `WKScriptMessageHandler`
 
     @MainActor
@@ -42,10 +37,19 @@ class JavaScriptLocationMessageHandler: NSObject, WKScriptMessageHandler {
             return
         }
 
-        Task { [weak self] in
-            guard let self else { return }
-            await self.adapter._handle(message: message)
+        Task {
+            for adapter in JavaScriptLocationMessageHandler.adapters {
+                await adapter._handle(message: message)
+            }
         }
+    }
+    
+    static func addObserver(for locationAdapter: JavaScriptLocationAdapter) {
+        adapters.append(locationAdapter)
+    }
+    
+    static func removeObserver(for locationAdapter: JavaScriptLocationAdapter) {
+        adapters.removeAll { $0 === locationAdapter }
     }
 }
 
@@ -159,5 +163,9 @@ actor JavaScriptLocationAdapter {
         _ = try? await webView?.evaluateJavaScript(
             "navigator.geolocation.iosLastLocationFailed(\(id),\(error.rawValue))"
         )
+    }
+    
+    deinit {
+        logger.info("JavaScriptLocationAdapter deinit")
     }
 }

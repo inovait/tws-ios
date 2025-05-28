@@ -54,7 +54,15 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg +=  " error: \(error.localizedDescription)"
 
         logger.debug(msg)
-        parent.updateState(for: webView, loadingState: .failed(error))
+        if parent.wkWebView == webView {
+            parent.updateState(for: webView, loadingState: .failed(error))
+        } else {
+            do {
+                try navigationProvider.showError(errorView: self.parent.errorView, message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
+        }
     }
 
     func webView(
@@ -73,7 +81,15 @@ extension WebView.Coordinator: WKNavigationDelegate {
         if nsError.code == 102 || nsError.code == NSURLErrorCancelled {
             return
         }
-        parent.updateState(for: webView, loadingState: .failed(error))
+        if parent.wkWebView == webView {
+            parent.updateState(for: webView, loadingState: .failed(error))
+        } else {
+            do {
+                try navigationProvider.showError(errorView: self.parent.errorView ,message: error, on: webView)
+            } catch {
+                logger.err("Could not show error on \(webView), because \(error.localizedDescription)")
+            }
+        }
     }
 
     func webView(
@@ -140,6 +156,21 @@ extension WebView.Coordinator: WKNavigationDelegate {
 
         if navigationAction.shouldPerformDownload {
             decisionHandler(.download, preferences)
+            return
+        }
+        
+        if let url = navigationAction.request.url, let scheme = url.scheme, !WKWebView.handlesURLScheme(scheme) {
+            logger.info("Trying to open as intent: \(url)")
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url) { didOpen in
+                    if didOpen {
+                        logger.info("Intent opened succesfully")
+                    } else {
+                        logger.info("Could not open intent")
+                    }
+                }
+            }
+            decisionHandler(.cancel, preferences)
             return
         }
 

@@ -15,10 +15,13 @@
 //
 
 import Foundation
+import WebKit
 
 class Router {
 
     private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
+    private static let redirectDelegate = RedirectHandler()
+    private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: redirectDelegate, delegateQueue: nil)
 
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
@@ -51,14 +54,15 @@ class Router {
         logger.info(urlRequest.debugDescription)
 
         do {
+            let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
+
             if request.auth {
-                let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
                 urlRequest.setValue(
                     "Bearer \(token)",
                     forHTTPHeaderField: "Authorization"
                 )
             }
-            let result = try await URLSession.shared.data(for: urlRequest)
+            let result = try await urlSession.data(for: urlRequest)
             guard
                 let httpResult = result.1 as? HTTPURLResponse
             else {
@@ -66,11 +70,21 @@ class Router {
             }
 
             if 200..<300 ~= httpResult.statusCode {
+                if let resolvedUrl = result.1.url,
+                   let httpCookies = HTTPCookieStorage.shared.cookies(for: resolvedUrl) {
+                    httpCookies.forEach { cookie in
+                        Task { @MainActor in
+                            await WKWebsiteDataStore.default().httpCookieStore.setCookie(cookie)
+                        }
+                    }
+                }
+                
                 var serverDate: Date?
                 if let responseHeaders = httpResult.allHeaderFields as? [String: String],
                    let serverDateHeader = responseHeaders["Date"] {
                     serverDate = dateFormatter.date(from: serverDateHeader)
                 }
+                
                 return .init(
                     data: result.0,
                     dateOfResponse: serverDate,

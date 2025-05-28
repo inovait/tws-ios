@@ -16,10 +16,11 @@
 
 import UIKit
 import WebKit
+import SwiftUI
 
 @MainActor
 protocol NavigationProvider {
-
+    
     func present(
         webView: WKWebView,
         on originWebView: WKWebView,
@@ -44,12 +45,18 @@ protocol NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError)
+    
+    func showError(
+        errorView: (@MainActor @Sendable (Error) -> AnyView),
+        message: Error,
+        on: WKWebView
+    ) throws(NavigationError)
 
 }
 
 class NavigationProviderImpl: NavigationProvider {
 
-    private var _presentedVCs = [WKWebView: DestinationInfo]()
+    private var _presentedVCs = [WKWebView : DestinationInfo]()
 
     func present(
         webView: WKWebView,
@@ -57,21 +64,22 @@ class NavigationProviderImpl: NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
+
         guard let parent = originWebView.parentViewController()
         else { throw NavigationError.parentNotFound }
 
         guard parent.presentedViewController == nil
         else { throw NavigationError.alreadyPresenting }
 
-        let newViewController = UIViewController()
-        newViewController.view = webView
+        let webViewWithErrorOverlay = WebViewWithErrorOverlay(webView: webView, navigationProvider: self)
+        
         _presentedVCs[webView] = .init(
-            viewController: newViewController,
+            viewController: webViewWithErrorOverlay,
             presentedWebView: webView,
             parentWebView: originWebView
         )
 
-        parent.present(newViewController, animated: animated, completion: completion)
+        parent.present(webViewWithErrorOverlay, animated: animated, completion: completion)
     }
 
     func present(
@@ -94,7 +102,6 @@ class NavigationProviderImpl: NavigationProvider {
         animated: Bool,
         completion: (() -> Void)?
     ) throws(NavigationError) {
-        
         guard let viewController = _presentedVCs.removeValue(forKey: webView)?.viewController
         else { throw .viewControllerNotFound }
         viewController.dismiss(animated: animated, completion: completion)
@@ -104,9 +111,21 @@ class NavigationProviderImpl: NavigationProvider {
         with url: URL,
         from: WKWebView
     ) throws(NavigationError) {
-        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from })?.presentedWebView
+        guard let webView = _presentedVCs.values.first(where: { $0.parentWebView == from})?.presentedWebView
         else { throw .presentedViewControllerNotFound }
+        
         webView.load(URLRequest(url: url))
+    }
+    
+    func showError(
+        errorView: (@MainActor @Sendable (Error) -> AnyView),
+        message: Error,
+        on: WKWebView
+    ) throws(NavigationError) {
+        guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView == on })?.viewController as? WebViewWithErrorOverlay
+        else { throw .presentedViewControllerNotFound }
+        
+        webView.showError(err: message, errorView: errorView)
     }
 
 }
