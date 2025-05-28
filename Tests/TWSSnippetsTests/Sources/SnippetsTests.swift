@@ -667,11 +667,9 @@ final class SnippetsTests: XCTestCase {
             })
         
         // Locally save snippet
-        await store.send(.business(.saveLocalSnippet(snippets[0], []))) {
+        await store.send(.business(.saveLocalSnippet(snippets[0]))) {
             $0.snippets = .init([.init(snippet: snippets[0])])
         }
-        
-        await store.receive(\.business.snippetAction[id: s1ID].business.setLocalDynamicResources, [])
         
         // open twsView
         await store.send(.business(.snippetAction(.element(id: s1ID, action: .view(.openedTWSView)))))
@@ -784,11 +782,11 @@ final class SnippetsTests: XCTestCase {
         
         
         // Snippets follow local snippet flow
-        await store.send(.business(.saveLocalSnippet(snippets[0], [.css(cssToInject), .js(jsToInject)]))) {
+        await store.send(.business(.saveLocalSnippet(snippets[0]))) {
             $0.snippets = .init([.init(snippet: snippets[0])])
         }
         
-        await store.receive(\.business.snippetAction[id: s1ID].business.setLocalDynamicResources, [.css(cssToInject), .js(jsToInject)]) {
+        await store.send(.business(.snippetAction(.element(id: snippets[0].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
             $0.snippets[id: s1ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
         }
         
@@ -808,11 +806,11 @@ final class SnippetsTests: XCTestCase {
         
         var stateCopy = store.state
         
-        await store.send(.business(.saveLocalSnippet(snippets[1], [.css(cssToInject), .js(jsToInject)]))) {
+        await store.send(.business(.saveLocalSnippet(snippets[1]))) {
             $0.snippets = .init([stateCopy.snippets[id: s1ID]!, .init(snippet: snippets[1])])
         }
         
-        await store.receive(\.business.snippetAction[id: s2ID].business.setLocalDynamicResources, [.css(cssToInject), .js(jsToInject)]) {
+        await store.send(.business(.snippetAction(.element(id: snippets[1].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
             $0.snippets[id: s2ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
         }
         
@@ -835,11 +833,11 @@ final class SnippetsTests: XCTestCase {
         
         stateCopy = store.state
         
-        await store.send(.business(.saveLocalSnippet(snippets[2], [.css(cssToInject), .js(jsToInject)]))) {
+        await store.send(.business(.saveLocalSnippet(snippets[2]))) {
             $0.snippets = .init([stateCopy.snippets[id: s1ID]!, stateCopy.snippets[id: s2ID]!, .init(snippet: snippets[2])])
         }
-        
-        await store.receive(\.business.snippetAction[id: s3ID].business.setLocalDynamicResources, [.css(cssToInject), .js(jsToInject)]) {
+
+        await store.send(.business(.snippetAction(.element(id: snippets[2].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
             $0.snippets[id: s3ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
         }
         

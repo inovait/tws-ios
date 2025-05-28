@@ -46,7 +46,7 @@ struct TWSLocalSnippetsReducer: Equatable {
         
         @CasePathable
         enum BusinessAction {
-            case saveLocalSnippet(TWSSnippet, [TWSRawDynamicResource])
+            case saveLocalSnippet(TWSSnippet)
             case snippetAction(IdentifiedActionOf<TWSSnippetFeature>)
         }
         
@@ -68,14 +68,12 @@ struct TWSLocalSnippetsReducer: Equatable {
     
     private func _reduce(into state: inout State, action: Action.BusinessAction) -> Effect<Action> {
         switch action {
-        case .saveLocalSnippet(let snippet, let resources):
+        case .saveLocalSnippet(let snippet):
             #if TESTING
             state.snippets.append(.init(snippet: snippet))
             #else
             state.$snippets.withLock { $0.append(.init(snippet: snippet)) }
             #endif
-            
-            return .send(.business(.snippetAction(.element(id: snippet.id, action: .business(.setLocalDynamicResources(resources))))))
         
         case .snippetAction(.element(id: _, action: .delegate(let delegateAction))):
             switch delegateAction {

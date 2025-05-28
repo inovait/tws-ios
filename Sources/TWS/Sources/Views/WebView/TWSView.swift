@@ -113,7 +113,7 @@ public struct TWSView: View {
         }
         .onAppear {
             // NoopPresenter is used for local snippets
-            (presenter as? NoopPresenter)?.saveLocalSnippet(snippet, withResources: overrides)
+            (presenter as? NoopPresenter)?.saveLocalSnippet(snippet)
             store = presenter.store(forSnippetID: snippet.id)
             store?.send(.business(.setLocalDynamicResources(overrides)))
         }

@@ -40,7 +40,7 @@ class NoopPresenter: TWSPresenter {
     func handleIncomingUrl(_ url: URL) { }
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
     
-    func saveLocalSnippet(_ snippet: TWSSnippet, withResources resources: [TWSRawDynamicResource]) {
-        TWSLocalSnippetsManager.saveLocalSnippet(snippet, withResources: resources)
+    func saveLocalSnippet(_ snippet: TWSSnippet) {
+        TWSLocalSnippetsManager.saveLocalSnippet(snippet)
     }
 }

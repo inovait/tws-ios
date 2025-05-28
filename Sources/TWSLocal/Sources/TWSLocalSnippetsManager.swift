@@ -29,8 +29,8 @@ public final class TWSLocalSnippetsManager {
         return shared.state.preloadedResources
     }
     
-    public static func saveLocalSnippet(_ snippet: TWSSnippet, withResources resources: [TWSRawDynamicResource]) {
-        shared.send(.business(.saveLocalSnippet(snippet, resources)))
+    public static func saveLocalSnippet(_ snippet: TWSSnippet) {
+        shared.send(.business(.saveLocalSnippet(snippet)))
     }
     
     public static func store(for id: TWSSnippet.ID) -> StoreOf<TWSSnippetFeature>? {
