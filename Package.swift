@@ -39,7 +39,8 @@ let package = Package(
                 .product(name: "Mustache", package: "GRMustache.swift"),
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSLocal")
             ],
             path: "Sources/TWS",
             resources: [
@@ -58,6 +59,16 @@ let package = Package(
             ],
             path: "Sources/TWSCore"
         ),
+        .target(
+            name: "TWSLocal",
+            dependencies: [
+                .target(name: "TWSModels"),
+                .target(name: "TWSSnippet")
+            ],
+            path: "Sources/TWSLocal",
+            swiftSettings: [
+                .define("TESTING", .when(configuration: .debug))
+            ]),
         .target(
             name: "TWSSnippets",
             dependencies: [
@@ -139,7 +150,8 @@ let package = Package(
         .testTarget(
             name: "TWSSnippetsTests",
             dependencies: [
-                .target(name: "TWSSnippets")
+                .target(name: "TWSSnippets"),
+                .target(name: "TWSLocal")
             ],
             path: "Tests/TWSSnippetsTests"
         ),
@@ -170,6 +182,13 @@ let package = Package(
                 .target(name: "TWSAPI")
             ],
             path: "Tests/RouterTests"
+        ),
+        .testTarget(
+            name: "InjectionTests",
+            dependencies: [
+                .target(name: "TWSCommon")
+            ],
+            path: "Tests/InjectionTests"
         )
     ]
 )

@@ -22,42 +22,45 @@ public extension Reducer {
 
     // MARK: - Loading resources
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for snippet: TWSSnippet,
-        using api: APIDependency
+        using api: APIDependency,
+        localResources: [TWSRawDynamicResource] = []
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
+        
         let resources = snippet.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
+            localResources: localResources,
             headers: headers,
             using: api
         )
     }
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for project: TWSProject,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = project.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
             headers: headers,
             using: api
         )
     }
 
-    func preloadResources(
+    func preloadAndInjectResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         var headers = [TWSSnippet.Attachment: [String: String]]()
         let resources = sharedSnippet.allResources(headers: &headers)
 
-        return await _preloadResources(
+        return await _preloadAndInjectResources(
             resources: resources,
             headers: headers,
             using: api
@@ -66,14 +69,15 @@ public extension Reducer {
 
     // MARK: - Helpers
 
-    private func _preloadResources(
+    private func _preloadAndInjectResources(
         resources: [TWSSnippet.Attachment],
+        localResources: [TWSRawDynamicResource] = [],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
     ) async -> [TWSSnippet.Attachment: ResourceResponse] {
         let allResources = Set(resources)
         // Create two taskGroups to ensure html is fetched first, and sets the cookies, before other resources are fetched
-        let htmlResources = await withTaskGroup(
+        var htmlResources = await withTaskGroup(
             of: (TWSSnippet.Attachment, ResourceResponse)?.self,
             returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { group in
@@ -90,9 +94,40 @@ public extension Reducer {
             return await fetchResourcesFor(otherResources, with: headers, group: &group, using: api)
         }
         
-        return htmlResources.merging(otherResources, uniquingKeysWith: { first, second in first })
+        htmlResources = htmlResources.mapValues { value in
+            var modifiedData = value.data
+            injectResources(into: &modifiedData, resources: otherResources)
+            injectLocalResource(into: &modifiedData, resources: localResources)
+            return ResourceResponse(responseUrl: value.responseUrl, data: modifiedData)
+        }
+        
+        return htmlResources
     }
     
+    private func injectResources(into html: inout String, resources: [TWSSnippet.Attachment: ResourceResponse]) {
+        resources.forEach { resource in
+            switch resource.key.contentType {
+            case .css:
+                injectCSS(for: &html, css: resource.value.data)
+            case .javascript:
+                injectJavaScript(for: &html, javascript: resource.value.data)
+            case .html:
+                break
+            }
+        }
+    }
+    
+    private func injectLocalResource(into html: inout String, resources: [TWSRawDynamicResource]) {
+        resources.forEach { resource in
+            switch resource {
+            case .css(let css):
+                injectCSS(for: &html, css: css.value)
+            case .js(let js):
+                injectJavaScript(for: &html, javascript: js.value)
+            }
+        }
+    }
+        
     private func fetchResourcesFor(
         _ resources: Set<TWSSnippet.Attachment>,
         with headers: [TWSSnippet.Attachment: [String: String]],

@@ -15,23 +15,32 @@
 //
 
 import Foundation
-import TWSModels
+@_spi(Internals) import TWSModels
 internal import ComposableArchitecture
 internal import TWSSnippet
+import TWSLocal
+
 
 class NoopPresenter: TWSPresenter {
-
     private let _heightProvider = SnippetHeightProviderImpl()
     private let _navigationProvider = NavigationProviderImpl()
 
     // MARK: - Confirming to `TWSPresenter`
 
-    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { [:] }
+    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { TWSLocalSnippetsManager.getPreloadedResources() }
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
 
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
-    func resourcesHash(for _: TWSSnippet) -> Int { 0 }
+    func resourcesHash(for snippet: TWSSnippet) -> Int {
+        var hasher = Hasher()
+        TWSLocalSnippetsManager.getPreloadedResources().forEach { asset in hasher.combine(asset.value) }
+        return hasher.finalize()
+    }
     func handleIncomingUrl(_ url: URL) { }
-    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { nil }
+    func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
+    
+    func saveLocalSnippet(_ snippet: TWSSnippet) {
+        TWSLocalSnippetsManager.saveLocalSnippet(snippet)
+    }
 }
