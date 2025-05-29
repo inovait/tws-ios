@@ -27,6 +27,7 @@ public struct TWSView: View {
     @Environment(\.loadingView) private var loadingView
     @Environment(\.preloadingView) private var preloadingView
     @Environment(\.errorView) private var errorView
+    @Environment(\.navigator) private var navigator
     @Bindable var bindableState: TWSViewState
     @State var internalState = TWSViewState()
 
@@ -109,7 +110,7 @@ public struct TWSView: View {
                                 EmptyView()
                                 
                             case let .failed(error):
-                                errorView(error)
+                                errorView(error) { navigator.reload() }
                             }
                         }
                         .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)

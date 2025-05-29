@@ -22,16 +22,19 @@ import SwiftUI
 class WebViewWithErrorOverlay: UIViewController {
     let webView: WKWebView
     let navigationProvider: NavigationProvider
+    let originalRequest: URLRequest
     private var activityIndicator: UIActivityIndicatorView
     private var popupDelegate: PopupNavigationDelegate?
     let locationServiceBridge = DefaultLocationServicesManager()
     let jsLocationServices = JavaScriptLocationAdapter()
+    var customErrorViewVC: UIHostingController<AnyView>? = nil
     
     
     // MARK: - Init
-    init(webView: WKWebView, navigationProvider: NavigationProvider) {
+    init(webView: WKWebView, navigationProvider: NavigationProvider, urlRequest: URLRequest) {
         self.webView = webView
         self.navigationProvider = navigationProvider
+        self.originalRequest = urlRequest
         self.activityIndicator = {
             let activityIndicator = UIActivityIndicatorView(style: .large)
             activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -47,6 +50,7 @@ class WebViewWithErrorOverlay: UIViewController {
         self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         self.activityIndicator = UIActivityIndicatorView()
         self.navigationProvider = NavigationProviderImpl()
+        self.originalRequest = URLRequest(url: URL(string: "about:blank")!)
         super.init(coder: coder)
     }
     
@@ -99,10 +103,19 @@ class WebViewWithErrorOverlay: UIViewController {
 
     // MARK: - Public API
 
-    func showError(err: Error, errorView: ((Error) -> AnyView)) {
-        let customErrorView = errorView(err)
+    func showError(err: Error, errorView: ((Error, @escaping () -> Void) -> AnyView)) {
         
-        let customErrorViewVC = UIHostingController(rootView: customErrorView)
+        let customErrorView = errorView(err, { [weak self] in
+            guard let self else { return }
+            if let _ = originalRequest.url {
+                closeError()
+            }
+            webView.load(self.originalRequest)
+        })
+        
+        customErrorViewVC = UIHostingController(rootView: customErrorView)
+        
+        guard let customErrorViewVC else { return }
         addChild(customErrorViewVC)
         view.addSubview(customErrorViewVC.view)
         customErrorViewVC.didMove(toParent: self)
@@ -116,6 +129,16 @@ class WebViewWithErrorOverlay: UIViewController {
                 errView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
             ])
         }
+    }
+    
+    func closeError() {
+        guard let errorVC = customErrorViewVC else { return }
+           
+        errorVC.willMove(toParent: nil)
+        errorVC.view.removeFromSuperview()
+        errorVC.removeFromParent()
+       
+        customErrorViewVC = nil
     }
     
     deinit {
