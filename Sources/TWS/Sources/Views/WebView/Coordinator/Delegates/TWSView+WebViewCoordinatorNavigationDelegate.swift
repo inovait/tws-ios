@@ -96,6 +96,11 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
+        do {
+            try navigationProvider.showLoading(loadingView: self.parent.loadingView, on: webView)
+        } catch {
+            logger.err("Could not show loading view on \(webView), because \(error.localizedDescription)")
+        }
         logger.debug("[Navigation \(webView.hash)] Navigation started: \(String(describing: navigation))")
     }
 

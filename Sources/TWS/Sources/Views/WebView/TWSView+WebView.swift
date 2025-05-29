@@ -23,6 +23,7 @@ struct WebView: UIViewRepresentable {
     @Environment(\.navigator) var navigator
     @Environment(\.interceptor) var interceptor
     @Environment(\.errorView) var errorView
+    @Environment(\.loadingView) var loadingView
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool

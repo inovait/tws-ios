@@ -23,11 +23,15 @@ class WebViewWithErrorOverlay: UIViewController {
     let webView: WKWebView
     let navigationProvider: NavigationProvider
     let originalRequest: URLRequest
-    private var activityIndicator: UIActivityIndicatorView
     private var popupDelegate: PopupNavigationDelegate?
+    
+    // MARK: - Location permissions
     let locationServiceBridge = DefaultLocationServicesManager()
     let jsLocationServices = JavaScriptLocationAdapter()
+    
+    // MARK: - Swift UI view controllers
     var customErrorViewVC: UIHostingController<AnyView>? = nil
+    var customLoadingViewVC: UIHostingController<AnyView>? = nil
     
     
     // MARK: - Init
@@ -35,20 +39,12 @@ class WebViewWithErrorOverlay: UIViewController {
         self.webView = webView
         self.navigationProvider = navigationProvider
         self.originalRequest = urlRequest
-        self.activityIndicator = {
-            let activityIndicator = UIActivityIndicatorView(style: .large)
-            activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-            activityIndicator.startAnimating()
-            activityIndicator.tintColor = .black
-            return activityIndicator
-        }()
         
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
         self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
-        self.activityIndicator = UIActivityIndicatorView()
         self.navigationProvider = NavigationProviderImpl()
         self.originalRequest = URLRequest(url: URL(string: "about:blank")!)
         super.init(coder: coder)
@@ -75,7 +71,7 @@ class WebViewWithErrorOverlay: UIViewController {
         
         let nc = NotificationCenter.default
         nc.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
-        self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingIndicator() })
+        self.popupDelegate = PopupNavigationDelegate(coordinator: webView.navigationDelegate, onEndNavigation: { [weak self] in self?.hideLoadingView() })
         webView.navigationDelegate = popupDelegate
         setupSubviews()
     }
@@ -83,22 +79,13 @@ class WebViewWithErrorOverlay: UIViewController {
     private func setupSubviews() {
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
-        view.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             webView.topAnchor.constraint(equalTo: view.topAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
-    }
-    
-    func hideLoadingIndicator() {
-        activityIndicator.stopAnimating()
-        activityIndicator.isHidden = true
     }
 
     // MARK: - Public API
@@ -139,6 +126,34 @@ class WebViewWithErrorOverlay: UIViewController {
         errorVC.removeFromParent()
        
         customErrorViewVC = nil
+    }
+    
+    func showLoadingView(loadingView: () -> AnyView) {
+        customLoadingViewVC = UIHostingController(rootView: loadingView())
+        guard let customLoadingViewVC else { return }
+        addChild(customLoadingViewVC)
+        view.addSubview(customLoadingViewVC.view)
+        customLoadingViewVC.didMove(toParent: self)
+        customLoadingViewVC.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        if let loadingView = customLoadingViewVC.view {
+            NSLayoutConstraint.activate([
+                loadingView.topAnchor.constraint(equalTo: self.view.topAnchor),
+                loadingView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+                loadingView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                loadingView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
+            ])
+        }
+    }
+    
+    func hideLoadingView() {
+        guard let loadingVC = customLoadingViewVC else { return }
+        
+        loadingVC.willMove(toParent: nil)
+        loadingVC.view.removeFromSuperview()
+        loadingVC.removeFromParent()
+        
+        customLoadingViewVC = nil
     }
     
     deinit {

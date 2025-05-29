@@ -52,6 +52,11 @@ protocol NavigationProvider {
         message: Error,
         on: WKWebView
     ) throws(NavigationError)
+    
+    func showLoading(
+        loadingView: (@MainActor @Sendable () -> AnyView),
+        on: WKWebView
+    ) throws(NavigationError)
 
 }
 
@@ -128,7 +133,15 @@ class NavigationProviderImpl: NavigationProvider {
         
         webView.showError(err: message, errorView: errorView)
     }
-
+    
+    func showLoading(
+        loadingView: (@MainActor @Sendable () -> AnyView),
+        on: WKWebView) throws(NavigationError) {
+            guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView == on })?.viewController as? WebViewWithErrorOverlay
+            else { throw .presentedViewControllerNotFound }
+            
+            webView.showLoadingView(loadingView: loadingView)
+    }
 }
 
 // MARK: - Helpers
