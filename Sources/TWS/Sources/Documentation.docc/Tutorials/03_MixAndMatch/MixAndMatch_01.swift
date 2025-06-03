@@ -11,6 +11,7 @@ struct HomeView: View {
                 RemoteSnippetTab(snippet: snippet)
             }
         }
+        .twsRegisterManager(manager: tws)
     }
 }
 

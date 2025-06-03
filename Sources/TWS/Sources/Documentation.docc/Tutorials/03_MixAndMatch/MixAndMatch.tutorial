@@ -14,13 +14,13 @@
         
         @Steps {
             @Step {
-                Start by enabling TWS by providing the Project identifiers.
+                Creating and injecting TWSManager in to view hierarchy using .twsSetManager(configuration:)
                 
                 @Code(name: "App.swift", file: "MixAndMatch_00.swift")
             }
             
             @Step {
-                Show all of the remote snippets in the `TabView`.
+                Register the manager with .twsRegisterManager(manager:) to connect it with remote services and show all of the remote snippets in the `TabView`.
                 
                 @Code(name: "HomeView.swift", file: "MixAndMatch_01.swift")
             }

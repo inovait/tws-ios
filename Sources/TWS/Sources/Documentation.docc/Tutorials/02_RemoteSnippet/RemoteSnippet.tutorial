@@ -51,7 +51,8 @@
             }
             
             @Step {
-                Pull the ``TWSManager`` from the environment.
+                Pull the ``TWSManager`` from the environment
+                and register it with .twsRegisterManager(manager:) to connect it with remote services.
                 
                 @Code(name: "HomeView.swift", file: "RemoteSnippet_04.swift")
             }

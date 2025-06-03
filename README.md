@@ -42,17 +42,21 @@ struct ContentView: View {
     
     var body: some View {
         HomeScreen()
-        .twsEnable(configuration: TWSBasicConfiguration(id: "myProjectId"))
+        .twsSetManager(configuration: TWSBasicConfiguration(id: "myProjectId"))
     }
     
 }
 
 ```
 
-This injects a TWSManager into the environment, which handles your remote snippets.
-It handles fetching snippets, socket connection, caching and more.
+This injects a TWSManager into the environment. TWSManager is responsible for handling your remote snippets.
 
-Retrieve the manager in any ancestor view and use TWSView to display your snippets.
+
+But before it does that you have to register it. Call .twsRegisterManager(manager:) with an instance you are going to use to display your snippets.
+
+After it is registered, it handles fetching snippets, socket connection, caching and more. 
+
+Retrieve the manager in any ancestor view and use TWSView to display your snippets. 
 
 ```swift
 import SwiftUI
@@ -67,6 +71,7 @@ struct HomeScreen: View {
                 TWSView(snippet: snippet)
             }
         }
+        .twsRegisterManager(manager: tws)
     }
 }
 ```
