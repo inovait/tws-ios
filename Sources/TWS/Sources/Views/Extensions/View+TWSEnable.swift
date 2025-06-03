@@ -17,28 +17,48 @@
 import SwiftUI
 
 extension View {
-
-    public func twsEnable(
+    ///
+    /// Injects instance of ``TWSManager`` into the view hierarchy. Manager is accessable via @Environment(TWSManager.self).
+    /// - Parameters:
+    ///   - manager: ``TWSManager`` that will be accessable via  @Environment(TWSManager.self).
+    ///
+    public func twsSetManager(
         using manager: TWSManager
     ) -> some View {
-        self
+        return self
             .environment(manager)
             .environment(\.presenter, LivePresenter(manager: manager))
     }
-
-    public func twsEnable(
+    
+    ///
+    /// Creates an instance of ``TWSManager`` for the provided configuration and injects it into the view hierarchy.
+    /// Manager is accessable via @Environment(TWSManager.self).
+    /// - Parameters:
+    ///   - configuration: Configuration that will determine which snippets are accessable to the ``TWSManager``.
+    ///
+    public func twsSetManager(
         configuration: any TWSConfiguration
     ) -> some View {
         ModifiedContent(
             content: self,
-            modifier: _TWSPlaceholder(
+            modifier: _TWSCreateManager(
                 manager: TWSFactory.new(with: configuration)
             )
         )
     }
+    
+    ///
+    /// Connects the manager with remote services, allowing for snippet fetching, socket connections, etc.
+    /// - Parameters:
+    ///   - manager: ``TWSManager`` that will connect with remote services.
+    ///
+    public func twsRegisterManager(manager: TWSManager) -> some View {
+        manager.registerTWSManager()
+        return self
+    }
 }
 
-private struct _TWSPlaceholder: ViewModifier {
+private struct _TWSCreateManager: ViewModifier {
 
     @State private var manager: TWSManager
 
@@ -47,7 +67,7 @@ private struct _TWSPlaceholder: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        content
-            .twsEnable(using: manager)
+        return content
+            .twsSetManager(using: manager)
     }
 }
