@@ -17,6 +17,7 @@ public struct TWSSnippetFeature: Sendable {
         public var preloaded: Bool = false
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
+        public var localDynamicResources: [TWSRawDynamicResource] = []
 
         var isPreloading = false
 
@@ -38,6 +39,7 @@ public struct TWSSnippetFeature: Sendable {
             isVisible = true
             isPreloading = false
             localProps = .dictionary([:])
+            localDynamicResources = []
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -59,6 +61,7 @@ public struct TWSSnippetFeature: Sendable {
             case hideSnippet
             case preload
             case preloadCompleted([TWSSnippet.Attachment: ResourceResponse])
+            case setLocalDynamicResources([TWSRawDynamicResource])
         }
         
         @CasePathable
@@ -104,13 +107,17 @@ public struct TWSSnippetFeature: Sendable {
         case .business(.showSnippet):
             state.isVisible = true
             return .none
-
+            
+        case .business(.setLocalDynamicResources(let dynamicResources)):
+            state.localDynamicResources = dynamicResources
+            return .none
+            
         case .business(.preload):
             guard !state.isPreloading else { return .none }
             state.isPreloading = true
 
-            return .run { [api, snippet = state.snippet] send in
-                let resources = await preloadResources(for: snippet, using: api)
+            return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
+                let resources = await preloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
                 await send(.business(.preloadCompleted(resources)))
             }
 

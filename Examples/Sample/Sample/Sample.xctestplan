@@ -15,22 +15,15 @@
     {
       "target" : {
         "containerPath" : "container:..\/..",
+        "identifier" : "InjectionTests",
+        "name" : "InjectionTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
         "identifier" : "TWSLoggerTests",
         "name" : "TWSLoggerTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..",
-        "identifier" : "TWSModelsTests",
-        "name" : "TWSModelsTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..",
-        "identifier" : "TWSSnippetsTests",
-        "name" : "TWSSnippetsTests"
       }
     },
     {
@@ -45,6 +38,20 @@
         "containerPath" : "container:..\/..",
         "identifier" : "RouterTests",
         "name" : "RouterTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSSnippetsTests",
+        "name" : "TWSSnippetsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..",
+        "identifier" : "TWSModelsTests",
+        "name" : "TWSModelsTests"
       }
     }
   ],
