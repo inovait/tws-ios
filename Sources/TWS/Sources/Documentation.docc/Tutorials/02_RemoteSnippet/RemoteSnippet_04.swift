@@ -7,7 +7,7 @@ struct TWSDemoApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
-                .twsEnable(configuration: TWSBasicConfiguration(
+                .twsRegister(configuration: TWSBasicConfiguration(
                     id: "<PROJECT_ID>"
                 ))
         }

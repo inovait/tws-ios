@@ -12,7 +12,9 @@ internal import TWSSnippet
 ///
 /// ## Initialization
 ///
-/// You can create an instance of the manager by using the ``TWSFactory/new(with:)`` method on the ``TWSFactory``. Alternatively, you can utilize SwiftUI View extension ``SwiftUICore/View/twsEnable(configuration:)``. This extension creates the manager internally using the factory and injects it into the view hierarchy.
+/// You can create an instance of the manager by using the ``TWSFactory/new(with:)`` method on the ``TWSFactory``, manager created this way still needs to be registered with ``registerManager()``, to connect it with remote services.
+///
+/// Alternatively, you can utilize SwiftUI View extension ``SwiftUICore/View/twsRegister(configuration:)``. This extension creates the manager internally using the factory and injects it into the view hierarchy and registers it with remote services.
 ///
 /// > Note: You are responsible for keeping the instance alive. When using the SwiftUI extension, the instance will remain alive as long as the view is active.
 ///
@@ -83,6 +85,9 @@ public final class TWSManager: Identifiable {
         )
 
         logger.info("INIT TWSManager \(_id)")
+    }
+    
+    public func registerManager() {
         _syncState()
         _run()
     }

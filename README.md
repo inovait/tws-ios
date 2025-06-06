@@ -42,7 +42,7 @@ struct ContentView: View {
     
     var body: some View {
         HomeScreen()
-        .twsEnable(configuration: TWSBasicConfiguration(id: "myProjectId"))
+        .twsRegister(configuration: TWSBasicConfiguration(id: "myProjectId"))
     }
     
 }
