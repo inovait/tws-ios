@@ -21,10 +21,10 @@ import SwiftUI
 import TWS
 
 @MainActor
-public class TWSNotificationsOverlay: NSObject, UISceneDelegate {
+public class TWSOverlayProvider: NSObject, UISceneDelegate {
     private var hostingControllers: [UIHostingController<NotificationView>] = []
 
-    public static let shared = TWSNotificationsOverlay()
+    public static let shared = TWSOverlayProvider()
     private var queuedSnippets: [TWSSnippet] = []
 
     private override init() {
@@ -37,10 +37,18 @@ public class TWSNotificationsOverlay: NSObject, UISceneDelegate {
             object: nil)
     }
 
+    // MARK: Public
+    
+    ///
+    /// Tries so display provided snippet as a full screen overlay over current window. If window does not yet exist it is queued and displayed when the application notifies that UIScene has appeared.
+    /// - Parameter snippet: An instance of TWSSnippet that will be displayed
+    ///
     public func showOverlay(snippet: TWSSnippet) {
         queuedSnippets.append(snippet)
         tryPresentingOverlay()
     }
+    
+    // MARK: Private
     
     @objc private func tryPresentingOverlay() {
         guard let window = getWindowScene() else {

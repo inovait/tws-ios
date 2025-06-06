@@ -30,6 +30,24 @@ public final class TWSNotification {
     
     // MARK: Public
     
+    /// Tries to handle notification data in a way that displays a full screen overlay of TWSView, displaying a snippet parsed from push notification body.
+    /// - Parameter userInfo: Dictionary of values recieved from remote notification.
+    ///
+    /// - Returns true if the parsing of `NotificationType` and `NotificationData` succeeds, in this case notification can be considered processed, however if the provided project or snippet does not exists it will do nothing. If body can not be parsed it returns false.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    ///     if TWSNotification().handleTWSPushNotification(userInfo) {
+    ///         //Can be considered handled and return
+    ///         return
+    ///     }
+    ///
+    ///     ...the rest of notification handling logic
+    /// }
+    /// ```
+    ///
     public func handleTWSPushNotification(_ userInfo: [AnyHashable : Any]) -> Bool {
         guard
             let type = userInfo["type"] as? String,
@@ -44,7 +62,7 @@ public final class TWSNotification {
                 switch $0 {
                 case .snippetsUpdated:
                     if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
-                        TWSNotificationsOverlay.shared.showOverlay(snippet: desiredSnippet)
+                        TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet)
                         self.listenerTask?.cancel()
                     }
                 case .stateChanged:
