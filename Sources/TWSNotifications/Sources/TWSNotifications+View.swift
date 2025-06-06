@@ -42,7 +42,7 @@ struct NotificationView: View {
 private struct NotificationLoadingView: View {
     var body: some View {
         ZStack {
-            Color.green
+            Color.white
             ProgressView()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
