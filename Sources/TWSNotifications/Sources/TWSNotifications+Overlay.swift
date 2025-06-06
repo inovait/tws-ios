@@ -21,45 +21,67 @@ import SwiftUI
 import TWS
 
 @MainActor
-public class TWSNotificationsOverlay {
-    private var hostingController: UIHostingController<NotificationView>?
+public class TWSNotificationsOverlay: NSObject, UISceneDelegate {
+    private var hostingControllers: [UIHostingController<NotificationView>] = []
 
     public static let shared = TWSNotificationsOverlay()
+    private var queuedSnippets: [TWSSnippet] = []
 
-    private init() {}
+    private override init() {
+        super.init()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(tryPresentingOverlay),
+            name: UIScene.didActivateNotification,
+            object: nil)
+    }
 
     public func showOverlay(snippet: TWSSnippet) {
-        self.dismissOverlay()
+        queuedSnippets.append(snippet)
+        tryPresentingOverlay()
+    }
+    
+    @objc private func tryPresentingOverlay() {
         guard let window = getWindowScene() else {
             logger.info("TWSNotificationsOverlay: No active window found")
             return
         }
-
-        let controller = UIHostingController(rootView: NotificationView(snippet: snippet, dismiss: { self.dismissOverlay() }))
-        controller.view.backgroundColor = .clear
-        controller.view.frame = window.bounds
-        controller.view.isUserInteractionEnabled = true
-
-        window.addSubview(controller.view)
-        window.bringSubviewToFront(controller.view)
-
-        hostingController = controller
-    }
-
-    public func dismissOverlay() {
-        hostingController?.view.removeFromSuperview()
-        hostingController = nil
+        
+        while let snippet = queuedSnippets.first {
+            var controller: UIHostingController<NotificationView>!
+            let notificationView = NotificationView(snippet: snippet, dismiss: {
+                self.removeHostingController(controller)
+            })
+            controller = UIHostingController(rootView: notificationView)
+            controller.view.backgroundColor = .clear
+            controller.view.frame = window.bounds
+            controller.view.isUserInteractionEnabled = true
+            
+            window.addSubview(controller.view)
+            window.bringSubviewToFront(controller.view)
+            
+            hostingControllers.append(controller)
+            
+            queuedSnippets.remove(at: 0)
+        }
     }
     
+    private func removeHostingController(_ controller: UIHostingController<NotificationView>) {
+        controller.willMove(toParent: nil)
+        controller.view.removeFromSuperview()
+        controller.removeFromParent()
+
+        hostingControllers.removeAll { $0 === controller }
+    }
     
     private func getWindowScene() -> UIWindow? {
         if let windowScene = UIApplication.shared
             .connectedScenes
             .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
            let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-               
                return window
-           }
+        }
         
         return nil
     }
