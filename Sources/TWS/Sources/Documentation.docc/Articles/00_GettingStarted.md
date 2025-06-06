@@ -21,7 +21,7 @@ Learn how to integrate TWS into your project, turn your webpage into a native ap
 
 > Note: This guide assumes that you already have an organization with projects and other necessary setups in place. The focus here is on integrating TWS into your app to leverage its capabilities.
 
-To enable snippet management functionality at application startup, call ``SwiftUICore/View/twsEnable(configuration:)``. This initializes a ``TWSManager`` object under the hood, which fetches snippets, establishes a WebSocket connection, and notifies users about new or updated snippets, among other features. The manager is automatically injected into the environment, allowing seamless access throughout your app.
+To enable snippet management functionality at application startup, call ``SwiftUICore/View/twsRegister(configuration:)``. This initializes a ``TWSManager`` object under the hood, which fetches snippets, establishes a WebSocket connection, and notifies users about new or updated snippets, among other features. The manager is automatically injected into the environment, allowing seamless access throughout your app.
 
 ```swift
 import SwiftUI
@@ -34,7 +34,7 @@ struct ContentView: View {
             HomeView()
         }
         // 2. Inject the ``TWSManager`` into the view hierarchy
-        .twsEnable(configuration: TWSBasicConfiguration(
+        .twsRegister(configuration: TWSBasicConfiguration(
             id: "<PROJECT_ID>"
         ))
     }
@@ -63,4 +63,5 @@ struct HomeView: View {
 }
 ```
 
-> Note: It's important to ensure that the instance of the ``TWSManager`` remains alive. If you use the SwiftUI extensions ``SwiftUICore/View/twsEnable(configuration:)``, the manager will stay alive as long as the view exists. Alternatively, you can use ``TWSFactory/new(with:)`` to create an instance and inject it into the view via ``SwiftUICore/View/twsEnable(using:)``. Keep in mind that creating a new ``TWSManager`` with the same configuration will not produce a new instance but will instead return a shared one.
+> Note: It's important to ensure that the instance of the ``TWSManager`` remains alive. If you use the SwiftUI extensions ``SwiftUICore/View/twsRegister(configuration:)``, the manager will stay alive as long as the view exists. Alternatively, you can use ``TWSFactory/new(with:)`` to create an instance and inject it into the view via ``SwiftUICore/View/twsRegister(using:)``. Keep in mind that creating a new ``TWSManager`` with the same configuration will not produce a new instance but will instead return a shared one. 
+

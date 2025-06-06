@@ -18,7 +18,7 @@ import SwiftUI
 
 extension View {
 
-    public func twsEnable(
+    public func twsRegister(
         using manager: TWSManager
     ) -> some View {
         self
@@ -26,7 +26,7 @@ extension View {
             .environment(\.presenter, LivePresenter(manager: manager))
     }
 
-    public func twsEnable(
+    public func twsRegister(
         configuration: any TWSConfiguration
     ) -> some View {
         ModifiedContent(
@@ -44,10 +44,11 @@ private struct _TWSPlaceholder: ViewModifier {
 
     init(manager: TWSManager) {
         self._manager = .init(initialValue: manager)
+        manager.registerManager()
     }
 
     func body(content: Content) -> some View {
         content
-            .twsEnable(using: manager)
+            .twsRegister(using: manager)
     }
 }
