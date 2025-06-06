@@ -28,28 +28,27 @@ public final class TWSNotification {
     
     public init() {}
     
+    // MARK: Public
+    
     public func handleTWSPushNotification(_ userInfo: [AnyHashable : Any]) -> Bool {
         guard
             let type = userInfo["type"] as? String,
             type == NotificationType.snippet_push.rawValue,
             let path = userInfo["path"] as? String else { return false }
-        
-        let ids = path.split(separator: "/")
-        let projectId = String(ids[0])
-        let snippetId = String(ids[1])
-    
-        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: projectId))
+
+        let notificationData = parsePath(path)
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: notificationData.projectId))
         
         self.listenerTask = Task {
             await manager.observe(onEvent: {
                 switch $0 {
                 case .snippetsUpdated:
-                    if let desiredSnippet = manager.snippets().first { $0.id == snippetId } {
+                    if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
                         TWSNotificationsOverlay.shared.showOverlay(snippet: desiredSnippet)
                         self.listenerTask?.cancel()
                     }
                 case .stateChanged:
-                    if case .failed(let err) = manager.snippets.state {
+                    if case .failed(_) = manager.snippets.state {
                         self.listenerTask?.cancel()
                     }
                     if manager.snippets.state == .loaded {
@@ -62,5 +61,20 @@ public final class TWSNotification {
         }
         
         return true
+    }
+    
+    // MARK: Private
+    
+    private func parsePath(_ path: String) -> NotificationData {
+        let ids = path.split(separator: "/")
+        let projectId = String(ids[0])
+        let snippetId = String(ids[1])
+        
+        return NotificationData(projectId: projectId, snippetId: snippetId)
+    }
+    
+    struct NotificationData {
+        var projectId: String
+        var snippetId: String
     }
 }
