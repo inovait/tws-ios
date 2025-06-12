@@ -21,7 +21,8 @@ extension View {
     public func twsRegister(
         using manager: TWSManager
     ) -> some View {
-        self
+        manager.registerManager()
+        return self
             .environment(manager)
             .environment(\.presenter, LivePresenter(manager: manager))
     }
