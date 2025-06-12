@@ -64,6 +64,7 @@ public final class TWSManager: Identifiable {
     private let _id = UUID().uuidString.suffix(4)
     private var _stateSync: AnyCancellable?
     private var isSetup = false
+    private var isRegistered = false
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -88,8 +89,12 @@ public final class TWSManager: Identifiable {
     }
     
     public func registerManager() {
-        _syncState()
-        _run()
+        if !isRegistered {
+            logger.info("TWSManager \(_id) registered with remote services")
+            _syncState()
+            _run()
+            isRegistered = true
+        }
     }
 
     deinit {
