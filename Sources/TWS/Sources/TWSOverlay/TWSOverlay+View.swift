@@ -15,20 +15,19 @@
 //
 
 import SwiftUI
-import TWS
 
-struct NotificationView: View {
+struct TWSOverlayView: View {
     var snippet: TWSSnippet
-    var dismiss: () -> Void
+    var twsManager: TWSManager
+    var dismiss: (TWSSnippet) -> Void
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
             TWSView(snippet: snippet)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .twsBind(loadingView: { AnyView(NotificationLoadingView()) } )
-                .twsBind(preloadingView: { AnyView(NotificationLoadingView()) })
-            
-            Button(action: dismiss) {
+                .twsBind(loadingView: { AnyView(TWSNotificationLoadingView()) } )
+                .twsBind(preloadingView: { AnyView(TWSNotificationLoadingView()) })
+            Button(action: { dismiss(snippet) }) {
                 Image(systemName: "xmark.circle.fill")
                     .resizable()
                     .frame(width: 32, height: 32)
@@ -36,10 +35,11 @@ struct NotificationView: View {
             }
             .padding()
         }
+        .twsEnable(using: twsManager)
     }
 }
 
-private struct NotificationLoadingView: View {
+private struct TWSNotificationLoadingView: View {
     var body: some View {
         ZStack {
             Color.white

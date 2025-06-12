@@ -18,14 +18,13 @@ import Foundation
 import UIKit
 import TWSModels
 import SwiftUI
-import TWS
 
 @MainActor
 public class TWSOverlayProvider: NSObject, UISceneDelegate {
-    private var hostingControllers: [UIHostingController<NotificationView>] = []
+    private var hostingControllers: [TWSSnippet : UIHostingController<TWSOverlayView>] = [:]
 
     public static let shared = TWSOverlayProvider()
-    private var queuedSnippets: [TWSSnippet] = []
+    private var queuedSnippets: [(TWSSnippet, TWSManager)] = []
 
     private override init() {
         super.init()
@@ -43,8 +42,8 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
     /// Tries so display provided snippet as a full screen overlay over current window. If window does not yet exist it is queued and displayed when the application notifies that UIScene has appeared.
     /// - Parameter snippet: An instance of TWSSnippet that will be displayed
     ///
-    public func showOverlay(snippet: TWSSnippet) {
-        queuedSnippets.append(snippet)
+    public func showOverlay(snippet: TWSSnippet, manager: TWSManager) {
+        queuedSnippets.append((snippet, manager))
         tryPresentingOverlay()
     }
     
@@ -57,9 +56,9 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
         }
         
         while let snippet = queuedSnippets.first {
-            var controller: UIHostingController<NotificationView>!
-            let notificationView = NotificationView(snippet: snippet, dismiss: {
-                self.removeHostingController(controller)
+            var controller: UIHostingController<TWSOverlayView>!
+            let notificationView = TWSOverlayView(snippet: snippet.0, twsManager: snippet.1, dismiss: { snippet in
+                self.removeHostingController(snippet)
             })
             controller = UIHostingController(rootView: notificationView)
             controller.view.backgroundColor = .clear
@@ -68,19 +67,21 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
             
             window.addSubview(controller.view)
             window.bringSubviewToFront(controller.view)
-            
-            hostingControllers.append(controller)
+            hostingControllers.updateValue(controller, forKey: snippet.0)
             
             queuedSnippets.remove(at: 0)
         }
     }
     
-    private func removeHostingController(_ controller: UIHostingController<NotificationView>) {
+    private func removeHostingController(_ snippet: TWSSnippet) {
+        guard let controller = hostingControllers[snippet] else { return }
         controller.willMove(toParent: nil)
         controller.view.removeFromSuperview()
         controller.removeFromParent()
 
-        hostingControllers.removeAll { $0 === controller }
+        hostingControllers.removeValue(forKey: snippet)
+        
+        print("after removing remains \(hostingControllers.count) hosting controllers \(hostingControllers)")
     }
     
     private func getWindowScene() -> UIWindow? {

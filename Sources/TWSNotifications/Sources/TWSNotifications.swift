@@ -16,7 +16,6 @@
 
 import Foundation
 import TWS
-import TWSModels
 
 enum NotificationType: String {
     case snippet_push = "snippet_push"
@@ -31,6 +30,8 @@ public final class TWSNotification {
     // MARK: Public
     
     /// Tries to handle notification data in a way that displays a full screen overlay of TWSView, displaying a snippet parsed from push notification body.
+    /// Note: Manager instance for the configuration this notification is trying to access should be created and alive before you try calling this method.
+    ///
     /// - Parameter userInfo: Dictionary of values recieved from remote notification.
     ///
     /// - Returns true if the parsing of `NotificationType` and `NotificationData` succeeds, in this case notification can be considered processed, however if the provided project or snippet does not exists it will do nothing. If body can not be parsed it returns false.
@@ -55,22 +56,26 @@ public final class TWSNotification {
             let path = userInfo["path"] as? String else { return false }
 
         let notificationData = parsePath(path)
-        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: notificationData.projectId))
+        let manager = TWSFactory.get(with: TWSBasicConfiguration(id: notificationData.projectId))
+        
+        guard let manager else {
+            logger.warn("Can not open overlay for snippet \(notificationData.snippetId), because TWSManager does not exist for the configuration with id \(notificationData.projectId)")
+            return false
+        }
         
         self.listenerTask = Task {
             await manager.observe(onEvent: {
                 switch $0 {
-                case .snippetsUpdated:
-                    if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
-                        TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet)
-                        self.listenerTask?.cancel()
-                    }
                 case .stateChanged:
                     if case .failed(_) = manager.snippets.state {
                         self.listenerTask?.cancel()
                     }
                     if manager.snippets.state == .loaded {
-                        self.listenerTask?.cancel()
+                        if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
+                            TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
+                            self.listenerTask?.cancel()
+                            return
+                        }
                     }
                 default:
                     break
