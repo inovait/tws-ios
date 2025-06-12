@@ -17,9 +17,7 @@
 import Foundation
 import ComposableArchitecture
 import TWSModels
-import TWSSnippet
-import TWSTriggers
-
+import TWSCommon
 
 @Reducer
 public struct TWSTriggersFeature {
@@ -96,9 +94,5 @@ public struct TWSTriggersFeature {
         default:
             return .none
         }
-    }
-    
-    private func _reduce(into state: inout State, action: Action.DelegateAction) -> Effect<Action> {
-        return .none
     }
 }

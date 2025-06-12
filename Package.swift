@@ -155,8 +155,7 @@ let package = Package(
         .target(
             name: "TWSTriggers",
             dependencies: [
-                .target(name: "TWSCommon"),
-                .target(name: "TWSSnippet")
+                .target(name: "TWSCommon")
             ],
             path: "Sources/TWSTriggers"
         ),
