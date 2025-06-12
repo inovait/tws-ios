@@ -166,7 +166,8 @@ let package = Package(
             name: "TWSSnippetsTests",
             dependencies: [
                 .target(name: "TWSSnippets"),
-                .target(name: "TWSLocal")
+                .target(name: "TWSLocal"),
+                .target(name: "TWSTriggers")
             ],
             path: "Tests/TWSSnippetsTests"
         ),

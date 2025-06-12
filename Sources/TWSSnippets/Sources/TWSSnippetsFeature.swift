@@ -139,6 +139,10 @@ public struct TWSSnippetsFeature: Sendable {
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
+            if state.shouldTriggerSdkInitCampaing {
+                effects.append(.send(.business(.sendTrigger("sdk_init"))))
+                state.shouldTriggerSdkInitCampaing = false
+            }
 
             // Remove old attachments
             let currentResources = Set(state.preloadedResources.keys)
@@ -361,26 +365,7 @@ public struct TWSSnippetsFeature: Sendable {
             state.campaigns.append(.init(trigger: trigger))
             
             return .send(.business(.trigger(.element(id: trigger, action: .business(.checkTrigger(trigger))))))
-            
-            
-        case .updateCampaign(let snippet):
-            var effects = [Effect<Action>]()
-            var foundItems = [TWSSnippet]()
-            for campaign in state.campaigns {
-                // Find and update all instances of snippet in different campaigns
-                if let matchedSnippet = campaign.snippets.first(where: { $0.id == snippet.id }) {
-                    foundItems.append(matchedSnippet.snippet)
-                    effects.append(
-                        .send(
-                            .business(
-                                .trigger(
-                                    .element(id: campaign.id, action:
-                                            .business(.snippets(.element(id: matchedSnippet.id, action: .business(.snippetUpdated(snippet: matchedSnippet.snippet))))))))))
-                }
-            }
 
-            return .merge(effects)
-            
         case .trigger(.element(id: _, action: .delegate(.openOverlay(let snippet)))):
             return .send(.delegate(.openOverlay(snippet)))
         case .trigger:

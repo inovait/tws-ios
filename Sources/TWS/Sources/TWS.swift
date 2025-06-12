@@ -230,7 +230,6 @@ public final class TWSManager: Identifiable {
         defer { isSetup = true }
         guard !isSetup else { return }
         
-        store.send(.snippets(.business(.sendTrigger("sdk_init"))))
         store.send(.snippets(.business(.load)))
     }
 

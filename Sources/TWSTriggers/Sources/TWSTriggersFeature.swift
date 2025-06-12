@@ -18,6 +18,7 @@ import Foundation
 import ComposableArchitecture
 import TWSModels
 import TWSSnippet
+import TWSTriggers
 
 
 @Reducer
@@ -30,7 +31,6 @@ public struct TWSTriggersFeature {
     @ObservableState
     public struct State: Equatable, Identifiable {
         public var id: String
-        public var snippets: IdentifiedArrayOf<TWSSnippetFeature.State> = []
         
         public init(trigger: String) {
             self.id = trigger
@@ -47,8 +47,7 @@ public struct TWSTriggersFeature {
         @CasePathable
         public enum BusinessAction {
             case checkTrigger(String)
-            case campaignLoaded(Result<(String, TWSCampaign), Error>)
-            case snippets(IdentifiedActionOf<TWSSnippetFeature>)
+            case campaignLoaded(Result<(TWSCampaign), Error>)
         }
         
         case delegate(DelegateAction)
@@ -64,8 +63,6 @@ public struct TWSTriggersFeature {
             case .delegate:
                 return .none
             }
-        }.forEach(\.snippets, action: \.business.snippets) {
-            TWSSnippetFeature()
         }
     }
     
@@ -75,33 +72,27 @@ public struct TWSTriggersFeature {
             return .run { [api, config] send in
                 do {
                     let campaign = try await api.getCampaigns(trigger)
-
-                    await send(.business(.campaignLoaded(.success((trigger, campaign)))))
+                    
+                    await send(.business(.campaignLoaded(.success((campaign)))))
                 } catch {
                     await send(.business(.campaignLoaded(.failure(error))))
                 }
             }
             
         case .campaignLoaded(.success(let campaign)):
-            let campaignTrigger = campaign.0
-            
-            let campaignSnippets: [TWSSnippetFeature.State] = campaign.1.snippets.map { .init(snippet: $0)}
-            state.snippets = .init(uniqueElements: campaignSnippets)
-            
+            let eligibleCampaingSnippets = campaign.snippets
             var effects = [Effect<Action>]()
             
-            state.snippets.forEach {
-                effects.append(.send(.business(.snippets(.element(id: $0.id, action: .view(.openCampaign))))))
+            eligibleCampaingSnippets.forEach {
+                effects.append(.send(.delegate(.openOverlay($0))))
             }
-            logger.info("Campaign for trigger \(campaignTrigger) loaded succesfully: \(campaignSnippets)")
+            
+            logger.info("Opening overlays for campaign: \(state.id)")
             
             return .merge(effects)
         case .campaignLoaded(.failure(let error)):
             logger.info("Campaign could not be loaded: \(error)")
             return .none
-            
-        case .snippets(.element(id: _, action: .delegate(.openOverlay(let snippet)))):
-            return .send(.delegate(.openOverlay(snippet)))
         default:
             return .none
         }

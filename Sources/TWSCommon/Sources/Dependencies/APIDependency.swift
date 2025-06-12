@@ -51,7 +51,7 @@ public struct APIDependency: Sendable {
     }
     
     public var getCampaigns: @Sendable (
-        _ trigger: String
+        String
     ) async throws(APIError) -> TWSCampaign = { _ throws(APIError) in
         reportIssue("\(Self.self).getCampaigns")
         throw APIError.local(NSError(domain: "", code: -1))
@@ -83,7 +83,7 @@ public enum APIDependencyKey: DependencyKey {
         } getResource: { _, _ in
             unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
         } getCampaigns: { _ in
-            unimplemented("\(Self.self).getCampaigns", placeholder: .init(snippets: []))
+                .init(snippets: [])
         }
     }
 }
