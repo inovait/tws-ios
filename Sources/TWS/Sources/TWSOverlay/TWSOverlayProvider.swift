@@ -21,7 +21,7 @@ import SwiftUI
 
 @MainActor
 public class TWSOverlayProvider: NSObject, UISceneDelegate {
-    private var hostingControllers: [TWSSnippet : UIHostingController<TWSOverlayView>] = [:]
+    private var hostingControllers: [String : UIHostingController<TWSOverlayView>] = [:]
 
     public static let shared = TWSOverlayProvider()
     private var queuedSnippets: [(TWSSnippet, TWSManager)] = []
@@ -55,10 +55,13 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
             return
         }
         
-        while let snippet = queuedSnippets.first {
+        while let queuedItem = queuedSnippets.first {
+            let snippet = queuedItem.0
+            let manager = queuedItem.1
+            let id = "\(snippet.id)-\(UUID())"
             var controller: UIHostingController<TWSOverlayView>!
-            let notificationView = TWSOverlayView(snippet: snippet.0, twsManager: snippet.1, dismiss: { snippet in
-                self.removeHostingController(snippet)
+            let notificationView = TWSOverlayView(id: id, snippet: snippet, twsManager: manager, dismiss: { viewId in
+                self.removeHostingController(viewId)
             })
             controller = UIHostingController(rootView: notificationView)
             controller.view.backgroundColor = .clear
@@ -67,19 +70,19 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
             
             window.addSubview(controller.view)
             window.bringSubviewToFront(controller.view)
-            hostingControllers.updateValue(controller, forKey: snippet.0)
+            hostingControllers.updateValue(controller, forKey: id)
             
             queuedSnippets.remove(at: 0)
         }
     }
     
-    private func removeHostingController(_ snippet: TWSSnippet) {
-        guard let controller = hostingControllers[snippet] else { return }
+    private func removeHostingController(_ viewId: String) {
+        guard let controller = hostingControllers[viewId] else { return }
         controller.willMove(toParent: nil)
         controller.view.removeFromSuperview()
         controller.removeFromParent()
 
-        hostingControllers.removeValue(forKey: snippet)
+        hostingControllers.removeValue(forKey: viewId)
         
         print("after removing remains \(hostingControllers.count) hosting controllers \(hostingControllers)")
     }

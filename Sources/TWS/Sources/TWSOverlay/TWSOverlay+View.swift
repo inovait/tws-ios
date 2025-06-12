@@ -16,10 +16,11 @@
 
 import SwiftUI
 
-struct TWSOverlayView: View {
+struct TWSOverlayView: View, Identifiable {
+    var id: String
     var snippet: TWSSnippet
     var twsManager: TWSManager
-    var dismiss: (TWSSnippet) -> Void
+    var dismiss: (_ id: String) -> Void
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -27,7 +28,7 @@ struct TWSOverlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .twsBind(loadingView: { AnyView(TWSNotificationLoadingView()) } )
                 .twsBind(preloadingView: { AnyView(TWSNotificationLoadingView()) })
-            Button(action: { dismiss(snippet) }) {
+            Button(action: { dismiss(id) }) {
                 Image(systemName: "xmark.circle.fill")
                     .resizable()
                     .frame(width: 32, height: 32)
