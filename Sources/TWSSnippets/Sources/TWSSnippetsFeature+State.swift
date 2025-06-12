@@ -19,6 +19,7 @@ import ComposableArchitecture
 import TWSModels
 import TWSSnippet
 import Sharing
+import TWSTriggers
 
 extension TWSSnippetsFeature {
 
@@ -46,6 +47,7 @@ extension TWSSnippetsFeature {
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
         public internal(set) var state: TWSLoadingState = .idle
+        public internal(set) var campaigns: IdentifiedArrayOf<TWSTriggersFeature.State> = .init()
 
         public init(
             configuration: any TWSConfiguration,

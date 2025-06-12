@@ -19,6 +19,10 @@ public struct TWSAPI {
     public let getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> ResourceResponse
+    
+    public let getCampaign: @Sendable (
+        _ trigger: String
+    ) async throws(APIError) -> TWSCampaign
 
     static func live(
         baseUrl: TWSBaseUrl
@@ -104,6 +108,10 @@ public struct TWSAPI {
                 }
 
                 throw .decode(NSError(domain: "invalid-string", code: -1))
+            },
+            getCampaign: { campaignTrigger throws(APIError) in
+                //TODO
+                return TWSCampaign(snippets: [])
             }
         )
     }

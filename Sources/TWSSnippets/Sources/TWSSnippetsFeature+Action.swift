@@ -18,6 +18,7 @@ import Foundation
 import ComposableArchitecture
 import TWSModels
 import TWSSnippet
+import TWSTriggers
 
 extension TWSSnippetsFeature {
 
@@ -39,8 +40,16 @@ extension TWSSnippetsFeature {
             case setLocalProps(props: (TWSSnippet.ID, [String: TWSSnippet.Props]))
             case showSnippet(snippetId: TWSSnippet.ID)
             case hideSnippet(snippetId: TWSSnippet.ID)
+            case sendTrigger(String)
+            case updateCampaign(TWSSnippet)
+            case trigger(IdentifiedActionOf<TWSTriggersFeature>)
         }
 
+        @CasePathable
+        public enum DelegateAction {
+            case openOverlay(TWSSnippet)
+        }
+        case delegate(DelegateAction)
         case business(BusinessAction)
     }
 }

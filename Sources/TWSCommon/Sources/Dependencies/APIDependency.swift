@@ -49,18 +49,26 @@ public struct APIDependency: Sendable {
         reportIssue("\(Self.self).loadResource")
         throw APIError.local(NSError(domain: "", code: -1))
     }
+    
+    public var getCampaigns: @Sendable (
+        _ trigger: String
+    ) async throws(APIError) -> TWSCampaign = { _ throws(APIError) in
+        reportIssue("\(Self.self).getCampaigns")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 }
 
 public enum APIDependencyKey: DependencyKey {
 
     public static var liveValue: APIDependency {
         let api = TWSAPIFactory.new()
-
+        
         return .init(
             getProject: api.getProject,
             getSharedToken: api.getSharedToken,
             getSnippetBySharedToken: api.getSnippetByShareToken,
-            getResource: api.getResource
+            getResource: api.getResource,
+            getCampaigns: api.getCampaign
         )
     }
     
@@ -74,6 +82,8 @@ public enum APIDependencyKey: DependencyKey {
             unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
         } getResource: { _, _ in
             unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
+        } getCampaigns: { _ in
+            unimplemented("\(Self.self).getCampaigns", placeholder: .init(snippets: []))
         }
     }
 }

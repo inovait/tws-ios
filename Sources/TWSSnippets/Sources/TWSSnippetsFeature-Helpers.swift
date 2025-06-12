@@ -88,6 +88,10 @@ extension TWSSnippetsFeature {
                                 )
                             )
                         )
+                        
+                        await send(
+                            .business(.updateCampaign(snippet))
+                        )
 
                         await send(.business(.startVisibilityTimers([snippet])))
                     }
