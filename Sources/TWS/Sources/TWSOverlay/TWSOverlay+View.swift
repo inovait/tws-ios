@@ -36,7 +36,7 @@ struct TWSOverlayView: View, Identifiable {
             }
             .padding()
         }
-        .twsEnable(using: twsManager)
+        .twsRegister(using: twsManager)
     }
 }
 
