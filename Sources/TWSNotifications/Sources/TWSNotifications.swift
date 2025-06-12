@@ -31,6 +31,22 @@ public final class TWSNotification {
     
     /// Tries to handle notification data in a way that displays a full screen overlay of TWSView, displaying a snippet parsed from push notification body.
     /// Note: Manager instance for the configuration this notification is trying to access should be created and alive before you try calling this method.
+    /// Meaning if you are handling notifications with UIApplicationDelegate, you should create and register manager before you apply the @UIApplicationDelegateAdaptor.
+    /// # Example
+    ///
+    /// ```swift
+    /// @main
+    /// struct SampleApp: App {
+    ///     let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "<PROJECT_ID>))
+    ///     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    ///     var body: some Scene {
+    ///         WindowGroup {
+    ///             ContentView()
+    ///                 .twsEnable(using: manager)
+    ///         }
+    ///      }
+    ///   }
+    /// ```
     ///
     /// - Parameter userInfo: Dictionary of values recieved from remote notification.
     ///
