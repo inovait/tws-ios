@@ -75,15 +75,15 @@ public enum APIDependencyKey: DependencyKey {
 
     public static var testValue: APIDependency {
         .init { _ in
-            unimplemented("\(Self.self).getProject", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
+            return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getSharedToken: { _ in
-            unimplemented("\(Self.self).getSharedToken", placeholder: "")
+            return ""
         } getSnippetBySharedToken: { _ in
-            unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
+            return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getResource: { _, _ in
-            unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
+            return .init(responseUrl: nil, data: "")
         } getCampaigns: { _ in
-                .init(snippets: [])
+            return .init(snippets: [])
         }
     }
 }

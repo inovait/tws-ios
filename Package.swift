@@ -204,6 +204,13 @@ let package = Package(
                 .target(name: "TWSCommon")
             ],
             path: "Tests/InjectionTests"
+        ),
+        .testTarget(
+            name: "TWSNotificationsTests",
+            dependencies: [
+                .target(name: "TWSNotifications")
+            ],
+            path: "Tests/TWSNotificationsTests"
         )
     ]
 )

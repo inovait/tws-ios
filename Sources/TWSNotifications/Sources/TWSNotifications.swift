@@ -17,10 +17,6 @@
 import Foundation
 import TWS
 
-enum NotificationType: String {
-    case snippet_push = "snippet_push"
-}
-
 @MainActor
 public final class TWSNotification {
     private var listenerTask: Task<Void, Never>? = nil
@@ -71,32 +67,37 @@ public final class TWSNotification {
             type == NotificationType.snippet_push.rawValue,
             let path = userInfo["path"] as? String else { return false }
 
-        let notificationData = parsePath(path)
-        let manager = TWSFactory.get(with: TWSBasicConfiguration(id: notificationData.projectId))
-        
-        guard let manager else {
-            logger.warn("Can not open overlay for snippet \(notificationData.snippetId), because TWSManager does not exist for the configuration with id \(notificationData.projectId)")
-            return false
-        }
-        
-        self.listenerTask = Task {
-            await manager.observe(onEvent: {
-                switch $0 {
-                case .stateChanged:
-                    if case .failed(_) = manager.snippets.state {
-                        self.listenerTask?.cancel()
-                    }
-                    if manager.snippets.state == .loaded {
-                        if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
-                            TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
+        do {
+            let notificationData = try parsePath(path)
+            let manager = TWSFactory.get(with: TWSBasicConfiguration(id: notificationData.projectId))
+            guard let manager else {
+                logger.warn("Can not open overlay for snippet \(notificationData.snippetId), because TWSManager does not exist for the configuration with id \(notificationData.projectId)")
+                return false
+            }
+            
+            self.listenerTask = Task {
+                await manager.observe(onEvent: {
+                    switch $0 {
+                    case .stateChanged:
+                        if case .failed(_) = manager.snippets.state {
                             self.listenerTask?.cancel()
-                            return
                         }
+                        if manager.snippets.state == .loaded {
+                            if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
+                                TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
+                                self.listenerTask?.cancel()
+                                return
+                            }
+                        }
+                    default:
+                        break
                     }
-                default:
-                    break
-                }
-            })
+                })
+            }
+            
+        } catch {
+            logger.err("Failed to parse notification path \(path)")
+            return false
         }
         
         return true
@@ -104,16 +105,19 @@ public final class TWSNotification {
     
     // MARK: Private
     
-    private func parsePath(_ path: String) -> NotificationData {
+    private func parsePath(_ path: String) throws(TWSNotificationsError) -> TWSNotificationData {
         let ids = path.split(separator: "/")
+        if ids.count != 2 {
+            throw TWSNotificationsError.failedToParsePath
+        }
+        
         let projectId = String(ids[0])
         let snippetId = String(ids[1])
         
-        return NotificationData(projectId: projectId, snippetId: snippetId)
+        return TWSNotificationData(projectId: projectId, snippetId: snippetId)
     }
-    
-    struct NotificationData {
-        var projectId: String
-        var snippetId: String
-    }
+}
+
+fileprivate enum NotificationType: String {
+    case snippet_push = "snippet_push"
 }

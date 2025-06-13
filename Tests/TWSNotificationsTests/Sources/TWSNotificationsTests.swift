@@ -15,11 +15,74 @@
 //
 
 import Testing
+import TWS
+import TWSNotifications
 
+@MainActor
 struct TWSNotificationsTests {
-
-    @Test func notificationPayloadParsingTest() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "snippet_push", "path": "test/snippet"]]
+    )
+    func notificationCorrectPayloadParsingTest(userInfo: [String: String]) async throws {
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "test"))
+        manager.registerManager()
+        
+        #expect(await TWSNotification().handleTWSPushNotification(userInfo))
     }
-
+    
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "snippet_push", "path": "noManager/snippet"]]
+    )
+    func notificationNoManagerPayloadParsingTest(userInfo: [String: String]) async throws {
+        
+        #expect(await !TWSNotification().handleTWSPushNotification(userInfo))
+    }
+    
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "snippet_push", "path": "wrongManager/snippet"]]
+    )
+    func notificationWrongManagerPayloadParsingTest(userInfo: [String: String]) async throws {
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "wrong"))
+        manager.registerManager()
+        
+        #expect(await !TWSNotification().handleTWSPushNotification(userInfo))
+    }
+    
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "snippet_push", "path": "wrongFormat"]]
+    )
+    func notificationWrongPayloadParsingTest(userInfo: [String: String]) async throws {
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "wrong"))
+        manager.registerManager()
+        
+        #expect(await !TWSNotification().handleTWSPushNotification(userInfo))
+    }
+    
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "snippet_push", "path": "wrongFormat/test/test"]]
+    )
+    func notificationToLongPayloadParsingTest(userInfo: [String: String]) async throws {
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "wrong"))
+        manager.registerManager()
+        
+        #expect(await !TWSNotification().handleTWSPushNotification(userInfo))
+    }
+    
+    @Test(
+        "Tests parsing of correct notificaiton payload setup",
+        arguments: [["type": "wrong_type", "path": "wrong/test/test"]]
+    )
+    func notificationInvalidPayloadTypeParsingTest(userInfo: [String: String]) async throws {
+        let manager = TWSFactory.new(with: TWSBasicConfiguration(id: "wrong"))
+        manager.registerManager()
+        
+        #expect(await !TWSNotification().handleTWSPushNotification(userInfo))
+    }
+    
+    
 }
