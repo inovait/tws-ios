@@ -27,7 +27,6 @@ final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegat
         #if DEBUG
         logger.info("Redirecting request from \(response.url?.absoluteString ?? "unknown") to \(request.url?.absoluteString ?? "unknown")")
         #endif
-        var redirectedRequest = request
         
         Task { @MainActor in
             if let headerFields = response.allHeaderFields as? [String: String],
@@ -39,6 +38,6 @@ final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegat
             }
         }
         
-        completionHandler(redirectedRequest)
+        completionHandler(request)
     }
 }
