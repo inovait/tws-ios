@@ -32,7 +32,7 @@ actor SocketEventObserver: NSObject, URLSessionWebSocketDelegate {
     }
 
     deinit {
-        print("DEINIT SocketEventObserver \(id)")
+        logger.info("DEINIT SocketEventObserver \(id)")
     }
 
     // MARK: - Helpers

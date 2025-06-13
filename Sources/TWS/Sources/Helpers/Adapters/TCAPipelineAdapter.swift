@@ -54,7 +54,18 @@ extension AnyCasePath {
 
                 case .stateChanged:
                     return .stateChanged
-
+            
+                case .openOverlay(let snippet):
+                    Task { @MainActor in
+                        @Dependency(\.configuration) var config
+                        guard let manager = TWSFactory.get(with: config.configuration()) else {
+                            logger.warn("Can not open overlay for snippet \(snippet), because TWSManager does not exist for the configuration")
+                            return
+                        }
+                        
+                        TWSOverlayProvider.shared.showOverlay(snippet: snippet, manager: manager)
+                    }
+                    return .shouldOpenCampaign
                 default:
                     return nil
                 }

@@ -50,7 +50,14 @@ class Router {
         for header in request.headers {
             urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         }
-
+        
+        if request.method != .get {
+            do {
+                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: request.body, options: [])
+            } catch {
+                throw APIError.local(error)
+            }
+        }
         logger.info(urlRequest.debugDescription)
 
         do {

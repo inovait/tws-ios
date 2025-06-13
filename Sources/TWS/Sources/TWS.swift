@@ -239,6 +239,7 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         defer { isSetup = true }
         guard !isSetup else { return }
+        
         store.send(.snippets(.business(.load)))
     }
 
@@ -249,6 +250,7 @@ public final class TWSManager: Identifiable {
                 case .snippetsUpdated: return _React.snippets
                 case .universalLinkConfigurationLoaded: return nil
                 case .stateChanged: return .state
+                case .shouldOpenCampaign: return nil
                 }
             }
             .sink(receiveValue: { [weak self] react in

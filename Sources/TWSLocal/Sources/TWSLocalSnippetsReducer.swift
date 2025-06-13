@@ -85,6 +85,8 @@ struct TWSLocalSnippetsReducer: Equatable {
                     state.$preloadedResources.withLock { $0.updateValue(resource.value, forKey: resource.key)}
                     #endif
                 }
+            case .openOverlay:
+                return .none
             }
         case .snippetAction:
             break

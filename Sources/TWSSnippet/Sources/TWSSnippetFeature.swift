@@ -67,11 +67,13 @@ public struct TWSSnippetFeature: Sendable {
         @CasePathable
         public enum View {
             case openedTWSView
+            case openCampaign
         }
 
         @CasePathable
         public enum Delegate {
             case resourcesUpdated([TWSSnippet.Attachment: ResourceResponse])
+            case openOverlay(TWSSnippet)
         }
 
         case business(Business)
@@ -87,7 +89,12 @@ public struct TWSSnippetFeature: Sendable {
         switch action {
         case .view(.openedTWSView):
             return .send(.business(.preload))
-            
+        case .view(.openCampaign):
+            return .merge(
+                .send(.business(.preload)),
+                .send(.delegate(.openOverlay(state.snippet)))
+            )
+                
         case let .business(.snippetUpdated(snippet)):
             state.snippet = snippet
             state.preloaded = false
@@ -124,6 +131,7 @@ public struct TWSSnippetFeature: Sendable {
         case let .business(.preloadCompleted(resources)):
             state.preloaded = true
             state.isPreloading = false
+            
             return .send(.delegate(.resourcesUpdated(resources)))
 
         case .delegate:

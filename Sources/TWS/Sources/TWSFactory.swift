@@ -52,6 +52,16 @@ public class TWSFactory {
             socketURL: nil
         )
     }
+    
+    public class func get(
+        with configuration: any TWSConfiguration
+    ) -> TWSManager? {
+        if let manager = _instances[configuration.id]?.box {
+            logger.info("Reusing TWSManager for configuration: \(configuration)")
+            return manager
+        }
+        return nil
+    }
 
     // MARK: - Internal
 

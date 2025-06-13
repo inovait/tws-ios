@@ -2,6 +2,7 @@ import Foundation
 import ComposableArchitecture
 import TWSSnippet
 import TWSCommon
+import TWSTriggers
 @_spi(Internals) import TWSModels
 
 // swiftlint:disable identifier_name
@@ -21,10 +22,15 @@ public struct TWSSnippetsFeature: Sendable {
             switch action {
             case let .business(action):
                 return _reduce(into: &state, action: action)
+            case .delegate:
+                return .none
             }
         }
         .forEach(\.snippets, action: \.business.snippets) {
             TWSSnippetFeature()
+        }
+        .forEach(\.campaigns, action: \.business.trigger) {
+            TWSTriggersFeature()
         }
     }
 
@@ -133,6 +139,10 @@ public struct TWSSnippetsFeature: Sendable {
             let newOrder = snippets.map(\.id)
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
+            if state.shouldTriggerSdkInitCampaing {
+                effects.append(.send(.business(.sendTrigger("sdk_init"))))
+                state.shouldTriggerSdkInitCampaing = false
+            }
 
             // Remove old attachments
             let currentResources = Set(state.preloadedResources.keys)
@@ -324,6 +334,8 @@ public struct TWSSnippetsFeature: Sendable {
                     #endif
                 }
                 return .none
+            case .openOverlay(let snippet):
+                return .none
             }
 
         case .snippets:
@@ -347,6 +359,16 @@ public struct TWSSnippetsFeature: Sendable {
             state.$snippets[id: snippetId].withLock { $0?.isVisible = false }
             #endif
 
+            return .none
+        case .sendTrigger(let trigger):
+            logger.info("Trigger: \(trigger) sent")
+            state.campaigns.append(.init(trigger: trigger))
+            
+            return .send(.business(.trigger(.element(id: trigger, action: .business(.checkTrigger(trigger))))))
+
+        case .trigger(.element(id: _, action: .delegate(.openOverlay(let snippet)))):
+            return .send(.delegate(.openOverlay(snippet)))
+        case .trigger:
             return .none
         }
     }

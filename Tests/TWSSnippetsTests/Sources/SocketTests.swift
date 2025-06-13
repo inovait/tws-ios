@@ -66,8 +66,19 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaing = false
         }
+
+        let triggerId = "sdk_init"
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
@@ -109,8 +120,19 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaing = false
         }
+
+        let triggerId = "sdk_init"
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
@@ -190,8 +212,19 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaing = false
         }
+
+        let triggerId = "sdk_init"
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))

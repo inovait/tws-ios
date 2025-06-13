@@ -11,7 +11,7 @@ let package = Package(
     products: [
         .library(
             name: "TWS",
-            targets: ["TWS"]
+            targets: ["TWS", "TWSNotifications"]
         )
     ],
     dependencies: [
@@ -75,7 +75,8 @@ let package = Package(
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSSnippet"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSTriggers")
             ],
             path: "Sources/TWSSnippets",
             swiftSettings: [
@@ -144,14 +145,28 @@ let package = Package(
             ],
             path: "Sources/TWSUniversalLinks"
         ),
-
+        .target(
+            name: "TWSNotifications",
+            dependencies: [
+                .target(name: "TWS")
+            ],
+            path: "Sources/TWSNotifications"
+        ),
+        .target(
+            name: "TWSTriggers",
+            dependencies: [
+                .target(name: "TWSCommon")
+            ],
+            path: "Sources/TWSTriggers"
+        ),
         // Tests
 
         .testTarget(
             name: "TWSSnippetsTests",
             dependencies: [
                 .target(name: "TWSSnippets"),
-                .target(name: "TWSLocal")
+                .target(name: "TWSLocal"),
+                .target(name: "TWSTriggers")
             ],
             path: "Tests/TWSSnippetsTests"
         ),
@@ -189,6 +204,13 @@ let package = Package(
                 .target(name: "TWSCommon")
             ],
             path: "Tests/InjectionTests"
+        ),
+        .testTarget(
+            name: "TWSNotificationsTests",
+            dependencies: [
+                .target(name: "TWSNotifications")
+            ],
+            path: "Tests/TWSNotificationsTests"
         )
     ]
 )
