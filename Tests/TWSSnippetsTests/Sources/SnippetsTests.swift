@@ -733,10 +733,6 @@ final class SnippetsTests: XCTestCase {
             })
         
         let preloadedResources = await reducer.preloadAndInjectResources(for: snippet, using: store.dependencies.api)
-        for a in TimeStampedRequests.stampedRequests {
-            print(a.key)
-            print("\(a.value.start) - \(a.value.finish)")
-        }
         
         let timestampsForTarget = TimeStampedRequests.stampedRequests[snippetUrl]!
         

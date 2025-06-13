@@ -83,8 +83,6 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
         controller.removeFromParent()
 
         hostingControllers.removeValue(forKey: viewId)
-        
-        print("after removing remains \(hostingControllers.count) hosting controllers \(hostingControllers)")
     }
     
     private func getWindowScene() -> UIWindow? {
