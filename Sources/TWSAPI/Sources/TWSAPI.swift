@@ -95,7 +95,7 @@ public struct TWSAPI {
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
                     queryItems: queryItems ?? [],
-                    headers: headers,
+                    headers: headers.merging(["User-Agent" : await UserAgentProvider.userAgent], uniquingKeysWith: { first, second in second}) ,
                     auth: false
                 ))
 
