@@ -75,6 +75,10 @@ public final class TWSNotification {
                 return false
             }
             
+            if canDisplaySnippet(manager: manager, snippetId: notificationData.snippetId) {
+                return true
+            }
+            
             self.listenerTask = Task {
                 await manager.observe(onEvent: {
                     switch $0 {
@@ -82,13 +86,10 @@ public final class TWSNotification {
                         if case .failed(_) = manager.snippets.state {
                             self.listenerTask?.cancel()
                         }
-                        if manager.snippets.state == .loaded {
-                            if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == notificationData.snippetId }) {
-                                TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
-                                self.listenerTask?.cancel()
-                                return
-                            }
+                        if self.canDisplaySnippet(manager: manager, snippetId: notificationData.snippetId) {
+                            self.listenerTask?.cancel()
                         }
+                    
                     default:
                         break
                     }
@@ -115,6 +116,16 @@ public final class TWSNotification {
         let snippetId = String(ids[1])
         
         return TWSNotificationData(projectId: projectId, snippetId: snippetId)
+    }
+    
+    private func canDisplaySnippet(manager: TWSManager, snippetId: String) -> Bool{
+        if manager.snippets.state == .loaded {
+            if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == snippetId }) {
+                TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
+                return true
+            }
+        }
+        return false
     }
 }
 

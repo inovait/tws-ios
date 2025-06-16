@@ -67,7 +67,6 @@ public struct TWSSnippetFeature: Sendable {
         @CasePathable
         public enum View {
             case openedTWSView
-            case openCampaign
         }
 
         @CasePathable
@@ -89,11 +88,6 @@ public struct TWSSnippetFeature: Sendable {
         switch action {
         case .view(.openedTWSView):
             return .send(.business(.preload))
-        case .view(.openCampaign):
-            return .merge(
-                .send(.business(.preload)),
-                .send(.delegate(.openOverlay(state.snippet)))
-            )
                 
         case let .business(.snippetUpdated(snippet)):
             state.snippet = snippet
