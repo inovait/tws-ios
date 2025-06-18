@@ -75,7 +75,7 @@ public final class TWSNotification {
                 return false
             }
             
-            if canDisplaySnippet(manager: manager, snippetId: notificationData.snippetId) {
+            if displayIfPresent(manager: manager, snippetId: notificationData.snippetId) {
                 return true
             }
             
@@ -86,7 +86,7 @@ public final class TWSNotification {
                         if case .failed(_) = manager.snippets.state {
                             self.listenerTask?.cancel()
                         }
-                        if self.canDisplaySnippet(manager: manager, snippetId: notificationData.snippetId) {
+                        if self.displayIfPresent(manager: manager, snippetId: notificationData.snippetId) {
                             self.listenerTask?.cancel()
                         }
                     
@@ -118,7 +118,13 @@ public final class TWSNotification {
         return TWSNotificationData(projectId: projectId, snippetId: snippetId)
     }
     
-    private func canDisplaySnippet(manager: TWSManager, snippetId: String) -> Bool{
+    ///
+    /// - Parameters:
+    ///   - manager: Instance of TWSManager expected to hold the snippet.
+    ///   - snippetId: ID of a snippet that will be presented.
+    /// - Returns :
+    ///   - True if the snippet was opened, or false if snippet could not be opened successfully.
+    private func displayIfPresent(manager: TWSManager, snippetId: String) -> Bool {
         if manager.snippets.state == .loaded {
             if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == snippetId }) {
                 TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager, type: .notificaion)

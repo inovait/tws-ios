@@ -175,7 +175,7 @@ private struct _TWSView: View {
             state: $state,
             enablePullToRefresh: enablePullToRefresh
         )
-        // onOpenUrl used for Authentication via Safari, wrapped because notifications are opened via UIKit, which should not have
+        // onOpenUrl used for Authentication via Safari, wrapped because notifications are opened via UIKit, which should not have onOpenUrl modifier
         .modifier(onOpenURLModifier(enabled: isNotification, openUrl: $openURL))
         .frame(
             minWidth: 0,
