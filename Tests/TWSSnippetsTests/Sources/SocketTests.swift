@@ -66,10 +66,10 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
+        let triggerId = "sdkInitialize"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -120,10 +120,10 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
+        let triggerId = "sdkInitialize"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -212,10 +212,10 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
+        let triggerId = "sdkInitialize"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }

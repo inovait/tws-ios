@@ -121,7 +121,7 @@ public final class TWSNotification {
     private func canDisplaySnippet(manager: TWSManager, snippetId: String) -> Bool{
         if manager.snippets.state == .loaded {
             if let desiredSnippet = manager.snippets().first(where: { snippet in snippet.id == snippetId }) {
-                TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager)
+                TWSOverlayProvider.shared.showOverlay(snippet: desiredSnippet, manager: manager, type: .notificaion)
                 return true
             }
         }

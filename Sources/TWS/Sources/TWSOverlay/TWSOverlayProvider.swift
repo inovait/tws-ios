@@ -24,7 +24,7 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
     private var hostingControllers: [String : UIHostingController<TWSOverlayView>] = [:]
 
     public static let shared = TWSOverlayProvider()
-    private var queuedSnippets: [(TWSSnippet, TWSManager)] = []
+    private var queuedSnippets: [TWSOverlayData] = []
 
     private override init() {
         super.init()
@@ -42,8 +42,8 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
     /// Tries so display provided snippet as a full screen overlay over current window. If window does not yet exist it is queued and displayed when the application notifies that UIScene has appeared.
     /// - Parameter snippet: An instance of TWSSnippet that will be displayed
     ///
-    public func showOverlay(snippet: TWSSnippet, manager: TWSManager) {
-        queuedSnippets.append((snippet, manager))
+    public func showOverlay(snippet: TWSSnippet, manager: TWSManager, type: TWSOverlayType) {
+        queuedSnippets.append(.init(snippet: snippet, manager: manager, type: type))
         tryPresentingOverlay()
     }
     
@@ -56,11 +56,10 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
         }
         
         while let queuedItem = queuedSnippets.first {
-            let snippet = queuedItem.0
-            let manager = queuedItem.1
+            let snippet = queuedItem.snippet
             let id = "\(snippet.id)-\(UUID())"
             var controller: UIHostingController<TWSOverlayView>!
-            let notificationView = TWSOverlayView(id: id, snippet: snippet, twsManager: manager, dismiss: { viewId in
+            let notificationView = TWSOverlayView(id: id, overlayData: queuedItem, dismiss: { viewId in
                 self.removeHostingController(viewId)
             })
             controller = UIHostingController(rootView: notificationView)
@@ -95,4 +94,14 @@ public class TWSOverlayProvider: NSObject, UISceneDelegate {
         
         return nil
     }
+}
+
+struct TWSOverlayData {
+    let snippet: TWSSnippet
+    let manager: TWSManager
+    let type: TWSOverlayType
+}
+
+public enum TWSOverlayType {
+    case notificaion, campaign
 }

@@ -18,25 +18,35 @@ import SwiftUI
 
 struct TWSOverlayView: View, Identifiable {
     var id: String
-    var snippet: TWSSnippet
-    var twsManager: TWSManager
+    var overlayData: TWSOverlayData
     var dismiss: (_ id: String) -> Void
+    
+    var presenter: TWSPresenter {
+        switch overlayData.type {
+        case .notificaion:
+            return LivePresenter(manager: overlayData.manager)
+        case .campaign:
+            return CampaignPresenter(manager: overlayData.manager)
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            TWSView(snippet: snippet)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            TWSView(snippet: overlayData.snippet)
                 .twsBind(loadingView: { AnyView(TWSNotificationLoadingView()) } )
                 .twsBind(preloadingView: { AnyView(TWSNotificationLoadingView()) })
+                .environment(\.presenter, presenter)
+            
             Button(action: { dismiss(id) }) {
                 Image(systemName: "xmark.circle.fill")
                     .resizable()
                     .frame(width: 32, height: 32)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.gray.opacity(0.7))
             }
             .padding()
         }
-        .twsRegister(using: twsManager)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .twsRegister(using: overlayData.manager)
     }
 }
 

@@ -63,7 +63,7 @@ extension AnyCasePath {
                             return
                         }
                         
-                        TWSOverlayProvider.shared.showOverlay(snippet: snippet, manager: manager)
+                        TWSOverlayProvider.shared.showOverlay(snippet: snippet, manager: manager, type: .campaign)
                     }
                     return .shouldOpenCampaign
                 default:

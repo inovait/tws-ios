@@ -88,7 +88,7 @@ public struct TWSTriggersFeature {
                 effects.append(.send(.delegate(.openOverlay($0))))
             }
             
-            logger.info("Opening overlays for campaign: \(state.id)")
+            logger.info("Opening overlays for trigger: \(state.id)")
             
             return .merge(effects)
         case .campaignLoaded(.failure(let error)):

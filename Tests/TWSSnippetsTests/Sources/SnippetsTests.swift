@@ -75,7 +75,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -132,7 +132,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -197,7 +197,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -261,7 +261,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippetsStates)
             $0.socketURL = self.socketURL
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -333,7 +333,7 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.$snippetDates.withLock { $0 = [:] }
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -396,7 +396,7 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -489,7 +489,7 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -602,7 +602,7 @@ final class SnippetsTests: XCTestCase {
             $0.state = .loaded
             $0.socketURL = self.socketURL
             cachedSnippets = remoteSnippets
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
         let triggerId = "sdkInitialize"
@@ -660,7 +660,7 @@ final class SnippetsTests: XCTestCase {
         await storeSecondLaunch.receive(\.business.projectLoaded) {
             $0.state = .loaded
             $0.socketURL = self.socketURL
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
         
         await storeSecondLaunch.receive(\.business.sendTrigger) {
@@ -986,7 +986,7 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.projectLoaded.success) {
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
         
         await store.receive(\.business.sendTrigger) {
@@ -1012,10 +1012,10 @@ final class SnippetsTests: XCTestCase {
         
         var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
         state.socketURL = socketURL
-        let project = TWSProject(listenOn: socketURL, snippets: snippets)
+        let project = TWSProject(listenOn: socketURL, snippets: [])
         
         let store = TestStore(
-            initialState: state,
+            initialState: TWSSnippetsFeature.State(configuration: configuration, snippets: []),
             reducer: { TWSSnippetsFeature() },
             withDependencies: {
                 $0.api.getProject = { _ in (project, nil)}
@@ -1030,8 +1030,9 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.projectLoaded.success) {
+            $0.socketURL = self.socketURL
             $0.state = .loaded
-            $0.shouldTriggerSdkInitCampaing = false
+            $0.shouldTriggerSdkInitCampaign = false
         }
         
         await store.receive(\.business.sendTrigger) {
