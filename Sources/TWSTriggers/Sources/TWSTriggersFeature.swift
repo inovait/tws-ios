@@ -68,8 +68,11 @@ public struct TWSTriggersFeature {
         switch action {
         case .checkTrigger(let trigger):
             return .run { [api, config] send in
+                guard let config = config() as? TWSBasicConfiguration else {
+                    return
+                }
                 do {
-                    let campaign = try await api.getCampaigns(trigger)
+                    let campaign = try await api.getCampaigns(config, trigger)
                     
                     await send(.business(.campaignLoaded(.success((campaign)))))
                 } catch {
@@ -78,10 +81,10 @@ public struct TWSTriggersFeature {
             }
             
         case .campaignLoaded(.success(let campaign)):
-            let eligibleCampaingSnippets = campaign.snippets
+            let eligibleCampaignSnippets = campaign.snippets
             var effects = [Effect<Action>]()
             
-            eligibleCampaingSnippets.forEach {
+            eligibleCampaignSnippets.forEach {
                 effects.append(.send(.delegate(.openOverlay($0))))
             }
             

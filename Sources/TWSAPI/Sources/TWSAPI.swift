@@ -21,7 +21,7 @@ public struct TWSAPI {
     ) async throws(APIError) -> ResourceResponse
     
     public let getCampaign: @Sendable (
-        _ trigger: String
+        TWSBasicConfiguration, String
     ) async throws(APIError) -> TWSCampaign
 
     static func live(
@@ -109,9 +109,28 @@ public struct TWSAPI {
 
                 throw .decode(NSError(domain: "invalid-string", code: -1))
             },
-            getCampaign: { campaignTrigger throws(APIError) in
-                //TODO
-                return TWSCampaign(snippets: [])
+            getCampaign: { project, campaignTrigger throws(APIError) in
+
+                let result = try await Router.make(request: .init(
+                    method: .post,
+                    scheme: baseUrl.scheme,
+                    path: "/projects/\(project.id)/events",
+                    host: baseUrl.host,
+                    queryItems: [],
+                    headers: ["content-type":"application/json-patch+json"],
+                    auth: true,
+                    body: ["event": campaignTrigger]
+                ))
+                
+                do {
+                    let decoder = JSONDecoder()
+
+                    decoder.dateDecodingStrategy = isoDateDecoder
+                    
+                    return try decoder.decode(TWSCampaign.self, from: result.data)
+                } catch {
+                    throw APIError.decode(error)
+                }
             }
         )
     }
