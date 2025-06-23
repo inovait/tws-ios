@@ -122,7 +122,6 @@ actor SocketConnector {
                 let jsonData = try JSONSerialization.jsonObject(with: data) as? [AnyHashable: Any],
                 let type = jsonData["type"] as? String,
                 type == "SNIPPET_CREATED" || type == "SNIPPET_UPDATED" || type == "SNIPPET_DELETED" {
-                print("old type: \(type)")
             } else {
                 assertionFailure("Failed to process data: \(rawString)")
             }

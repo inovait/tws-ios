@@ -28,4 +28,7 @@ public enum TWSStreamEvent: Sendable {
 
     /// This event is triggered when there is a change in the snippet loading state.
     case stateChanged
+    
+    /// This event is triggered when campaign was triggered
+    case shouldOpenCampaign
 }

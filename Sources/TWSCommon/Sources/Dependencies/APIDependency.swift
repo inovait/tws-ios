@@ -49,31 +49,42 @@ public struct APIDependency: Sendable {
         reportIssue("\(Self.self).loadResource")
         throw APIError.local(NSError(domain: "", code: -1))
     }
+    
+    public var getCampaigns: @Sendable (
+        TWSBasicConfiguration,
+        String
+    ) async throws(APIError) -> TWSCampaign = { _, _ throws(APIError) in
+        reportIssue("\(Self.self).getCampaigns")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 }
 
 public enum APIDependencyKey: DependencyKey {
 
     public static var liveValue: APIDependency {
         let api = TWSAPIFactory.new()
-
+        
         return .init(
             getProject: api.getProject,
             getSharedToken: api.getSharedToken,
             getSnippetBySharedToken: api.getSnippetByShareToken,
-            getResource: api.getResource
+            getResource: api.getResource,
+            getCampaigns: api.getCampaign
         )
     }
     
 
     public static var testValue: APIDependency {
         .init { _ in
-            unimplemented("\(Self.self).getProject", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
+            return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getSharedToken: { _ in
-            unimplemented("\(Self.self).getSharedToken", placeholder: "")
+            return ""
         } getSnippetBySharedToken: { _ in
-            unimplemented("\(Self.self).getSnippetBySharedToken", placeholder: (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil))
+            return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getResource: { _, _ in
-            unimplemented("\(Self.self).getResource", placeholder: .init(responseUrl: nil, data: ""))
+            return .init(responseUrl: nil, data: "")
+        } getCampaigns: { _, _ in
+            return .init(snippets: [])
         }
     }
 }

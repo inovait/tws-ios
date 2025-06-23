@@ -1,4 +1,4 @@
-//
+////
 //  Copyright 2024 INOVA IT d.o.o.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,19 @@
 //
 
 import Foundation
+import SwiftUI
 
-struct Request {
-
-    let method: Method
-    let scheme: String
-    let path: String
-    let host: String
-    let queryItems: [URLQueryItem]
-    let headers: [String: String]
-    let auth: Bool
-    var body: [String: Any] = [:]
-}
-
-extension Request {
-
-    enum Method: String {
-        case get
-        case post
+struct onOpenURLModifier: ViewModifier {
+    let enabled: Bool
+    @Binding var openUrl: URL?
+    
+    func body(content: Content) -> some View {
+        if enabled {
+            content.onOpenURL { url in
+                openUrl = url
+            }
+        } else {
+            content
+        }
     }
 }

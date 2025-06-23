@@ -1,4 +1,4 @@
-//
+////
 //  Copyright 2024 INOVA IT d.o.o.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +13,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+import TWSLogger
 
-import Foundation
-
-struct Request {
-
-    let method: Method
-    let scheme: String
-    let path: String
-    let host: String
-    let queryItems: [URLQueryItem]
-    let headers: [String: String]
-    let auth: Bool
-    var body: [String: Any] = [:]
-}
-
-extension Request {
-
-    enum Method: String {
-        case get
-        case post
-    }
-}
+let logger = TWSLog(category: "TWSNotifications")
