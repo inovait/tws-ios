@@ -69,7 +69,7 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -123,7 +123,7 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -215,7 +215,7 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }

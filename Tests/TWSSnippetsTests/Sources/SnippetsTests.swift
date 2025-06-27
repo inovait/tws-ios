@@ -78,7 +78,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -135,7 +135,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -200,7 +200,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -264,7 +264,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -336,7 +336,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -399,7 +399,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -492,7 +492,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -605,7 +605,7 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         await storeFirstLaunch.receive(\.business.sendTrigger) {
             $0.campaigns = [.init(trigger: triggerId)]
         }
@@ -963,7 +963,7 @@ final class SnippetsTests: XCTestCase {
             .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
         ]
         
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         
         var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
         state.socketURL = socketURL
@@ -1008,7 +1008,7 @@ final class SnippetsTests: XCTestCase {
             .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
         ]
         
-        let triggerId = "sdkInitialize"
+        let triggerId = "sdk_init"
         
         var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
         state.socketURL = socketURL
