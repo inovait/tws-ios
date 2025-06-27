@@ -1,0 +1,37 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Creating and managing TWSManager") {
+        Learn different ways of creating and managing TWSManager
+    }
+    
+    @Section(title: "Manager creation and registration") {
+        @ContentAndMedia {
+            In this section you will learn different approaches for creation, registration with remote services and persistance of the TWSManager.
+        }
+        
+        @Steps {
+            @Step {
+                First way to create a TWSManager is by using TWSFactory.new(with:). 
+                You provide the factory with your project id and the factory creates or retrieves(if instance for the configuration is already alive) a TWSManager instance for the provided configuration.
+                
+                > Note: If the instance was created for the first time, you have to register it with remote services to use it. Call registerManager() on the manager instance.
+                @Code(name: "ContentView.swift", file: "ManagerCreation_00.swift")
+            }
+            
+            @Step {
+                Another way to create a manager is by using View extension function twsRegister(configuration:), which creates a TWSManager instance with the provided configuration, injects it into the view hiearchy and registers it with remote services.
+                
+                Use @Environment(TWSManager.self) to retrieve manager in ancestor views.
+                
+                > Note: This way the manager will persist automatically as long as that view hierarchy is alive.
+                
+                @Code(name: "ContentView.swift", file: "ManagerCreation_01.swift")
+            }
+            
+            @Step {
+                Last way to do it is using combination of both. You can create an instance using TWSFactory.new(with:) and then register and inject it into the environment using View extension function twsRegister(using:)
+                
+                @Code(name: "ContentView.swift", file: "ManagerCreation_02.swift")
+            }
+        }
+    }
+}

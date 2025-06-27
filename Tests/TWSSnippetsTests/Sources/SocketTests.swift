@@ -19,12 +19,15 @@ import XCTest
 @testable import TWSCommon
 @testable import TWSModels
 @testable import ComposableArchitecture
+@testable import TWSTriggers
 
 final class SocketTests: XCTestCase {
 
     let socketURL = URL(string: "https://www.google.com")!
     let configuration = TWSBasicConfiguration(id: "00000000-0000-0000-0000-000000000001")
-
+    let triggerId = TWSDefaultTriggers.sdk_init.rawValue
+    
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -69,9 +72,8 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -123,9 +125,8 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -215,9 +216,8 @@ final class SocketTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)

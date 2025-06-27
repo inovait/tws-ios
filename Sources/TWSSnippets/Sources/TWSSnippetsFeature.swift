@@ -143,7 +143,7 @@ public struct TWSSnippetsFeature: Sendable {
             let currentOrder = state.snippets.ids
             state.socketURL = project.listenOn
             if state.shouldTriggerSdkInitCampaign {
-                effects.append(.send(.business(.sendTrigger("sdk_init"))))
+                effects.append(.send(.business(.sendTrigger(TWSDefaultTriggers.sdk_init.rawValue))))
                 state.shouldTriggerSdkInitCampaign = false
             }
 

@@ -38,7 +38,7 @@ public final class TWSNotification {
     ///     var body: some Scene {
     ///         WindowGroup {
     ///             ContentView()
-    ///                 .twsEnable(using: manager)
+    ///                 .twsRegister(using: manager)
     ///         }
     ///      }
     ///   }
