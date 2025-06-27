@@ -30,6 +30,7 @@ final class SnippetsTests: XCTestCase {
 
     let socketURL = URL(string: "https://www.google.com")!
     let configuration = TWSBasicConfiguration(id: "00000000-0000-0000-0000-000000000001")
+    let triggerId = TWSDefaultTriggers.sdk_init.rawValue
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -78,9 +79,9 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
+        
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -135,9 +136,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -200,9 +200,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -264,9 +263,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -336,9 +334,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -399,9 +396,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -492,9 +488,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -605,9 +600,8 @@ final class SnippetsTests: XCTestCase {
             $0.shouldTriggerSdkInitCampaign = false
         }
 
-        let triggerId = "sdk_init"
         await storeFirstLaunch.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await storeFirstLaunch.receive(\.business.startVisibilityTimers)
@@ -664,7 +658,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await storeSecondLaunch.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await storeSecondLaunch.receive(\.business.startVisibilityTimers)
@@ -963,8 +957,6 @@ final class SnippetsTests: XCTestCase {
             .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
         ]
         
-        let triggerId = "sdk_init"
-        
         var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
         state.socketURL = socketURL
         let project = TWSProject(listenOn: socketURL, snippets: snippets)
@@ -990,7 +982,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
@@ -1007,8 +999,6 @@ final class SnippetsTests: XCTestCase {
             .init(id: s1ID, target: URL(string: "https://www.test1.com")!),
             .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
         ]
-        
-        let triggerId = "sdk_init"
         
         var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
         state.socketURL = socketURL
@@ -1036,7 +1026,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: triggerId)]
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
