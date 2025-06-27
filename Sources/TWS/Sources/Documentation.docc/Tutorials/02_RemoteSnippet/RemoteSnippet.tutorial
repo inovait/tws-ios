@@ -30,7 +30,7 @@
             @Step {
                 Use one of the available methods to inject the manager into your view.
                 
-                > Note: Under the hood, an instance of `TWSManager` is created, establishing a socket connection to the server and handling updates via an `@Observable` manager. If called multiple times, the same instance is shared instead of being recreated.
+                > Note: Under the hood, an instance of `TWSManager` is created and registered with the remote services, establishing a socket connection to the server and handling updates via an `@Observable` manager. If called multiple times, the same instance is shared instead of being recreated.
                 
                 @Code(name: "HelloWorld.swift", file: "RemoteSnippet_02.swift")
             }
@@ -66,6 +66,8 @@
             
             @Step {
                 Utilize the ``TWSView`` to display the snippets within the view hierarchy.
+                
+                Check the next tutorial to see all the ways to manager your TWSManager instance.
                 
                 @Code(name: "HomeView.swift", file: "RemoteSnippet_06.swift")
             }

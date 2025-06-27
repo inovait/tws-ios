@@ -49,8 +49,10 @@ struct ContentView: View {
 
 ```
 
-This injects a TWSManager into the environment, which handles your remote snippets.
+This creates an instance of TWSManager, registers it with remote services and injects it into the environment, which handles your remote snippets.
 It handles fetching snippets, socket connection, caching and more.
+
+> Note: You can create an instance manually using TWSFactoy.new(with:), however you have to register it yourself by calling registerManager() on your instance and you have manually manage that your instance survives.
 
 Retrieve the manager in any ancestor view and use TWSView to display your snippets.
 
