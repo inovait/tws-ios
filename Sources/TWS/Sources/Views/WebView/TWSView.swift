@@ -129,7 +129,7 @@ private struct _TWSView: View {
     @Environment(\.cameraMicrophoneServiceBridge) private var cameraMicrophoneServiceBridge
     @Environment(\.onDownloadCompleted) private var onDownloadCompleted
     @Environment(\.navigator) private var navigator
-    @Environment(\.isNotification) private var isNotification
+    @Environment(\.isOverlay) private var isOverlay
     @Bindable var state: TWSViewState
     
     @State var height: CGFloat = 16
@@ -175,8 +175,8 @@ private struct _TWSView: View {
             state: $state,
             enablePullToRefresh: enablePullToRefresh
         )
-        // onOpenUrl used for Authentication via Safari, wrapped because notifications are opened via UIKit, which should not have onOpenUrl modifier
-        .modifier(onOpenURLModifier(enabled: isNotification, openUrl: $openURL))
+        // onOpenUrl used for Authentication via Safari, wrapped because overlays are opened via UIKit, which should not have onOpenUrl modifier
+        .modifier(onOpenURLModifier(enabled: !isOverlay, openUrl: $openURL))
         .frame(
             minWidth: 0,
             maxWidth: .infinity,

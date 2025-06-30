@@ -103,5 +103,5 @@ struct TWSOverlayData {
 }
 
 public enum TWSOverlayType {
-    case notificaion, campaign
+    case notification, campaign
 }
