@@ -19,12 +19,15 @@ import XCTest
 @testable import TWSCommon
 @testable import TWSModels
 @testable import ComposableArchitecture
+@testable import TWSTriggers
 
 final class SocketTests: XCTestCase {
 
     let socketURL = URL(string: "https://www.google.com")!
     let configuration = TWSBasicConfiguration(id: "00000000-0000-0000-0000-000000000001")
-
+    let triggerId = TWSDefaultTriggers.sdk_init.rawValue
+    
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -66,8 +69,18 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Stop listening
         await store.send(.business(.stopListeningForChanges))
@@ -109,8 +122,18 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
         // End with didDisconnectEvent
         stream.continuation.yield(.didDisconnect)
 
@@ -190,8 +213,18 @@ final class SocketTests: XCTestCase {
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))

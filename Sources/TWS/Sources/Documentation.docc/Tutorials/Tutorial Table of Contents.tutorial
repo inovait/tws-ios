@@ -10,7 +10,9 @@
         
         @TutorialReference(tutorial: "doc:LocalSnippet")
         @TutorialReference(tutorial: "doc:RemoteSnippet")
+        @TutorialReference(tutorial: "doc:ManagerCreation")
         @TutorialReference(tutorial: "doc:MixAndMatch")
+        @TutorialReference(tutorial: "doc:Notifications")
     }
     
     @Chapter(name: "Customizing TWSView") {

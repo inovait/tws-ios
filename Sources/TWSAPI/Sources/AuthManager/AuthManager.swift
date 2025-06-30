@@ -67,8 +67,8 @@ actor AuthManager {
                     return savedAccessToken
                 }
             }
-
-            let refreshToken = try await getRefreshToken(force)
+            
+            let refreshToken = keychainHelper.get(for: refreshTokenKey) ?? ""
             let accessToken = try await requestAccessToken(refreshToken)
             keychainHelper.save(accessToken, for: accessTokenKey)
             return accessToken
@@ -129,7 +129,7 @@ actor AuthManager {
         return jwtToken
     }
 
-    private func requestAccessToken(_ refreshToken: String) async throws -> String {
+    private func requestAccessToken(_ refreshToken: String, refreshEnabled: Bool = true) async throws -> String {
         var tokenRequest = URLRequest(url: loginUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
@@ -147,6 +147,9 @@ actor AuthManager {
                 } else {
                     throw APIError.auth("Invalid JSON structure or missing 'accessToken'")
                 }
+            } else if httpResponse.statusCode == 401 && refreshEnabled {
+                let newRefreshToken = try await getRefreshToken(true)
+                return try await requestAccessToken(newRefreshToken, refreshEnabled: false)
             } else {
                 logger.err(String(data: data, encoding: .utf8) ?? "null")
                 throw APIError.server(httpResponse.statusCode, data)

@@ -3,6 +3,7 @@ import ComposableArchitecture
 import TWSSettings
 import TWSSnippets
 import TWSUniversalLinks
+import TWSModels
 
 @Reducer
 public struct TWSCoreFeature {
@@ -27,19 +28,32 @@ public struct TWSCoreFeature {
 
     public init() { }
 
+    @CasePathable
     public enum Action {
         case settings(TWSSettingsFeature.Action)
         case snippets(TWSSnippetsFeature.Action)
         case snippetsDidChange
         case stateChanged
+        case openOverlay(TWSSnippet)
         case universalLinks(TWSUniversalLinksFeature.Action)
     }
 
     public var body: some ReducerOf<Self> {
+        Reduce { state, action in
+            switch action {
+            case .snippets(.delegate(.openOverlay(let snippet))):
+                @Dependency(\.configuration) var config
+                
+                return .send(.openOverlay(snippet))
+            default:
+                return .none
+            }
+        }
+        
         Scope(state: \.settings, action: \.settings) {
             TWSSettingsFeature()
         }
-
+        
         Scope(state: \.snippets, action: \.snippets) {
             TWSSnippetsObserverFeature()
         }

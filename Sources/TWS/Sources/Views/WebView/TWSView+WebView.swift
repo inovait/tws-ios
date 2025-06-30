@@ -23,6 +23,7 @@ struct WebView: UIViewRepresentable {
     @Environment(\.navigator) var navigator
     @Environment(\.interceptor) var interceptor
     @Environment(\.errorView) var errorView
+    @Environment(\.loadingView) var loadingView
     @Binding var dynamicHeight: CGFloat
     @Binding var canGoBack: Bool
     @Binding var canGoForward: Bool
@@ -36,8 +37,6 @@ struct WebView: UIViewRepresentable {
     let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
-    let cssOverrides: [TWSRawCSS]
-    let jsOverrides: [TWSRawJS]
     let displayID: String
     let isConnectedToNetwork: Bool
     let openURL: URL?
@@ -52,8 +51,6 @@ struct WebView: UIViewRepresentable {
         preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
-        cssOverrides: [TWSRawCSS],
-        jsOverrides: [TWSRawJS],
         displayID: String,
         isConnectedToNetwork: Bool,
         dynamicHeight: Binding<CGFloat>,
@@ -71,8 +68,6 @@ struct WebView: UIViewRepresentable {
         self.preloadedResources = preloadedResources
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
-        self.cssOverrides = cssOverrides
-        self.jsOverrides = jsOverrides
         self.displayID = displayID
         self.isConnectedToNetwork = isConnectedToNetwork
         self._dynamicHeight = dynamicHeight
@@ -95,20 +90,6 @@ struct WebView: UIViewRepresentable {
         controller.addUserScript(WKUserScript(source: interceptConsoleLogs(controller: controller).value, injectionTime: .atDocumentStart, forMainFrameOnly: false))
         #endif
 
-        _rawInjectCSS(
-            to: controller,
-            rawCSS: cssOverrides,
-            andPreloadedAttachments: preloadedResources,
-            forSnippet: snippet
-        )
-
-        _rawInjectJS(
-            to: controller,
-            rawJS: jsOverrides,
-            andPreloadedResources: preloadedResources,
-            forSnippet: snippet
-        )
-
         // Location Permissions
         let locationPermissionsHandler = _handleLocationPermissions(with: controller)
 
@@ -129,11 +110,7 @@ struct WebView: UIViewRepresentable {
         if enablePullToRefresh {
             // process content on reloads
             context.coordinator.pullToRefresh.enable(on: webView) {
-                if let currentUrl = state.currentUrl, currentUrl != targetURL {
-                    webView.load(URLRequest(url: currentUrl))
-                } else {
-                    loadProcessedContent(webView: webView)
-                }
+                reloadWithProcessedResources(webView: webView, snippet: snippet)
             }
         }
 
@@ -197,10 +174,10 @@ struct WebView: UIViewRepresentable {
         if regainedNetworkConnection, case .failed = state.loadingState {
             if uiView.url == nil {
                 updateState(for: uiView, loadingState: .loading)
-                uiView.load(URLRequest(url: self.targetURL))
+                reloadWithProcessedResources(webView: uiView, snippet: snippet)
                 stateUpdated = true
             } else if !uiView.isLoading {
-                uiView.reload()
+                reloadWithProcessedResources(webView: uiView, snippet: snippet)
             }
         }
 
@@ -268,79 +245,6 @@ struct WebView: UIViewRepresentable {
         }
     }
 
-    private func _rawInjectCSS(
-        to controller: WKUserContentController,
-        rawCSS: [TWSRawCSS],
-        andPreloadedAttachments resources: [TWSSnippet.Attachment: ResourceResponse],
-        forSnippet snippet: TWSSnippet,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = true
-    ) {
-        precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
-
-        let snippetAttachmentsURLs = snippet.dynamicResources?.map(\.url) ?? []
-        let preloaded = resources
-            .filter { $0.key.contentType == .css }
-            .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawCSS($0.value.data) }
-
-        for css in preloaded + rawCSS {
-            let value = css.value
-                // This is important, otherwise it won't work
-                .replacingOccurrences(of: "\n", with: "")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-
-            let source = """
-            var style = document.createElement('style');
-            style.innerHTML = '\(value)';
-            var D = document;
-            var targ  = D.getElementsByTagName('head')[0] || D.body || D.documentElement;
-            targ.appendChild(style);
-            """
-            
-            let wrappedSource = checkInjectionUrlWrapper(script: source)
-
-            let script = WKUserScript(
-                source: wrappedSource,
-                injectionTime: injectionTime,
-                forMainFrameOnly: forMainFrameOnly
-            )
-
-            controller.addUserScript(script)
-        }
-    }
-
-    private func _rawInjectJS(
-        to controller: WKUserContentController,
-        rawJS: [TWSRawJS],
-        andPreloadedResources resources: [TWSSnippet.Attachment: ResourceResponse],
-        forSnippet snippet: TWSSnippet,
-        injectionTime: WKUserScriptInjectionTime = .atDocumentStart,
-        forMainFrameOnly: Bool = true
-    ) {
-        precondition(Thread.isMainThread, "Injecting JS must be done on the main thread.")
-
-        let snippetAttachmentsURLs = snippet.dynamicResources?.map(\.url) ?? []
-        let preloaded = resources
-            .filter { $0.key.contentType == .javascript }
-            .filter { snippetAttachmentsURLs.contains($0.key.url) }
-            .map { TWSRawJS($0.value.data) }
-
-        for jvs in preloaded + rawJS {
-            let value = jvs.value
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-
-            let wrappedValue = checkInjectionUrlWrapper(script: value)
-            
-            let script = WKUserScript(
-                source: wrappedValue,
-                injectionTime: injectionTime,
-                forMainFrameOnly: forMainFrameOnly
-            )
-            controller.addUserScript(script)
-        }
-    }
-
     // MARK: - Permissions
 
     private func _handleLocationPermissions(
@@ -372,14 +276,16 @@ struct WebView: UIViewRepresentable {
         return preloadedHTML
     }
     
-    private func checkInjectionUrlWrapper(script: String) -> String {
-        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
-        let resolvedUrl = preloadedResources[key]?.responseUrl?.absoluteString ?? targetURL.absoluteString
-
-        return """
-            if (window.location.href === '\(resolvedUrl)') {
-                \(script)
-            }
-            """
+    private func reloadWithProcessedResources(
+        webView: WKWebView,
+        snippet: TWSSnippet
+    ) {
+        let key = TWSSnippet.Attachment(url: snippet.target, contentType: .html)
+        let resource = preloadedResources[key]
+        if let currentUrl = state.currentUrl, currentUrl != resource?.responseUrl {
+            webView.load(URLRequest(url: currentUrl))
+        } else {
+            loadProcessedContent(webView: webView)
+        }
     }
 }

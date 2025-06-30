@@ -1,0 +1,41 @@
+
+@Tutorial(time: 3) {
+    @Intro(title: "Integrating TWSNotifications with your notifications") {
+        In this tutorial you will learn how to easily integrate TWSNotifications in your existing push notification code base.
+    }
+    
+    @Section(title: "Integrating TWSNotifications") {
+        @ContentAndMedia {
+           This section teaches you how to structure and integrate TWSNotifications, to leverage push notifications even more.
+           
+           TWSNotifications is a mechanism that allows you to parse a notification content and display a full screen overlay of the corresponding snippet.
+           
+           > Note: This tutorial assumes you are already have working push notifications implementation.
+        }
+        
+        @Steps {
+            @Step {
+                Integration of TWSNotifications is very easy. Wherever your app receives a notification, just pass the data to 
+                handleTWSPushNotification(userInfo:) method like so.
+                
+                > Note: By the time notification is processed by this method, the TWSManager holding the snippet should already be alive.
+                
+                @Code(name: "ApplicationDelegate.swift", file: "Notifications_00.swift")
+            }
+            
+            @Step {
+                Notification data should include two keys "type" and "path". If they are not include handleTWSPushNotification(userInfo:) will ignore the notification.
+                
+                > Note: projectId and snippetId should be replaced with actual ids, again this will work correctly if the TWSManager with the same projectId configuration already exists.
+                
+                @Code(name: "aps.json", file: "Notifications.json")
+            }
+            
+            @Step {
+                As noted in first step TWSManager needs to be alive when push notification is handled. This usually means that the instance should be created before registering @UIApplicationDelegate
+                
+                @Code(name: "App.swift", file: "Notifications_01.swift")
+            }
+        }
+    }
+}

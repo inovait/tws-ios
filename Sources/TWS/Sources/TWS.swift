@@ -12,7 +12,9 @@ internal import TWSSnippet
 ///
 /// ## Initialization
 ///
-/// You can create an instance of the manager by using the ``TWSFactory/new(with:)`` method on the ``TWSFactory``. Alternatively, you can utilize SwiftUI View extension ``SwiftUICore/View/twsEnable(configuration:)``. This extension creates the manager internally using the factory and injects it into the view hierarchy.
+/// You can create an instance of the manager by using the ``TWSFactory/new(with:)`` method on the ``TWSFactory``, manager created this way still needs to be registered with ``registerManager()``, to connect it with remote services.
+///
+/// Alternatively, you can utilize SwiftUI View extension ``SwiftUICore/View/twsRegister(configuration:)``. This extension creates the manager internally using the factory and injects it into the view hierarchy and registers it with remote services.
 ///
 /// > Note: You are responsible for keeping the instance alive. When using the SwiftUI extension, the instance will remain alive as long as the view is active.
 ///
@@ -62,6 +64,7 @@ public final class TWSManager: Identifiable {
     private let _id = UUID().uuidString.suffix(4)
     private var _stateSync: AnyCancellable?
     private var isSetup = false
+    private var isRegistered = false
 
     init(
         store: StoreOf<TWSCoreFeature>,
@@ -83,8 +86,15 @@ public final class TWSManager: Identifiable {
         )
 
         logger.info("INIT TWSManager \(_id)")
-        _syncState()
-        _run()
+    }
+    
+    public func registerManager() {
+        if !isRegistered {
+            logger.info("TWSManager \(_id) registered with remote services")
+            _syncState()
+            _run()
+            isRegistered = true
+        }
     }
 
     deinit {
@@ -229,6 +239,7 @@ public final class TWSManager: Identifiable {
         precondition(Thread.isMainThread, "`run()` can only be called on main thread")
         defer { isSetup = true }
         guard !isSetup else { return }
+        
         store.send(.snippets(.business(.load)))
     }
 
@@ -239,6 +250,7 @@ public final class TWSManager: Identifiable {
                 case .snippetsUpdated: return _React.snippets
                 case .universalLinkConfigurationLoaded: return nil
                 case .stateChanged: return .state
+                case .shouldOpenCampaign: return nil
                 }
             }
             .sink(receiveValue: { [weak self] react in

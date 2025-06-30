@@ -23,11 +23,14 @@ import XCTest
 @_spi(Internals)
 @testable import TWSModels
 @testable import ComposableArchitecture
+@testable import TWSLocal
+@testable import TWSTriggers
 
 final class SnippetsTests: XCTestCase {
 
     let socketURL = URL(string: "https://www.google.com")!
     let configuration = TWSBasicConfiguration(id: "00000000-0000-0000-0000-000000000001")
+    let triggerId = TWSDefaultTriggers.sdk_init.rawValue
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -73,9 +76,19 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
 
+        
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Send response for the second time (state must be preserved)
         await store.send(.business(.load)) { state in
@@ -120,8 +133,18 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Send for the second time without one element. Snippet should be removed from state
         store.dependencies.api.getProject = { [socketURL] _ in
@@ -174,8 +197,18 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: [snippets[0], snippets[2]].map { .init(snippet: $0) })
             $0.socketURL = self.socketURL
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Send for the second time with new element. Snippet should be added in right order
         store.dependencies.api.getProject = { [socketURL] _ in
@@ -227,8 +260,18 @@ final class SnippetsTests: XCTestCase {
             $0.snippets = .init(uniqueElements: snippetsStates)
             $0.socketURL = self.socketURL
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Send response for the second time but change the order
 
@@ -288,8 +331,18 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.$snippetDates.withLock { $0 = [:] }
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
 
         // Send response for the second time but remove some and add some
         store.dependencies.api.getProject = { [socketURL] _ in
@@ -340,8 +393,18 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
         }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await store.receive(\.business.startVisibilityTimers)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
         
         XCTAssert(store.state.preloadedResources.isEmpty)
         
@@ -365,6 +428,7 @@ final class SnippetsTests: XCTestCase {
             $0.snippets[id: s2ID]?.isPreloading = true
         }
         await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
+            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s2ID]?.isPreloading = false
             $0.snippets[id: s2ID]?.preloaded = true
         }
@@ -421,10 +485,19 @@ final class SnippetsTests: XCTestCase {
             $0.socketURL = self.socketURL
             $0.snippets = .init(uniqueElements: snippets.map { .init(snippet: $0) })
             $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
+        }
+
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await store.receive(\.business.startVisibilityTimers)
         
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
+            
         // Open the snippet
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
         
@@ -468,6 +541,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
+            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
         }
@@ -523,9 +597,18 @@ final class SnippetsTests: XCTestCase {
             $0.state = .loaded
             $0.socketURL = self.socketURL
             cachedSnippets = remoteSnippets
+            $0.shouldTriggerSdkInitCampaign = false
+        }
+
+        await storeFirstLaunch.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
         }
         
         await storeFirstLaunch.receive(\.business.startVisibilityTimers)
+        
+        await storeFirstLaunch.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await storeFirstLaunch.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
         
         await storeFirstLaunch.send(\.business.snippets[id: s1ID].view.openedTWSView)
         
@@ -571,9 +654,18 @@ final class SnippetsTests: XCTestCase {
         await storeSecondLaunch.receive(\.business.projectLoaded) {
             $0.state = .loaded
             $0.socketURL = self.socketURL
+            $0.shouldTriggerSdkInitCampaign = false
         }
-            
+        
+        await storeSecondLaunch.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
         await storeSecondLaunch.receive(\.business.startVisibilityTimers)
+        
+        await storeSecondLaunch.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        
+        await storeSecondLaunch.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
             
         // Open the same snippet as before
         await storeSecondLaunch.send(\.business.snippets[id: s1ID].view.openedTWSView)
@@ -634,17 +726,325 @@ final class SnippetsTests: XCTestCase {
                 $0.date.now = Date()
             })
         
-        let preloadedResources = await reducer.preloadResources(for: snippet, using: store.dependencies.api)
-        for a in TimeStampedRequests.stampedRequests {
-            print(a.key)
-            print("\(a.value.start) - \(a.value.finish)")
-        }
+        let preloadedResources = await reducer.preloadAndInjectResources(for: snippet, using: store.dependencies.api)
         
         let timestampsForTarget = TimeStampedRequests.stampedRequests[snippetUrl]!
         
         for timestamp in TimeStampedRequests.stampedRequests.filter { $0.key != snippetUrl } {
             XCTAssert(timestampsForTarget.finish < timestamp.value.start)
         }
+    }
+    
+    @MainActor
+    func testLocalSnippetsManager() async throws {
+        let s1ID: String = "1"
+        let snippetUrl1 = URL(string: "https://www.test.com")!
+        
+        let snippets: [TWSSnippet] = [
+            .init(id: s1ID, target: snippetUrl1)
+        ]
+        
+        let store = TestStore(
+            initialState: TWSLocalSnippetsReducer.State.init(),
+            reducer: { TWSLocalSnippetsReducer() },
+            withDependencies: {
+                $0.api.getResource = { item, _ in .init(responseUrl: item.url, data: item.url.absoluteString) }
+            })
+        
+        // Locally save snippet
+        await store.send(.business(.saveLocalSnippet(snippets[0]))) {
+            $0.snippets = .init([.init(snippet: snippets[0])])
+        }
+        
+        // open twsView
+        await store.send(.business(.snippetAction(.element(id: s1ID, action: .view(.openedTWSView)))))
+        
+        await store.receive(\.business.snippetAction[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        
+        await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [.init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: snippetUrl1.absoluteString)]
+        }
+    }
+    
+    @MainActor
+    func testLocalSnippetsManagerResourceInjection() async throws {
+        let s1ID: String = "1"
+        let s2ID: String = "2"
+        let s3ID: String = "3"
+        
+        let snippetUrl1 = URL(string: "https://www.test1.com")!
+        let snippetUrl2 = URL(string: "https://www.test2.com")!
+        let snippetUrl3 = URL(string: "https://www.test3.com")!
+        
+        let snippets: [TWSSnippet] = [
+            .init(id: s1ID, target: snippetUrl1),
+            .init(id: s2ID, target: snippetUrl2),
+            .init(id: s3ID, target: snippetUrl3)
+        ]
+        
+        let cssToInject: TWSRawCSS = .init("body { color: red; }")
+        let jsToInject: TWSRawJS = .init("alert('Hello World!')")
+        
+        let response1 =
+                    """
+                        <html anything goes here>
+                            <head>
+                                some content here
+                            </head>
+                            <body>
+                                some content here
+                            </body>
+                        </html>
+                        """
+        
+        let response2 =
+                    """
+                        <html anything goes here>
+                            <body>
+                                some content here
+                            </body>
+                        </html>
+                        """
+        
+        let response3 =
+                    """
+                        <body>
+                            some content here
+                        </body>
+                        """
+        
+        let expectedResponse1 =
+                    """
+                        <html anything goes here>
+                            <head>
+                                some content here
+                            <style>body { color: red; }</style><script>alert('Hello World!')</script></head>
+                            <body>
+                                some content here
+                            </body>
+                        </html>
+                        """
+        
+        let expectedResponse2 =
+                    """
+                        <html anything goes here><script>alert('Hello World!')</script><style>body { color: red; }</style>
+                            <body>
+                                some content here
+                            </body>
+                        </html>
+                        """
+        
+        let expectedResponse3 =
+                    """
+                        <script>alert('Hello World!')</script><body>
+                            some content here
+                        </body><style>body { color: red; }</style>
+                        """
+        
+        let store = TestStore(
+            initialState: TWSLocalSnippetsReducer.State.init(),
+            reducer: { TWSLocalSnippetsReducer() },
+            withDependencies: {
+                $0.api.getResource = { item, _ in
+                    switch item.url {
+                    case snippetUrl1:
+                        return .init(responseUrl: snippetUrl1, data: response1)
+                    case snippetUrl2:
+                        return .init(responseUrl: snippetUrl2, data: response2)
+                    case snippetUrl3:
+                        return .init(responseUrl: snippetUrl3, data: response3)
+                    default:
+                        return .init(responseUrl: nil, data: "")
+                    }
+                }
+            })
+        
+        
+        // Snippets follow local snippet flow
+        await store.send(.business(.saveLocalSnippet(snippets[0]))) {
+            $0.snippets = .init([.init(snippet: snippets[0])])
+        }
+        
+        await store.send(.business(.snippetAction(.element(id: snippets[0].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
+            $0.snippets[id: s1ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
+        }
+        
+        await store.send(.business(.snippetAction(.element(id: s1ID, action: .view(.openedTWSView)))))
+        
+        await store.receive(\.business.snippetAction[id: s1ID].business.preload) {
+            $0.snippets[id: s1ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
+            $0.snippets[id: s1ID]?.isPreloading = false
+            $0.snippets[id: s1ID]?.preloaded = true
+        }
+        
+        await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [.init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1)]
+        }
+        
+        var stateCopy = store.state
+        
+        await store.send(.business(.saveLocalSnippet(snippets[1]))) {
+            $0.snippets = .init([stateCopy.snippets[id: s1ID]!, .init(snippet: snippets[1])])
+        }
+        
+        await store.send(.business(.snippetAction(.element(id: snippets[1].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
+            $0.snippets[id: s2ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
+        }
+        
+        await store.send(.business(.snippetAction(.element(id: s2ID, action: .view(.openedTWSView)))))
+        
+        await store.receive(\.business.snippetAction[id: s2ID].business.preload) {
+            $0.snippets[id: s2ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippetAction[id: s2ID].business.preloadCompleted) {
+            $0.snippets[id: s2ID]?.isPreloading = false
+            $0.snippets[id: s2ID]?.preloaded = true
+        }
+        
+        await store.receive(\.business.snippetAction[id: s2ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [
+                .init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1),
+                .init(url: snippetUrl2, contentType: .html): .init(responseUrl: snippetUrl2, data: expectedResponse2)
+            ]
+        }
+        
+        stateCopy = store.state
+        
+        await store.send(.business(.saveLocalSnippet(snippets[2]))) {
+            $0.snippets = .init([stateCopy.snippets[id: s1ID]!, stateCopy.snippets[id: s2ID]!, .init(snippet: snippets[2])])
+        }
+
+        await store.send(.business(.snippetAction(.element(id: snippets[2].id, action: .business(.setLocalDynamicResources([.css(cssToInject), .js(jsToInject)])))))) {
+            $0.snippets[id: s3ID]?.localDynamicResources = [.css(cssToInject), .js(jsToInject)]
+        }
+        
+        await store.send(.business(.snippetAction(.element(id: s3ID, action: .view(.openedTWSView)))))
+        
+        await store.receive(\.business.snippetAction[id: s3ID].business.preload) {
+            $0.snippets[id: s3ID]?.isPreloading = true
+        }
+        await store.receive(\.business.snippetAction[id: s3ID].business.preloadCompleted) {
+            $0.snippets[id: s3ID]?.isPreloading = false
+            $0.snippets[id: s3ID]?.preloaded = true
+        }
+        
+        await store.receive(\.business.snippetAction[id: s3ID].delegate.resourcesUpdated) {
+            $0.preloadedResources = [
+                .init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1),
+                .init(url: snippetUrl2, contentType: .html): .init(responseUrl: snippetUrl2, data: expectedResponse2),
+                .init(url: snippetUrl3, contentType: .html): .init(responseUrl: snippetUrl3, data: expectedResponse3)
+            ]
+        }
+        
+        
+    }
+    
+    @MainActor
+    func testEmptyTriggerResult() async throws {
+        let s1ID = "1"
+        let s2ID = "2"
+        
+        let snippets: [TWSSnippet] = [
+            .init(id: s1ID, target: URL(string: "https://www.test1.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
+        ]
+        
+        var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
+        state.socketURL = socketURL
+        let project = TWSProject(listenOn: socketURL, snippets: snippets)
+        
+        let store = TestStore(
+            initialState: state,
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getProject = { _ in (project, nil)}
+                $0.api.getResource = { url,_ in ResourceResponse(responseUrl: url.url, data: url.url.absoluteString) }
+                $0.api.getCampaigns = { _, _ in .init(snippets: [])}
+                $0.date.now = Date()
+            })
+        
+    
+        await store.send(.business(.load)) {
+            $0.state = .loading
+        }
+        
+        await store.receive(\.business.projectLoaded.success) {
+            $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
+        }
+        
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
+        await store.receive(\.business.startVisibilityTimers)
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
+    }
+    
+    @MainActor
+    func testTriggerResult() async throws {
+        let s1ID = "1"
+        let s2ID = "2"
+        
+        let snippets: [TWSSnippet] = [
+            .init(id: s1ID, target: URL(string: "https://www.test1.com")!),
+            .init(id: s2ID, target: URL(string: "https://www.test2.com")!)
+        ]
+        
+        var state = TWSSnippetsFeature.State(configuration: configuration, snippets: snippets)
+        state.socketURL = socketURL
+        let project = TWSProject(listenOn: socketURL, snippets: [])
+        
+        let store = TestStore(
+            initialState: TWSSnippetsFeature.State(configuration: configuration, snippets: []),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getProject = { _ in (project, nil)}
+                $0.api.getResource = { url,_ in ResourceResponse(responseUrl: url.url, data: url.url.absoluteString) }
+                $0.api.getCampaigns = { _, _ in .init(snippets: snippets)}
+                $0.date.now = Date()
+            })
+        
+    
+        await store.send(.business(.load)) {
+            $0.state = .loading
+        }
+        
+        await store.receive(\.business.projectLoaded.success) {
+            $0.socketURL = self.socketURL
+            $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
+        }
+        
+        await store.receive(\.business.sendTrigger) {
+            $0.campaigns = [.init(trigger: self.triggerId)]
+        }
+        
+        await store.receive(\.business.startVisibilityTimers)
+        await store.receive(\.business.trigger[id: triggerId].business.checkTrigger)
+        await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
+        
+        var snippetStates: IdentifiedArrayOf<TWSSnippetFeature.State> = .init([.init(snippet: snippets[0])])
+        //All recieved snippets should be opened if they belong to the campaign
+        await store.receive(\.business.trigger[id: triggerId].delegate.openOverlay) {
+            $0.campaignSnippets = snippetStates
+        }
+        snippetStates.append(.init(snippet: snippets[1]))
+        await store.receive(\.business.trigger[id: triggerId].delegate.openOverlay) {
+            $0.campaignSnippets = snippetStates
+        }
+        
+        await store.receive(\.delegate.openOverlay)
+        await store.receive(\.delegate.openOverlay)
     }
 }
 

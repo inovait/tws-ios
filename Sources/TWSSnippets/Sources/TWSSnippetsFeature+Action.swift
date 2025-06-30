@@ -18,6 +18,7 @@ import Foundation
 import ComposableArchitecture
 import TWSModels
 import TWSSnippet
+import TWSTriggers
 
 extension TWSSnippetsFeature {
 
@@ -35,12 +36,20 @@ extension TWSSnippetsFeature {
             case stopListeningForChanges
             case stopReconnecting
             case isSocketConnected(Bool)
-            case snippets(IdentifiedActionOf<TWSSnippetFeature>)
             case setLocalProps(props: (TWSSnippet.ID, [String: TWSSnippet.Props]))
             case showSnippet(snippetId: TWSSnippet.ID)
             case hideSnippet(snippetId: TWSSnippet.ID)
+            case sendTrigger(String)
+            case trigger(IdentifiedActionOf<TWSTriggersFeature>)
+            case snippets(IdentifiedActionOf<TWSSnippetFeature>)
+            case campaignSnippets(IdentifiedActionOf<TWSSnippetFeature>)
         }
 
+        @CasePathable
+        public enum DelegateAction {
+            case openOverlay(TWSSnippet)
+        }
+        case delegate(DelegateAction)
         case business(BusinessAction)
     }
 }

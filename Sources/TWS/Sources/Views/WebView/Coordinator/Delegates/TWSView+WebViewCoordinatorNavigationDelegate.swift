@@ -33,7 +33,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
 
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
-            if let title = result as? String, error == nil, self.parent.wkWebView == webView {
+            if let title = result as? String, error == nil, self.isMainWebView(webView: webView) {
                 DispatchQueue.main.async { [weak self] in
                     self?.parent.state.title = title
                     if let url = webView.url {
@@ -54,7 +54,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg +=  " error: \(error.localizedDescription)"
 
         logger.debug(msg)
-        if parent.wkWebView == webView {
+        if isMainWebView(webView: webView) {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
             do {
@@ -81,7 +81,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         if nsError.code == 102 || nsError.code == NSURLErrorCancelled {
             return
         }
-        if parent.wkWebView == webView {
+        if isMainWebView(webView: webView) {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
             do {
@@ -96,6 +96,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
+        if !isMainWebView(webView: webView) {
+            do {
+                try navigationProvider.showLoading(loadingView: self.parent.loadingView, on: webView)
+            } catch {
+                logger.err("Could not show loading view on \(webView), because \(error.localizedDescription)")
+            }
+        }
         logger.debug("[Navigation \(webView.hash)] Navigation started: \(String(describing: navigation))")
     }
 
@@ -229,5 +236,9 @@ extension WebView.Coordinator: WKNavigationDelegate {
             loadingState: .loaded,
             dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
         )
+    }
+    
+    private func isMainWebView(webView: WKWebView) -> Bool {
+        parent.wkWebView == webView
     }
 }

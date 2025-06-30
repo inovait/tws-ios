@@ -23,6 +23,7 @@ protocol NavigationProvider {
     
     func present(
         webView: WKWebView,
+        for navigationAction: WKNavigationAction,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -47,8 +48,13 @@ protocol NavigationProvider {
     ) throws(NavigationError)
     
     func showError(
-        errorView: (@MainActor @Sendable (Error) -> AnyView),
+        errorView: (@MainActor @Sendable (Error, @escaping () -> Void) -> AnyView),
         message: Error,
+        on: WKWebView
+    ) throws(NavigationError)
+    
+    func showLoading(
+        loadingView: (@MainActor @Sendable () -> AnyView),
         on: WKWebView
     ) throws(NavigationError)
 
@@ -60,6 +66,7 @@ class NavigationProviderImpl: NavigationProvider {
 
     func present(
         webView: WKWebView,
+        for navigationAction: WKNavigationAction,
         on originWebView: WKWebView,
         animated: Bool,
         completion: (() -> Void)?
@@ -70,9 +77,8 @@ class NavigationProviderImpl: NavigationProvider {
 
         guard parent.presentedViewController == nil
         else { throw NavigationError.alreadyPresenting }
-
-        let webViewWithErrorOverlay = WebViewWithErrorOverlay(webView: webView, navigationProvider: self)
         
+        let webViewWithErrorOverlay = WebViewWithErrorOverlay(webView: webView, navigationProvider: self, urlRequest: navigationAction.request)
         _presentedVCs[webView] = .init(
             viewController: webViewWithErrorOverlay,
             presentedWebView: webView,
@@ -118,7 +124,7 @@ class NavigationProviderImpl: NavigationProvider {
     }
     
     func showError(
-        errorView: (@MainActor @Sendable (Error) -> AnyView),
+        errorView: (@MainActor @Sendable (Error, @escaping () -> Void) -> AnyView),
         message: Error,
         on: WKWebView
     ) throws(NavigationError) {
@@ -127,7 +133,15 @@ class NavigationProviderImpl: NavigationProvider {
         
         webView.showError(err: message, errorView: errorView)
     }
-
+    
+    func showLoading(
+        loadingView: (@MainActor @Sendable () -> AnyView),
+        on: WKWebView) throws(NavigationError) {
+            guard let webView = _presentedVCs.values.first(where: { $0.presentedWebView == on })?.viewController as? WebViewWithErrorOverlay
+            else { throw .presentedViewControllerNotFound }
+            
+            webView.showLoadingView(loadingView: loadingView)
+    }
 }
 
 // MARK: - Helpers

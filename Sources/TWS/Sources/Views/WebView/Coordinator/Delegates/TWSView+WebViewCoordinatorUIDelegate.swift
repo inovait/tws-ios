@@ -42,6 +42,7 @@ extension WebView.Coordinator: WKUIDelegate {
         do {
             try navigationProvider.present(
                 webView: newWebView,
+                for: navigationAction,
                 on: webView,
                 animated: true,
                 completion: nil

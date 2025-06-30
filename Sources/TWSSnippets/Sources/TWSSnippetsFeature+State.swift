@@ -19,6 +19,7 @@ import ComposableArchitecture
 import TWSModels
 import TWSSnippet
 import Sharing
+import TWSTriggers
 
 extension TWSSnippetsFeature {
 
@@ -32,7 +33,9 @@ extension TWSSnippetsFeature {
         @ObservationStateIgnored
         @Sharing.Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         #endif
-            
+        public internal(set) var campaignSnippets: IdentifiedArrayOf<TWSSnippetFeature.State>
+        
+        public internal(set) var preloadedCampaignResources: [TWSSnippet.Attachment: ResourceResponse]
         #if TESTING
         public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         #else
@@ -46,6 +49,8 @@ extension TWSSnippetsFeature {
         public internal(set) var socketURL: URL?
         public internal(set) var isSocketConnected = false
         public internal(set) var state: TWSLoadingState = .idle
+        public internal(set) var campaigns: IdentifiedArrayOf<TWSTriggersFeature.State> = .init()
+        public internal(set) var shouldTriggerSdkInitCampaign = true
 
         public init(
             configuration: any TWSConfiguration,
@@ -59,6 +64,8 @@ extension TWSSnippetsFeature {
             self.snippets = .init(
                 uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
+            self.campaignSnippets = .init()
+            self.preloadedCampaignResources = [:]
             self.preloadedResources = preloadedResources ?? [:]
             #else
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))

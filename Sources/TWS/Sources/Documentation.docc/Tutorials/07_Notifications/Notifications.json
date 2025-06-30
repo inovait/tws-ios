@@ -1,0 +1,12 @@
+{
+  "aps": {
+    "alert": {
+      "title": "New Offer!",
+      "body": "Tap to see our latest deals."
+    },
+    "badge": 1,
+    "sound": "default"
+  },
+  "type": "snippet_push",
+  "path": "projectId/snippetId"
+}
