@@ -17,12 +17,12 @@
 import SwiftUI
 
 extension EnvironmentValues {
-    @Entry var isNotification = false
+    @Entry var isOverlay = false
 }
 
 extension TWSView {
-    public func twsNotification() -> some View {
+    public func twsOverlay() -> some View {
         self
-            .environment(\.isNotification, true)
+            .environment(\.isOverlay, true)
     }
 }

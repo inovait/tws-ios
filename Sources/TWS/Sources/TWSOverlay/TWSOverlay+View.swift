@@ -23,7 +23,7 @@ struct TWSOverlayView: View, Identifiable {
     
     var presenter: TWSPresenter {
         switch overlayData.type {
-        case .notificaion:
+        case .notification:
             return LivePresenter(manager: overlayData.manager)
         case .campaign:
             return CampaignPresenter(manager: overlayData.manager)
@@ -33,6 +33,7 @@ struct TWSOverlayView: View, Identifiable {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             TWSView(snippet: overlayData.snippet)
+                .twsOverlay()
                 .twsBind(loadingView: { AnyView(TWSNotificationLoadingView()) } )
                 .twsBind(preloadingView: { AnyView(TWSNotificationLoadingView()) })
                 .environment(\.presenter, presenter)
