@@ -77,3 +77,4 @@ jobs:
         branch: gh-pages
         folder: docs-out
         single-commit: true
+        token: ${{ secrets.DEPLOY_KEY }}
