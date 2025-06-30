@@ -20,8 +20,7 @@ import WebKit
 extension WebView.Coordinator: TWSViewNavigatorDelegate {
     func load(url: URLRequest) {
         assert(webView != nil)
-        guard let webView else { return }
-        parent.loadProcessedContent(webView: webView)
+        webView?.load(url)
     }
     
     func navigateBack() {
