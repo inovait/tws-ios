@@ -44,6 +44,8 @@ struct ContentView: View {
                         case .permissionsExample:
                             CustomPermissionExample()
                                 .twsBind(interceptor: DefaultInterceptor())
+                        case .notificationexample:
+                            CustomNotificationExample()
                         }
                     }
             }
@@ -78,6 +80,7 @@ extension CustomInterceptor {
         case mustacheExample
         case injectionExample
         case permissionsExample
+        case notificationexample
     }
 }
 
