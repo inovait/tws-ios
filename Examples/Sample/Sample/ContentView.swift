@@ -23,7 +23,7 @@ struct ContentView: View {
     @State private var interceptor = CustomInterceptor()
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottomTrailing) {
             if let snippet = tws.snippets().first(where: { $0.id == "customInterceptors" }) {
                 TWSView(snippet: snippet)
                     .twsBind(interceptor: interceptor)
@@ -48,6 +48,9 @@ struct ContentView: View {
                             CustomNotificationExample()
                         }
                     }
+                LogEventButton {
+                    tws.logEvent("campaign_example")
+                }
             }
         }
     }
