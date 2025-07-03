@@ -23,7 +23,7 @@ struct ContentView: View {
     @State private var interceptor = CustomInterceptor()
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack {
             if let snippet = tws.snippets().first(where: { $0.id == "customInterceptors" }) {
                 TWSView(snippet: snippet)
                     .twsBind(interceptor: interceptor)

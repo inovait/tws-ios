@@ -20,17 +20,17 @@ import NotificationCenter
 struct LocalNotificationProvider {
     private let notificationCenter = UNUserNotificationCenter.current()
     
-    func sendNotification(completionHandler: @escaping ((Bool) -> Void)) async {
+    func sendNotification(completionHandler: @escaping ((PermissionStatus) -> Void)) async {
         let uuid = UUID().uuidString
         let request = UNNotificationRequest(identifier: uuid, content: createNotification(), trigger: nil)
         
         notificationCenter.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .ephemeral, .provisional:
-                completionHandler(true)
+                completionHandler(.allowed)
                 return
             case .denied:
-                completionHandler(false)
+                completionHandler(.notAllowed)
                 return
             case .notDetermined:
                 Task {
@@ -80,5 +80,9 @@ struct LocalNotificationProvider {
         notification.sound = .default
         
         return notification
+    }
+    
+    enum PermissionStatus {
+        case allowed, notAllowed
     }
 }

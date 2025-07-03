@@ -19,7 +19,7 @@ import TWS
 
 struct UserEngagementExamples: View {
     @Environment(TWSManager.self) var tws
-    @State private var displayModal: Bool = false
+    @State private var displayAlert: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -46,8 +46,11 @@ struct UserEngagementExamples: View {
                     content: String(localized: "engagement.notification.body"),
                     action: {
                         Task { await LocalNotificationProvider().sendNotification { status in
-                            if !status {
-                                displayModal = true
+                            switch status {
+                            case .notAllowed:
+                                displayAlert = true
+                            case .allowed:
+                                break
                             }
                         } }
                     })
@@ -58,14 +61,14 @@ struct UserEngagementExamples: View {
                         tws.logEvent("campaign_example")
                     })
             }
-            .alert(String(localized: "notification.denied.title"), isPresented: $displayModal) {
+            .alert(String(localized: "notification.denied.title"), isPresented: $displayAlert) {
                 Button(String(localized: "alert.settings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
                 }
                 Button(String(localized: "alert.cancel"), role: .cancel) {
-                    displayModal = false
+                    displayAlert = false
                 }
             } message: {
                 Text(String(localized: "notification.denied.body"))
