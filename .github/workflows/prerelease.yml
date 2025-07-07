@@ -8,7 +8,7 @@ on:
 jobs:
   prerelease:
     name: Increase SDK version
-    runs-on: "self-hosted-mac"
+    runs-on: "ubuntu-latest"
     
     
     steps:
