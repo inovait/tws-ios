@@ -4,19 +4,20 @@ on:
   pull_request:
     type: [ opened ]
     branches:
-      - develop
+      - main
 
 jobs:
   prerelease:
     name: Increase SDK version
     runs-on: "ubuntu-latest"
-    if: ${{ github.base_ref == 'develop'}}
+    if: ${{ github.base_ref == 'main' && github.head_ref == 'develop' }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           
       - name: Setup Node
