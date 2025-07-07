@@ -25,4 +25,4 @@ jobs:
           node-version: 20
           
       - name: Read version
-        run: "v=$(cat version.txt);echo \"OLD_VERSION=$v\"
+        run: "v=$(cat version.txt);echo $v"
