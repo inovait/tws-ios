@@ -1,0 +1,20 @@
+name: Bump version
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  prerelease:
+    name: Increase SDK version
+    runs-on: "self-hosted-mac"
+    
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: develop
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
