@@ -6,8 +6,6 @@ on:
       - '*'
 jobs:
   run_build:
-    concurrency:
-      group: ${{ github.ref }}
     name: Build
     runs-on: "macos-latest"
     steps:
