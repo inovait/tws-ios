@@ -2,7 +2,7 @@ name: Run Build
 
 on:
   push:
-    braches:
+    branches:
       - '*'
 jobs:
   run_build:
@@ -12,7 +12,7 @@ jobs:
     runs-on: "macos-latest"
     steps:
       - name: Validate xcode version
-      run: |
+        run: |
           XCODE_VERSION=$(/usr/bin/xcodebuild -version 2>/dev/null | head -1)
           echo ${XCODE_VERSION}
           if [ "$XCODE_VERSION" == "Xcode 16.1" ]
