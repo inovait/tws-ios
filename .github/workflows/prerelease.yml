@@ -24,5 +24,8 @@ jobs:
         with:
           node-version: 20
           
+      - name: Read dir
+        run: "ls"
+        
       - name: Read version
         run: "v=$(cat version.txt);echo $v"
