@@ -13,8 +13,13 @@ concurrency:
 jobs:
   build_documentation:
     #if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the develop pipeline was successful
-    runs-on: "self-hosted-mac"
+    runs-on: "macos-latest"
     steps:
+    - name: Set Xcode version
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.1'
+          
     - name: Validate Xcode version
       run: |
           echo ${XCODE_VERSION}
