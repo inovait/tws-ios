@@ -4,7 +4,7 @@ on:
   pull_request:
     type: [ opened ]
     branches:
-      - main
+      - develop
 
 jobs:
   prerelease:
