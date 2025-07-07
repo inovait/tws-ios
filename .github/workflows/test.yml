@@ -1,0 +1,36 @@
+name: Run Build
+
+on:
+  push:
+    braches:
+      - '*'
+jobs:
+  run_build:
+    concurrency:
+      group: ${{ github.ref }}
+    name: Build
+    runs-on: "macos-latest"
+    steps:
+      - name: Validate xcode version
+      run: |
+          XCODE_VERSION=$(/usr/bin/xcodebuild -version 2>/dev/null | head -1)
+          echo ${XCODE_VERSION}
+          if [ "$XCODE_VERSION" == "Xcode 16.1" ]
+          then
+              echo "Version up to date"
+          else
+              echo "wrong version"
+              exit 1
+          fi
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+        with:
+          log_level: debug
+          
+      - name: Run Tests
+        run: |
+          fastlane do_tests
