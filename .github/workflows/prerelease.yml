@@ -18,3 +18,11 @@ jobs:
           fetch-depth: 0
           ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
+          
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Read version
+        run: "v=$(cat version.txt);echo \"OLD_VERSION=$v\"
