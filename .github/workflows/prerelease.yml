@@ -13,18 +13,12 @@ jobs:
     if: ${{ github.base_ref == 'main' && github.head_ref == 'develop' }}
     
     steps:
-      - name: Use SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
-          
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
-          persist-credentials: false
           
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -72,12 +66,6 @@ jobs:
       - name: Add version
         run: 'git add version.txt'
 
-      - name: Setup user email for git
-        run: 'git config --global user.email "ci@inova.si"'
-
-      - name: Setup user name for git
-        run: 'git config --global user.name "Build Bot"'
-          
       - name: Commit version
         run: |
           if git diff --cached --quiet; then
