@@ -33,6 +33,8 @@ fi
 realpath "$index_store_path"
 all_filter_patterns=$(cat "$patterns_file")
 
+brew install periphery
+
 if periphery scan --disable-update-check --skip-build --index-store-path "$index_store_path/Index.noindex/DataStore/" --config .periphery.yml > "$periphery_output_file" 2> periphery_error.log; then
     #remove results with pattern
     grep -vE "$all_filter_patterns" "$periphery_output_file" > "$periphery_output_file_tmp"
