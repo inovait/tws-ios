@@ -1,11 +1,13 @@
 name: Verifiy branch
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize]
     branches:
       - '*'
       - '!main'
       - '!master'
       - '!develop'
+      
 jobs:
   build:
     concurrency:
