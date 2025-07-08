@@ -66,6 +66,12 @@ jobs:
       - name: Add version
         run: 'git add version.txt'
 
+      - name: Setup user email for git
+        run: 'git config --global user.email "ci@inova.si"'
+
+      - name: Setup user name for git
+        run: 'git config --global user.name "Build Bot"'
+          
       - name: Commit version
         run: |
           if git diff --cached --quiet; then
