@@ -20,9 +20,9 @@ jobs:
             echo ${XCODE_VERSION}
             if [ "$XCODE_VERSION" == "Xcode 16.1" ]
             then
-                echo "Version up to date"
+                echo "Version up to date 2"
             else
-                echo "wrong version"
+                echo "wrong version 2"
                 exit 1
             fi
 
