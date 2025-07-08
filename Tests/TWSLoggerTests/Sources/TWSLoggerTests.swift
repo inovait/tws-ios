@@ -50,7 +50,7 @@ final class TWSLoggerTests: XCTestCase {
         do {
             let logReporter = TWSLogger.LogReporter()
             let logEntries = try await logReporter.getLogsFromLogStore(
-                bundleId: "com.apple.dt.xctest.tool",
+                bundleId: logManager.bundleId,
                 date: initDate
             )
 
@@ -58,7 +58,7 @@ final class TWSLoggerTests: XCTestCase {
 
             // Seeing if the file is created and if contains out logs
             let fileURL = try await logReporter.generateReport(
-                bundleId: "com.apple.dt.xctest.tool",
+                bundleId: logManager.bundleId,
                 date: initDate,
                 reportFiltering: { $0.composedMessage }
             )
