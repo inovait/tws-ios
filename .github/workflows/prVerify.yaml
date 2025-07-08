@@ -2,12 +2,11 @@ name: Verifiy branch
 on:
   pull_request:
     branches:
-      - '*'
-      - '!main'
-      - '!master'
+      - '**'
       
 jobs:
   build:
+    if: ${{ github.base_ref != 'main' && github.base_ref != 'master' }}
     concurrency:
       group: ${{ github.ref }}
       cancel-in-progress: true
