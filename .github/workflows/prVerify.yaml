@@ -4,9 +4,6 @@ on:
     types: [opened, synchronize]
     branches:
       - '*'
-      - '!main'
-      - '!master'
-      - '!develop'
       
 jobs:
   build:
