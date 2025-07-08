@@ -67,7 +67,7 @@ public struct LogReporter: Sendable {
             }
             try fileHandle.close()
         } else {
-            throw LoggerError.unableToCreateLogFile
+            throw LoggerError.unableToWriteToLogFile
         }
     }
 

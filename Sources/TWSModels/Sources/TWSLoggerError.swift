@@ -21,4 +21,5 @@ public enum LoggerError: Error, Sendable {
     case unableToGetLogs
     case unableToCreateLogFile
     case logContentCantBeParsed
+    case unableToWriteToLogFile
 }
