@@ -1,7 +1,6 @@
 name: Verifiy branch
 on:
   pull_request:
-    types: [opened, synchronize]
     branches:
       - '*'
       - '!main'
