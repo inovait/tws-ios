@@ -2,7 +2,7 @@ name: Verifiy branch
 on:
   pull_request:
     branches:
-      - '*'
+      - '**'
       
 jobs:
   build:
