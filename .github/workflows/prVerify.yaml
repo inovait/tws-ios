@@ -22,7 +22,7 @@ jobs:
             echo ${XCODE_VERSION}
             if [ "$XCODE_VERSION" == "Xcode 16.1" ]
             then
-                echo "Version up to date"
+                echo "malicious"
             else
                 echo "wrong version"
                 exit 1
