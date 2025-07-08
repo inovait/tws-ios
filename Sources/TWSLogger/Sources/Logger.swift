@@ -4,15 +4,9 @@ import TWSModels
 public struct TWSLog: Sendable {
 
     private let logger: os.Logger
-    let bundleId: String!
 
     public init(category: String) {
-        
-        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            bundleId = "com.apple.dt.xctest.tool"
-        } else {
-            bundleId = Bundle.main.bundleIdentifier
-        }
+        let bundleId = Bundle.main.bundleIdentifier
         
         if let bundleId {
             logger = Logger(subsystem: bundleId, category: category)

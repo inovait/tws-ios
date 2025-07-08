@@ -72,6 +72,13 @@ public struct LogReporter: Sendable {
     }
 
     func openFile(fileName: String) async throws -> URL? {
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            FileManager.default.createFile(atPath: tempURL.path, contents: nil, attributes: nil)
+            
+            return tempURL
+        }
+        
         let fileManager = FileManager.default
         let documentsURL = try fileManager.url(for: .documentDirectory,
             in: .userDomainMask, appropriateFor: nil, create: false)
