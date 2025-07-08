@@ -287,5 +287,4 @@ struct WebView: UIViewRepresentable {
             loadProcessedContent(webView: webView)
         }
     }
-    
 }
