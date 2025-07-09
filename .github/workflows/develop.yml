@@ -1,6 +1,7 @@
 name: Develop Build
 on:
-  push:
+  pull_request:
+    types: [ synchronize ]
     branches: [ develop ]
   workflow_dispatch:
 jobs:
