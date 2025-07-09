@@ -2,7 +2,7 @@ name: Develop Build
 on:
   pull_request:
     types: [ synchronize ]
-    branches: [ develop ]
+    branches: [ main, master ]
   workflow_dispatch:
 jobs:
   build_develop:
