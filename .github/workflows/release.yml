@@ -72,7 +72,7 @@ jobs:
         uses: pmuraus/spotlight-upload-action@main
         with:
           buildName: "iOS Release"
-          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
+          buildVersion: "${{env.VERSION}}"
           files: "./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 

@@ -31,18 +31,17 @@ jobs:
         with:
           log_level: debug
 
-      - name: Update App Version
+      - name: Read Version from version.txt
+        id: version
         run: |
-          NEW_VERSION="0.1.${{ github.run_number }}"
-          echo "MARK_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
-          echo "BUILD_NUMBER=1"  >> $GITHUB_ENV
-          echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${BUILD_NUMBER}"
+          VERSION=$(cat version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Run Tests
         run: |
           fastlane do_tests
 
-      - name: "Instal certificates and provision profiles, Build staging"
+      - name: "Install certificates and provision profiles, Build staging"
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
@@ -64,13 +63,13 @@ jobs:
         uses: pmuraus/spotlight-upload-action@main
         with:
           buildName: "iOS Development"
-          buildVersion: "${{env.MARK_VERSION}}-${{ env.BUILD_NUMBER }}"
+          buildVersion: "${{env.VERSION}}-${{ github.run_number }}"
           files: "./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
       - name: Tag build
         env:
-          TAG_BUILD: "build_${{env.MARK_VERSION}}"
+          TAG_BUILD: "build_${{env.VERSION}}-${{ github.run_number }}"
         run: |
           git tag ${{env.TAG_BUILD}}
           git push origin ${{env.TAG_BUILD}}
