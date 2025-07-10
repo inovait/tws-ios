@@ -5,6 +5,7 @@ on:
       - '*'
       - '!main'
       - '!master'
+      - '!develop'
 jobs:
   build:
     concurrency:
