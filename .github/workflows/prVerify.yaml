@@ -1,10 +1,11 @@
 name: Verifiy branch
 on:
-  pull_request:
-    branches-ignore:
-     - 'main'
-     - 'master'
-      
+  push:
+    branches:
+      - '*'
+      - '!main'
+      - '!master'
+      - '!develop'
 jobs:
   build:
     concurrency:
