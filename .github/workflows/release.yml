@@ -25,10 +25,23 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - uses: jdx/mise-action@v2
         with:
           log_level: debug
+
+      - name: Read Version from version.txt
+        id: version
+        run: |
+          VERSION=$(cat version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update App Version
         run: |
@@ -37,7 +50,7 @@ jobs:
           echo "BUILD_NUMBER=1"  >> $GITHUB_ENV
           echo "MARK_VERSION=${NEW_VERSION}, BUILD_NUMBER=${BUILD_NUMBER}"
 
-      - name: "Instal certificates and provision profiles, Build staging"
+      - name: "Install certificates and provision profiles, Build staging"
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
@@ -63,9 +76,31 @@ jobs:
           files: "./Changelog.md"
           apiKey: ${{secrets.SPOTLIGHT_KEY}}
 
-      - name: Tag build
-        env:
-          TAG_BUILD: "${{env.MARK_VERSION}}"
+      - name: Commit Changelog (optional)
         run: |
-          git tag ${{env.TAG_BUILD}}
-          git push origin ${{env.TAG_BUILD}}
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add Changelog.md
+          git commit -m "chore: update changelog for v$VERSION" || echo "No changes to commit"
+          git push
+
+      - name: Create Git Tag
+        run: |
+          git tag v$VERSION
+          git push origin v$VERSION
+          
+      - name: Read Changelog for Latest Release Notes
+        id: changelog
+        run: |
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat Changelog.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body: ${{ steps.changelog.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
