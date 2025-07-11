@@ -18,10 +18,10 @@ import Foundation
 import WebKit
 
 class InterceptorBridge: NSObject, WKScriptMessageHandler {
-    let interceptor: (any TWSViewInterceptor)?
+    let interceptor: any TWSViewInterceptor
     let webView: WKWebView
     
-    init(interceptor: (any TWSViewInterceptor)?, webView: WKWebView) {
+    init(interceptor: any TWSViewInterceptor, webView: WKWebView) {
         self.interceptor = interceptor
         self.webView = webView
     }
@@ -31,32 +31,58 @@ class InterceptorBridge: NSObject, WKScriptMessageHandler {
               let body = message.body as? [String: Any] else {
             return
         }
-            
-        guard let payload = body["payload"] else {
-            logger.warn("No payload present in message body")
-            return
-        }
-        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
-              let jsonString = String(data: data, encoding: .utf8) else {
-            logger.warn("Failed to parse payload")
+        
+        guard let methodString = body["method"] as? String,
+              let type = body["type"] as? String,
+              let path = body["url"] as? String,
+              let navId = body["navId"] as? String,
+              let method = MethodType(rawValue: methodString)
+        else {
+            logger.debug("Invalid body format: \(body)")
             return
         }
         
-        guard let interceptor else {
-            logger.info("No interceptor provided")
-            webView.evaluateJavaScript("pushStateContinuation(false, \(jsonString))")
+        guard let webViewUrl = webView.url,
+        let baseUrl = getBaseURL(url: webViewUrl) else {
+            logger.debug("Could not get base URL")
             return
         }
         
-        let urlString = (body["url"] as? String) ?? "about:blank"
-        guard let url = URL(string: urlString) else {
-            logger.warn("Could not parse url")
-            webView.evaluateJavaScript("pushStateContinuation(false, \(jsonString))")
+        let url = baseUrl.appendingPathComponent(path)
+        
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: [navId]),
+           let jsonString = String(data: jsonData, encoding: .utf8) else
+        {
             return
         }
         
-        // call js with either with the result
-        webView.evaluateJavaScript("pushStateContinuation(\(interceptor.handleUrl(url)), \(jsonString))")
-            
+        let escapedNavId = jsonString.dropFirst().dropLast()
+        
+        if !interceptor.handleUrl(url) {
+                switch method {
+                case .click:
+                    webView.load(URLRequest(url: url))
+                case .pushState:
+                    webView.evaluateJavaScript("window.__proceedWithNavigation(\(escapedNavId))")
+                }
+        }
+        
     }
+    
+    private func getBaseURL(url: URL) -> URL? {
+        var baseUrl = URLComponents()
+        baseUrl.scheme = url.scheme
+        baseUrl.host = url.host
+        baseUrl.port = url.port
+        
+        return baseUrl.url
+    }
+}
+
+
+enum MethodType: String, Identifiable {
+    var id: String { rawValue }
+
+    case click
+    case pushState
 }
