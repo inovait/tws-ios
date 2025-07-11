@@ -22,7 +22,7 @@ class Router {
     private static let authManager = AuthManager(baseUrl: TWSBuildSettingsProvider.getTWSBaseUrl())
     private static let redirectDelegate = RedirectHandler()
     private static let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: redirectDelegate, delegateQueue: nil)
-
+    
     private static let dateFormatter = {
         let newDateFormatter = DateFormatter()
         newDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ssZ"
@@ -32,6 +32,8 @@ class Router {
     }()
 
     class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
+        let userAgent = await UserAgentProvider.userAgent
+        
         var components = URLComponents()
         components.scheme = request.scheme
         components.host = request.host
@@ -51,6 +53,8 @@ class Router {
             urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         }
         
+        urlRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        
         if request.method != .get {
             do {
                 urlRequest.httpBody = try JSONSerialization.data(withJSONObject: request.body, options: [])
@@ -61,7 +65,12 @@ class Router {
         logger.info(urlRequest.debugDescription)
 
         do {
-            let token = try await authManager.getAccessToken(authManager.shouldRefreshTokens())
+            let shouldRefreshTokens = await authManager.shouldRefreshTokens()
+            if shouldRefreshTokens {
+                try await authManager.forceRefreshRefreshTokens()
+            }
+            
+            let token = try await authManager.getAccessToken(shouldRefreshTokens)
 
             if request.auth {
                 urlRequest.setValue(
@@ -99,7 +108,7 @@ class Router {
                 )
             } else if httpResult.statusCode == 401 {
                 if retryEnabled {
-                    try await authManager.forceRefreshTokens()
+                    try await authManager.forceRefreshAccessTokens()
                     return try await make(request: request, retryEnabled: false)
                 } else {
                     throw APIError.server(httpResult.statusCode, result.0)
