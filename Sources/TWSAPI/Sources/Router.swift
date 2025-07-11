@@ -32,6 +32,8 @@ class Router {
     }()
 
     class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
+        let userAgent = await UserAgentProvider.userAgent
+        
         var components = URLComponents()
         components.scheme = request.scheme
         components.host = request.host
@@ -50,6 +52,8 @@ class Router {
         for header in request.headers {
             urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         }
+        
+        urlRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         
         if request.method != .get {
             do {
