@@ -215,8 +215,8 @@ struct WebView: UIViewRepresentable {
     ) {
         // Mandatory to hop the thread, because of UI layout change
         DispatchQueue.main.async {
-            canGoBack = webView.canGoBack
-            canGoForward = webView.canGoForward
+            canGoBack = checkCanGoBack(webView: webView)
+            canGoForward = checkCanGoForward(webView: webView)
 
             if let dynamicHeight {
                 self.dynamicHeight = dynamicHeight
@@ -286,5 +286,20 @@ struct WebView: UIViewRepresentable {
         } else {
             loadProcessedContent(webView: webView)
         }
+    }
+    
+    private func checkCanGoBack(webView: WKWebView) -> Bool {
+        var checkCanGoBack: Bool?
+        
+        webView.evaluateJavaScript("history.length") { res, err in
+            guard let len = res as? Int else { return }
+            if len > 1 { checkCanGoBack = true }
+        }
+        
+        return checkCanGoBack ?? webView.canGoBack
+    }
+    
+    private func checkCanGoForward(webView: WKWebView) -> Bool {
+        webView.canGoForward
     }
 }
