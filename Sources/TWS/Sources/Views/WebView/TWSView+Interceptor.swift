@@ -67,3 +67,11 @@ public protocol TWSViewInterceptor: AnyObject, Sendable {
     /// - Returns: A boolean where true indicates that this url was handled, false indicates that web view should load the URL normally.
     func handleUrl(_ url: URL) -> Bool
 }
+
+@MainActor
+@Observable
+public class NoOpInterceptor: TWSViewInterceptor {
+    public func handleUrl(_ url: URL) -> Bool {
+        return false
+    }
+}

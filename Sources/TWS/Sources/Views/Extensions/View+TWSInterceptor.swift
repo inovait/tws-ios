@@ -17,8 +17,7 @@
 import SwiftUI
 
 extension EnvironmentValues {
-
-    @Entry var interceptor: TWSViewInterceptor?
+    @Entry var interceptor: TWSViewInterceptor = NoOpInterceptor()
 }
 
 extension View {
