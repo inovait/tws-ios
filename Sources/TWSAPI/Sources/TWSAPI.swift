@@ -32,7 +32,7 @@ public struct TWSAPI {
                 let result = try await Router.make(request: .init(
                         method: .get,
                         scheme: baseUrl.scheme,
-                        path: "/projects/\(project.id)/snippets",
+                        path: "/projects/\(project.id)/snippets/v1",
                         host: baseUrl.host,
                         queryItems: [],
                         headers: [:],
@@ -99,7 +99,7 @@ public struct TWSAPI {
                     path: attachment.url.path(),
                     host: attachment.url.host() ?? "",
                     queryItems: queryItems ?? [],
-                    headers: headers.merging(["User-Agent" : await UserAgentProvider.userAgent], uniquingKeysWith: { first, second in second}) ,
+                    headers: headers,
                     auth: false
                 ))
 
