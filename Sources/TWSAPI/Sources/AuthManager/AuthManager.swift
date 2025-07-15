@@ -52,7 +52,11 @@ actor AuthManager {
         return false
     }
     
-    func forceRefreshTokens() async throws {
+    func forceRefreshRefreshTokens() async throws {
+        _ = try await getRefreshToken(true)
+    }
+    
+    func forceRefreshAccessTokens() async throws {
         _ = try await getAccessToken(true)
     }
 
@@ -130,10 +134,12 @@ actor AuthManager {
     }
 
     private func requestAccessToken(_ refreshToken: String, refreshEnabled: Bool = true) async throws -> String {
+        let userAgent = await UserAgentProvider.userAgent
         var tokenRequest = URLRequest(url: loginUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
+        tokenRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         do {
             let (data, response) = try await URLSession.shared.data(for: tokenRequest)
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -160,10 +166,12 @@ actor AuthManager {
     }
 
     private func requestRefreshToken(_ jwtToken: String) async throws -> String {
+        let userAgent = await UserAgentProvider.userAgent
         var tokenRequest = URLRequest(url: registerUrl, timeoutInterval: 60)
         tokenRequest.httpMethod = Request.Method.post.rawValue.uppercased()
         tokenRequest.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
         tokenRequest.setValue("text/plain", forHTTPHeaderField: "accept")
+        tokenRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         do {
             let (data, response) = try await URLSession.shared.data(for: tokenRequest)
             guard let httpResponse = response as? HTTPURLResponse else {
