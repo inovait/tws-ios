@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   changePrBuild:
-    name: PR ready for review
+    name: PR ready for QA
     runs-on: "self-hosted-mac"
     steps:
       - uses: actions/checkout@v2
