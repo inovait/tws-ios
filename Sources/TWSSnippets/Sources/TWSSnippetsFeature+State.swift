@@ -59,13 +59,13 @@ extension TWSSnippetsFeature {
             socketURL: URL? = nil,
             serverTime: Date? = nil
         ) {
+            self.campaignSnippets = .init()
+            self.preloadedCampaignResources = [:]
             #if TESTING
             // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             self.snippets = .init(
                 uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
-            self.campaignSnippets = .init()
-            self.preloadedCampaignResources = [:]
             self.preloadedResources = preloadedResources ?? [:]
             #else
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
