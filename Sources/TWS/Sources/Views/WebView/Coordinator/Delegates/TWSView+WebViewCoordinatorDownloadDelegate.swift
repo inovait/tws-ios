@@ -46,9 +46,11 @@ extension WebView.Coordinator: WKDownloadDelegate {
                 return
             }
         }
-        let fileName = downloadsFolderURL.appendingPathComponent(suggestedFilename)
+        
+        let timestampedFileName = "\(Date().timestampMilis())_\(suggestedFilename)"
+        let fileName = downloadsFolderURL.appendingPathComponent(timestampedFileName)
 
-        downloadInfo.downloadedFilename = suggestedFilename
+        downloadInfo.downloadedFilename = timestampedFileName
         downloadInfo.downloadedLocation = downloadsFolderURL.absoluteString
         completionHandler(fileName)
     }
@@ -68,4 +70,8 @@ extension WebView.Coordinator: WKDownloadDelegate {
         downloadCompleted?(.completed(downloadInfo))
         downloadInfo.clearValues()
     }
+}
+
+extension Date {
+    func timestampMilis() -> Int { Int(self.timeIntervalSince1970 * 1000) }
 }
