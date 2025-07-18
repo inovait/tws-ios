@@ -30,7 +30,6 @@ function simulateClick(navId, shouldSimulate) {
 
 (function () {
     document.addEventListener('click', function(e) {
-        console.log("[svenk] " + JSON.stringify(e))
         const anchor = e.target.closest('a');
         if (!anchor || !anchor.href || anchor.target === '_blank') return;
 
