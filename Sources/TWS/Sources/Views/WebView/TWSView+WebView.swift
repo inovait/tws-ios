@@ -107,8 +107,10 @@ struct WebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         navigator.delegate = context.coordinator
         
-        spaNavigationInterceptor(controller: controller)
-        controller.add(InterceptorBridge(interceptor: interceptor, webView: webView), name: "shouldIntercept")
+        if !(interceptor is NoOpInterceptor) {
+            spaNavigationInterceptor(controller: controller)
+            controller.add(InterceptorBridge(interceptor: interceptor, webView: webView), name: "shouldIntercept")
+        }
 
         if enablePullToRefresh {
             // process content on reloads

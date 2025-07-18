@@ -32,39 +32,22 @@ class InterceptorBridge: NSObject, WKScriptMessageHandler {
             return
         }
         
-        guard let methodString = body["method"] as? String,
-              let type = body["type"] as? String,
-              let path = body["url"] as? String,
+        guard let urlString = body["url"] as? String,
+            let url = URL(string: urlString),
               let navId = body["navId"] as? String,
-              let method = MethodType(rawValue: methodString)
+              let jsonData = try? JSONSerialization.data(withJSONObject: [navId]),
+              let jsonArrayString = String(data: jsonData, encoding: .utf8)
         else {
-            logger.debug("Invalid body format: \(body)")
+            logger.warn("Could not parse message body navigation request dismissed")
             return
         }
         
-        guard let webViewUrl = webView.url,
-        let baseUrl = getBaseURL(url: webViewUrl) else {
-            logger.debug("Could not get base URL")
-            return
-        }
-        
-        let url = baseUrl.appendingPathComponent(path)
-        
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: [navId]),
-           let jsonString = String(data: jsonData, encoding: .utf8) else
-        {
-            return
-        }
-        
-        let escapedNavId = jsonString.dropFirst().dropLast()
+        let navIdEsc = String(jsonArrayString.dropFirst().dropLast())
         
         if !interceptor.handleUrl(url) {
-                switch method {
-                case .click:
-                    webView.load(URLRequest(url: url))
-                case .pushState:
-                    webView.evaluateJavaScript("window.__proceedWithNavigation(\(escapedNavId))")
-                }
+            webView.evaluateJavaScript("simulateClick(\(navIdEsc), true)")
+        } else {
+            webView.evaluateJavaScript("simulateClick(\(navIdEsc), false)")
         }
         
     }
@@ -77,12 +60,4 @@ class InterceptorBridge: NSObject, WKScriptMessageHandler {
         
         return baseUrl.url
     }
-}
-
-
-enum MethodType: String, Identifiable {
-    var id: String { rawValue }
-
-    case click
-    case pushState
 }
