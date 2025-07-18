@@ -54,6 +54,11 @@ extension WebView.Coordinator: WKNavigationDelegate {
         msg +=  " error: \(error.localizedDescription)"
 
         logger.debug(msg)
+        
+        if (error as NSError).code == NSURLErrorCancelled {
+            return
+        }
+        
         if isMainWebView(webView: webView) {
             parent.updateState(for: webView, loadingState: .failed(error))
         } else {
