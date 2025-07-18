@@ -106,6 +106,11 @@ struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         navigator.delegate = context.coordinator
+        
+        if !(interceptor is NoOpInterceptor) {
+            spaNavigationInterceptor(controller: controller)
+            controller.add(InterceptorBridge(interceptor: interceptor, webView: webView), name: "shouldIntercept")
+        }
 
         if enablePullToRefresh {
             // process content on reloads
@@ -287,4 +292,16 @@ struct WebView: UIViewRepresentable {
             loadProcessedContent(webView: webView)
         }
     }
+    
+    private func spaNavigationInterceptor(
+        controller: WKUserContentController
+    ) {
+        let jsURL = Bundle.module
+            .url(forResource: "JavaScriptInterceptor", withExtension: "js")!
+        // swiftlint:disable:next force_try
+        let jsContent = try! String(contentsOf: jsURL, encoding: .utf8)
+        
+        controller.addUserScript(.init(source: jsContent, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+    }
+    
 }
