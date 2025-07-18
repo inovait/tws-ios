@@ -51,13 +51,4 @@ class InterceptorBridge: NSObject, WKScriptMessageHandler {
         }
         
     }
-    
-    private func getBaseURL(url: URL) -> URL? {
-        var baseUrl = URLComponents()
-        baseUrl.scheme = url.scheme
-        baseUrl.host = url.host
-        baseUrl.port = url.port
-        
-        return baseUrl.url
-    }
 }
