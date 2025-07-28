@@ -96,3 +96,14 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Transition ticket to Done
+        uses: pmuraus/jira-ticket-transition-action@main
+        with:
+          targetTransition: "Done"
+          sourceTransition: "Verified"
+          message: Available in release ${{ steps.version.outputs.tag }}
+          jiraBaseUrl: "inova-it.atlassian.net"
+          jiraEmail: "hudson@inova.si"
+          jiraToken: ${{secrets.JIRA_TOKEN}}
+          githubToken: ${{secrets.GITHUB_TOKEN}}
