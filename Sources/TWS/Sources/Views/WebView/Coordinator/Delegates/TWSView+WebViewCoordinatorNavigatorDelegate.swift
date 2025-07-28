@@ -48,6 +48,15 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         )
     }
     
+    func replaceState(path: String) {
+        webView?.evaluateJavaScript(
+            """
+            window.history.replaceState({}, null, '\(path)');
+            window.dispatchEvent(new Event('popstate'));
+            """
+        )
+    }
+    
     func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
         assert(webView != nil)
         webView?.evaluateJavaScript(script, completionHandler: completionHandler)

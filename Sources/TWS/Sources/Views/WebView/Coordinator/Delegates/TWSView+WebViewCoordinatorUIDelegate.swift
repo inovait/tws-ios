@@ -72,8 +72,7 @@ extension WebView.Coordinator: WKUIDelegate {
         _ webView: WKWebView,
         runJavaScriptAlertPanelWithMessage message: String,
         initiatedByFrame frame: WKFrameInfo,
-        completionHandler: @escaping @MainActor @Sendable () -> Void
-    ) {
+        completionHandler: @escaping @MainActor () -> Void) {
         var msg = "[UI \(webView.hash)] Run JavaScript alert panel with message: \(message), "
         msg += "initiated by frame: \(frame)"
         logger.debug(msg)
