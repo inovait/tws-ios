@@ -242,8 +242,4 @@ extension WebView.Coordinator: WKNavigationDelegate {
             dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
         )
     }
-    
-    private func isMainWebView(webView: WKWebView) -> Bool {
-        parent.wkWebView == webView
-    }
 }

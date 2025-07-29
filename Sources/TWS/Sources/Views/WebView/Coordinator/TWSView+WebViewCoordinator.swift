@@ -26,6 +26,8 @@ extension WebView {
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
         var urlObserver: NSKeyValueObservation?
+        private var canGoBackObserver: NSKeyValueObservation?
+        private var canGoForwardObserver: NSKeyValueObservation?
         var isConnectedToNetwork = true
         var redirectedToSafari = false
         var openURL: URL?
@@ -92,10 +94,7 @@ extension WebView {
                         )
                     }
 
-                    // Mandatory to hop the thread, because of UI layout change
-                    DispatchQueue.main.async { [weak self] in
-                        self?.parent.dynamicHeight = newHeight
-                    }
+                    self.parent.updateState(for: webView, loadingState: nil, dynamicHeight: newHeight)
                 }
             }
         }
@@ -107,12 +106,40 @@ extension WebView {
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    guard let coordinator = self else { return }
-                    if coordinator.parent.wkWebView == webview {
-                        coordinator.parent.state.currentUrl = url
+                    guard let self = self else { return }
+                    if self.parent.wkWebView == webview {
+                        self.parent.state.currentUrl = url
+                        self.parent.updateState(for: webview)
                     }
                 }
             }
+        }
+        
+        func observe(canGoBackFor webview: WKWebView) {
+            canGoBackObserver = webview.observe(\.canGoBack, options: [.new]) { [weak self] _, change in
+                MainActor.assumeIsolated { [weak self] in
+                    guard let self = self else { return }
+                    if self.isMainWebView(webView: webview) {
+                        self.parent.updateState(for: webview)
+                    }
+                }
+            }
+        }
+        
+        func observe(canGoForwardFor webview: WKWebView) {
+            canGoForwardObserver = webview.observe(\.canGoForward, options: [.new]) { [weak self] _, change in
+                MainActor.assumeIsolated { [weak self] in
+                    guard let self = self else { return }
+                    if self.isMainWebView(webView: webview) {
+                        self.parent.updateState(for: webview)
+                    }
+                }
+            }
+        }
+        
+        // MARK: Helpers
+        func isMainWebView(webView: WKWebView) -> Bool {
+            parent.wkWebView == webView
         }
     }
 }
