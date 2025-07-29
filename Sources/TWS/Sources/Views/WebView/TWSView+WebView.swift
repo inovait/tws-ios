@@ -116,8 +116,7 @@ struct WebView: UIViewRepresentable {
 
         // Process content on first load
         loadProcessedContent(webView: webView)
-        context.coordinator.observe(heightOf: webView)
-        context.coordinator.observe(currentUrlOf: webView)
+        registerWebViewObservers(coordinator: context.coordinator, webView: webView)
         context.coordinator.webView = webView
 
         updateState(for: webView, loadingState: .loading)
@@ -207,6 +206,13 @@ struct WebView: UIViewRepresentable {
     }
 
     // MARK: - Helpers
+    
+    private func registerWebViewObservers(coordinator: Coordinator, webView: WKWebView) {
+        coordinator.observe(heightOf: webView)
+        coordinator.observe(currentUrlOf: webView)
+        coordinator.observe(canGoBackFor: webView)
+        coordinator.observe(canGoForwardFor: webView)
+    }
 
     func updateState(
         for webView: WKWebView,
