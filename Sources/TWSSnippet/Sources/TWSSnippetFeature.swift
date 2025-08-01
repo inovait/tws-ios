@@ -18,6 +18,7 @@ public struct TWSSnippetFeature: Sendable {
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
+        public var htmlContent: String? = nil
 
         var isPreloading = false
 
@@ -125,6 +126,7 @@ public struct TWSSnippetFeature: Sendable {
         case let .business(.preloadCompleted(resources)):
             state.preloaded = true
             state.isPreloading = false
+            state.htmlContent = resources[TWSSnippet.Attachment(url: state.snippet.target, contentType: .html)]?.data
             
             return .send(.delegate(.resourcesUpdated(resources)))
 
