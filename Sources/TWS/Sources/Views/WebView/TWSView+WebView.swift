@@ -17,6 +17,8 @@
 import SwiftUI
 import WebKit
 @_spi(Internals) import TWSModels
+internal import ComposableArchitecture
+internal import TWSSnippet
 
 struct WebView: UIViewRepresentable {
 
@@ -45,6 +47,8 @@ struct WebView: UIViewRepresentable {
     let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
     let enablePullToRefresh: Bool
+    
+    private var resourceDownloadHandler: ResourceDownloadHandler = .init()
 
     init(
         snippet: TWSSnippet,
@@ -287,10 +291,52 @@ struct WebView: UIViewRepresentable {
     ) {
         let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
         let resource = preloadedResources[key]
-        if let currentUrl = state.currentUrl, currentUrl != resource?.responseUrl {
-            webView.load(URLRequest(url: currentUrl))
-        } else {
+        
+        let initialUrl = resource?.responseUrl ?? targetURL
+        
+        if initialUrl == state.currentUrl {
+            // Reload on initial page
             loadProcessedContent(webView: webView)
+            return
         }
+        
+        if initialUrl == state.lastLoadedUrl, state.currentUrl != state.lastLoadedUrl {
+            guard let currentUrl = state.currentUrl else {
+                // if current url does not exist load initial
+                loadProcessedContent(webView: webView)
+                return
+            }
+            // Download SPA page and inject resources on reload
+            
+            let snippetToReload = TWSSnippet(id: "testSnippet", target: currentUrl, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
+            
+            let store: StoreOf<TWSSnippetFeature> = .init(
+                initialState: TWSSnippetFeature.State(snippet: snippetToReload),
+                    reducer: { TWSSnippetFeature() })
+            
+            resourceDownloadHandler.loadNewStore(store) { content in
+                if let content {
+                    logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
+                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content, snippet: snippetToReload)
+                    webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad)
+                }
+            }
+        }
+        
+        if initialUrl != state.lastLoadedUrl {
+            // Normal MPA reload
+            if let currentUrl = state.currentUrl, currentUrl != resource?.responseUrl {
+                webView.load(URLRequest(url: currentUrl))
+                return
+            }
+        }
+    }
+}
+
+extension WebView {
+    
+    func initialUrl() -> URL? {
+        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
+        return preloadedResources[key]?.responseUrl
     }
 }
