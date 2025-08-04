@@ -19,7 +19,7 @@ import Combine
 internal import ComposableArchitecture
 internal import TWSSnippet
 
-// periphery:ignore:all
+// periphery:ignore
 @MainActor
 class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
