@@ -16,7 +16,6 @@
 
 import Foundation
 import Combine
-@_spi(Internals) import TWSModels
 internal import ComposableArchitecture
 internal import TWSSnippet
 
@@ -29,7 +28,9 @@ class ResourceDownloadHandler {
     init() {}
     
     func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (String?) -> Void) {
+        // periphery:ignore - Needs to hold the reference
         self.store = store
+        // periphery:ignore - Needs to hold the reference
         self.onSuccess = onSuccess
         cancellables.removeAll()
         

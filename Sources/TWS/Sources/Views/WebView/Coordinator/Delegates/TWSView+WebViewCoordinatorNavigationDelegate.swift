@@ -41,7 +41,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
                         if !isRefresh {
                             self.parent.state.lastLoadedUrl = url
                         } else {
-                            if self.parent.shouldChangeLastLoaded(urlToLoad: url) {
+                            if self.parent.shouldChangeLastLoaded() {
                                 self.parent.state.lastLoadedUrl = url
                             }
                         }

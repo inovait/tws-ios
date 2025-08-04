@@ -238,7 +238,7 @@ struct WebView: UIViewRepresentable {
         }
     }
     
-    func loadProcessedContent(webView: WKWebView, isInitialLoad: Bool = false) -> WKNavigation? {
+    func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
         let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
         
         if let preloaded = preloadedResources[key] {
@@ -336,7 +336,7 @@ struct WebView: UIViewRepresentable {
 }
 
 extension WebView {
-    func shouldChangeLastLoaded(urlToLoad: URL) -> Bool {
+    func shouldChangeLastLoaded() -> Bool {
         return state.lastLoadedUrl == nil || state.lastLoadedUrl != initialUrl()
     }
     
