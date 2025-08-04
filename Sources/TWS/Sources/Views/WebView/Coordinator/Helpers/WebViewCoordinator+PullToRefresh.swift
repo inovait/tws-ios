@@ -47,9 +47,14 @@ extension WebView.Coordinator {
                 request.navigation === navigation
             else { return false }
 
-            request.continuation.resume()
+            request.continuation?.resume()
             refreshRequest = nil
             return true
+        }
+        
+        func setNavigationRequest(navigation: WKNavigation?) {
+            guard let navigation else { return }
+            refreshRequest = .init(continuation: nil, navigation: navigation)
         }
 
         // MARK: - Helpers
@@ -84,11 +89,11 @@ extension WebView.Coordinator {
 
     private class PullToRefreshRequest {
 
-        let continuation: CheckedContinuation<Void, Never>
+        let continuation: CheckedContinuation<Void, Never>?
         let navigation: WKNavigation
 
         init(
-            continuation: CheckedContinuation<Void, Never>,
+            continuation: CheckedContinuation<Void, Never>?,
             navigation: WKNavigation
         ) {
             self.continuation = continuation

@@ -29,7 +29,6 @@ class ResourceDownloadHandler {
     init() {}
     
     func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (String?) -> Void) {
-        print("[svenk] loadNewStore called")
         self.store = store
         self.onSuccess = onSuccess
         cancellables.removeAll()
@@ -38,7 +37,6 @@ class ResourceDownloadHandler {
             .map { $0.htmlContent }
             .removeDuplicates()
             .sink { [weak self] content in
-                print("[svenk] new content from publisher")
                 onSuccess(content)
             }
             .store(in: &cancellables)
