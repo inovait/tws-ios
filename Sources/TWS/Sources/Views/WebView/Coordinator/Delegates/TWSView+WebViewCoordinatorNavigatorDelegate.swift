@@ -36,7 +36,7 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     func reload() {
         assert(webView != nil)
         guard let webView else { return }
-        parent.reloadWithProcessedResources(webView: webView)
+        parent.reloadWithProcessedResources(webView: webView, coordinator: self)
     }
     
     func pushState(path: String) {
