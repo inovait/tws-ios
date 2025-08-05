@@ -309,7 +309,7 @@ struct WebView: UIViewRepresentable {
             }
             // Download SPA page and inject resources on reload
             
-            let snippetToReload = TWSSnippet(id: "testSnippet", target: currentUrl, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
+            let snippetToReload = TWSSnippet(id: "reloadSnippet", target: currentUrl, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
             
             let store: StoreOf<TWSSnippetFeature> = .init(
                 initialState: TWSSnippetFeature.State(snippet: snippetToReload),
