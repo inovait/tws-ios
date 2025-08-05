@@ -416,6 +416,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
         }
         // Observe preloaded resources, only first should appear
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
@@ -431,6 +432,7 @@ final class SnippetsTests: XCTestCase {
             $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s2ID]?.isPreloading = false
             $0.snippets[id: s2ID]?.preloaded = true
+            $0.snippets[id: s2ID]?.htmlContent = snippets[1].target.absoluteString
         }
         // Observe preloaded resources again, two resources appear
         await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated) {
@@ -508,6 +510,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
         }
 
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
@@ -544,6 +547,7 @@ final class SnippetsTests: XCTestCase {
             $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = changedURL.absoluteString
         }
 
         await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
@@ -618,6 +622,7 @@ final class SnippetsTests: XCTestCase {
         await storeFirstLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = staticResources
         }
         
         await storeFirstLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
@@ -683,6 +688,7 @@ final class SnippetsTests: XCTestCase {
         await storeSecondLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = changedStaticResources
         }
         
         await storeSecondLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
@@ -765,6 +771,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
         }
         
         await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
@@ -883,6 +890,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
             $0.snippets[id: s1ID]?.isPreloading = false
             $0.snippets[id: s1ID]?.preloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = expectedResponse1
         }
         
         await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
@@ -907,6 +915,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippetAction[id: s2ID].business.preloadCompleted) {
             $0.snippets[id: s2ID]?.isPreloading = false
             $0.snippets[id: s2ID]?.preloaded = true
+            $0.snippets[id: s2ID]?.htmlContent = expectedResponse2
         }
         
         await store.receive(\.business.snippetAction[id: s2ID].delegate.resourcesUpdated) {
@@ -934,6 +943,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.snippetAction[id: s3ID].business.preloadCompleted) {
             $0.snippets[id: s3ID]?.isPreloading = false
             $0.snippets[id: s3ID]?.preloaded = true
+            $0.snippets[id: s3ID]?.htmlContent = expectedResponse3
         }
         
         await store.receive(\.business.snippetAction[id: s3ID].delegate.resourcesUpdated) {

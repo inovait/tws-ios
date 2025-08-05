@@ -28,17 +28,25 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation \(webView.hash)] Navigation finished: \(String(describing: navigation))")
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
 
-        _ = pullToRefresh.verifyForRefresh(navigation: navigation)
         _updateHeight(webView: webView)
-
+        let isRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
+        
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
             if let title = result as? String, error == nil, self.isMainWebView(webView: webView) {
                 DispatchQueue.main.async { [weak self] in
-                    self?.parent.state.title = title
+                    guard let self = self else { return }
+                    self.parent.state.title = title
                     if let url = webView.url {
-                        self?.parent.state.lastLoadedUrl = url
-                        self?.parent.state.currentUrl = url
+                        if !isRefresh {
+                            self.parent.state.lastLoadedUrl = url
+                        } else {
+                            if self.parent.shouldChangeLastLoaded() {
+                                self.parent.state.lastLoadedUrl = url
+                            }
+                        }
+                        
+                        self.parent.state.currentUrl = url
                     }
                 }
             }
