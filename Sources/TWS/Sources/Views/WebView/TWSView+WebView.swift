@@ -123,7 +123,7 @@ struct WebView: UIViewRepresentable {
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
         context.coordinator.webView = webView
 
-        updateState(for: webView, loadingState: .loading)
+        updateState(for: webView, loadingState: .loading(progress: 0.0))
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
         
@@ -176,7 +176,7 @@ struct WebView: UIViewRepresentable {
 
         if regainedNetworkConnection, case .failed = state.loadingState {
             if uiView.url == nil {
-                updateState(for: uiView, loadingState: .loading)
+                updateState(for: uiView, loadingState: .loading(progress: 0.0))
                 reloadWithProcessedResources(webView: uiView, coordinator: context.coordinator)
                 stateUpdated = true
             } else if !uiView.isLoading {
@@ -216,6 +216,7 @@ struct WebView: UIViewRepresentable {
         coordinator.observe(currentUrlOf: webView)
         coordinator.observe(canGoBackFor: webView)
         coordinator.observe(canGoForwardFor: webView)
+        coordinator.observe(loadingProgressOf: webView)
     }
 
     func updateState(

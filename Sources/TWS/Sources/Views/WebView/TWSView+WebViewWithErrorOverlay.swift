@@ -128,8 +128,8 @@ class WebViewWithErrorOverlay: UIViewController {
         customErrorViewVC = nil
     }
     
-    func showLoadingView(loadingView: () -> AnyView) {
-        customLoadingViewVC = UIHostingController(rootView: loadingView())
+    func showLoadingView(loadingView: (Optional<Double>) -> AnyView) {
+        customLoadingViewVC = UIHostingController(rootView: loadingView(nil))
         guard let customLoadingViewVC else { return }
         addChild(customLoadingViewVC)
         view.addSubview(customLoadingViewVC.view)

@@ -28,7 +28,7 @@ extension View {
     /// This method uses `AnyView` for flexibility, allowing different view hierarchies to be returned.
     /// The performance impact is minimal since the view being loaded is simple and lightweight.
     public func twsBind(
-        loadingView: @Sendable @MainActor @escaping () -> AnyView
+        loadingView: @Sendable @MainActor @escaping (Optional<Double>) -> AnyView
     ) -> some View {
         ModifiedContent(
             content: self,
@@ -75,7 +75,7 @@ extension View {
 
 private struct AttachLoadingView: ViewModifier {
 
-    let loadingView: @Sendable @MainActor () -> AnyView
+    let loadingView: @Sendable @MainActor (Optional<Double>) -> AnyView
 
     func body(content: Content) -> some View {
         content
@@ -106,13 +106,13 @@ private struct AttachErrorView: ViewModifier {
 extension EnvironmentValues {
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
-    @Entry var loadingView: @Sendable @MainActor () -> AnyView = {
-        AnyView(_LoadingView())
+    @Entry var loadingView: @Sendable @MainActor (Double?) -> AnyView = { progress in
+        AnyView(_LoadingView(loadingProgress: progress))
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var preloadingView: @Sendable @MainActor () -> AnyView = {
-        AnyView(_LoadingView())
+        AnyView(_LoadingView(loadingProgress: 0.0))
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
@@ -137,11 +137,14 @@ extension EnvironmentValues {
 }
 
 private struct _LoadingView: View {
+    var loadingProgress: Double?
 
     var body: some View {
         HStack {
             Spacer()
-
+            if let loadingProgress {
+                Text("\(loadingProgress * 100)%")
+            }
             ProgressView()
                 .tint(.white)
                 .padding(10)

@@ -97,8 +97,10 @@ public struct TWSView: View {
                         
                         ZStack {
                             switch state.loadingState {
-                            case .idle, .loading:
-                                loadingView()
+                            case .idle:
+                                loadingView(nil)
+                            case .loading(let progress):
+                                loadingView(progress)
                                 
                             case .loaded:
                                 EmptyView()

@@ -29,6 +29,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         precondition(Thread.isMainThread, "Not allowed to use on non main thread.")
 
         _updateHeight(webView: webView)
+        parent.updateState(
+            for: webView,
+            loadingState: .loaded
+        )
         let isRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
         
         // Mandatory to hop the thread, because of UI layout change
@@ -246,7 +250,6 @@ extension WebView.Coordinator: WKNavigationDelegate {
 
         parent.updateState(
             for: webView,
-            loadingState: .loaded,
             dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
         )
     }
