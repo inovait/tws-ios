@@ -19,11 +19,9 @@ import WebKit
 
 class SPAInterceptorBridge: NSObject, WKScriptMessageHandler {
     let interceptor: any TWSViewInterceptor
-    let webView: WKWebView
     
-    init(interceptor: any TWSViewInterceptor, webView: WKWebView) {
+    init(interceptor: any TWSViewInterceptor) {
         self.interceptor = interceptor
-        self.webView = webView
     }
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

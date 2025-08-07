@@ -119,7 +119,7 @@ struct WebView: UIViewRepresentable {
         }
 
         if let interceptor {
-            controller.add(SPAInterceptorBridge(interceptor: interceptor, webView: webView), name: "intercept")
+            controller.add(SPAInterceptorBridge(interceptor: interceptor), name: "intercept")
         }
         
         // Process content on first load
