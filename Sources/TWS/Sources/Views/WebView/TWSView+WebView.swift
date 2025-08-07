@@ -118,6 +118,10 @@ struct WebView: UIViewRepresentable {
             }
         }
 
+        if let interceptor {
+            controller.add(SPAInterceptorBridge(interceptor: interceptor, webView: webView), name: "intercept")
+        }
+        
         // Process content on first load
         loadProcessedContent(webView: webView)
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
