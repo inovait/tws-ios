@@ -140,7 +140,7 @@ The ``TWSViewInterceptor`` protocol provides an interface for intercepting and h
 - Handle navigation natively for custom schemes, domains, or specific paths
 - Enhance user experience by seamlessly integrating native features
 
-> Note: Returning `true` from the `handleUrl(_:)` method will prevent the web view from loading the intercepted URL.
+> Note: Returning `true` from the `handleIntercept(_:)` method will prevent the web view from loading the intercepted URL.
 
 #### Usage
 
@@ -150,14 +150,28 @@ You can provide a custom implementation of this protocol and inject it into the 
 
 ```swift
 final class CustomInterceptor: TWSViewInterceptor {
-    func handleUrl(_ url: URL) -> Bool {
-        if url.host == "native.example.com" {
-            // Handle URL natively
-            print("Intercepted and handled natively: \(url)")
-            return true
+    func handleIntercept(_ intercept: handleIntercepted) -> Bool {
+        switch intercept {
+
+        // Intercepted MPA loads
+        case .url(let url):
+            if url.host == "native.example.com" {
+                // Handle URL natively
+                print("Intercepted and handled natively: \(url)")
+                return true
+            }
+            // Allow other URLs to load in the web view
+            return false
+
+        // Intercepted SPA navigation
+        case .path(let path):
+            if path == "/example" {
+                print("Intercepted and handled natively: \(path)")
+                return true
+            }
+            return false
         }
-        // Allow other URLs to load in the web view
-        return false
+        
     }
 }
 

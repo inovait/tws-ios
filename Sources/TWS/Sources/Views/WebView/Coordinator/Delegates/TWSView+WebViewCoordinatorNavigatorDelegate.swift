@@ -40,25 +40,49 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     }
     
     func pushState(path: String) {
-        webView?.evaluateJavaScript(
-            """
-            window.history.pushState({}, '', '\(path)');
-            window.dispatchEvent(new Event('popstate'));
-            """
-        )
+        webView?.navigateFromNativeOrFallback(path: path, isReplaceState: false)
     }
     
     func replaceState(path: String) {
-        webView?.evaluateJavaScript(
-            """
-            window.history.replaceState({}, null, '\(path)');
-            window.dispatchEvent(new Event('popstate'));
-            """
-        )
+        webView?.navigateFromNativeOrFallback(path: path, isReplaceState: true)
     }
     
     func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
         assert(webView != nil)
         webView?.evaluateJavaScript(script, completionHandler: completionHandler)
+    }
+}
+
+extension WKWebView {
+    func navigateFromNativeOrFallback(path: String, isReplaceState: Bool) {
+        let navigationExists = "typeof window.navigateFromNative === 'function';"
+        self.evaluateJavaScript(navigationExists) { result, err in
+            guard let result = result as? Bool else {
+                return
+            }
+            
+            if result {
+                logger.info("Navigating with navigateFromNative")
+                let navigate =
+                """
+                    navigateFromNative('\(path)', { replace: \(isReplaceState) });
+                    console.log('navigateFromNative called');
+                """
+                self.evaluateJavaScript(navigate)
+            } else {
+                let navigate = isReplaceState ? "replaceState" : "pushState"
+                logger.info("Navigating with \(navigate)")
+                
+                let fallbackNavigate =
+                """
+                    history.\(navigate)(null, '', '\(path)');
+                    window.dispatchEvent(new Event('popstate'));
+                    console.log('fallback navigation');
+                """
+                
+                self.evaluateJavaScript(fallbackNavigate)
+            }
+            
+        }
     }
 }
