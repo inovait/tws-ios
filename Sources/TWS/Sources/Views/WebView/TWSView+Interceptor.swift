@@ -27,7 +27,7 @@ import SwiftUI
 /// - Handle navigation natively for custom schemes, domains, or specific paths.
 /// - Enhance user experience by integrating native features seamlessly.
 ///
-/// > Note: Returning `true` from the `handleUrl(_:)` method will prevent the web view from loading the intercepted URL.
+/// > Note: Returning `true` from the `handleIntercept(_:)` method will prevent the web view from loading the intercepted URL.
 ///
 /// ## Usage
 ///
@@ -37,7 +37,7 @@ import SwiftUI
 ///
 /// ```swift
 /// final class CustomInterceptor: TWSViewInterceptor {
-///     func handleUrl(_ url: URL) -> Bool {
+///     func handleIntercept(_ url: TWSIntercepted) -> Bool {
 ///         if url.host == "native.example.com" {
 ///             // Handle URL natively
 ///             print("Intercepted and handled natively: \(url)")
