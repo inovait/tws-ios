@@ -26,6 +26,9 @@
                 
                 Those paths are /helloWorld which displays hello World text and /greetUser/{username} which displays a greeting for a user.
                 
+                > Note: TWSIntercepted supports two types url and path. Url branch is triggered when the page is loaded into webView, those are typically MPA web pages.
+                Meanwhile path branch is triggered on SPA pages, because there are no full loads when navigating SPA web page.
+                
                 @Code(name: "CustomView.swift", file: "CustomInterceptor_02.swift")
             }
             

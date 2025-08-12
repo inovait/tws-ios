@@ -65,7 +65,7 @@ final class SocketTests: XCTestCase {
             $0.isSocketConnected = true
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
@@ -118,7 +118,7 @@ final class SocketTests: XCTestCase {
             $0.isSocketConnected = true
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
@@ -150,7 +150,7 @@ final class SocketTests: XCTestCase {
 
         // Ask for new url,...
         await store.receive(\.business.load) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.socketURL = self.socketURL
@@ -166,7 +166,7 @@ final class SocketTests: XCTestCase {
             $0.isSocketConnected = true
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
@@ -209,7 +209,7 @@ final class SocketTests: XCTestCase {
             $0.isSocketConnected = true
         }
         await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
@@ -229,7 +229,7 @@ final class SocketTests: XCTestCase {
         // After message is received, refresh
         stream.continuation.yield(.receivedMessage(.init(id: .init(), type: .created)))
         await store.receive(\.business.load, timeout: NSEC_PER_SEC) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success, .init(listenOn: self.socketURL, snippets: [])) {
             $0.state = .loaded
@@ -266,7 +266,7 @@ final class SocketTests: XCTestCase {
         )
         
         await store.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         stream.continuation.yield(.didConnect)
@@ -291,7 +291,7 @@ final class SocketTests: XCTestCase {
         }
         
         await store.receive(\.business.load) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         await store.receive(\.business.projectLoaded.success) {
             $0.state = .loaded
@@ -326,7 +326,7 @@ final class SocketTests: XCTestCase {
         )
         
         await store.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await store.receive(\.business.projectLoaded) {

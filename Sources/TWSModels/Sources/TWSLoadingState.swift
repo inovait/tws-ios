@@ -31,7 +31,7 @@ public enum TWSLoadingState: Equatable, Sendable {
     }
 
     case idle
-    case loading
+    case loading(progress: Double)
     case loaded
     case failed(Error)
 }

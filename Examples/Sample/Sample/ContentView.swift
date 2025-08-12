@@ -59,15 +59,21 @@ class CustomInterceptor: TWSViewInterceptor {
 
     var destination: Destination?
 
-    func handleUrl(
-        _ url: URL
+    func handleIntercept(
+        _ intercept: TWSIntercepted
     ) -> Bool {
-        if let destination = Destination(rawValue: url.lastPathComponent) {
-            self.destination = destination
-            return true
-        }
+        switch intercept {
+        case .url(let url):
+            if let destination = Destination(rawValue: url.lastPathComponent) {
+                self.destination = destination
+                return true
+            }
 
-        return false
+            return false
+            
+        case .path(let path):
+            return false
+        }
     }
 }
 
@@ -88,8 +94,8 @@ extension CustomInterceptor {
 @Observable
 class DefaultInterceptor: TWSViewInterceptor {
 
-    func handleUrl(
-        _ url: URL
+    func handleIntercept(
+        _ intercept: TWSIntercepted
     ) -> Bool {
         return false
     }

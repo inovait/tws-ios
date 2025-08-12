@@ -20,15 +20,21 @@ struct CustomView: View {
 class NavigationInterceptor: TWSViewInterceptor {
     var destination: Destination?
     
-    func handleUrl(_ url: URL) -> Bool {
-        if url.absoluteString == "https://www.myWebPage.com/helloWorld" {
-            destination = .helloWorld
-            return true
-        } else if url.absoluteString.contains("https://www.myWebPage.com/greetUser/") {
-            destination = .greetUser(url.lastPathComponent)
-            return true
+    func handleIntercept(_ intercept: TWSIntercepted) -> Bool {
+        switch intercept {
+        case .url(let url):
+            if url.absoluteString == "https://www.myWebPage.com/helloWorld" {
+                destination = .helloWorld
+                return true
+            } else if url.absoluteString.contains("https://www.myWebPage.com/greetUser/") {
+                destination = .greetUser(url.lastPathComponent)
+                return true
+            }
+            return false
+            
+        default:
+            return false
         }
-        return false
     }
 }
 

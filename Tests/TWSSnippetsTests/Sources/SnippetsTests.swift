@@ -68,7 +68,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the first time
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         // Receive remote snippets
@@ -92,7 +92,7 @@ final class SnippetsTests: XCTestCase {
 
         // Send response for the second time (state must be preserved)
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) { state in
@@ -126,7 +126,7 @@ final class SnippetsTests: XCTestCase {
         // Send response for the first time
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) {
@@ -152,7 +152,7 @@ final class SnippetsTests: XCTestCase {
         }
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
         .finish()
 
@@ -190,7 +190,7 @@ final class SnippetsTests: XCTestCase {
         // Send response for the first time
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) {
@@ -216,7 +216,7 @@ final class SnippetsTests: XCTestCase {
         }
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) {
@@ -253,7 +253,7 @@ final class SnippetsTests: XCTestCase {
         // Send response for the first time
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
         .finish()
         await store.receive(\.business.projectLoaded.success) {
@@ -280,7 +280,7 @@ final class SnippetsTests: XCTestCase {
         }
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
         .finish()
 
@@ -323,7 +323,7 @@ final class SnippetsTests: XCTestCase {
         // Send response for the first time
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) {
@@ -350,7 +350,7 @@ final class SnippetsTests: XCTestCase {
         }
 
         await store.send(.business(.load)) { state in
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
         }
 
         await store.receive(\.business.projectLoaded.success) {
@@ -386,7 +386,7 @@ final class SnippetsTests: XCTestCase {
         )
         
         await store.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await store.receive(\.business.projectLoaded.success) {
@@ -480,7 +480,7 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.receive(\.business.load) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await store.receive(\.business.projectLoaded.success, timeout: NSEC_PER_SEC) {
@@ -593,7 +593,7 @@ final class SnippetsTests: XCTestCase {
             })
         
         await storeFirstLaunch.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await storeFirstLaunch.receive(\.business.projectLoaded.success) {
@@ -653,7 +653,7 @@ final class SnippetsTests: XCTestCase {
             })
         
         await storeSecondLaunch.send(\.business.load) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await storeSecondLaunch.receive(\.business.projectLoaded) {
@@ -983,7 +983,7 @@ final class SnippetsTests: XCTestCase {
         
     
         await store.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await store.receive(\.business.projectLoaded.success) {
@@ -1026,7 +1026,7 @@ final class SnippetsTests: XCTestCase {
         
     
         await store.send(.business(.load)) {
-            $0.state = .loading
+            $0.state = .loading(progress: 0.0)
         }
         
         await store.receive(\.business.projectLoaded.success) {
