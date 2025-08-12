@@ -51,7 +51,7 @@ public struct TWSSnippetsFeature: Sendable {
                 return .none
             }
 
-            state.state = .loading
+            state.state = .loading(progress: 0.0)
 
             return .run { [api] send in
                 switch configuration() {

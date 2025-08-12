@@ -26,6 +26,7 @@ extension WebView {
         var parent: WebView
         var heightObserver: NSKeyValueObservation?
         var urlObserver: NSKeyValueObservation?
+        var loadingProgress: NSKeyValueObservation?
         private var canGoBackObserver: NSKeyValueObservation?
         private var canGoForwardObserver: NSKeyValueObservation?
         var isConnectedToNetwork = true
@@ -134,6 +135,20 @@ extension WebView {
                         self.parent.updateState(for: webview)
                     }
                 }
+            }
+        }
+        
+        func observe(loadingProgressOf webview: WKWebView) {
+            loadingProgress = webview.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
+                MainActor.assumeIsolated { [weak self] in
+                    guard let self = self else { return }
+                    guard let newValue = change.newValue else { return }
+                    
+                    if case .loading(let progress) = self.parent.state.loadingState, newValue > progress {
+                        self.parent.updateState(for: webview, loadingState: .loading(progress: newValue))
+                    }
+                }
+                
             }
         }
         

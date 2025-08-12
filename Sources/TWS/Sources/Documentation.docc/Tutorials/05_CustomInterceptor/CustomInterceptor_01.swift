@@ -16,7 +16,7 @@ struct CustomView: View {
 }
 
 class NavigationInterceptor: TWSViewInterceptor {
-    func handleUrl(_ url: URL) -> Bool {
+    func handleIntercept(_ intercept: TWSIntercepted) -> Bool {
         
     }
 }

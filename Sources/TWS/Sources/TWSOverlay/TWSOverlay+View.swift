@@ -34,7 +34,7 @@ struct TWSOverlayView: View, Identifiable {
         ZStack(alignment: .topTrailing) {
             TWSView(snippet: overlayData.snippet)
                 .twsOverlay()
-                .twsBind(loadingView: { AnyView(TWSNotificationLoadingView()) } )
+                .twsBind(loadingView: { _ in AnyView(TWSNotificationLoadingView()) } )
                 .twsBind(preloadingView: { AnyView(TWSNotificationLoadingView()) })
                 .environment(\.presenter, presenter)
             
