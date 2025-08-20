@@ -170,7 +170,8 @@ let package = Package(
             dependencies: [
                 .target(name: "TWSSnippets"),
                 .target(name: "TWSLocal"),
-                .target(name: "TWSTriggers")
+                .target(name: "TWSTriggers"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Tests/TWSSnippetsTests"
         ),
@@ -191,28 +192,32 @@ let package = Package(
         .testTarget(
             name: "TWSUniversalLinksTests",
             dependencies: [
-                .target(name: "TWSUniversalLinks")
+                .target(name: "TWSUniversalLinks"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Tests/TWSUniversalLinksTests"
         ),
         .testTarget(
             name: "RouterTests",
             dependencies: [
-                .target(name: "TWSAPI")
+                .target(name: "TWSAPI"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Tests/RouterTests"
         ),
         .testTarget(
             name: "InjectionTests",
             dependencies: [
-                .target(name: "TWSCommon")
+                .target(name: "TWSCommon"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Tests/InjectionTests"
         ),
         .testTarget(
             name: "TWSNotificationsTests",
             dependencies: [
-                .target(name: "TWSNotifications")
+                .target(name: "TWSNotifications"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Tests/TWSNotificationsTests"
         )
