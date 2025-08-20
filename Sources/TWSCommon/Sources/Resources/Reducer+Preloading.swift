@@ -17,6 +17,7 @@
 import Foundation
 @_spi(Internals) import TWSModels
 import ComposableArchitecture
+import TWSCookieManager
 
 public extension Reducer {
 
@@ -82,7 +83,7 @@ public extension Reducer {
             returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { group in
             let htmlResources = allResources.filter { res in res.contentType == .html }
-            
+            await CookieManager().syncWebViewCookiesToDevice()
             return await fetchResourcesFor(htmlResources, with: headers, group: &group, using: api)
         }
         

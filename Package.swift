@@ -11,7 +11,7 @@ let package = Package(
     products: [
         .library(
             name: "TWS",
-            targets: ["TWS", "TWSNotifications"]
+            targets: ["TWS", "TWSNotifications", "TWSCookieManager"]
         )
     ],
     dependencies: [
@@ -159,8 +159,12 @@ let package = Package(
             ],
             path: "Sources/TWSTriggers"
         ),
+        .target(name: "TWSCookieManager",
+            dependencies: [
+                .target(name: "TWSLogger")
+            ],
+            path: "Sources/TWSCookieManager"),
         // Tests
-
         .testTarget(
             name: "TWSSnippetsTests",
             dependencies: [
