@@ -118,7 +118,7 @@ public struct TWSSnippetFeature: Sendable {
             state.isDownloading = true
 
             return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
-                let resources = await preloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
+                let resources = await downloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
                 await send(.business(.downloadCompleted(resources)))
             }
 

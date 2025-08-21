@@ -37,7 +37,7 @@ struct WebView: UIViewRepresentable {
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
     let snippetStore: StoreOf<TWSSnippetFeature>?
-    var preloadedResource: ResourceResponse? { snippetStore?.htmlContent }
+    var htmlContent: ResourceResponse? { snippetStore?.htmlContent }
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let displayID: String
@@ -245,10 +245,10 @@ struct WebView: UIViewRepresentable {
     }
     
     func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
-        if let preloaded = preloadedResource {
+        if let content = htmlContent {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
-            return webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
+            let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
+            return webView.loadSimulatedRequest(URLRequest(url: content.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
             var urlRequest = URLRequest(url: self.targetURL)
@@ -280,14 +280,14 @@ struct WebView: UIViewRepresentable {
         return jsLocationServices
     }
     
-    private func _handleMustacheProccesing(preloadedHTML: String, snippet: TWSSnippet) -> String {
+    private func _handleMustacheProccesing(htmlContentToProcess: String, snippet: TWSSnippet) -> String {
         if snippet.engine == .mustache {
             let mustacheRenderer = MustacheRenderer()
             let convertedProps = mustacheRenderer.convertDictPropsToData(snippet.props)
-            return mustacheRenderer.renderMustache(preloadedHTML, convertedProps, addDefaultValues: true)
+            return mustacheRenderer.renderMustache(htmlContentToProcess, convertedProps, addDefaultValues: true)
         }
         
-        return preloadedHTML
+        return htmlContentToProcess
     }
     
     func reloadWithProcessedResources(
@@ -304,7 +304,7 @@ struct WebView: UIViewRepresentable {
             }
             resourceDownloadHandler.loadNewStore(snippetStore, onSuccess: { content in
                 if let content, let initialUrl {
-                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content.data, snippet: snippetStore.snippet)
+                    let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetStore.snippet)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: initialUrl), responseHTML: htmlToLoad))
                 }
             })
@@ -328,7 +328,7 @@ struct WebView: UIViewRepresentable {
             resourceDownloadHandler.loadNewStore(store) { content in
                 if let content {
                     logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
-                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content.data, snippet: snippetToReload)
+                    let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad))
                 }
             }
@@ -337,7 +337,7 @@ struct WebView: UIViewRepresentable {
         
         if initialUrl != state.lastLoadedUrl {
             // Normal MPA reload
-            if let currentUrl = state.currentUrl, currentUrl != preloadedResource?.responseUrl {
+            if let currentUrl = state.currentUrl, currentUrl != htmlContent?.responseUrl {
                 coordinator.pullToRefresh.setNavigationRequest(navigation: webView.load(URLRequest(url: currentUrl)))
                 return
             }
@@ -351,6 +351,6 @@ extension WebView {
     }
     
     private func initialUrl() -> URL? {
-        return preloadedResource?.responseUrl
+        return htmlContent?.responseUrl
     }
 }

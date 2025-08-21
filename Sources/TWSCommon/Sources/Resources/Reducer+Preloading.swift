@@ -22,7 +22,7 @@ public extension Reducer {
 
     // MARK: - Loading resources
 
-    func preloadAndInjectResources(
+    func downloadAndInjectResources(
         for snippet: TWSSnippet,
         using api: APIDependency,
         localResources: [TWSRawDynamicResource] = []
@@ -35,7 +35,7 @@ public extension Reducer {
         
         let resources = snippet.allResources(headers: &headers, homepage: homepage)
 
-        return await _preloadAndInjectResources(
+        return await _downloadAndInjectResources(
             htmlResource: homepage,
             resources: resources,
             localResources: localResources,
@@ -44,7 +44,7 @@ public extension Reducer {
         )
     }
 
-    func preloadAndInjectResources(
+    func downloadAndInjectResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
     ) async -> ResourceResponse {
@@ -56,7 +56,7 @@ public extension Reducer {
         
         let resources = sharedSnippet.allResources(headers: &headers, homepage: homepage)
 
-        return await _preloadAndInjectResources(
+        return await _downloadAndInjectResources(
             htmlResource: homepage,
             resources: resources,
             headers: headers,
@@ -66,7 +66,7 @@ public extension Reducer {
 
     // MARK: - Helpers
 
-    private func _preloadAndInjectResources(
+    private func _downloadAndInjectResources(
         htmlResource: TWSSnippet.Attachment,
         resources: [TWSSnippet.Attachment],
         localResources: [TWSRawDynamicResource] = [],

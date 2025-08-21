@@ -510,14 +510,14 @@ final class SnippetsTests: XCTestCase {
         stream.continuation.yield(.receivedMessage(SocketMessage(id: snippets[0].id, type: .updated, snippet: .init(id: snippets[0].id, target: changedURL))))
         
         await store.receive(\.business.snippets[id: s1ID].business.snippetUpdated) {
-            // Imporatant that preloaded is reset to false when update is recieved since we can not observe if static or dynamic resources changed
+            // Imporatant that download is reset to false when update is recieved since we can not observe if static or dynamic resources changed
             $0.snippets[id: s1ID]?.contentDownloaded = false
             $0.snippets[id: s1ID]?.snippet.target = changedURL
         }
         
         await store.receive(\.business.startVisibilityTimers)
         
-        // Open the same snippet for the second time and resources have to be preloaded again
+        // Open the same snippet for the second time and resources have to be downloaded again
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
         
         await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
@@ -574,7 +574,7 @@ final class SnippetsTests: XCTestCase {
                 $0.date.now = Date()
             })
         
-        let preloadedResources = await reducer.preloadAndInjectResources(for: snippet, using: store.dependencies.api)
+        let preloadedResources = await reducer.downloadAndInjectResources(for: snippet, using: store.dependencies.api)
         
         let timestampsForTarget = TimeStampedRequests.stampedRequests[snippetUrl]!
         

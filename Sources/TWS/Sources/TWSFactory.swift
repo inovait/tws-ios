@@ -48,7 +48,6 @@ public class TWSFactory {
         _new(
             configuration: configuration,
             snippets: nil,
-            preloadedResources: nil,
             socketURL: nil
         )
     }
@@ -81,7 +80,6 @@ public class TWSFactory {
     private class func _new(
         configuration: any TWSConfiguration,
         snippets: [TWSSnippet]?,
-        preloadedResources: [TWSSnippet.Attachment: ResourceResponse]?,
         socketURL: URL?
     ) -> TWSManager {
         if let manager = _instances[configuration.id]?.box {
