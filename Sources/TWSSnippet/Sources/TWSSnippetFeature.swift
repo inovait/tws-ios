@@ -10,17 +10,17 @@ public struct TWSSnippetFeature: Sendable {
     public struct State: Equatable, Codable, Sendable {
 
         enum CodingKeys: String, CodingKey {
-            case snippet, preloaded, isPreloading, isVisible, customProps
+            case snippet, downloaded, isDownloading, isVisible, customProps
         }
 
         public var snippet: TWSSnippet
-        public var preloaded: Bool = false
+        public var contentDownloaded: Bool = false
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
         public var htmlContent: ResourceResponse = .init(responseUrl: nil, data: "")
 
-        var isPreloading = false
+        var isDownloading = false
 
         public init(
             snippet: TWSSnippet
@@ -36,9 +36,9 @@ public struct TWSSnippetFeature: Sendable {
             snippet = try container.decode(TWSSnippet.self, forKey: .snippet)
 
             // MARK: - Non-persistent properties - Reset on init
-            preloaded = false
+            contentDownloaded = false
             isVisible = true
-            isPreloading = false
+            isDownloading = false
             localProps = .dictionary([:])
             localDynamicResources = []
         }
@@ -46,8 +46,8 @@ public struct TWSSnippetFeature: Sendable {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(snippet, forKey: .snippet)
-            try container.encode(preloaded, forKey: .preloaded)
-            try container.encode(isPreloading, forKey: .isPreloading)
+            try container.encode(contentDownloaded, forKey: .downloaded)
+            try container.encode(isDownloading, forKey: .isDownloading)
             try container.encode(isVisible, forKey: .isVisible)
             try container.encode(localProps, forKey: .customProps)
         }
@@ -60,8 +60,8 @@ public struct TWSSnippetFeature: Sendable {
             case snippetUpdated(snippet: TWSSnippet)
             case showSnippet
             case hideSnippet
-            case preload
-            case preloadCompleted([TWSSnippet.Attachment: ResourceResponse])
+            case downloadContent
+            case downloadCompleted(ResourceResponse)
             case setLocalDynamicResources([TWSRawDynamicResource])
         }
         
@@ -87,11 +87,11 @@ public struct TWSSnippetFeature: Sendable {
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .view(.openedTWSView):
-            return .send(.business(.preload))
+            return .send(.business(.downloadContent))
                 
         case let .business(.snippetUpdated(snippet)):
             state.snippet = snippet
-            state.preloaded = false
+            state.contentDownloaded = false
             state.isVisible = true
             if snippet != state.snippet {
                 logger.info("Snippet updated from \(state.snippet) to \(snippet).")
@@ -113,19 +113,19 @@ public struct TWSSnippetFeature: Sendable {
             state.localDynamicResources = dynamicResources
             return .none
             
-        case .business(.preload):
-            guard !state.isPreloading else { return .none }
-            state.isPreloading = true
+        case .business(.downloadContent):
+            guard !state.isDownloading else { return .none }
+            state.isDownloading = true
 
             return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
                 let resources = await preloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
-                await send(.business(.preloadCompleted(resources)))
+                await send(.business(.downloadCompleted(resources)))
             }
 
-        case let .business(.preloadCompleted(resources)):
-            state.preloaded = true
-            state.isPreloading = false
-            state.htmlContent = resources[TWSSnippet.Attachment(url: state.snippet.target, contentType: .html)] ?? .init(responseUrl: nil, data: "")
+        case let .business(.downloadCompleted(resources)):
+            state.contentDownloaded = true
+            state.isDownloading = false
+            state.htmlContent = resources
             
             return .none
 

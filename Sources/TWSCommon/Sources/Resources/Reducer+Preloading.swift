@@ -26,12 +26,17 @@ public extension Reducer {
         for snippet: TWSSnippet,
         using api: APIDependency,
         localResources: [TWSRawDynamicResource] = []
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+    ) async -> ResourceResponse {
         var headers = [TWSSnippet.Attachment: [String: String]]()
+        let homepage = TWSSnippet.Attachment(
+            url: snippet.target,
+            contentType: .html
+        )
         
-        let resources = snippet.allResources(headers: &headers)
+        let resources = snippet.allResources(headers: &headers, homepage: homepage)
 
         return await _preloadAndInjectResources(
+            htmlResource: homepage,
             resources: resources,
             localResources: localResources,
             headers: headers,
@@ -40,27 +45,19 @@ public extension Reducer {
     }
 
     func preloadAndInjectResources(
-        for project: TWSProject,
-        using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
-        var headers = [TWSSnippet.Attachment: [String: String]]()
-        let resources = project.allResources(headers: &headers)
-
-        return await _preloadAndInjectResources(
-            resources: resources,
-            headers: headers,
-            using: api
-        )
-    }
-
-    func preloadAndInjectResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+    ) async -> ResourceResponse {
         var headers = [TWSSnippet.Attachment: [String: String]]()
-        let resources = sharedSnippet.allResources(headers: &headers)
+        let homepage = TWSSnippet.Attachment.init(
+            url: sharedSnippet.snippet.target,
+            contentType: .html
+        )
+        
+        let resources = sharedSnippet.allResources(headers: &headers, homepage: homepage)
 
         return await _preloadAndInjectResources(
+            htmlResource: homepage,
             resources: resources,
             headers: headers,
             using: api
@@ -70,38 +67,34 @@ public extension Reducer {
     // MARK: - Helpers
 
     private func _preloadAndInjectResources(
+        htmlResource: TWSSnippet.Attachment,
         resources: [TWSSnippet.Attachment],
         localResources: [TWSRawDynamicResource] = [],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
-        let allResources = Set(resources)
+    ) async -> ResourceResponse {
         // Create two taskGroups to ensure html is fetched first, and sets the cookies, before other resources are fetched
-        var htmlResources = await withTaskGroup(
-            of: (TWSSnippet.Attachment, ResourceResponse)?.self,
-            returning: [TWSSnippet.Attachment: ResourceResponse].self
-        ) { group in
-            let htmlResources = allResources.filter { res in res.contentType == .html }
-            
-            return await fetchResourcesFor(htmlResources, with: headers, group: &group, using: api)
-        }
+    
+        let htmlResource = await Task {
+            do {
+                return try await api.getResource(htmlResource, headers[htmlResource] ?? [:])
+            } catch {
+                return .init(responseUrl: nil, data: "")
+            }
+        }.value
         
         let otherResources = await withTaskGroup(
             of: (TWSSnippet.Attachment, ResourceResponse)?.self,
             returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { group in
-            let otherResources = allResources.filter { res in res.contentType != .html }
-            return await fetchResourcesFor(otherResources, with: headers, group: &group, using: api)
+            return await fetchResourcesFor(Set(resources), with: headers, group: &group, using: api)
         }
+
+        var htmlContent = htmlResource.data
+        injectResources(into: &htmlContent, resources: otherResources)
+        injectLocalResource(into: &htmlContent, resources: localResources)
         
-        htmlResources = htmlResources.mapValues { value in
-            var modifiedData = value.data
-            injectResources(into: &modifiedData, resources: otherResources)
-            injectLocalResource(into: &modifiedData, resources: localResources)
-            return ResourceResponse(responseUrl: value.responseUrl, data: modifiedData)
-        }
-        
-        return htmlResources
+        return .init(responseUrl: htmlResource.responseUrl, data: htmlContent)
     }
     
     private func injectResources(into html: inout String, resources: [TWSSnippet.Attachment: ResourceResponse]) {

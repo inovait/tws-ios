@@ -365,12 +365,4 @@ public struct TWSSnippetsFeature: Sendable {
             return .none
         }
     }
-
-    // MARK: - Helpers
-
-    private func _getResources(of project: TWSProject) -> Set<TWSSnippet.Attachment> {
-        var headers = [TWSSnippet.Attachment: [String: String]]()
-        let newResources = project.allResources(headers: &headers)
-        return Set(newResources)
-    }
 }

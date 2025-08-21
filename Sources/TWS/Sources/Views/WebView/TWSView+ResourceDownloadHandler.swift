@@ -44,6 +44,6 @@ class ResourceDownloadHandler {
             }
             .store(in: &cancellables)
         
-        store.send(.business(.preload))
+        store.send(.business(.downloadContent))
     }
 }

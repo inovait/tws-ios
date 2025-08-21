@@ -64,7 +64,7 @@ public struct TWSView: View {
         
         return ZStack {
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
-                if let store = store, store.preloaded == false && !overrideVisibilty {
+                if let store = store, store.contentDownloaded == false && !overrideVisibilty {
                     preloadingView()
                         .onAppear {
                             store.send(.view(.openedTWSView))
