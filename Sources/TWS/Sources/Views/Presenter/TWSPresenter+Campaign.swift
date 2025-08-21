@@ -46,10 +46,6 @@ class CampaignPresenter: TWSPresenter {
         manager?.store.snippets.campaignSnippets[id: snippet.id]?.isVisible ?? false
     }
     
-    func resourceHash(for snippet: TWSSnippet) -> Int {
-        _resourcesHash(resources: store(forSnippetID: snippet.id)?.htmlContent, of: snippet)
-    }
-    
     func handleIncomingUrl(_ url: URL) {
         manager?.handleIncomingUrl(url)
     }
@@ -59,16 +55,5 @@ class CampaignPresenter: TWSPresenter {
             state: \.snippets.campaignSnippets[id: id],
             action: \.snippets.business.campaignSnippets[id: id]
         )
-    }
-    
-    // MARK: - Helper methods
-
-    private func _resourcesHash(
-        resources: ResourceResponse?,
-        of snippet: TWSSnippet
-    ) -> Int {
-        var hasher = Hasher()
-        hasher.combine(resources)
-        return hasher.finalize()
     }
 }

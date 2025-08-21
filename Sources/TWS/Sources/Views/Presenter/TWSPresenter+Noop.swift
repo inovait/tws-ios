@@ -34,23 +34,11 @@ class NoopPresenter: TWSPresenter {
     }
     
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
-    func resourceHash(for snippet: TWSSnippet) -> Int {
-        hashResources(resources: store(forSnippetID: snippet.id)?.htmlContent, snippet: snippet)
-    }
     
     func handleIncomingUrl(_ url: URL) { }
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
     
     func saveLocalSnippet(_ snippet: TWSSnippet) {
         TWSLocalSnippetsManager.saveLocalSnippet(snippet)
-    }
-    
-    private func hashResources(
-        resources: ResourceResponse?,
-        snippet: TWSSnippet
-    ) -> Int {
-        var hasher = Hasher()
-        hasher.combine(resources)
-        return hasher.finalize()
     }
 }

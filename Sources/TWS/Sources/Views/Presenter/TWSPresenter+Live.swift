@@ -47,10 +47,6 @@ class LivePresenter: TWSPresenter {
         manager?.store.snippets.snippets[id: snippet.id]?.isVisible ?? false
     }
 
-    func resourceHash(for snippet: TWSSnippet) -> Int {
-        _resourcesHash(resources: store(forSnippetID: snippet.id)?.htmlContent, of: snippet)
-    }
-
     func handleIncomingUrl(_ url: URL) {
         manager?.handleIncomingUrl(url)
     }
@@ -60,16 +56,5 @@ class LivePresenter: TWSPresenter {
             state: \.snippets.snippets[id: id],
             action: \.snippets.business.snippets[id: id]
         )
-    }
-
-    // MARK: - Helper methods
-
-    private func _resourcesHash(
-        resources: ResourceResponse?,
-        of snippet: TWSSnippet
-    ) -> Int {
-        var hasher = Hasher()
-        hasher.combine(resources)
-        return hasher.finalize()
     }
 }

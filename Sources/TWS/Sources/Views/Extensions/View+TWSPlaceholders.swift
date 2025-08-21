@@ -107,12 +107,12 @@ extension EnvironmentValues {
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var loadingView: @Sendable @MainActor (Double?) -> AnyView = { progress in
-        AnyView(_LoadingView(loadingProgress: progress))
+        AnyView(_LoadingView())
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var preloadingView: @Sendable @MainActor () -> AnyView = {
-        AnyView(_LoadingView(loadingProgress: 0.0))
+        AnyView(_LoadingView())
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
@@ -135,7 +135,6 @@ extension EnvironmentValues {
 }
 
 private struct _LoadingView: View {
-    var loadingProgress: Double?
 
     var body: some View {
         HStack {

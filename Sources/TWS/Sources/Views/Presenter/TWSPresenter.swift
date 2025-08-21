@@ -26,7 +26,6 @@ protocol TWSPresenter {
 
     func preloadedResource(forSnippetID id: String) -> ResourceResponse?
     func isVisible(snippet: TWSSnippet) -> Bool
-    func resourceHash(for snippet: TWSSnippet) -> Int
     func handleIncomingUrl(_ url: URL)
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?
 }
