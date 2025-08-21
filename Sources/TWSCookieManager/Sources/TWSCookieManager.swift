@@ -27,7 +27,7 @@ import WebKit
 ///
 /// All methods are executed on the `@MainActor` to ensure thread safety with UI-related components.
 @MainActor
-public class CookieManager {
+public class TWSCookieManager {
     public init() {}
     
     /// Synchronizes cookies from the device's `HTTPCookieStorage` to the WebView's cookie store.
