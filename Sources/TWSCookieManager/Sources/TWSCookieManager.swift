@@ -31,24 +31,20 @@ import TWSLogger
 public class TWSCookieManager {
     private let deviceStorage: HTTPCookieStorage
     private let webViewStore: WKWebsiteDataStore
-    private let cookieLogger: TWSLog
     
     public convenience init() {
         self.init(
             deviceStorage: HTTPCookieStorage.shared,
-            webViewStore: WKWebsiteDataStore.default(),
-            cookieLogger: logger
+            webViewStore: WKWebsiteDataStore.default()
         )
     }
     
     internal init(
         deviceStorage: HTTPCookieStorage,
-        webViewStore: WKWebsiteDataStore,
-        cookieLogger: TWSLog? = logger
+        webViewStore: WKWebsiteDataStore
     ) {
         self.deviceStorage = deviceStorage
         self.webViewStore = webViewStore
-        self.cookieLogger = logger
     }
     
     /// Synchronizes cookies from the device's `HTTPCookieStorage` to the WebView's cookie store.
