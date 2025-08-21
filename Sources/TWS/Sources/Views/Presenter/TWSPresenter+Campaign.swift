@@ -26,10 +26,6 @@ class CampaignPresenter: TWSPresenter {
         self.manager = manager
     }
     
-    var preloadedResources: [TWSSnippet.Attachment : ResourceResponse] {
-        manager?.store.snippets.preloadedCampaignResources ?? [:]
-    }
-    
     var navigationProvider: any NavigationProvider {
         guard let navigationProvider = manager?.navigationProvider
         else { preconditionFailure("Manager is nil at the time of navigation provider access.") }
@@ -42,12 +38,16 @@ class CampaignPresenter: TWSPresenter {
         return snippetHeightProvider
     }
     
+    func preloadedResource(forSnippetID id: String) -> ResourceResponse? {
+        store(forSnippetID: id)?.htmlContent
+    }
+    
     func isVisible(snippet: TWSSnippet) -> Bool {
         manager?.store.snippets.campaignSnippets[id: snippet.id]?.isVisible ?? false
     }
     
-    func resourcesHash(for snippet: TWSSnippet) -> Int {
-        _resourcesHash(resources: manager?.store.snippets.preloadedCampaignResources, of: snippet)
+    func resourceHash(for snippet: TWSSnippet) -> Int {
+        _resourcesHash(resources: store(forSnippetID: snippet.id)?.htmlContent, of: snippet)
     }
     
     func handleIncomingUrl(_ url: URL) {
@@ -64,12 +64,11 @@ class CampaignPresenter: TWSPresenter {
     // MARK: - Helper methods
 
     private func _resourcesHash(
-        resources: [TWSSnippet.Attachment: ResourceResponse]?,
+        resources: ResourceResponse?,
         of snippet: TWSSnippet
     ) -> Int {
-        let resources = resources ?? [:]
         var hasher = Hasher()
-        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]?.data) }
+        hasher.combine(resources)
         return hasher.finalize()
     }
 }

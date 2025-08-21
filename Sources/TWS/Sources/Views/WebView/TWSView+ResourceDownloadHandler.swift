@@ -18,17 +18,18 @@ import Foundation
 import Combine
 internal import ComposableArchitecture
 internal import TWSSnippet
+import TWSModels
 
 // periphery:ignore
 @MainActor
 class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
     private var cancellables = Set<AnyCancellable>()
-    private var onSuccess: ((String?) -> Void)? = nil
+    private var onSuccess: ((ResourceResponse?) -> Void)? = nil
     
     init() {}
     
-    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (String?) -> Void) {
+    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (ResourceResponse?) -> Void) {
         self.store = store
         self.onSuccess = onSuccess
         cancellables.removeAll()
@@ -37,7 +38,9 @@ class ResourceDownloadHandler {
             .map { $0.htmlContent }
             .removeDuplicates()
             .sink { [weak self] content in
-                onSuccess(content)
+                if content.responseUrl != nil && !content.data.isEmpty {
+                    onSuccess(content)
+                }
             }
             .store(in: &cancellables)
         

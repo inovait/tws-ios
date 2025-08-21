@@ -35,15 +35,6 @@ extension TWSSnippetsFeature {
         #endif
         public internal(set) var campaignSnippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         
-        public internal(set) var preloadedCampaignResources: [TWSSnippet.Attachment: ResourceResponse]
-        #if TESTING
-        public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
-        #else
-        @ObservationStateIgnored
-
-        @Sharing.Shared public internal(set) var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
-        #endif
-        
         @ObservationStateIgnored
         @Sharing.Shared public internal(set) var snippetDates: [TWSSnippet.ID: SnippetDateInfo]
         public internal(set) var socketURL: URL?
@@ -55,21 +46,17 @@ extension TWSSnippetsFeature {
         public init(
             configuration: any TWSConfiguration,
             snippets: [TWSSnippet]? = nil,
-            preloadedResources: [TWSSnippet.Attachment: ResourceResponse]? = nil,
             socketURL: URL? = nil,
             serverTime: Date? = nil
         ) {
             self.campaignSnippets = .init()
-            self.preloadedCampaignResources = [:]
             #if TESTING
             // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             self.snippets = .init(
                 uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
-            self.preloadedResources = preloadedResources ?? [:]
             #else
             _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            _preloadedResources = Shared(wrappedValue: [:], .resources(for: configuration))
             #endif
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
@@ -96,14 +83,6 @@ extension TWSSnippetsFeature {
 
             if let socketURL {
                 self.socketURL = socketURL
-            }
-
-            if let preloadedResources {
-                #if TESTING
-                self.preloadedResources = preloadedResources
-                #else
-                self.$preloadedResources.withLock { $0 = preloadedResources }
-                #endif
             }
         }
     }

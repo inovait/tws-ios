@@ -36,7 +36,8 @@ struct WebView: UIViewRepresentable {
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
-    let preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
+    let snippetStore: StoreOf<TWSSnippetFeature>?
+    var preloadedResource: ResourceResponse? { snippetStore?.htmlContent }
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let displayID: String
@@ -52,7 +53,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
-        preloadedResources: [TWSSnippet.Attachment: ResourceResponse],
+        snippetStore: StoreOf<TWSSnippetFeature>?,
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         displayID: String,
@@ -69,7 +70,7 @@ struct WebView: UIViewRepresentable {
         enablePullToRefresh: Bool
     ) {
         self.snippet = snippet
-        self.preloadedResources = preloadedResources
+        self.snippetStore = snippetStore
         self.locationServicesBridge = locationServicesBridge
         self.cameraMicrophoneServicesBridge = cameraMicrophoneServicesBridge
         self.displayID = displayID
@@ -244,9 +245,7 @@ struct WebView: UIViewRepresentable {
     }
     
     func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
-        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
-        
-        if let preloaded = preloadedResources[key] {
+        if let preloaded = preloadedResource {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(preloadedHTML: preloaded.data, snippet: snippet)
             return webView.loadSimulatedRequest(URLRequest(url: preloaded.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
@@ -295,14 +294,20 @@ struct WebView: UIViewRepresentable {
         webView: WKWebView,
         coordinator: Coordinator
     ) {
-        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
-        let resource = preloadedResources[key]
-        
         let initialUrl = initialUrl()
         
         if initialUrl == state.currentUrl {
             // Reload on initial page
-            coordinator.pullToRefresh.setNavigationRequest(navigation: loadProcessedContent(webView: webView))
+            guard let snippetStore else {
+                coordinator.pullToRefresh.setNavigationRequest(navigation: loadProcessedContent(webView: webView))
+                return
+            }
+            resourceDownloadHandler.loadNewStore(snippetStore, onSuccess: { content in
+                if let content, let initialUrl {
+                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content.data, snippet: snippetStore.snippet)
+                    coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: initialUrl), responseHTML: htmlToLoad))
+                }
+            })
             return
         }
         
@@ -323,7 +328,7 @@ struct WebView: UIViewRepresentable {
             resourceDownloadHandler.loadNewStore(store) { content in
                 if let content {
                     logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
-                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content, snippet: snippetToReload)
+                    let htmlToLoad = _handleMustacheProccesing(preloadedHTML: content.data, snippet: snippetToReload)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad))
                 }
             }
@@ -332,7 +337,7 @@ struct WebView: UIViewRepresentable {
         
         if initialUrl != state.lastLoadedUrl {
             // Normal MPA reload
-            if let currentUrl = state.currentUrl, currentUrl != resource?.responseUrl {
+            if let currentUrl = state.currentUrl, currentUrl != preloadedResource?.responseUrl {
                 coordinator.pullToRefresh.setNavigationRequest(navigation: webView.load(URLRequest(url: currentUrl)))
                 return
             }
@@ -346,7 +351,6 @@ extension WebView {
     }
     
     private func initialUrl() -> URL? {
-        let key = TWSSnippet.Attachment(url: targetURL, contentType: .html)
-        return preloadedResources[key]?.responseUrl
+        return preloadedResource?.responseUrl
     }
 }

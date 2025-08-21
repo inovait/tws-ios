@@ -147,18 +147,6 @@ public struct TWSSnippetsFeature: Sendable {
                 state.shouldTriggerSdkInitCampaign = false
             }
 
-            // Remove old attachments
-            let currentResources = Set(state.preloadedResources.keys)
-            let newResources = _getResources(of: project.project)
-            for resource in currentResources.subtracting(newResources) {
-                #if TESTING
-                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-                state.preloadedResources.removeValue(forKey: resource)
-                #else
-                state.$preloadedResources.withLock { _ = $0.removeValue(forKey: resource) }
-                #endif
-            }
-
             effects.append(.send(.business(.startVisibilityTimers(snippets))))
 
             // Update current or add new
@@ -328,25 +316,11 @@ public struct TWSSnippetsFeature: Sendable {
 
         case let .snippets(.element(_, action: .delegate(delegateAction))):
             switch delegateAction {
-            case let .resourcesUpdated(resources):
-                resources.forEach { resource in
-                    #if TESTING
-                    state.preloadedResources[resource.key] = resource.value
-                    #else
-                    state.$preloadedResources[resource.key].withLock { $0 = resource.value }
-                    #endif
-                }
-                return .none
             case .openOverlay(let snippet):
                 return .none
             }
         case let .campaignSnippets(.element(_, action: .delegate(delegateAction))):
             switch delegateAction {
-            case .resourcesUpdated(let resources):
-                resources.forEach { resource in
-                    state.preloadedCampaignResources[resource.key] = resource.value
-                }
-                return .none
             case .openOverlay(_):
                 return .none
             }

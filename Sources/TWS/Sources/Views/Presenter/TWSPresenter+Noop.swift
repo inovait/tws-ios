@@ -26,21 +26,31 @@ class NoopPresenter: TWSPresenter {
     private let _navigationProvider = NavigationProviderImpl()
 
     // MARK: - Confirming to `TWSPresenter`
-
-    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] { TWSLocalSnippetsManager.getPreloadedResources() }
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
 
-    func isVisible(snippet _: TWSSnippet) -> Bool { true }
-    func resourcesHash(for snippet: TWSSnippet) -> Int {
-        var hasher = Hasher()
-        TWSLocalSnippetsManager.getPreloadedResources().forEach { asset in hasher.combine(asset.value) }
-        return hasher.finalize()
+    func preloadedResource(forSnippetID id: String) -> ResourceResponse? {
+        store(forSnippetID: id)?.htmlContent
     }
+    
+    func isVisible(snippet _: TWSSnippet) -> Bool { true }
+    func resourceHash(for snippet: TWSSnippet) -> Int {
+        hashResources(resources: store(forSnippetID: snippet.id)?.htmlContent, snippet: snippet)
+    }
+    
     func handleIncomingUrl(_ url: URL) { }
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
     
     func saveLocalSnippet(_ snippet: TWSSnippet) {
         TWSLocalSnippetsManager.saveLocalSnippet(snippet)
+    }
+    
+    private func hashResources(
+        resources: ResourceResponse?,
+        snippet: TWSSnippet
+    ) -> Int {
+        var hasher = Hasher()
+        hasher.combine(resources)
+        return hasher.finalize()
     }
 }

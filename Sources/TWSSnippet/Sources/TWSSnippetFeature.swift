@@ -18,7 +18,7 @@ public struct TWSSnippetFeature: Sendable {
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
-        public var htmlContent: String? = nil
+        public var htmlContent: ResourceResponse = .init(responseUrl: nil, data: "")
 
         var isPreloading = false
 
@@ -72,7 +72,6 @@ public struct TWSSnippetFeature: Sendable {
 
         @CasePathable
         public enum Delegate {
-            case resourcesUpdated([TWSSnippet.Attachment: ResourceResponse])
             case openOverlay(TWSSnippet)
         }
 
@@ -126,9 +125,9 @@ public struct TWSSnippetFeature: Sendable {
         case let .business(.preloadCompleted(resources)):
             state.preloaded = true
             state.isPreloading = false
-            state.htmlContent = resources[TWSSnippet.Attachment(url: state.snippet.target, contentType: .html)]?.data
+            state.htmlContent = resources[TWSSnippet.Attachment(url: state.snippet.target, contentType: .html)] ?? .init(responseUrl: nil, data: "")
             
-            return .send(.delegate(.resourcesUpdated(resources)))
+            return .none
 
         case .delegate:
             return .none

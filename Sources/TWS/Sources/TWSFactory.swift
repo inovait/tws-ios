@@ -94,7 +94,6 @@ public class TWSFactory {
             snippets: .init(
                 configuration: configuration,
                 snippets: snippets,
-                preloadedResources: preloadedResources,
                 socketURL: socketURL
             ),
             universalLinks: .init()
@@ -103,11 +102,6 @@ public class TWSFactory {
         let storage = state.snippets.snippets.map(\.snippet)
         logger.info(
             "\(storage.count) \(storage.count == 1 ? "snippet" : "snippets") loaded from disk"
-        )
-
-        let resourcesCount = state.snippets.preloadedResources.count
-        logger.info(
-            "\(resourcesCount) \(resourcesCount == 1 ? "resource" : "resources")"
         )
 
         let publisher = PassthroughSubject<TWSStreamEvent, Never>()

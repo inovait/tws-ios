@@ -84,10 +84,6 @@ public struct TWSView: View {
                         .id(snippet.engine)
                         // Snippet properties have updated, mustache has to be reprocessed
                         .id(snippet.props)
-                        // The payload of dynamic resources can change
-                        .id(presenter.resourcesHash(for: snippet))
-                        // The HTML payload can change
-                        .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
                         // Only for default location provider; starting on appear/foreground; stopping on disappear/background
                         .conditionallyActivateDefaultLocationBehavior(
                             locationServicesBridge: locationServicesBridge,
@@ -158,7 +154,7 @@ private struct _TWSView: View {
         @Bindable var navigator = navigator
         WebView(
             snippet: snippet,
-            preloadedResources: presenter.preloadedResources,
+            snippetStore: presenter.store(forSnippetID: snippet.id),
             locationServicesBridge: locationServiceBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
             displayID: displayID,
