@@ -24,7 +24,6 @@ protocol TWSPresenter {
     var navigationProvider: NavigationProvider { get }
     var heightProvider: SnippetHeightProvider { get }
 
-    func preloadedResource(forSnippetID id: String) -> ResourceResponse?
     func isVisible(snippet: TWSSnippet) -> Bool
     func handleIncomingUrl(_ url: URL)
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?

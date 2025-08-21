@@ -28,10 +28,6 @@ class NoopPresenter: TWSPresenter {
     // MARK: - Confirming to `TWSPresenter`
     var heightProvider: SnippetHeightProvider { _heightProvider }
     var navigationProvider: NavigationProvider { _navigationProvider }
-
-    func preloadedResource(forSnippetID id: String) -> ResourceResponse? {
-        store(forSnippetID: id)?.htmlContent
-    }
     
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
     

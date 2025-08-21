@@ -39,10 +39,7 @@ class LivePresenter: TWSPresenter {
         else { preconditionFailure("Manager is nil at the time of height provider access.") }
         return snippetHeightProvider
     }
-
-    func preloadedResource(forSnippetID id: String) -> ResourceResponse? {
-        store(forSnippetID: id)?.htmlContent
-    }
+    
     func isVisible(snippet: TWSSnippet) -> Bool {
         manager?.store.snippets.snippets[id: snippet.id]?.isVisible ?? false
     }

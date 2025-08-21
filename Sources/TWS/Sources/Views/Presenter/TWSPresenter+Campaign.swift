@@ -38,10 +38,6 @@ class CampaignPresenter: TWSPresenter {
         return snippetHeightProvider
     }
     
-    func preloadedResource(forSnippetID id: String) -> ResourceResponse? {
-        store(forSnippetID: id)?.htmlContent
-    }
-    
     func isVisible(snippet: TWSSnippet) -> Bool {
         manager?.store.snippets.campaignSnippets[id: snippet.id]?.isVisible ?? false
     }
