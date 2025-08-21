@@ -17,6 +17,7 @@
 
 import Foundation
 import WebKit
+import TWSLogger
 
 /// A manager class responsible for synchronizing and inspecting cookies
 /// between the native `HTTPCookieStorage` and `WKWebView`'s `WKHTTPCookieStore`.
@@ -28,12 +29,32 @@ import WebKit
 /// All methods are executed on the `@MainActor` to ensure thread safety with UI-related components.
 @MainActor
 public class TWSCookieManager {
-    public init() {}
+    private let deviceStorage: HTTPCookieStorage
+    private let webViewStore: WKWebsiteDataStore
+    private let cookieLogger: TWSLog
+    
+    public convenience init() {
+        self.init(
+            deviceStorage: HTTPCookieStorage.shared,
+            webViewStore: WKWebsiteDataStore.default(),
+            cookieLogger: logger
+        )
+    }
+    
+    internal init(
+        deviceStorage: HTTPCookieStorage,
+        webViewStore: WKWebsiteDataStore,
+        cookieLogger: TWSLog? = logger
+    ) {
+        self.deviceStorage = deviceStorage
+        self.webViewStore = webViewStore
+        self.cookieLogger = logger
+    }
     
     /// Synchronizes cookies from the device's `HTTPCookieStorage` to the WebView's cookie store.
     public func syncDeviceCookiesToWebView() async {
-        let deviceCookies = HTTPCookieStorage.shared.cookies ?? []
-        let cookieStore = WKWebsiteDataStore.default().httpCookieStore
+        let deviceCookies = deviceStorage.cookies ?? []
+        let cookieStore = webViewStore.httpCookieStore
         let webViewCookies = await cookieStore.allCookies()
         
         for deviceCookie in deviceCookies {
@@ -53,25 +74,24 @@ public class TWSCookieManager {
 
     /// Synchronizes cookies from the WebView's `WKHTTPCookieStore` to the device's `HTTPCookieStorage`.
     public func syncWebViewCookiesToDevice() async {
-        _ = await WKWebsiteDataStore.default().dataRecords(ofTypes: [WKWebsiteDataTypeCookies])
+        _ = await webViewStore.dataRecords(ofTypes: [WKWebsiteDataTypeCookies])
         
-        let deviceCookies = HTTPCookieStorage.shared.cookies ?? []
-        let cookieStore = WKWebsiteDataStore.default().httpCookieStore
+        let deviceCookies = deviceStorage.cookies ?? []
+        let cookieStore = webViewStore.httpCookieStore
         
         let webViewCookies = await cookieStore.allCookies()
         
-        print("[svenk] number of cookies in webview: \(webViewCookies.count)")
         // Insert or update cookies from WebView to device storage
         for webViewCookie in webViewCookies {
             if !deviceCookies.contains(where: { $0.name == webViewCookie.name && $0.domain == webViewCookie.domain }) {
-                HTTPCookieStorage.shared.setCookie(webViewCookie)
+                deviceStorage.setCookie(webViewCookie)
             }
         }
         
         // Delete cookies from device storage that are no longer in WebView
         for deviceCookie in deviceCookies {
             if !webViewCookies.contains(where: { $0.name == deviceCookie.name && $0.domain == deviceCookie.domain }) {
-                HTTPCookieStorage.shared.deleteCookie(deviceCookie)
+                deviceStorage.deleteCookie(deviceCookie)
             }
         }
         
@@ -84,26 +104,32 @@ public class TWSCookieManager {
     /// Prints all cookies currently stored in the WebView's `WKHTTPCookieStore`.
     public func printWebViewCookies() async {
         logger.debug("[CookieManager] WebView Cookies:")
-        await WKWebsiteDataStore.default().httpCookieStore.allCookies().forEach { cookie in
-            print(cookie)
+        await webViewStore.httpCookieStore.allCookies().forEach { cookie in
+            logger.debug("\(cookie)")
         }
     }
     
     /// Prints all cookies currently stored in the device's `HTTPCookieStorage`.
     public func printHTTPCookies() {
         logger.debug("[CookieManager] HTTPCookies:")
-        HTTPCookieStorage.shared.cookies?.forEach { print($0) }
+        HTTPCookieStorage.shared.cookies?.forEach { logger.debug("\($0)") }
     }
     
     /// Prints a detailed comparison between device cookies and WebView cookies.
     public func printCookieDiff() async {
-        let deviceCookies = HTTPCookieStorage.shared.cookies ?? []
+        let deviceCookies = deviceStorage.cookies ?? []
 
-        let webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
+        let webViewCookies = await webViewStore.httpCookieStore.allCookies()
         
         // Convert to dictionaries for easier comparison
-        let deviceDict = Dictionary(uniqueKeysWithValues: deviceCookies.map { ($0.name, $0.value) })
-        let webViewDict = Dictionary(uniqueKeysWithValues: webViewCookies.map { ($0.name, $0.value) })
+        let deviceDict = Dictionary(uniqueKeysWithValues: deviceCookies.map {
+            let key = "\($0.name)-\($0.domain)-\($0.path)"
+            return (key, $0.value)
+        })
+        let webViewDict = Dictionary(uniqueKeysWithValues: webViewCookies.map {
+            let key = "\($0.name)-\($0.domain)-\($0.path)"
+            return (key, $0.value)
+        })
 
         // Find cookies in device but not in webview
         let onlyInDevice = deviceDict.filter { webViewDict[$0.key] == nil }

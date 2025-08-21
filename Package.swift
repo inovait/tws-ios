@@ -220,6 +220,14 @@ let package = Package(
                 .target(name: "TWSCookieManager")
             ],
             path: "Tests/TWSNotificationsTests"
+        ),
+        .testTarget(
+            name: "TWSCookieManagerTests",
+            dependencies: [
+                .target(name: "TWSCookieManager"),
+                .target(name: "TWSLogger")
+            ],
+            path: "Tests/TWSCookieManagerTests"
         )
     ]
 )
