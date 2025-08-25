@@ -36,7 +36,7 @@ ZStack {
 
 ### 1.2 Preloading View
 
-Use ``SwiftUICore/View/twsBind(preloadingView:)`` to replace the view that is shown while the HTML resources are being preloaded before being displayed in the web view.
+Use ``SwiftUICore/View/twsBind(preloadingView:)`` to replace the view that is shown while the HTML resources are being downloaded before being displayed in the web view.
 
 > Note: For most use cases, it is recommended to keep `loadingView` and `preloadingView` in sync to ensure a consistent user experience.
 >

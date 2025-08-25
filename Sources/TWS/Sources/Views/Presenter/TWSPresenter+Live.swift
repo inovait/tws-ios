@@ -28,11 +28,6 @@ class LivePresenter: TWSPresenter {
     }
 
     // MARK: - Confirming to `TWSPresenter`
-
-    var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] {
-        manager?.store.snippets.preloadedResources ?? [:]
-    }
-
     var navigationProvider: any NavigationProvider {
         guard let navigationProvider = manager?.navigationProvider
         else { preconditionFailure("Manager is nil at the time of navigation provider access.") }
@@ -44,15 +39,9 @@ class LivePresenter: TWSPresenter {
         else { preconditionFailure("Manager is nil at the time of height provider access.") }
         return snippetHeightProvider
     }
-
-    //
-
+    
     func isVisible(snippet: TWSSnippet) -> Bool {
         manager?.store.snippets.snippets[id: snippet.id]?.isVisible ?? false
-    }
-
-    func resourcesHash(for snippet: TWSSnippet) -> Int {
-        _resourcesHash(resources: manager?.store.snippets.preloadedResources, of: snippet)
     }
 
     func handleIncomingUrl(_ url: URL) {
@@ -64,17 +53,5 @@ class LivePresenter: TWSPresenter {
             state: \.snippets.snippets[id: id],
             action: \.snippets.business.snippets[id: id]
         )
-    }
-
-    // MARK: - Helper methods
-
-    private func _resourcesHash(
-        resources: [TWSSnippet.Attachment: ResourceResponse]?,
-        of snippet: TWSSnippet
-    ) -> Int {
-        let resources = resources ?? [:]
-        var hasher = Hasher()
-        snippet.dynamicResources?.forEach { hasher.combine(resources[$0]?.data) }
-        return hasher.finalize()
     }
 }

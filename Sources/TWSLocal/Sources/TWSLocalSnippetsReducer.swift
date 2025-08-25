@@ -26,20 +26,11 @@ struct TWSLocalSnippetsReducer: Equatable {
     struct State: Equatable {
         #if TESTING
         // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-        var preloadedResources: [TWSSnippet.Attachment: ResourceResponse] = [:]
         var snippets: IdentifiedArrayOf<TWSSnippetFeature.State> = .init()
         #else
-        @ObservationStateIgnored
-        @Sharing.Shared var preloadedResources: [TWSSnippet.Attachment: ResourceResponse]
         @Shared(.inMemory("snippets")) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State> = .init()
         #endif
-        public nonisolated init() {
-            #if TESTING
-            preloadedResources = [:]
-            #else
-            _preloadedResources = Shared(wrappedValue: [:], .resources())
-            #endif
-        }
+        public nonisolated init() {}
     }
     
     enum Action {
@@ -77,14 +68,6 @@ struct TWSLocalSnippetsReducer: Equatable {
         
         case .snippetAction(.element(id: _, action: .delegate(let delegateAction))):
             switch delegateAction {
-            case .resourcesUpdated(let updatedResources):
-                for resource in updatedResources {
-                    #if TESTING
-                    state.preloadedResources.updateValue(resource.value, forKey: resource.key)
-                    #else
-                    state.$preloadedResources.withLock { $0.updateValue(resource.value, forKey: resource.key)}
-                    #endif
-                }
             case .openOverlay:
                 return .none
             }
