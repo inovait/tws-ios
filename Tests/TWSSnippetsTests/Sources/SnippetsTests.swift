@@ -527,6 +527,7 @@ final class SnippetsTests: XCTestCase {
                 XCTAssert(false)
             }
             $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = nil
         }
         
         let expectedHtmlContent2 = ResourceResponse(responseUrl: changedURL, data: changedURL.absoluteString)
