@@ -340,6 +340,9 @@ struct WebView: UIViewRepresentable {
             let store: StoreOf<TWSSnippetFeature> = .init(
                 initialState: TWSSnippetFeature.State(snippet: snippetToReload),
                 reducer: { TWSSnippetFeature() })
+
+            store.send(.business(.setLocalDynamicResources(snippetStore?.localDynamicResources ?? [])))
+            
             
             resourceDownloadHandler.loadNewStore(
                 store,
