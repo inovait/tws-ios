@@ -18,6 +18,7 @@ import Foundation
 @_spi(Internals) import TWSModels
 import ComposableArchitecture
 import TWSAPI
+import TWSCookieManager
 
 public extension Reducer {
 
@@ -90,6 +91,7 @@ public extension Reducer {
     
         let htmlResource = try await Task {
             do {
+                await TWSCookieManager().syncWebViewCookiesToDevice()
                 return try await api.getResource(htmlResource, headers[htmlResource] ?? [:])
             } catch {
                 throw error
