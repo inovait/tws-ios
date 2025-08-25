@@ -92,7 +92,8 @@ let package = Package(
             dependencies: [
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSAPI")
             ],
             path: "Sources/TWSSnippet"
         ),

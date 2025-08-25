@@ -2,6 +2,7 @@ import Foundation
 import ComposableArchitecture
 @_spi(Internals) import TWSModels
 import TWSCommon
+import TWSAPI
 
 @Reducer
 public struct TWSSnippetFeature: Sendable {
@@ -18,7 +19,8 @@ public struct TWSSnippetFeature: Sendable {
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
-        public var htmlContent: ResourceResponse = .init(responseUrl: nil, data: "")
+        public var htmlContent: ResourceResponse? = nil
+        public var error: APIError? = nil
 
         var isDownloading = false
 
@@ -61,7 +63,7 @@ public struct TWSSnippetFeature: Sendable {
             case showSnippet
             case hideSnippet
             case downloadContent
-            case downloadCompleted(ResourceResponse)
+            case downloadCompleted(Result<ResourceResponse, APIError>)
             case setLocalDynamicResources([TWSRawDynamicResource])
         }
         
@@ -115,6 +117,8 @@ public struct TWSSnippetFeature: Sendable {
             
         case .business(.downloadContent):
             guard !state.isDownloading else { return .none }
+            state.htmlContent = nil
+            state.error = nil
             state.isDownloading = true
 
             return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
@@ -122,11 +126,19 @@ public struct TWSSnippetFeature: Sendable {
                 await send(.business(.downloadCompleted(resources)))
             }
 
-        case let .business(.downloadCompleted(resources)):
+        case .business(.downloadCompleted(.success(let resource))):
+            logger.info("Resources downloaded succesfully.")
             state.contentDownloaded = true
             state.isDownloading = false
-            state.htmlContent = resources
+            state.htmlContent = resource
             
+            return .none
+        case .business(.downloadCompleted(.failure(let error))):
+            logger.info("Resource download failed with error: \(error).")
+            state.error = error
+            state.contentDownloaded = true
+            state.isDownloading = false
+
             return .none
 
         case .delegate:

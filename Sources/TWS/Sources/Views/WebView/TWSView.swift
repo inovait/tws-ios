@@ -90,6 +90,18 @@ public struct TWSView: View {
                             snippet: snippet,
                             displayID: displayID
                         )
+                        // Check if initial load failed
+                        .onAppear {
+                            if let err = store?.error {
+                                state.loadingState = .failed(err)
+                            }
+                        }
+                        // Check if reload failed
+                        .onChange(of: store?.error) { _, new in
+                            if let err = new {
+                                state.loadingState = .failed(err)
+                            }
+                        }
                         
                         ZStack {
                             switch state.loadingState {

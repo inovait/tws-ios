@@ -128,8 +128,6 @@ struct WebView: UIViewRepresentable {
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
         context.coordinator.webView = webView
 
-        updateState(for: webView, loadingState: .loading(progress: 0.0))
-
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
         
         // Binding for permissions
@@ -245,6 +243,14 @@ struct WebView: UIViewRepresentable {
     }
     
     func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
+        // If error is present before the initial load resources were not fetched succesfully
+        if let err = snippetStore?.error {
+            updateState(for: webView, loadingState: .failed(err))
+            return nil
+        } else {
+            updateState(for: webView, loadingState: .loading(progress: 0.0))
+        }
+        
         if let content = htmlContent {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
@@ -296,18 +302,28 @@ struct WebView: UIViewRepresentable {
     ) {
         let initialUrl = initialUrl()
         
-        if initialUrl == state.currentUrl {
+        if initialUrl == state.currentUrl || htmlContent == nil {
             // Reload on initial page
             guard let snippetStore else {
                 coordinator.pullToRefresh.setNavigationRequest(navigation: loadProcessedContent(webView: webView))
                 return
             }
-            resourceDownloadHandler.loadNewStore(snippetStore, onSuccess: { content in
-                if let content, let initialUrl {
-                    let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetStore.snippet)
-                    coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: initialUrl), responseHTML: htmlToLoad))
+            
+            resourceDownloadHandler.loadNewStore(
+                snippetStore,
+                onSuccess: { content in
+                    let requestUrl = (initialUrl ?? content?.responseUrl) ?? targetURL
+                    if let content {
+                        let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetStore.snippet)
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: requestUrl), responseHTML: htmlToLoad))
+                    }
+                },
+                onError: { err in
+                    updateState(for: webView, loadingState: .failed(err))
+                    return
                 }
-            })
+            )
+            
             return
         }
         
@@ -325,13 +341,21 @@ struct WebView: UIViewRepresentable {
                 initialState: TWSSnippetFeature.State(snippet: snippetToReload),
                 reducer: { TWSSnippetFeature() })
             
-            resourceDownloadHandler.loadNewStore(store) { content in
-                if let content {
-                    logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
-                    let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
-                    coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad))
+            resourceDownloadHandler.loadNewStore(
+                store,
+                onSuccess: { content in
+                
+                    if let content {
+                        logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
+                        let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad))
+                    }
+                },
+                onError: { err in
+                    updateState(for: webView, loadingState: .failed(err))
+                    return
                 }
-            }
+            )
             return
         }
         

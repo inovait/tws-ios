@@ -26,20 +26,27 @@ class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
     private var cancellables = Set<AnyCancellable>()
     private var onSuccess: ((ResourceResponse?) -> Void)? = nil
+    private var onError: ((Error) -> Void)? = nil
     
     init() {}
     
-    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (ResourceResponse?) -> Void) {
+    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (ResourceResponse?) -> Void, onError: @escaping (Error) -> Void) {
         self.store = store
         self.onSuccess = onSuccess
+        self.onError = onError
         cancellables.removeAll()
         
         store.publisher
-            .map { $0.htmlContent }
-            .removeDuplicates()
+            .map { ($0.htmlContent, $0.error) }
+            .compactMap { htmlContent, error -> (htmlContent: ResourceResponse?, error: Error?)? in
+                return (htmlContent: htmlContent, error: error)
+            }
+            .dropFirst()
             .sink { [weak self] content in
-                if content.responseUrl != nil && !content.data.isEmpty {
-                    onSuccess(content)
+                if let err = content.error {
+                    onError(err)
+                } else if let html = content.htmlContent {
+                    onSuccess(html)
                 }
             }
             .store(in: &cancellables)
