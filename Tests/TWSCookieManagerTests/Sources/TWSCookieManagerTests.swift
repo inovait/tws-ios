@@ -22,13 +22,13 @@ import WebKit
 
 @MainActor
 struct TWSCookieManagerTest {
-    private func makeCookie(name: String, domain: String = "example.com") -> HTTPCookie {
+    private func makeCookie(name: String, value: String, domain: String = "example.com") -> HTTPCookie {
         return HTTPCookie(properties: [
             .version: "1",
             .domain: domain,
             .path: "/",
             .name: name,
-            .value: "value-\(name)",
+            .value: "value-\(value)",
             .secure: "FALSE"
         ])!
     }
@@ -42,13 +42,12 @@ struct TWSCookieManagerTest {
         let webViewStore: WKWebsiteDataStore = .nonPersistent()
         let cookieManager: TWSCookieManager = .init(deviceStorage: deviceStorage, webViewStore: webViewStore)
         
-        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie1"))
-        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie2"))
-        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie3"))
-        deviceStorage.setCookie(makeCookie(name: "NativeCookie"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie1", value: "TestCookie1"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie2", value: "TestCookie2"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie3", value: "TestCookie3"))
+        deviceStorage.setCookie(makeCookie(name: "NativeCookie", value: "TestCookie1"))
         
         await cookieManager.syncWebViewCookiesToDevice()
-    
         let deviceCookies = deviceStorage.cookies ?? []
         let webViewCookies = await webViewStore.httpCookieStore.allCookies()
         webViewCookies.forEach { cookie in
@@ -64,10 +63,10 @@ struct TWSCookieManagerTest {
         let webViewStore: WKWebsiteDataStore = .nonPersistent()
         let cookieManager: TWSCookieManager = .init(deviceStorage: deviceStorage, webViewStore: webViewStore)
 
-        deviceStorage.setCookie(makeCookie(name: "NativeCookie1"))
-        deviceStorage.setCookie(makeCookie(name: "NativeCookie2"))
-        deviceStorage.setCookie(makeCookie(name: "NativeCookie3"))
-        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie"))
+        deviceStorage.setCookie(makeCookie(name: "NativeCookie1", value: "TestCookie1"))
+        deviceStorage.setCookie(makeCookie(name: "NativeCookie2", value: "TestCookie2"))
+        deviceStorage.setCookie(makeCookie(name: "NativeCookie3", value: "TestCookie3"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "WebViewCookie", value: "TestCookie1"))
         
         await cookieManager.syncDeviceCookiesToWebView()
         
@@ -79,5 +78,48 @@ struct TWSCookieManagerTest {
         }
         
         #expect(deviceCookies.count == webViewCookies.count)
+    }
+    
+    @Test("Tests whether existing cookies get overriden when syncing from WebView to device")
+    func overrideDeviceCookieOnSyncTest() async throws {
+        let deviceStorage: HTTPCookieStorage = .sharedCookieStorage(forGroupContainerIdentifier: "twsCookieManagerTest3")
+        let webViewStore: WKWebsiteDataStore = .nonPersistent()
+        let cookieManager: TWSCookieManager = .init(deviceStorage: deviceStorage, webViewStore: webViewStore)
+
+        deviceStorage.setCookie(makeCookie(name: "ExistingCookie", value: "OriginalValue"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "ExistingCookie", value: "OverridenValue"))
+        
+        await cookieManager.syncWebViewCookiesToDevice()
+        let deviceCookies = deviceStorage.cookies ?? []
+        let webViewCookies = await webViewStore.httpCookieStore.allCookies()
+        
+        webViewCookies.forEach { cookie in
+            #expect(deviceCookies.contains(cookie))
+        }
+        
+        let resultingCookie = deviceCookies.first(where: { $0.name == "ExistingCookie" })
+        #expect(resultingCookie != nil && resultingCookie!.value == "value-OverridenValue")
+        
+    }
+    
+    @Test("Tests whether existing cookies get overriden when syncing from device to WebView")
+    func overrideWebViewCookieOnSyncTest() async throws {
+        let deviceStorage: HTTPCookieStorage = .sharedCookieStorage(forGroupContainerIdentifier: "twsCookieManagerTest4")
+        let webViewStore: WKWebsiteDataStore = .nonPersistent()
+        let cookieManager: TWSCookieManager = .init(deviceStorage: deviceStorage, webViewStore: webViewStore)
+
+        deviceStorage.setCookie(makeCookie(name: "ExistingCookie", value: "OverridenValue"))
+        await webViewStore.httpCookieStore.setCookie(makeCookie(name: "ExistingCookie", value: "OriginalValue"))
+        
+        await cookieManager.syncDeviceCookiesToWebView()
+        let deviceCookies = deviceStorage.cookies ?? []
+        let webViewCookies = await webViewStore.httpCookieStore.allCookies()
+        
+        webViewCookies.forEach { cookie in
+            #expect(deviceCookies.contains(cookie))
+        }
+        
+        let resultingCookie = webViewCookies.first(where: { $0.name == "ExistingCookie" })
+        #expect(resultingCookie != nil && resultingCookie!.value == "value-OverridenValue")
     }
 }
