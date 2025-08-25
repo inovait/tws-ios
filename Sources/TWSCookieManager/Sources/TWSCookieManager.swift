@@ -54,9 +54,7 @@ public class TWSCookieManager {
         let webViewCookies = await cookieStore.allCookies()
         
         for deviceCookie in deviceCookies {
-            if !webViewCookies.contains(where: { $0.name == deviceCookie.name && $0.domain == deviceCookie.domain }) {
-                await cookieStore.setCookie(deviceCookie)
-            }
+            await cookieStore.setCookie(deviceCookie)
         }
         
         for webViewCookie in webViewCookies {
@@ -79,9 +77,7 @@ public class TWSCookieManager {
         
         // Insert or update cookies from WebView to device storage
         for webViewCookie in webViewCookies {
-            if !deviceCookies.contains(where: { $0.name == webViewCookie.name && $0.domain == webViewCookie.domain }) {
-                deviceStorage.setCookie(webViewCookie)
-            }
+            deviceStorage.setCookie(webViewCookie)
         }
         
         // Delete cookies from device storage that are no longer in WebView
