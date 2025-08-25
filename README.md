@@ -76,7 +76,7 @@ struct HomeScreen: View {
 ### Bind native views and flow handlers to your TWSView:
 
 * `twsBind(loadingView:)` - View displayed while the URL is loading
-* `twsBind(preloadingView:)` - View displayed while the attachments like HTML, CSS and Javascript are being preloaded
+* `twsBind(preloadingView:)` - View displayed while the attachments like HTML, CSS and Javascript are being downloaded
 * `twsBind(errorView:)` - View displayed if the error occurs during the loading
 * `twsBind(navigator:)` - Navigator implementation for navigating between URLs in the same TWSView (Default is provided)
 * `twsBind(interceptor:)` - Custom interceptor implementation for incoming URL requests (Default is provided)

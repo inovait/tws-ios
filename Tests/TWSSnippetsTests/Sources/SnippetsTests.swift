@@ -406,40 +406,31 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
         
-        XCTAssert(store.state.preloadedResources.isEmpty)
-        
         // Open first snippet
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
-        await store.receive(\.business.snippets[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
+        await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
+            $0.snippets[id: s1ID]?.isDownloading = true
         }
-        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
-        }
-        // Observe preloaded resources, only first should appear
-        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [ .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
+        
+        let expectedHtmlContent1: ResourceResponse = .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
+        
+        await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
+            $0.snippets[id: s1ID]?.isDownloading = false
+            $0.snippets[id: s1ID]?.contentDownloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = expectedHtmlContent1
         }
         
         // Open second snippet
         await store.send(\.business.snippets[id: s2ID].view.openedTWSView)
-        await store.receive(\.business.snippets[id: s2ID].business.preload) {
-            $0.snippets[id: s2ID]?.isPreloading = true
+        await store.receive(\.business.snippets[id: s2ID].business.downloadContent) {
+            $0.snippets[id: s2ID]?.isDownloading = true
         }
-        await store.receive(\.business.snippets[id: s2ID].business.preloadCompleted) {
-            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
-            $0.snippets[id: s2ID]?.isPreloading = false
-            $0.snippets[id: s2ID]?.preloaded = true
-            $0.snippets[id: s2ID]?.htmlContent = snippets[1].target.absoluteString
-        }
-        // Observe preloaded resources again, two resources appear
-        await store.receive(\.business.snippets[id: s2ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString),
-                .init(url: snippets[1].target, contentType: .html) : .init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString)
-            ]
+        
+        let expectedHtmlContent2: ResourceResponse = .init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString)
+        await store.receive(\.business.snippets[id: s2ID].business.downloadCompleted) {
+            $0.snippets[id: s2ID]?.isDownloading = false
+            $0.snippets[id: s2ID]?.contentDownloaded = true
+            $0.snippets[id: s2ID]?.htmlContent = expectedHtmlContent2
         }
     }
     
@@ -503,58 +494,47 @@ final class SnippetsTests: XCTestCase {
         // Open the snippet
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
         
-        await store.receive(\.business.snippets[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
+        await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
+            $0.snippets[id: s1ID]?.isDownloading = true
         }
         
-        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
+        let expectedHtmlContent1: ResourceResponse = .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
+        await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
+            $0.snippets[id: s1ID]?.isDownloading = false
+            $0.snippets[id: s1ID]?.contentDownloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = expectedHtmlContent1
         }
-
-        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
-            ]
-        }
+        
         
         let changedURL = URL(string: "https://www.example.com")!
-        
         stream.continuation.yield(.receivedMessage(SocketMessage(id: snippets[0].id, type: .updated, snippet: .init(id: snippets[0].id, target: changedURL))))
         
         await store.receive(\.business.snippets[id: s1ID].business.snippetUpdated) {
-            // Imporatant that preloaded is reset to false when update is recieved since we can not observe if static or dynamic resources changed
-            $0.snippets[id: s1ID]?.preloaded = false
+            // Imporatant that download is reset to false when update is recieved since we can not observe if static or dynamic resources changed
+            $0.snippets[id: s1ID]?.contentDownloaded = false
             $0.snippets[id: s1ID]?.snippet.target = changedURL
         }
         
         await store.receive(\.business.startVisibilityTimers)
         
-        // Open the same snippet for the second time and resources have to be preloaded again
+        // Open the same snippet for the second time and resources have to be downloaded again
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
         
-        await store.receive(\.business.snippets[id: s1ID].business.preload) {
+        await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
             if let snippet = $0.snippets[id: s1ID] {
-                XCTAssert(!snippet.preloaded)
+                XCTAssert(!snippet.contentDownloaded)
             } else {
                 XCTAssert(false)
             }
-            $0.snippets[id: s1ID]?.isPreloading = true
+            $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = nil
         }
         
-        await store.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.preloadedResources = [.init(url: snippets[0].target, contentType: .html) : .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)]
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = changedURL.absoluteString
-        }
-
-        await store.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: snippets[0].target, contentType: .html): .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString),
-                .init(url: changedURL, contentType: .html): .init(responseUrl: changedURL, data: changedURL.absoluteString)
-            ]
+        let expectedHtmlContent2 = ResourceResponse(responseUrl: changedURL, data: changedURL.absoluteString)
+        await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
+            $0.snippets[id: s1ID]?.isDownloading = false
+            $0.snippets[id: s1ID]?.contentDownloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = expectedHtmlContent2
         }
         
         // Stop listening
@@ -562,144 +542,7 @@ final class SnippetsTests: XCTestCase {
         await store.receive(\.business.delayReconnect)
         await store.send(.business(.stopReconnecting))
     }
-    
-    @MainActor
-    func testResourcesChangedBetweenLaunches() async throws {
-        // Remote snippets
-        let s1ID = "1"
-        let url = URL(string: "https://www.google.com")!
 
-        let remoteSnippets: [TWSSnippet] = [
-            .init(id: s1ID, target: url)
-        ]
-        
-        let staticResources = "Static Resource"
-        
-        // Mock persistant storages
-        var cachedSnippets: [TWSSnippet] = []
-        var cachedPreloadedResources: [TWSSnippet.Attachment: ResourceResponse] = [:]
-        
-        let storeFirstLaunch = TestStore(
-            initialState: TWSSnippetsFeature.State(
-                configuration: configuration,
-                snippets: cachedSnippets,
-                preloadedResources: cachedPreloadedResources
-            ),
-            reducer: { TWSSnippetsFeature() },
-            withDependencies: {
-                $0.api.getProject = { [socketURL] _ in return (.init(listenOn: socketURL, snippets: remoteSnippets), nil)}
-                $0.api.getResource = { [staticResources] _, _ in return ResourceResponse(responseUrl: url, data: staticResources) }
-                $0.date.now = Date()
-            })
-        
-        await storeFirstLaunch.send(.business(.load)) {
-            $0.state = .loading(progress: 0.0)
-        }
-        
-        await storeFirstLaunch.receive(\.business.projectLoaded.success) {
-            $0.snippets = .init(uniqueElements: remoteSnippets.map { .init(snippet: $0) })
-            $0.state = .loaded
-            $0.socketURL = self.socketURL
-            cachedSnippets = remoteSnippets
-            $0.shouldTriggerSdkInitCampaign = false
-        }
-
-        await storeFirstLaunch.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: self.triggerId)]
-        }
-        
-        await storeFirstLaunch.receive(\.business.startVisibilityTimers)
-        
-        await storeFirstLaunch.receive(\.business.trigger[id: triggerId].business.checkTrigger)
-        
-        await storeFirstLaunch.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
-        
-        await storeFirstLaunch.send(\.business.snippets[id: s1ID].view.openedTWSView)
-        
-        await storeFirstLaunch.receive(\.business.snippets[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
-        }
-        await storeFirstLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = staticResources
-        }
-        
-        await storeFirstLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: staticResources),
-            ]
-            cachedPreloadedResources = $0.preloadedResources
-        }
-        
-        XCTAssert(!cachedSnippets.isEmpty)
-        XCTAssert(!cachedPreloadedResources.isEmpty)
-        
-        
-        let changedStaticResources = "New Static Resources"
-        
-        // Create a new store with cached data as if you restarted the app
-        let storeSecondLaunch = TestStore(
-            initialState: TWSSnippetsFeature.State(
-                configuration: configuration,
-                snippets: cachedSnippets,
-                preloadedResources: cachedPreloadedResources
-            ),
-            reducer: { TWSSnippetsFeature() },
-            withDependencies: {
-                $0.api.getProject = { [socketURL] _ in return (.init(listenOn: socketURL, snippets: remoteSnippets), nil)}
-                $0.api.getResource = { _, _ in return ResourceResponse(responseUrl: url, data: changedStaticResources) }
-                $0.date.now = Date()
-            })
-        
-        await storeSecondLaunch.send(\.business.load) {
-            $0.state = .loading(progress: 0.0)
-        }
-        
-        await storeSecondLaunch.receive(\.business.projectLoaded) {
-            $0.state = .loaded
-            $0.socketURL = self.socketURL
-            $0.shouldTriggerSdkInitCampaign = false
-        }
-        
-        await storeSecondLaunch.receive(\.business.sendTrigger) {
-            $0.campaigns = [.init(trigger: self.triggerId)]
-        }
-        
-        await storeSecondLaunch.receive(\.business.startVisibilityTimers)
-        
-        await storeSecondLaunch.receive(\.business.trigger[id: triggerId].business.checkTrigger)
-        
-        await storeSecondLaunch.receive(\.business.trigger[id: triggerId].business.campaignLoaded)
-            
-        // Open the same snippet as before
-        await storeSecondLaunch.send(\.business.snippets[id: s1ID].view.openedTWSView)
-        
-        await storeSecondLaunch.receive(\.business.snippets[id: s1ID].business.preload) {
-            if let snippet = $0.snippets[id: s1ID] {
-                // This allows resources to be preloaded on each run
-                XCTAssert(!snippet.preloaded)
-            } else {
-                XCTAssert(false)
-            }
-            $0.snippets[id: s1ID]?.isPreloading = true
-        }
-        
-        await storeSecondLaunch.receive(\.business.snippets[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = changedStaticResources
-        }
-        
-        await storeSecondLaunch.receive(\.business.snippets[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: remoteSnippets[0].target, contentType: .html) : .init(responseUrl: remoteSnippets[0].target, data: changedStaticResources)
-            ]
-            
-            // Preloaded resource got removed and new one added
-            XCTAssert(cachedPreloadedResources != $0.preloadedResources)
-        }
-    }
     
     @MainActor
     func testPreloadTiming() async throws {
@@ -732,7 +575,7 @@ final class SnippetsTests: XCTestCase {
                 $0.date.now = Date()
             })
         
-        let preloadedResources = await reducer.preloadAndInjectResources(for: snippet, using: store.dependencies.api)
+        let preloadedResources = await reducer.downloadAndInjectResources(for: snippet, using: store.dependencies.api)
         
         let timestampsForTarget = TimeStampedRequests.stampedRequests[snippetUrl]!
         
@@ -765,17 +608,15 @@ final class SnippetsTests: XCTestCase {
         // open twsView
         await store.send(.business(.snippetAction(.element(id: s1ID, action: .view(.openedTWSView)))))
         
-        await store.receive(\.business.snippetAction[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
-        }
-        await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = snippets[0].target.absoluteString
+        await store.receive(\.business.snippetAction[id: s1ID].business.downloadContent) {
+            $0.snippets[id: s1ID]?.isDownloading = true
         }
         
-        await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [.init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: snippetUrl1.absoluteString)]
+        let expectedResult = ResourceResponse(responseUrl: snippetUrl1, data: snippetUrl1.absoluteString)
+        await store.receive(\.business.snippetAction[id: s1ID].business.downloadCompleted) {
+            $0.snippets[id: s1ID]?.isDownloading = false
+            $0.snippets[id: s1ID]?.contentDownloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = expectedResult
         }
     }
     
@@ -884,17 +725,13 @@ final class SnippetsTests: XCTestCase {
         
         await store.send(.business(.snippetAction(.element(id: s1ID, action: .view(.openedTWSView)))))
         
-        await store.receive(\.business.snippetAction[id: s1ID].business.preload) {
-            $0.snippets[id: s1ID]?.isPreloading = true
+        await store.receive(\.business.snippetAction[id: s1ID].business.downloadContent) {
+            $0.snippets[id: s1ID]?.isDownloading = true
         }
-        await store.receive(\.business.snippetAction[id: s1ID].business.preloadCompleted) {
-            $0.snippets[id: s1ID]?.isPreloading = false
-            $0.snippets[id: s1ID]?.preloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = expectedResponse1
-        }
-        
-        await store.receive(\.business.snippetAction[id: s1ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [.init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1)]
+        await store.receive(\.business.snippetAction[id: s1ID].business.downloadCompleted) {
+            $0.snippets[id: s1ID]?.isDownloading = false
+            $0.snippets[id: s1ID]?.contentDownloaded = true
+            $0.snippets[id: s1ID]?.htmlContent = .init(responseUrl: snippetUrl1, data: expectedResponse1)
         }
         
         var stateCopy = store.state
@@ -909,20 +746,13 @@ final class SnippetsTests: XCTestCase {
         
         await store.send(.business(.snippetAction(.element(id: s2ID, action: .view(.openedTWSView)))))
         
-        await store.receive(\.business.snippetAction[id: s2ID].business.preload) {
-            $0.snippets[id: s2ID]?.isPreloading = true
+        await store.receive(\.business.snippetAction[id: s2ID].business.downloadContent) {
+            $0.snippets[id: s2ID]?.isDownloading = true
         }
-        await store.receive(\.business.snippetAction[id: s2ID].business.preloadCompleted) {
-            $0.snippets[id: s2ID]?.isPreloading = false
-            $0.snippets[id: s2ID]?.preloaded = true
-            $0.snippets[id: s2ID]?.htmlContent = expectedResponse2
-        }
-        
-        await store.receive(\.business.snippetAction[id: s2ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1),
-                .init(url: snippetUrl2, contentType: .html): .init(responseUrl: snippetUrl2, data: expectedResponse2)
-            ]
+        await store.receive(\.business.snippetAction[id: s2ID].business.downloadCompleted) {
+            $0.snippets[id: s2ID]?.isDownloading = false
+            $0.snippets[id: s2ID]?.contentDownloaded = true
+            $0.snippets[id: s2ID]?.htmlContent = .init(responseUrl: snippetUrl2, data: expectedResponse2)
         }
         
         stateCopy = store.state
@@ -937,24 +767,14 @@ final class SnippetsTests: XCTestCase {
         
         await store.send(.business(.snippetAction(.element(id: s3ID, action: .view(.openedTWSView)))))
         
-        await store.receive(\.business.snippetAction[id: s3ID].business.preload) {
-            $0.snippets[id: s3ID]?.isPreloading = true
+        await store.receive(\.business.snippetAction[id: s3ID].business.downloadContent) {
+            $0.snippets[id: s3ID]?.isDownloading = true
         }
-        await store.receive(\.business.snippetAction[id: s3ID].business.preloadCompleted) {
-            $0.snippets[id: s3ID]?.isPreloading = false
-            $0.snippets[id: s3ID]?.preloaded = true
-            $0.snippets[id: s3ID]?.htmlContent = expectedResponse3
+        await store.receive(\.business.snippetAction[id: s3ID].business.downloadCompleted) {
+            $0.snippets[id: s3ID]?.isDownloading = false
+            $0.snippets[id: s3ID]?.contentDownloaded = true
+            $0.snippets[id: s3ID]?.htmlContent = .init(responseUrl: snippetUrl3, data: expectedResponse3)
         }
-        
-        await store.receive(\.business.snippetAction[id: s3ID].delegate.resourcesUpdated) {
-            $0.preloadedResources = [
-                .init(url: snippetUrl1, contentType: .html): .init(responseUrl: snippetUrl1, data: expectedResponse1),
-                .init(url: snippetUrl2, contentType: .html): .init(responseUrl: snippetUrl2, data: expectedResponse2),
-                .init(url: snippetUrl3, contentType: .html): .init(responseUrl: snippetUrl3, data: expectedResponse3)
-            ]
-        }
-        
-        
     }
     
     @MainActor
