@@ -131,10 +131,30 @@ struct APIResult {
     let responseUrl: URL?
 }
 
-public enum APIError: Error {
+public enum APIError: Error, Equatable {
+    public static func == (lhs: APIError, rhs: APIError) -> Bool {
+        switch (lhs, rhs) {
+        case let (.local(err1), .local(err2)): err1.same(as: err2)
+        case let (.server(code1, data1), .server(code2, data2)): code1 == code2 && data1 == data2
+        case let (.decode(err1), .decode(err2)): err1.same(as: err2)
+        case let (.auth(err1), .auth(err2)): err1 == err2
+        default: false
+        }
+    }
 
     case local(Error)
     case server(Int, Data)
     case decode(Error)
     case auth(String)
+}
+
+private extension Error {
+
+    func same<T: Error>(as error: T) -> Bool {
+        if let error = self as? T {
+            return "\(self)" == "\(error)"
+        }
+
+        return false
+    }
 }

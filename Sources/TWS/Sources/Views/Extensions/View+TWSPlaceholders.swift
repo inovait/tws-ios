@@ -36,9 +36,9 @@ extension View {
         )
     }
 
-    /// Installs a preloading view to be displayed while the ``TWSView`` is preloading web resources.
+    /// Installs a preloading view to be displayed while the ``TWSView`` is downloading web resources.
     ///
-    /// - Parameter preloadingView: A closure that returns the view to be displayed during the preloading process.
+    /// - Parameter preloadingView: A closure that returns the view to be displayed during the download process.
     /// - Returns: A view that wraps the current view and includes the preloading view.
     ///
     /// ## Usage of AnyView
@@ -107,12 +107,12 @@ extension EnvironmentValues {
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var loadingView: @Sendable @MainActor (Double?) -> AnyView = { progress in
-        AnyView(_LoadingView(loadingProgress: progress))
+        AnyView(_LoadingView())
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple loading view.
     @Entry var preloadingView: @Sendable @MainActor () -> AnyView = {
-        AnyView(_LoadingView(loadingProgress: 0.0))
+        AnyView(_LoadingView())
     }
 
     // Using AnyView here allows for flexibility in returning different view hierarchies while maintaining a consistent return type, with minimal performance impact in this simple error view.
@@ -126,10 +126,8 @@ extension EnvironmentValues {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                if (error as NSError).code == NSURLErrorNotConnectedToInternet {
-                    Button(action: reload) {
-                        Text("Reload")
-                    }
+                Button(action: reload) {
+                    Text("Reload")
                 }
             }
         )
@@ -137,14 +135,10 @@ extension EnvironmentValues {
 }
 
 private struct _LoadingView: View {
-    var loadingProgress: Double?
 
     var body: some View {
         HStack {
             Spacer()
-            if let loadingProgress {
-                Text("\(loadingProgress * 100)%")
-            }
             ProgressView()
                 .tint(.white)
                 .padding(10)

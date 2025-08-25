@@ -17,92 +17,104 @@
 import Foundation
 @_spi(Internals) import TWSModels
 import ComposableArchitecture
+import TWSAPI
 import TWSCookieManager
 
 public extension Reducer {
 
     // MARK: - Loading resources
 
-    func preloadAndInjectResources(
+    func downloadAndInjectResources(
         for snippet: TWSSnippet,
         using api: APIDependency,
         localResources: [TWSRawDynamicResource] = []
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+    ) async -> Result<ResourceResponse, APIError> {
         var headers = [TWSSnippet.Attachment: [String: String]]()
+        let homepage = TWSSnippet.Attachment(
+            url: snippet.target,
+            contentType: .html
+        )
         
-        let resources = snippet.allResources(headers: &headers)
-
-        return await _preloadAndInjectResources(
-            resources: resources,
-            localResources: localResources,
-            headers: headers,
-            using: api
-        )
+        let resources = snippet.allResources(headers: &headers, homepage: homepage)
+        do {
+            return try await _downloadAndInjectResources(
+                htmlResource: homepage,
+                resources: resources,
+                localResources: localResources,
+                headers: headers,
+                using: api
+            )
+        } catch let err as APIError {
+            return .failure(err)
+        } catch {
+            logger.err("\(error)")
+            return .failure(.local(error))
+        }
     }
 
-    func preloadAndInjectResources(
-        for project: TWSProject,
-        using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
-        var headers = [TWSSnippet.Attachment: [String: String]]()
-        let resources = project.allResources(headers: &headers)
-
-        return await _preloadAndInjectResources(
-            resources: resources,
-            headers: headers,
-            using: api
-        )
-    }
-
-    func preloadAndInjectResources(
+    func downloadAndInjectResources(
         for sharedSnippet: TWSSharedSnippet,
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+    ) async -> Result<ResourceResponse, APIError> {
         var headers = [TWSSnippet.Attachment: [String: String]]()
-        let resources = sharedSnippet.allResources(headers: &headers)
-
-        return await _preloadAndInjectResources(
-            resources: resources,
-            headers: headers,
-            using: api
+        let homepage = TWSSnippet.Attachment.init(
+            url: sharedSnippet.snippet.target,
+            contentType: .html
         )
+        
+        let resources = sharedSnippet.allResources(headers: &headers, homepage: homepage)
+        do {
+            return try await _downloadAndInjectResources(
+                htmlResource: homepage,
+                resources: resources,
+                headers: headers,
+                using: api
+            )
+        } catch let err as APIError {
+            return .failure(err)
+        } catch {
+            logger.err("\(error)")
+            return .failure(.local(error))
+        }
     }
 
     // MARK: - Helpers
 
-    private func _preloadAndInjectResources(
+    private func _downloadAndInjectResources(
+        htmlResource: TWSSnippet.Attachment,
         resources: [TWSSnippet.Attachment],
         localResources: [TWSRawDynamicResource] = [],
         headers: [TWSSnippet.Attachment: [String: String]],
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
-        let allResources = Set(resources)
+    ) async throws -> Result<ResourceResponse, APIError> {
         // Create two taskGroups to ensure html is fetched first, and sets the cookies, before other resources are fetched
-        var htmlResources = await withTaskGroup(
+    
+        let htmlResource = try await Task {
+            do {
+                await TWSCookieManager().syncWebViewCookiesToDevice()
+                return try await api.getResource(htmlResource, headers[htmlResource] ?? [:])
+            } catch {
+                throw error
+            }
+        }.value
+        
+        let otherResources = try await withThrowingTaskGroup(
             of: (TWSSnippet.Attachment, ResourceResponse)?.self,
             returning: [TWSSnippet.Attachment: ResourceResponse].self
         ) { group in
-            let htmlResources = allResources.filter { res in res.contentType == .html }
-            await TWSCookieManager().syncWebViewCookiesToDevice()
-            return await fetchResourcesFor(htmlResources, with: headers, group: &group, using: api)
+            do {
+                return try await fetchResourcesFor(Set(resources), with: headers, group: &group, using: api)
+            } catch {
+                throw error
+            }
         }
         
-        let otherResources = await withTaskGroup(
-            of: (TWSSnippet.Attachment, ResourceResponse)?.self,
-            returning: [TWSSnippet.Attachment: ResourceResponse].self
-        ) { group in
-            let otherResources = allResources.filter { res in res.contentType != .html }
-            return await fetchResourcesFor(otherResources, with: headers, group: &group, using: api)
-        }
+
+        var htmlContent = htmlResource.data
+        injectResources(into: &htmlContent, resources: otherResources)
+        injectLocalResource(into: &htmlContent, resources: localResources)
         
-        htmlResources = htmlResources.mapValues { value in
-            var modifiedData = value.data
-            injectResources(into: &modifiedData, resources: otherResources)
-            injectLocalResource(into: &modifiedData, resources: localResources)
-            return ResourceResponse(responseUrl: value.responseUrl, data: modifiedData)
-        }
-        
-        return htmlResources
+        return .success(.init(responseUrl: htmlResource.responseUrl, data: htmlContent))
     }
     
     private func injectResources(into html: inout String, resources: [TWSSnippet.Attachment: ResourceResponse]) {
@@ -132,23 +144,20 @@ public extension Reducer {
     private func fetchResourcesFor(
         _ resources: Set<TWSSnippet.Attachment>,
         with headers: [TWSSnippet.Attachment: [String: String]],
-        group: inout TaskGroup<(TWSSnippet.Attachment, ResourceResponse)?>,
+        group: inout ThrowingTaskGroup<(TWSSnippet.Attachment, ResourceResponse)?, any Error>,
         using api: APIDependency
-    ) async -> [TWSSnippet.Attachment: ResourceResponse] {
+    ) async throws -> [TWSSnippet.Attachment: ResourceResponse] {
+        
         for resource in resources {
             group.addTask { [resource] in
-                do {
-                    let payload = try await api.getResource(resource, headers[resource] ?? [:])
-                    if !payload.data.isEmpty { return (resource, payload) }
-                    return nil
-                } catch {
-                    return nil
-                }
+                let payload = try await api.getResource(resource, headers[resource] ?? [:])
+                if !payload.data.isEmpty { return (resource, payload) }
+                return nil
             }
         }
 
         var results: [TWSSnippet.Attachment: ResourceResponse] = [:]
-        for await result in group {
+        for try await result in group {
             guard let result else { continue }
             results[result.0] = result.1
         }

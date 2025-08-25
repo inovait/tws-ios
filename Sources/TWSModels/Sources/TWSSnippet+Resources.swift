@@ -20,16 +20,13 @@ import Foundation
 public extension TWSSnippet {
 
     func allResources(
-        headers: inout [TWSSnippet.Attachment: [String: String]]
+        headers: inout [TWSSnippet.Attachment: [String: String]],
+        homepage: TWSSnippet.Attachment
     ) -> [TWSSnippet.Attachment] {
         let attachments = dynamicResources ?? []
-        let homepage = TWSSnippet.Attachment.init(
-            url: target,
-            contentType: .html
-        )
 
         headers = [homepage: self.headers ?? [:]]
 
-        return [homepage] + attachments
+        return attachments
     }
 }

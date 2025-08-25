@@ -64,7 +64,7 @@ public struct TWSView: View {
         
         return ZStack {
             if overrideVisibilty || presenter.isVisible(snippet: snippet) {
-                if let store = store, store.preloaded == false && !overrideVisibilty {
+                if let store = store, store.contentDownloaded == false && !overrideVisibilty {
                     preloadingView()
                         .onAppear {
                             store.send(.view(.openedTWSView))
@@ -84,16 +84,24 @@ public struct TWSView: View {
                         .id(snippet.engine)
                         // Snippet properties have updated, mustache has to be reprocessed
                         .id(snippet.props)
-                        // The payload of dynamic resources can change
-                        .id(presenter.resourcesHash(for: snippet))
-                        // The HTML payload can change
-                        .id(presenter.preloadedResources[TWSSnippet.Attachment(url: snippet.target, contentType: .html)])
                         // Only for default location provider; starting on appear/foreground; stopping on disappear/background
                         .conditionallyActivateDefaultLocationBehavior(
                             locationServicesBridge: locationServicesBridge,
                             snippet: snippet,
                             displayID: displayID
                         )
+                        // Check if initial load failed
+                        .onAppear {
+                            if let err = store?.error {
+                                state.loadingState = .failed(err)
+                            }
+                        }
+                        // Check if reload failed
+                        .onChange(of: store?.error) { _, new in
+                            if let err = new {
+                                state.loadingState = .failed(err)
+                            }
+                        }
                         
                         ZStack {
                             switch state.loadingState {
@@ -158,7 +166,7 @@ private struct _TWSView: View {
         @Bindable var navigator = navigator
         WebView(
             snippet: snippet,
-            preloadedResources: presenter.preloadedResources,
+            snippetStore: presenter.store(forSnippetID: snippet.id),
             locationServicesBridge: locationServiceBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
             displayID: displayID,
