@@ -104,7 +104,7 @@ public class TWSCookieManager {
     /// Prints all cookies currently stored in the device's `HTTPCookieStorage`.
     public func printHTTPCookies() {
         logger.debug("[CookieManager] HTTPCookies:")
-        HTTPCookieStorage.shared.cookies?.forEach { logger.debug("\($0)") }
+        deviceStorage.cookies?.forEach { logger.debug("\($0)") }
     }
     
     /// Prints a detailed comparison between device cookies and WebView cookies.
