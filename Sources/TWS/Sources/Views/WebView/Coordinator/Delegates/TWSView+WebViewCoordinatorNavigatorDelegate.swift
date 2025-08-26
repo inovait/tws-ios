@@ -18,9 +18,11 @@ import Foundation
 import WebKit
 
 extension WebView.Coordinator: TWSViewNavigatorDelegate {
-    func load(url: URLRequest) {
+    func load(url: URLRequest, isSPA: Bool = false) {
         assert(webView != nil)
-        webView?.load(url)
+        if let webView {
+            parent.loadWithConditionallyProcessedResources(webView: webView, loadUrl: url, coordinator: self, isSPA: isSPA)
+        }
     }
     
     func navigateBack() {

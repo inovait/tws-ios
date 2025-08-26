@@ -19,7 +19,7 @@ import SwiftUI
 @MainActor
 protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 
-    func load(url: URLRequest)
+    func load(url: URLRequest, isSPA: Bool)
     func navigateBack()
     func navigateForward()
     func reload()
@@ -128,7 +128,7 @@ public class TWSViewNavigator: Sendable {
     }
     
     /// Triggers the delegate to load specified url into the webView.
-    public func load(url: URLRequest) {
-        delegate?.load(url: url)
+    public func load(url: URLRequest, isSPA: Bool = false) {
+        delegate?.load(url: url, isSPA: isSPA)
     }
 }
