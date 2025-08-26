@@ -25,10 +25,6 @@ import ComposableArchitecture
 public final class TWSLocalSnippetsManager {
     static var shared = StoreOf<TWSLocalSnippetsReducer>(initialState: TWSLocalSnippetsReducer.State(), reducer: { TWSLocalSnippetsReducer() })
     
-    public static func getPreloadedResources() -> [TWSSnippet.Attachment: ResourceResponse] {
-        return shared.state.preloadedResources
-    }
-    
     public static func saveLocalSnippet(_ snippet: TWSSnippet) {
         shared.send(.business(.saveLocalSnippet(snippet)))
     }
