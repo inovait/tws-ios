@@ -421,7 +421,7 @@ struct WebView: UIViewRepresentable {
                     if let content {
                         logger.debug("Load from raw HTML: \(url.absoluteString)")
                         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
-                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: url), responseHTML: htmlToLoad))
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: content.responseUrl ?? url), responseHTML: htmlToLoad))
                     }
                 },
                 onError: { err in
