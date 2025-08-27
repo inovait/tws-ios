@@ -19,7 +19,7 @@ import SwiftUI
 @MainActor
 protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
 
-    func load(url: URLRequest)
+    func load(url: URLRequest, behaveAsSpa: Bool)
     func navigateBack()
     func navigateForward()
     func reload()
@@ -128,7 +128,10 @@ public class TWSViewNavigator: Sendable {
     }
     
     /// Triggers the delegate to load specified url into the webView.
-    public func load(url: URLRequest) {
-        delegate?.load(url: url)
+    /// Parameter behaveAsSpa is provided as a helper, if there is a need to differenciate between
+    /// MPA and SPA loads.
+    /// > Note: If you do not need to actually load content it is prefered to use pushState/replaceState methods.
+    public func load(url: URLRequest, behaveAsSpa: Bool = false) {
+        delegate?.load(url: url, behaveAsSpa: behaveAsSpa)
     }
 }
