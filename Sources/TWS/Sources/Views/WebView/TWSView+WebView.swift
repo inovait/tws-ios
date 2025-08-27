@@ -375,7 +375,7 @@ struct WebView: UIViewRepresentable {
         webView: WKWebView,
         loadUrl: URLRequest,
         coordinator: Coordinator,
-        isSPA: Bool
+        behaveAsSpa: Bool
     ) {
         guard let url = loadUrl.url else { return }
         let initialUrl = initialUrl()
@@ -405,7 +405,7 @@ struct WebView: UIViewRepresentable {
             return
         }
         
-        if isSPA {
+        if behaveAsSpa {
             let snippetToReload = TWSSnippet(id: "reloadSnippet", target: url, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
             
             let store: StoreOf<TWSSnippetFeature> = .init(

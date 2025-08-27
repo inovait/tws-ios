@@ -18,10 +18,10 @@ import Foundation
 import WebKit
 
 extension WebView.Coordinator: TWSViewNavigatorDelegate {
-    func load(url: URLRequest, isSPA: Bool = false) {
+    func load(url: URLRequest, behaveAsSpa: Bool = false) {
         assert(webView != nil)
         if let webView {
-            parent.loadWithConditionallyProcessedResources(webView: webView, loadUrl: url, coordinator: self, isSPA: isSPA)
+            parent.loadWithConditionallyProcessedResources(webView: webView, loadUrl: url, coordinator: self, behaveAsSpa: behaveAsSpa)
         }
     }
     
