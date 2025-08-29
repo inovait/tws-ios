@@ -47,7 +47,7 @@ struct InjectionTests {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Example Page</title>
-<style>body { background-color: red; }</style><script>alert('Hello, world!');</script></head>
+<style>body { background-color: red; }</style><script>var tws_injected = true;</script><script>alert('Hello, world!');</script></head>
 <body>
   <h1>Welcome to My Page</h1>
   <p>This is a basic example of an HTML document structure with a head and body.</p>
@@ -77,7 +77,7 @@ struct InjectionTests {
         let expectedResult =
 """
 <!DOCTYPE html>
-<html lang="en"><script>alert('Hello, world!');</script><style>body { background-color: red; }</style>
+<html lang="en"><script>var tws_injected = true;</script><script>alert('Hello, world!');</script><style>body { background-color: red; }</style>
 <body>
   <h1>Welcome to My Page</h1>
   <p>This is a basic example of an HTML document structure with a head and body.</p>
@@ -104,7 +104,7 @@ struct InjectionTests {
     func injectToEndOfFile(html: String, css: String, javascript: String) async throws {
         let expectedResult =
 """
-<script>alert('Hello, world!');</script><!DOCTYPE html>
+<script>var tws_injected = true;</script><script>alert('Hello, world!');</script><!DOCTYPE html>
 <body>
   <h1>Welcome to My Page</h1>
   <p>This is a basic example of an HTML document structure with a head and body.</p>
