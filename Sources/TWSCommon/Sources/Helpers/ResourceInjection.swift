@@ -38,7 +38,8 @@ public func injectCSS(for html: inout String, css: String) {
 }
 
 public func injectJavaScript(for html: inout String, javascript: String) {
-    let scriptTag = "<script>\(javascript)</script>"
+    let TWSFlag = "<script>var tws_injected = true;</script>"
+    let scriptTag = "\(TWSFlag)<script>\(javascript)</script>"
     
     if html.contains("<head>") {
         html = html.replacingOccurrences(of: "</head>", with: "\(scriptTag)</head>")

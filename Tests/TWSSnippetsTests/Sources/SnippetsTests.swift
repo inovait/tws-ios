@@ -672,7 +672,7 @@ final class SnippetsTests: XCTestCase {
                         <html anything goes here>
                             <head>
                                 some content here
-                            <style>body { color: red; }</style><script>alert('Hello World!')</script></head>
+                            <style>body { color: red; }</style><script>var tws_injected = true;</script><script>alert('Hello World!')</script></head>
                             <body>
                                 some content here
                             </body>
@@ -681,7 +681,7 @@ final class SnippetsTests: XCTestCase {
         
         let expectedResponse2 =
                     """
-                        <html anything goes here><script>alert('Hello World!')</script><style>body { color: red; }</style>
+                        <html anything goes here><script>var tws_injected = true;</script><script>alert('Hello World!')</script><style>body { color: red; }</style>
                             <body>
                                 some content here
                             </body>
@@ -690,7 +690,7 @@ final class SnippetsTests: XCTestCase {
         
         let expectedResponse3 =
                     """
-                        <script>alert('Hello World!')</script><body>
+                        <script>var tws_injected = true;</script><script>alert('Hello World!')</script><body>
                             some content here
                         </body><style>body { color: red; }</style>
                         """
