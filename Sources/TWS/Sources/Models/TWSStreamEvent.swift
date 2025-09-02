@@ -14,8 +14,6 @@
 //  limitations under the License.
 //
 
-import TWSModels
-
 /// Events that are sent to ``TWSManager`` regarding updates
 public enum TWSStreamEvent: Sendable {
 
