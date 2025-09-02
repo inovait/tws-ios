@@ -8,14 +8,6 @@ public struct TWSAPI {
         _ projectId: TWSBasicConfiguration
     ) async throws(APIError) -> (TWSProject, Date?)
 
-    public var getSharedToken: @Sendable (
-        _ sharedId: TWSSharedConfiguration
-    ) async throws(APIError) -> String
-
-    public var getSnippetByShareToken: @Sendable (
-        _ token: String
-    ) async throws(APIError) -> (TWSProject, Date?)
-
     public let getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> ResourceResponse
@@ -45,47 +37,6 @@ public struct TWSAPI {
                     decoder.dateDecodingStrategy = isoDateDecoder
 
                     return (try decoder.decode(TWSProject.self, from: result.data), result.dateOfResponse)
-                } catch {
-                    throw APIError.decode(error)
-                }
-            },
-            getSharedToken: { shared throws(APIError) in
-                let result = try await Router.make(request: .init(
-                    method: .get,
-                    scheme: baseUrl.scheme,
-                    path: "/shared/\(shared.id)",
-                    host: baseUrl.host,
-                    queryItems: [],
-                    headers: [
-                        "Accept": "application/json"
-                    ],
-                    auth: true
-                ))
-
-                do {
-                    let sharedTokenResponse = try JSONDecoder().decode(TWSSharedToken.self, from: result.data)
-                    return sharedTokenResponse.shareToken
-                } catch {
-                    throw APIError.decode(error)
-                }
-            },
-            getSnippetByShareToken: { token throws(APIError) in
-                let result = try await Router.make(request: .init(
-                    method: .get,
-                    scheme: baseUrl.scheme,
-                    path: "/snippets/shared",
-                    host: baseUrl.host,
-                    queryItems: [
-                        URLQueryItem(name: "shareToken", value: token)
-                    ],
-                    headers: [
-                        "Accept": "application/json"
-                    ],
-                    auth: true
-                ))
-
-                do {
-                    return (try JSONDecoder().decode(TWSProject.self, from: result.data), result.dateOfResponse)
                 } catch {
                     throw APIError.decode(error)
                 }

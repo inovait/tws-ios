@@ -45,7 +45,6 @@ struct WebView: UIViewRepresentable {
     let openURL: URL?
     let snippetHeightProvider: SnippetHeightProvider
     let navigationProvider: NavigationProvider
-    let onUniversalLinkDetected: (URL) -> Void
     let downloadCompleted: ((TWSDownloadState) -> Void)?
     let enablePullToRefresh: Bool
     
@@ -62,7 +61,6 @@ struct WebView: UIViewRepresentable {
         openURL: URL?,
         snippetHeightProvider: SnippetHeightProvider,
         navigationProvider: NavigationProvider,
-        onUniversalLinkDetected: @escaping @Sendable @MainActor (URL) -> Void,
         canGoBack: Binding<Bool>,
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
@@ -79,7 +77,6 @@ struct WebView: UIViewRepresentable {
         self.openURL = openURL
         self.snippetHeightProvider = snippetHeightProvider
         self.navigationProvider = navigationProvider
-        self.onUniversalLinkDetected = onUniversalLinkDetected
         self._dynamicHeight = dynamicHeight
         self._canGoBack = canGoBack
         self._canGoForward = canGoForward

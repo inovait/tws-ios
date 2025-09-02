@@ -16,7 +16,6 @@
 
 import Foundation
 @preconcurrency import WebKit
-internal import TWSUniversalLinks
 internal import TWSCommon
 
 extension WebView.Coordinator: WKNavigationDelegate {
@@ -165,15 +164,6 @@ extension WebView.Coordinator: WKNavigationDelegate {
             logger.info("Google OAuth request detected.")
             redirectedToSafari = true
             UIApplication.shared.open(url, options: [:])
-            decisionHandler(.cancel, preferences)
-            return
-        }
-
-        // Handle deep links that are opened internally
-        if let url = navigationAction.request.url,
-           (try? TWSUniversalLinkRouter.route(for: url)) != nil {
-            logger.info("Internal deep link detected: \(url)")
-            parent.onUniversalLinkDetected(url)
             decisionHandler(.cancel, preferences)
             return
         }

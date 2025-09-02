@@ -31,7 +31,7 @@ class NoopPresenter: TWSPresenter {
     
     func isVisible(snippet _: TWSSnippet) -> Bool { true }
     
-    func handleIncomingUrl(_ url: URL) { }
+    
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? { TWSLocalSnippetsManager.store(for: id) }
     
     func saveLocalSnippet(_ snippet: TWSSnippet) {

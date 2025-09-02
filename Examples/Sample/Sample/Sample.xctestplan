@@ -60,13 +60,6 @@
         "identifier" : "TWSNotificationsTests",
         "name" : "TWSNotificationsTests"
       }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..",
-        "identifier" : "TWSUniversalLinksTests",
-        "name" : "TWSUniversalLinksTests"
-      }
     }
   ],
   "version" : 1

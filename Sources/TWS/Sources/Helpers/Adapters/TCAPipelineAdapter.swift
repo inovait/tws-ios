@@ -46,8 +46,6 @@ extension AnyCasePath {
             embed: { _ in fatalError("Embedding is no valid") },
             extract: { action in
                 switch action {
-                case let .universalLinks(.delegate(.configurationLoaded(config))):
-                    return .universalLinkConfigurationLoaded(config)
 
                 case .snippetsDidChange:
                     return .snippetsUpdated
