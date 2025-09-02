@@ -52,32 +52,6 @@ public extension Reducer {
         }
     }
 
-    func downloadAndInjectResources(
-        for sharedSnippet: TWSSharedSnippet,
-        using api: APIDependency
-    ) async -> Result<ResourceResponse, APIError> {
-        var headers = [TWSSnippet.Attachment: [String: String]]()
-        let homepage = TWSSnippet.Attachment.init(
-            url: sharedSnippet.snippet.target,
-            contentType: .html
-        )
-        
-        let resources = sharedSnippet.allResources(headers: &headers, homepage: homepage)
-        do {
-            return try await _downloadAndInjectResources(
-                htmlResource: homepage,
-                resources: resources,
-                headers: headers,
-                using: api
-            )
-        } catch let err as APIError {
-            return .failure(err)
-        } catch {
-            logger.err("\(error)")
-            return .failure(.local(error))
-        }
-    }
-
     // MARK: - Helpers
 
     private func _downloadAndInjectResources(

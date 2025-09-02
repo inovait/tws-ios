@@ -208,46 +208,6 @@ public final class TWSManager: Identifiable {
         throw LoggerError.bundleIdNotAvailable
     }
 
-    /// Handles universal links related to snippets
-    /// - Parameter url: The universal link to process.
-    ///
-    /// ## Discussion
-    ///
-    /// When an app is opened with an universal link, forward the call to ``TWS`` to give it an opportunity to parse the URL.
-    ///
-    /// ```swift
-    /// .onOpenURL(perform: { url in
-    ///    twsViewModel.handleIncomingUrl(url)
-    /// })
-    /// // This is needed when a link is opened by scanning a QR code with the camera app.
-    /// // In that case, the `onOpenURL` is not called.
-    /// .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: { userActivity in
-    ///    guard let url = userActivity.webpageURL
-    ///    else { return }
-    ///    twsViewModel.handleIncomingUrl(url)
-    /// })
-    /// ```
-    ///
-    /// If the link is a valid TWS universal link, it will be parsed and you will be notified about it by subscribing to the ``TWSManager/observe(onEvent:)`` queue:
-    ///
-    /// ```swift
-    /// ZStack {
-    ///     ...
-    /// }
-    /// // Bind it to the lifetime of the view
-    /// .task {
-    ///    await twsManager.observe() { event in
-    ///     switch event {
-    ///         ...
-    ///     }
-    ///    }
-    /// }
-    /// ```
-    public func handleIncomingUrl(_ url: URL) {
-        precondition(Thread.isMainThread, "`handleIncomingUrl(url:)` can only be called on main thread")
-        store.send(.universalLinks(.business(.onUniversalLink(url))))
-    }
-
     // MARK: - Helpers
 
     private func _run() {
@@ -263,7 +223,6 @@ public final class TWSManager: Identifiable {
             .compactMap {
                 switch $0 {
                 case .snippetsUpdated: return _React.snippets
-                case .universalLinkConfigurationLoaded: return nil
                 case .stateChanged: return .state
                 case .shouldOpenCampaign: return nil
                 }

@@ -53,7 +53,6 @@ let package = Package(
                 .target(name: "TWSCommon"),
                 .target(name: "TWSSnippets"),
                 .target(name: "TWSSettings"),
-                .target(name: "TWSUniversalLinks"),
                 .target(name: "TWSLogger"),
                 .target(name: "TWSFormatters")
             ],
@@ -138,15 +137,6 @@ let package = Package(
             path: "Sources/TWSLogger"
         ),
         .target(
-            name: "TWSUniversalLinks",
-            dependencies: [
-                .target(name: "TWSModels"),
-                .target(name: "TWSCommon"),
-                .target(name: "TWSLogger")
-            ],
-            path: "Sources/TWSUniversalLinks"
-        ),
-        .target(
             name: "TWSNotifications",
             dependencies: [
                 .target(name: "TWS")
@@ -189,14 +179,6 @@ let package = Package(
                 .target(name: "TWSLogger")
             ],
             path: "Tests/TWSLoggerTests"
-        ),
-        .testTarget(
-            name: "TWSUniversalLinksTests",
-            dependencies: [
-                .target(name: "TWSUniversalLinks"),
-                .target(name: "TWSCookieManager")
-            ],
-            path: "Tests/TWSUniversalLinksTests"
         ),
         .testTarget(
             name: "RouterTests",

@@ -19,10 +19,6 @@ import TWSModels
 /// Events that are sent to ``TWSManager`` regarding updates
 public enum TWSStreamEvent: Sendable {
 
-    /// This event is sent when a project from the universal link is processed
-    /// - Parameter TWSSharedConfiguration: A configuration with the corresponding shared id, for the recieved url
-    case universalLinkConfigurationLoaded(TWSSharedConfiguration)
-
     /// This event is sent when there are new snippets available
     case snippetsUpdated
 
