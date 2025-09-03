@@ -21,14 +21,12 @@ extension WebView.Coordinator {
     @MainActor
     class PullToRefresh {
 
-        private weak var webView: WKWebView?
         var refreshRequest: PullToRefreshRequest?
         private var reload : (() -> Void)? = nil
 
 
         func enable(on webView: WKWebView, reload: @escaping () -> Void) {
             self.reload = reload
-            self.webView = webView
 
             let refreshControl = UIRefreshControl()
             refreshControl.addTarget(
