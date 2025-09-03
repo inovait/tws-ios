@@ -33,12 +33,7 @@ extension TWSSnippetsFeature {
             return idx1 < idx2
         }
 
-        #if TESTING
-        // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
         state.snippets.sort(by: _algo)
-        #else
-        state.$snippets.withLock { $0.sort(by: _algo)}
-        #endif
     }
 
     func listen(

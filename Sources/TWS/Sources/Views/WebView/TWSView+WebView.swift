@@ -255,14 +255,9 @@ struct WebView: UIViewRepresentable {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
             return webView.loadSimulatedRequest(URLRequest(url: content.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
-        } else {
-            logger.debug("Load from url: \(targetURL.absoluteString)")
-            var urlRequest = URLRequest(url: self.targetURL)
-            snippet.headers?.forEach { header in
-                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
-            }
-            return webView.load(urlRequest)
         }
+        
+        return nil
     }
 
     // MARK: - Permissions

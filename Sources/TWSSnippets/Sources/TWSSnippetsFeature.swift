@@ -175,23 +175,11 @@ public struct TWSSnippetsFeature: Sendable {
                     } else {
                         logger.info("Saved snippet: \(snippet.id)")
                     }
-                    #if TESTING
-                    // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-                    state.snippets[id: snippet.id]?.snippet = snippet
-                    #else
-                    state.$snippets[id: snippet.id].withLock { $0?.snippet = snippet }
-                    #endif
-
                     
+                    state.snippets[id: snippet.id]?.snippet = snippet
                 } else {
                     let new = TWSSnippetFeature.State(snippet: snippet)
-
-                    #if TESTING
-                    // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                     state.snippets.append(new)
-                    #else
-                    _ = state.$snippets.withLock { $0.append(new)}
-                    #endif
 
                     logger.info("Added snippet: \(snippet.id)")
                 }
@@ -200,12 +188,8 @@ public struct TWSSnippetsFeature: Sendable {
             // Remove old
 
             for id in currentOrder.subtracting(newOrder) {
-                #if TESTING
-                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
                 state.snippets.remove(id: id)
-                #else
-                _ = state.$snippets.withLock { $0.remove(id: id) }
-                #endif
+                
                 logger.info("Removed snippet: \(id)")
             }
 
@@ -306,12 +290,8 @@ public struct TWSSnippetsFeature: Sendable {
         case let .setLocalProps(props):
             let id = props.0
             let localProps = props.1
-            #if TESTING
-            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: id]?.localProps = .dictionary(localProps)
-            #else
-            state.$snippets[id: id].withLock { $0?.localProps = .dictionary(localProps) }
-            #endif
+            
             return .none
 
         case let .snippets(.element(_, action: .delegate(delegateAction))):
@@ -331,22 +311,12 @@ public struct TWSSnippetsFeature: Sendable {
             return .none
 
         case .showSnippet(snippetId: let snippetId):
-            #if TESTING
-            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: snippetId]?.isVisible = true
-            #else
-            state.$snippets[id: snippetId].withLock { $0?.isVisible = true }
-            #endif
 
             return .none
 
         case .hideSnippet(snippetId: let snippetId):
-            #if TESTING
-            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets[id: snippetId]?.isVisible = false
-            #else
-            state.$snippets[id: snippetId].withLock { $0?.isVisible = false }
-            #endif
 
             return .none
         case .sendTrigger(let trigger):

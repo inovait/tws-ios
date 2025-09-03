@@ -26,13 +26,8 @@ extension TWSSnippetsFeature {
     @ObservableState
     public struct State: Equatable {
 
-        #if TESTING
-        // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
         public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
-        #else
-        @ObservationStateIgnored
-        @Sharing.Shared public internal(set) var snippets: IdentifiedArrayOf<TWSSnippetFeature.State>
-        #endif
+
         public internal(set) var campaignSnippets: IdentifiedArrayOf<TWSSnippetFeature.State>
         
         @ObservationStateIgnored
@@ -50,14 +45,11 @@ extension TWSSnippetsFeature {
             serverTime: Date? = nil
         ) {
             self.campaignSnippets = .init()
-            #if TESTING
-            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
+            
             self.snippets = .init(
                 uniqueElements: (snippets ?? []).map { .init(snippet: $0) }
             )
-            #else
-            _snippets = Shared(wrappedValue: [], .snippets(for: configuration))
-            #endif
+
             _snippetDates = Shared(wrappedValue: [:], .snippetDates(for: configuration))
 
             if let snippets {
@@ -71,12 +63,7 @@ extension TWSSnippetsFeature {
                     }
                 }
 
-                #if TESTING
-                // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
-                self.snippets = .init(uniqueElements: state)
-                #else
-                self.$snippets.withLock { $0 = .init(uniqueElements: state) }
-                #endif
+                self.snippets = .init(uniqueElements: state)                
             }
 
             state = self.snippets.isEmpty ? .idle : .loaded
