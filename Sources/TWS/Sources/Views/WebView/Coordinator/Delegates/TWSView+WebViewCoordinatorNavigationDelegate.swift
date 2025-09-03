@@ -154,8 +154,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         preferences: WKWebpagePreferences,
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
-        logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction)")
-        if let url = navigationAction.request.url, interceptor?.handleIntercept(.url(url)) == true {
+        logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
+        if let url = navigationAction.request.url,
+           !pullToRefresh.verifyForRefresh(urlRequest: navigationAction.request),
+            interceptor?.handleIntercept(.url(url)) == true {
             decisionHandler(.cancel, preferences)
             return
         }

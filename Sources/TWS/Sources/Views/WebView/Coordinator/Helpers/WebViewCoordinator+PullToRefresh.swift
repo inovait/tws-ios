@@ -22,8 +22,7 @@ extension WebView.Coordinator {
     class PullToRefresh {
 
         private weak var webView: WKWebView?
-        private var refreshRequest: PullToRefreshRequest?
-
+        var refreshRequest: PullToRefreshRequest?
         private var reload : (() -> Void)? = nil
 
 
@@ -41,46 +40,38 @@ extension WebView.Coordinator {
             webView.scrollView.addSubview(refreshControl)
         }
 
+        func verifyForRefresh(urlRequest: URLRequest) -> Bool {
+            guard
+                let request = refreshRequest,
+                request.navigation.request.url == urlRequest.url
+            else { return false }
+            
+            return true
+        }
+        
         func verifyForRefresh(navigation: WKNavigation) -> Bool {
             guard
                 let request = refreshRequest,
-                request.navigation === navigation
+                request.navigation.WKNavigation === navigation
             else { return false }
-
             request.continuation?.resume()
             refreshRequest = nil
             return true
         }
         
-        func setNavigationRequest(navigation: WKNavigation?) {
+        func setNavigationRequest(navigation: NavigationDetails?) {
             guard let navigation else { return }
-            refreshRequest = .init(continuation: nil, navigation: navigation)
+            Task {
+                await withCheckedContinuation { continuation in
+                    refreshRequest = .init(continuation: continuation, navigation: navigation)
+                }
+            }
         }
 
         // MARK: - Helpers
 
         private func refreshWithContinuation() async {
-            await withCheckedContinuation { continuation in
-                guard let reload = reload
-                else { continuation.resume(); return }
-                
-                reload()
-                continuation.resume()
-            }
-        }
-        
-        private func _fire() async {
-            guard let webView else { return }
-
-            await withCheckedContinuation { continuation in
-                guard let navigation = webView.reload()
-                else { continuation.resume(); return }
-
-                refreshRequest = .init(
-                    continuation: continuation,
-                    navigation: navigation
-                )
-            }
+            reload?()
         }
 
         // MARK: - Observers
@@ -89,22 +80,23 @@ extension WebView.Coordinator {
             Task { [weak sender] in
                 if let reload = reload {
                     await refreshWithContinuation()
-                } else {
-                    await _fire()
                 }
                 sender?.endRefreshing()
             }
         }
     }
 
-    private class PullToRefreshRequest {
+    class PullToRefreshRequest: CustomStringConvertible {
+        var description: String {
+            "\(self.navigation.WKNavigation)-\(self.navigation.request)"
+        }
 
-        let continuation: CheckedContinuation<Void, Never>?
-        let navigation: WKNavigation
+        var continuation: CheckedContinuation<Void, Never>?
+        let navigation: NavigationDetails
 
         init(
             continuation: CheckedContinuation<Void, Never>?,
-            navigation: WKNavigation
+            navigation: NavigationDetails
         ) {
             self.continuation = continuation
             self.navigation = navigation
