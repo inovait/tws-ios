@@ -156,6 +156,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
         if let url = navigationAction.request.url,
+           navigationAction.targetFrame?.isMainFrame ?? true,
            !pullToRefresh.verifyForRefresh(urlRequest: navigationAction.request),
             interceptor?.handleIntercept(.url(url)) == true {
             decisionHandler(.cancel, preferences)
