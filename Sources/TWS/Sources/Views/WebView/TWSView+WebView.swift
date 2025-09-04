@@ -242,7 +242,7 @@ struct WebView: UIViewRepresentable {
         }
     }
     
-    func loadProcessedContent(webView: WKWebView) -> NavigationDetails? {
+    func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
         // If error is present before the initial load resources were not fetched succesfully
         if let err = snippetStore?.error {
             updateState(for: webView, loadingState: .failed(err))
@@ -254,18 +254,14 @@ struct WebView: UIViewRepresentable {
         if let content = htmlContent {
             logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
             let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
-            let urlRequest = URLRequest(url: content.responseUrl ?? self.targetURL)
-            let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
-            
-            return NavigationDetails(WKNavigation: navigation, request: urlRequest)
+            return webView.loadSimulatedRequest(URLRequest(url: content.responseUrl ?? self.targetURL), responseHTML: htmlToLoad)
         } else {
             logger.debug("Load from url: \(targetURL.absoluteString)")
             var urlRequest = URLRequest(url: self.targetURL)
             snippet.headers?.forEach { header in
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
             }
-            let navigation =  webView.load(urlRequest)
-            return NavigationDetails(WKNavigation: navigation, request: urlRequest)
+            return webView.load(urlRequest)
         }
     }
 
@@ -316,12 +312,10 @@ struct WebView: UIViewRepresentable {
             resourceDownloadHandler.loadNewStore(
                 snippetStore,
                 onSuccess: { content in
-                    let urlRequest = URLRequest(url: (initialUrl ?? content?.responseUrl) ?? targetURL)
+                    let requestUrl = (initialUrl ?? content?.responseUrl) ?? targetURL
                     if let content {
                         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetStore.snippet)
-                        let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
-                        let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
-                        coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: requestUrl), responseHTML: htmlToLoad))
                     }
                 },
                 onError: { err in
@@ -357,10 +351,7 @@ struct WebView: UIViewRepresentable {
                     if let content {
                         logger.debug("Load from raw HTML: \(currentUrl.absoluteString)")
                         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
-                        let urlRequest = URLRequest(url: currentUrl)
-                        let navigation = webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad)
-                        let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
-                        coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad))
                     }
                 },
                 onError: { err in
@@ -374,10 +365,7 @@ struct WebView: UIViewRepresentable {
         if initialUrl != state.lastLoadedUrl {
             // Normal MPA reload
             if let currentUrl = state.currentUrl, currentUrl != htmlContent?.responseUrl {
-                let urlRequest = URLRequest(url: currentUrl)
-                let navigation = webView.load(URLRequest(url: currentUrl))
-                let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
-                coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
+                coordinator.pullToRefresh.setNavigationRequest(navigation: webView.load(URLRequest(url: currentUrl)))
                 return
             }
         }
@@ -433,10 +421,7 @@ struct WebView: UIViewRepresentable {
                     if let content {
                         logger.debug("Load from raw HTML: \(url.absoluteString)")
                         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
-                        let urlRequest = URLRequest(url: content.responseUrl ?? url)
-                        let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
-                        let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
-                        coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
+                        coordinator.pullToRefresh.setNavigationRequest(navigation: webView.loadSimulatedRequest(URLRequest(url: content.responseUrl ?? url), responseHTML: htmlToLoad))
                     }
                 },
                 onError: { err in
@@ -449,11 +434,6 @@ struct WebView: UIViewRepresentable {
             webView.load(loadUrl)
         }
     }
-}
-
-struct NavigationDetails {
-    let WKNavigation: WKNavigation?
-    let request: URLRequest
 }
 
 extension WebView {
