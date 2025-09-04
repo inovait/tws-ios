@@ -49,7 +49,6 @@ extension WebView.Coordinator: WKNavigationDelegate {
                                 self.parent.state.lastLoadedUrl = url
                             }
                         }
-                        
                         self.parent.state.currentUrl = url
                     }
                 }
