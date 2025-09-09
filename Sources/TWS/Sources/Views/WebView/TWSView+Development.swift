@@ -27,12 +27,32 @@ extension WebView {
 
         return """
         (function() {
-            var originalLog = console.log;
-            function captureLog(msg) {
-                originalLog.apply(console, arguments);
-                window.webkit.messageHandlers.consoleLogHandler.postMessage(msg);
-            }
-            console.log = captureLog;
+            const consoleMethods = ['log', 'warn', 'error', 'info', 'debug', 'trace'];
+
+            consoleMethods.forEach(method => {
+                const original = console[method];
+
+                console[method] = function(...args) {
+                    original.apply(console, args);
+
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.consoleLogHandler) {
+                        try {
+                            window.webkit.messageHandlers.consoleLogHandler.postMessage({
+                                type: method,
+                                message: args.map(arg => {
+                                    try {
+                                        return typeof arg === 'object' ? JSON.stringify(arg) : String(arg);
+                                    } catch {
+                                        return String(arg);
+                                    }
+                                }).join(' ')
+                            });
+                        } catch (e) {
+                            
+                        }
+                    }
+                };
+            });
         })();
         """
     }
