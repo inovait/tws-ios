@@ -115,7 +115,7 @@ struct WebView: UIViewRepresentable {
         if enablePullToRefresh {
             // process content on reloads
             context.coordinator.pullToRefresh.enable(on: webView) {
-                reloadWithProcessedResources(webView: webView, coordinator: context.coordinator)
+                reloadWithProcessedResources(webView: webView, coordinator: context.coordinator, isPullToRefresh: true)
             }
         }
 
@@ -302,9 +302,13 @@ struct WebView: UIViewRepresentable {
     
     func reloadWithProcessedResources(
         webView: WKWebView,
-        coordinator: Coordinator
+        coordinator: Coordinator,
+        isPullToRefresh: Bool = false
     ) {
         let initialUrl = initialUrl()
+        if !isPullToRefresh {
+            updateState(for: webView, loadingState: .loading(progress: 0))
+        }
         
         if initialUrl == state.currentUrl || htmlContent == nil {
             // Reload on initial page
@@ -391,6 +395,7 @@ struct WebView: UIViewRepresentable {
     ) {
         guard let url = loadUrl.url else { return }
         let initialUrl = initialUrl()
+        updateState(for: webView, loadingState: .loading(progress: 0))
         
         // When navigating to initial url
         if url == initialUrl {
