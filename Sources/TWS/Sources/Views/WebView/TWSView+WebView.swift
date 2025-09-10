@@ -103,6 +103,9 @@ struct WebView: UIViewRepresentable {
         configuration.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        #if DEBUG
+        webView.isInspectable = true
+        #endif
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
         webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
         webView.scrollView.bounces = true
