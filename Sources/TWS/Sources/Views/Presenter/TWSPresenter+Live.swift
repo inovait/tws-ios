@@ -44,10 +44,6 @@ class LivePresenter: TWSPresenter {
         manager?.store.snippets.snippets[id: snippet.id]?.isVisible ?? false
     }
 
-    func handleIncomingUrl(_ url: URL) {
-        manager?.handleIncomingUrl(url)
-    }
-
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? {
         manager?.store.scope(
             state: \.snippets.snippets[id: id],

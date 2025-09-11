@@ -66,15 +66,6 @@ public struct TWSSnippetsFeature: Sendable {
                     } catch {
                         await send(.business(.projectLoaded(.failure(error))))
                     }
-                case let config as TWSSharedConfiguration:
-                    do {
-                        let sharedToken = try await api.getSharedToken(config)
-                        let sharedSnippet = try await api.getSnippetBySharedToken(sharedToken)
-                        await send(.business(.projectLoaded(.success(.init(
-                            project: sharedSnippet.0,
-                            serverDate: sharedSnippet.1
-                        )))))
-                    }
                 default:
                     return
                 }

@@ -42,10 +42,6 @@ class CampaignPresenter: TWSPresenter {
         manager?.store.snippets.campaignSnippets[id: snippet.id]?.isVisible ?? false
     }
     
-    func handleIncomingUrl(_ url: URL) {
-        manager?.handleIncomingUrl(url)
-    }
-    
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>? {
         manager?.store.scope(
             state: \.snippets.campaignSnippets[id: id],

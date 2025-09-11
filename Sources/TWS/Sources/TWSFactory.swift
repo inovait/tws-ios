@@ -93,8 +93,7 @@ public class TWSFactory {
                 configuration: configuration,
                 snippets: snippets,
                 socketURL: socketURL
-            ),
-            universalLinks: .init()
+            )
         )
 
         let storage = state.snippets.snippets.map(\.snippet)

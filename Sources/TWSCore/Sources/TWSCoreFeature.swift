@@ -2,7 +2,6 @@ import Foundation
 import ComposableArchitecture
 import TWSSettings
 import TWSSnippets
-import TWSUniversalLinks
 import TWSModels
 
 @Reducer
@@ -13,16 +12,13 @@ public struct TWSCoreFeature {
 
         public var settings: TWSSettingsFeature.State
         public var snippets: TWSSnippetsFeature.State
-        public var universalLinks: TWSUniversalLinksFeature.State
 
         public init(
             settings: TWSSettingsFeature.State,
-            snippets: TWSSnippetsFeature.State,
-            universalLinks: TWSUniversalLinksFeature.State
+            snippets: TWSSnippetsFeature.State
         ) {
             self.settings = settings
             self.snippets = snippets
-            self.universalLinks = universalLinks
         }
     }
 
@@ -35,7 +31,6 @@ public struct TWSCoreFeature {
         case snippetsDidChange
         case stateChanged
         case openOverlay(TWSSnippet)
-        case universalLinks(TWSUniversalLinksFeature.Action)
     }
 
     public var body: some ReducerOf<Self> {
@@ -56,10 +51,6 @@ public struct TWSCoreFeature {
         
         Scope(state: \.snippets, action: \.snippets) {
             TWSSnippetsObserverFeature()
-        }
-
-        Scope(state: \.universalLinks, action: \.universalLinks) {
-            TWSUniversalLinksFeature()
         }
     }
 }
