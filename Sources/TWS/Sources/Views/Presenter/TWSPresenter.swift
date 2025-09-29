@@ -25,6 +25,5 @@ protocol TWSPresenter {
     var heightProvider: SnippetHeightProvider { get }
 
     func isVisible(snippet: TWSSnippet) -> Bool
-    func handleIncomingUrl(_ url: URL)
     func store(forSnippetID id: String) -> StoreOf<TWSSnippetFeature>?
 }

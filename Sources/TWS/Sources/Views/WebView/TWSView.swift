@@ -175,10 +175,6 @@ private struct _TWSView: View {
             openURL: openURL,
             snippetHeightProvider: presenter.heightProvider,
             navigationProvider: presenter.navigationProvider,
-            onUniversalLinkDetected: { url in
-                assert(Thread.isMainThread)
-                presenter.handleIncomingUrl(url)
-            },
             canGoBack: $navigator.canGoBack,
             canGoForward: $navigator.canGoForward,
             downloadCompleted: onDownloadCompleted,
