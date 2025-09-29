@@ -28,11 +28,3 @@ public struct TWSBasicConfiguration: TWSConfiguration, Equatable {
         self.id = id
     }
 }
-
-/// A configuration type, that enables ``TWSManager`` to fetch shared snippet using share token. A valid tws-service.json file is not required.
-public struct TWSSharedConfiguration: TWSConfiguration, Equatable {
-    public let id: String
-    public init(id: String) {
-        self.id = id
-    }
-}

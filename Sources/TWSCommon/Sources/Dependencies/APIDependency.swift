@@ -29,20 +29,6 @@ public struct APIDependency: Sendable {
         throw APIError.local(NSError(domain: "", code: -1))
     }
 
-    public var getSharedToken: @Sendable (
-        TWSSharedConfiguration
-    ) async throws(APIError) -> String = {_ throws(APIError) in
-        reportIssue("\(Self.self).getSharedToken")
-        throw APIError.local(NSError(domain: "", code: -1))
-    }
-
-    public var getSnippetBySharedToken: @Sendable (
-        _ sharedToken: String
-    ) async throws(APIError) -> (TWSProject, Date?) = { _ throws(APIError) in
-        reportIssue("\(Self.self).getSnippetBySharedId")
-        throw APIError.local(NSError(domain: "", code: -1))
-    }
-
     public var getResource: @Sendable (
         TWSSnippet.Attachment, [String: String]
     ) async throws(APIError) -> ResourceResponse = { _, _ throws(APIError) in
@@ -66,8 +52,6 @@ public enum APIDependencyKey: DependencyKey {
         
         return .init(
             getProject: api.getProject,
-            getSharedToken: api.getSharedToken,
-            getSnippetBySharedToken: api.getSnippetByShareToken,
             getResource: api.getResource,
             getCampaigns: api.getCampaign
         )
@@ -76,10 +60,6 @@ public enum APIDependencyKey: DependencyKey {
 
     public static var testValue: APIDependency {
         .init { _ in
-            return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
-        } getSharedToken: { _ in
-            return ""
-        } getSnippetBySharedToken: { _ in
             return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getResource: { _, _ in
             return .init(responseUrl: nil, data: "")
