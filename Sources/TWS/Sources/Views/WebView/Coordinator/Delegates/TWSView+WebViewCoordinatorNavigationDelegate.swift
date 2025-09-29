@@ -145,7 +145,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView
     ) {
         logger.debug("[Navigation \(webView.hash)] Web content process terminated")
-        webView.reload()
+        self.parent.reloadWithProcessedResources(webView: webView, coordinator: self)
     }
 
     func webView(
