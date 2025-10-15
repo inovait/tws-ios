@@ -29,12 +29,14 @@ class ApplicationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCe
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        if TWSNotification().handleTWSPushNotification(userInfo) {
+        let notificationData = getNotificationRelevantData(from: userInfo)
+        
+        if TWSNotification().handleTWSPushNotification(notificationData) {
             return
         }
     }
         
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
@@ -43,19 +45,32 @@ class ApplicationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCe
     }
 
     
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void)
     {
         let userInfo = response.notification.request.content.userInfo
+        let notificationData = getNotificationRelevantData(from: userInfo)
         
-        if TWSNotification().handleTWSPushNotification(userInfo) {
-            print("Notification handled by TWS")
-            completionHandler()
-            return
+        Task {
+            if await TWSNotification().handleTWSPushNotification(notificationData) {
+                print("Notification handled by TWS")
+            }
         }
         
         completionHandler()
+    }
+    
+    nonisolated private func getNotificationRelevantData(from userInfo: [AnyHashable : Any]) -> [String: String] {
+        let notificationData: [String: String] = Dictionary(uniqueKeysWithValues: userInfo.compactMap { key, value in
+            if let stringKey = key as? String, let stringValue = value as? String {
+                return (stringKey, stringValue)
+            } else {
+                return nil
+            }
+        })
+        
+        return notificationData
     }
 }
