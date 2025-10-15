@@ -269,7 +269,6 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = G33XFLC26J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sample/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample uses camera for permission showcase";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sample uses location for permission showcase";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sample app uses microphone for permission showcase";
@@ -312,7 +311,6 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = G33XFLC26J;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sample/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample uses camera for permission showcase";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sample uses location for permission showcase";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sample app uses microphone for permission showcase";
