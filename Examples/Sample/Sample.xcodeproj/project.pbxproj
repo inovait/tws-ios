@@ -14,22 +14,9 @@
 		D2540D5A2D36A7320047A106 /* Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		86D251022E9F94A800A83D42 /* Exceptions for "Sample" folder in "Sample" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = D2540D592D36A7320047A106 /* Sample */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D2540D5C2D36A7320047A106 /* Sample */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				86D251022E9F94A800A83D42 /* Exceptions for "Sample" folder in "Sample" target */,
-			);
 			path = Sample;
 			sourceTree = "<group>";
 		};
