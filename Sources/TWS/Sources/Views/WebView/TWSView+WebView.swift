@@ -22,6 +22,7 @@ internal import TWSSnippet
 
 struct WebView: UIViewRepresentable {
 
+    @Environment(\.userAgent) var userAgent
     @Environment(\.navigator) var navigator
     @Environment(\.interceptor) var interceptor
     @Environment(\.errorView) var errorView
@@ -100,7 +101,7 @@ struct WebView: UIViewRepresentable {
         configuration.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
-        let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
+        let agent = userAgent ?? (webView.value(forKey: "userAgent") as? String) ?? ""
         webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
         webView.scrollView.bounces = true
         webView.scrollView.isScrollEnabled = true

@@ -27,12 +27,59 @@ extension WebView {
 
         return """
         (function() {
-            var originalLog = console.log;
-            function captureLog(msg) {
-                originalLog.apply(console, arguments);
-                window.webkit.messageHandlers.consoleLogHandler.postMessage(msg);
+          var handler = window.webkit?.messageHandlers?.consoleLogHandler;
+          if (!handler) return; // Safely exit if handler is not available
+
+          var original = {
+            log: console.log,
+            warn: console.warn,
+            error: console.error,
+            info: console.info,
+            debug: console.debug
+          };
+
+          function sendToHandler(level, args) {
+            try {
+              const message = {
+                level: level,
+                args: Array.from(args).map(a => {
+                  try {
+                    return typeof a === 'object' ? JSON.stringify(a) : String(a);
+                  } catch {
+                    return String(a);
+                  }
+                })
+              };
+              handler.postMessage(message);
+            } catch (err) {
+              original.error('Failed to send console message:', err);
             }
-            console.log = captureLog;
+          }
+
+          console.log = function() {
+            original.log.apply(console, arguments);
+            sendToHandler('log', arguments);
+          };
+
+          console.warn = function() {
+            original.warn.apply(console, arguments);
+            sendToHandler('warn', arguments);
+          };
+
+          console.error = function() {
+            original.error.apply(console, arguments);
+            sendToHandler('error', arguments);
+          };
+
+          console.info = function() {
+            original.info.apply(console, arguments);
+            sendToHandler('info', arguments);
+          };
+
+          console.debug = function() {
+            original.debug.apply(console, arguments);
+            sendToHandler('debug', arguments);
+          };
         })();
         """
     }

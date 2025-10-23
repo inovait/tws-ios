@@ -50,11 +50,13 @@ class Router {
         var urlRequest = URLRequest(url: url, timeoutInterval: 60)
         urlRequest.cachePolicy = .reloadIgnoringLocalCacheData
         urlRequest.httpMethod = request.method.rawValue.uppercased()
+        
+        urlRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         for header in request.headers {
             urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         }
         
-        urlRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        
         
         if request.method != .get {
             do {
