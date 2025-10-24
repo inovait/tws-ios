@@ -37,8 +37,8 @@ struct WebView: UIViewRepresentable {
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
-    let snippetStore: StoreOf<TWSSnippetFeature>?
-    var htmlContent: ResourceResponse? { snippetStore?.htmlContent }
+    let snippetStore: StoreOf<TWSSnippetFeature>
+    var htmlContent: ResourceResponse? { snippetStore.htmlContent }
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let displayID: String
@@ -53,7 +53,7 @@ struct WebView: UIViewRepresentable {
 
     init(
         snippet: TWSSnippet,
-        snippetStore: StoreOf<TWSSnippetFeature>?,
+        snippetStore: StoreOf<TWSSnippetFeature>,
         locationServicesBridge: LocationServicesBridge,
         cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge,
         displayID: String,
@@ -87,6 +87,7 @@ struct WebView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> WKWebView {
+        print("[svenk] make UIView")
         let controller = WKUserContentController()
 
         #if DEBUG
@@ -106,17 +107,19 @@ struct WebView: UIViewRepresentable {
         webView.scrollView.bounces = true
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true
-        webView.navigationDelegate = context.coordinator
-        webView.uiDelegate = context.coordinator
-        navigator.delegate = context.coordinator
-
+        
         if enablePullToRefresh {
             // process content on reloads
             context.coordinator.pullToRefresh.enable(on: webView) {
+                print("[svenk] Pull to refresh callback triggered")
                 reloadWithProcessedResources(webView: webView, coordinator: context.coordinator, isPullToRefresh: true)
             }
         }
 
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        navigator.delegate = context.coordinator
+        
         if let interceptor {
             controller.add(SPAInterceptorBridge(interceptor: interceptor), name: "intercept")
         }
@@ -156,6 +159,7 @@ struct WebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
+        print("[svenk] deinit webview")
         logger.debug("DEINIT WKWebView \(uiView.hash)")
         uiView.navigationDelegate = nil
         uiView.uiDelegate = nil
@@ -164,7 +168,8 @@ struct WebView: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
         // Save state at the end
-
+        print("[svenk] update UIView of WebView")
+        
         defer {
             context.coordinator.isConnectedToNetwork = isConnectedToNetwork
             context.coordinator.openURL = openURL
@@ -241,8 +246,9 @@ struct WebView: UIViewRepresentable {
     }
     
     func loadProcessedContent(webView: WKWebView) -> NavigationDetails? {
+        print("[svenk] loadProcessedContent")
         // If error is present before the initial load resources were not fetched succesfully
-        if let err = snippetStore?.error {
+        if let err = snippetStore.error {
             updateState(for: webView, loadingState: .failed(err))
             return nil
         } else {
@@ -303,6 +309,7 @@ struct WebView: UIViewRepresentable {
         coordinator: Coordinator,
         isPullToRefresh: Bool = false
     ) {
+        print("[svenk] reload with processed resources")
         let initialUrl = initialUrl()
         if !isPullToRefresh {
             updateState(for: webView, loadingState: .loading(progress: 0))
@@ -310,11 +317,6 @@ struct WebView: UIViewRepresentable {
         
         if initialUrl == state.currentUrl || htmlContent == nil {
             // Reload on initial page
-            guard let snippetStore else {
-                coordinator.pullToRefresh.setNavigationRequest(navigation: loadProcessedContent(webView: webView))
-                return
-            }
-            
             resourceDownloadHandler.loadNewStore(
                 snippetStore,
                 onSuccess: { content in
@@ -349,7 +351,7 @@ struct WebView: UIViewRepresentable {
                 initialState: TWSSnippetFeature.State(snippet: snippetToReload),
                 reducer: { TWSSnippetFeature() })
 
-            store.send(.business(.setLocalDynamicResources(snippetStore?.localDynamicResources ?? [])))
+            store.send(.business(.setLocalDynamicResources(snippetStore.localDynamicResources ?? [])))
             
             
             resourceDownloadHandler.loadNewStore(
@@ -391,16 +393,13 @@ struct WebView: UIViewRepresentable {
         coordinator: Coordinator,
         behaveAsSpa: Bool
     ) {
+        print("[svenk] loadWithConditionallyProcessedResources")
         guard let url = loadUrl.url else { return }
         let initialUrl = initialUrl()
         updateState(for: webView, loadingState: .loading(progress: 0))
         
         // When navigating to initial url
         if url == initialUrl {
-            guard let snippetStore else {
-                loadProcessedContent(webView: webView)
-                return
-            }
             
             resourceDownloadHandler.loadNewStore(
                 snippetStore,
@@ -427,7 +426,7 @@ struct WebView: UIViewRepresentable {
                 initialState: TWSSnippetFeature.State(snippet: snippetToReload),
                 reducer: { TWSSnippetFeature() })
 
-            store.send(.business(.setLocalDynamicResources(snippetStore?.localDynamicResources ?? [])))
+            store.send(.business(.setLocalDynamicResources(snippetStore.localDynamicResources ?? [])))
             
             
             resourceDownloadHandler.loadNewStore(

@@ -128,9 +128,9 @@ public struct TWSSnippetFeature: Sendable {
 
         case .business(.downloadCompleted(.success(let resource))):
             logger.info("Resources downloaded succesfully.")
-            state.contentDownloaded = true
             state.isDownloading = false
             state.htmlContent = resource
+            state.contentDownloaded = true
             
             return .none
         case .business(.downloadCompleted(.failure(let error))):

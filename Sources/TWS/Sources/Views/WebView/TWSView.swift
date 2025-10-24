@@ -70,54 +70,59 @@ public struct TWSView: View {
                             store.send(.view(.openedTWSView))
                         }
                 } else {
-                    ZStack {
-                        _TWSView(
-                            snippet: snippet,
-                            displayID: displayID,
-                            state: $state,
-                            enablePullToRefresh: enablePullToRefresh
-                        )
-                        .id(snippet.id)
-                        // The actual URL changed for the same Snippet ~ redraw is required
-                        .id(snippet.target)
-                        // Engine type changed, mustache has to be reprocessed
-                        .id(snippet.engine)
-                        // Snippet properties have updated, mustache has to be reprocessed
-                        .id(snippet.props)
-                        // Only for default location provider; starting on appear/foreground; stopping on disappear/background
-                        .conditionallyActivateDefaultLocationBehavior(
-                            locationServicesBridge: locationServicesBridge,
-                            snippet: snippet,
-                            displayID: displayID
-                        )
-                        // Check if initial load failed
-                        .onAppear {
-                            if let err = store?.error {
-                                state.loadingState = .failed(err)
-                            }
-                        }
-                        // Check if reload failed
-                        .onChange(of: store?.error) { _, new in
-                            if let err = new {
-                                state.loadingState = .failed(err)
-                            }
-                        }
-                        
+                    if let store {
                         ZStack {
-                            switch state.loadingState {
-                            case .idle:
-                                loadingView(nil)
-                            case .loading(let progress):
-                                loadingView(progress)
-                                
-                            case .loaded:
-                                EmptyView()
-                                
-                            case let .failed(error):
-                                errorView(error) { navigator.reload() }
+                            _TWSView(
+                                snippet: snippet,
+                                displayID: displayID,
+                                state: $state,
+                                enablePullToRefresh: enablePullToRefresh
+                            )
+                            .id(snippet.id)
+                            // The actual URL changed for the same Snippet ~ redraw is required
+                            .id(snippet.target)
+                            // Engine type changed, mustache has to be reprocessed
+                            .id(snippet.engine)
+                            // Snippet properties have updated, mustache has to be reprocessed
+                            .id(snippet.props)
+                            // Only for default location provider; starting on appear/foreground; stopping on disappear/background
+                            .conditionallyActivateDefaultLocationBehavior(
+                                locationServicesBridge: locationServicesBridge,
+                                snippet: snippet,
+                                displayID: displayID
+                            )
+                            // Check if initial load failed
+                            .onAppear {
+                                if let err = store.error {
+                                    state.loadingState = .failed(err)
+                                }
                             }
+                            // Check if reload failed
+                            .onChange(of: store.error) { _, new in
+                                if let err = new {
+                                    state.loadingState = .failed(err)
+                                }
+                            }
+                            
+                            ZStack {
+                                switch state.loadingState {
+                                case .idle:
+                                    loadingView(nil)
+                                case .loading(let progress):
+                                    loadingView(progress)
+                                    
+                                case .loaded:
+                                    EmptyView()
+                                    
+                                case let .failed(error):
+                                    errorView(error) { navigator.reload() }
+                                }
+                            }
+                            .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
                         }
-                        .frame(width: state.loadingState.showView ? 0 : nil, height: state.loadingState.showView ? 0 : nil)
+                        .onAppear {
+                            print("[svenk] rendering TWSView, content downloaded: \(store.contentDownloaded)")
+                        }
                     }
                 }
             }
@@ -166,7 +171,7 @@ private struct _TWSView: View {
         @Bindable var navigator = navigator
         WebView(
             snippet: snippet,
-            snippetStore: presenter.store(forSnippetID: snippet.id),
+            snippetStore: presenter.store(forSnippetID: snippet.id)!,
             locationServicesBridge: locationServiceBridge,
             cameraMicrophoneServicesBridge: cameraMicrophoneServiceBridge,
             displayID: displayID,
