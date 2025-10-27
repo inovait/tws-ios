@@ -20,52 +20,43 @@ import NotificationCenter
 struct LocalNotificationProvider {
     private let notificationCenter = UNUserNotificationCenter.current()
     
-    func sendNotification(completionHandler: @escaping ((PermissionStatus) -> Void)) async {
+    func sendNotification() async -> PermissionStatus {
         let uuid = UUID().uuidString
         let request = UNNotificationRequest(identifier: uuid, content: createNotification(), trigger: nil)
         
-        notificationCenter.getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .authorized, .ephemeral, .provisional:
-                completionHandler(.allowed)
-                return
-            case .denied:
-                completionHandler(.notAllowed)
-                return
-            case .notDetermined:
-                Task {
-                    await requestAuthorization { granted, error in
-                        if granted {
-                            Task {
-                                await sendNotification { result in completionHandler(result) }
-                            }
-                        }
-                    }
-                }
-            @unknown default:
-                break
-            }
-        }
-        
+        let settings = await notificationCenter.notificationSettings()
         do {
             try await notificationCenter.add(request)
         } catch {
             print("Notification could not be shown: \(error.localizedDescription)")
         }
+        
+        switch settings.authorizationStatus {
+        case .authorized, .ephemeral, .provisional:
+            return .allowed
+        case .denied:
+            return .notAllowed
+        case .notDetermined:
+            do {
+                if try await isPermissionGranted() {
+                    return await sendNotification()
+                }
+            } catch {
+                print("Could not check permission: \(error.localizedDescription)")
+            }
+        @unknown default:
+            break
+        }
+        
+        return .notAllowed
     }
     
-    private func requestAuthorization(completionHandler: @escaping (Bool, Error?) -> Void) async {
-        notificationCenter.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-            if let error {
-                completionHandler(false, nil)
-                return
-            }
-            
-            if granted {
-                completionHandler(true, nil)
-            } else {
-                completionHandler(false, nil)
-            }
+    private func isPermissionGranted() async throws -> Bool {
+        do {
+            let isPermissionGranted = try await notificationCenter.requestAuthorization(options: [.alert, .badge, .sound])
+            return isPermissionGranted
+        } catch {
+            throw error
         }
     }
     
