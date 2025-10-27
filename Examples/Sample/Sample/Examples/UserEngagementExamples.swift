@@ -45,14 +45,16 @@ struct UserEngagementExamples: View {
                     title: String(localized: "engagement.notification.title"),
                     content: String(localized: "engagement.notification.body"),
                     action: {
-                        Task { await LocalNotificationProvider().sendNotification { status in
+                        Task {
+                            let status = await LocalNotificationProvider().sendNotification()
+                            
                             switch status {
                             case .notAllowed:
                                 displayAlert = true
                             case .allowed:
                                 break
                             }
-                        } }
+                        }
                     })
                 UserEngagementButton(
                     title: String(localized: "engagement.campaign.title"),

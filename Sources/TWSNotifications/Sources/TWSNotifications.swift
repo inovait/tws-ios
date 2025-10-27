@@ -61,11 +61,11 @@ public final class TWSNotification {
     /// }
     /// ```
     ///
-    public func handleTWSPushNotification(_ userInfo: [AnyHashable : Any]) -> Bool {
+    public func handleTWSPushNotification(_ userInfo: [String: String]) -> Bool {
         guard
-            let type = userInfo["type"] as? String,
+            let type = userInfo["type"],
             type == NotificationType.snippet_push.rawValue,
-            let path = userInfo["path"] as? String else { return false }
+            let path = userInfo["path"] else { return false }
 
         do {
             let notificationData = try parsePath(path)

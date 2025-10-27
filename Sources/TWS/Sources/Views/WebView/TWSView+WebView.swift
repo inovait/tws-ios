@@ -255,15 +255,9 @@ struct WebView: UIViewRepresentable {
             let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
             
             return NavigationDetails(WKNavigation: navigation, request: urlRequest)
-        } else {
-            logger.debug("Load from url: \(targetURL.absoluteString)")
-            var urlRequest = URLRequest(url: self.targetURL)
-            snippet.headers?.forEach { header in
-                urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
-            }
-            let navigation =  webView.load(urlRequest)
-            return NavigationDetails(WKNavigation: navigation, request: urlRequest)
         }
+        
+        return nil
     }
 
     // MARK: - Permissions
