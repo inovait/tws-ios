@@ -70,6 +70,8 @@ struct TWSLocalSnippetsReducer: Equatable {
             switch delegateAction {
             case .openOverlay:
                 return .none
+            case .reloadProject:
+                return .none
             }
         case .snippetAction:
             break

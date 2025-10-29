@@ -118,6 +118,8 @@ class Router {
                 logger.err(String(data: result.0, encoding: .utf8) ?? "null")
                 throw APIError.server(httpResult.statusCode, result.0)
             }
+        } catch let apiError as APIError {
+            throw apiError
         } catch {
             throw APIError.local(error)
         }

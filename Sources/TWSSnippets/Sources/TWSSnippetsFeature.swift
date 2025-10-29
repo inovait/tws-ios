@@ -309,10 +309,15 @@ public struct TWSSnippetsFeature: Sendable {
             switch delegateAction {
             case .openOverlay(let snippet):
                 return .none
+                
+            case .reloadProject:
+                return .send(.business(.load))
             }
         case let .campaignSnippets(.element(_, action: .delegate(delegateAction))):
             switch delegateAction {
             case .openOverlay(_):
+                return .none
+            case .reloadProject:
                 return .none
             }
         case .snippets:

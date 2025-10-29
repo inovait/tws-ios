@@ -21,7 +21,8 @@ public struct TWSSnippetFeature: Sendable {
         public var localDynamicResources: [TWSRawDynamicResource] = []
         public var htmlContent: ResourceResponse? = nil
         public var error: APIError? = nil
-
+        
+        var isRetry = false
         var isDownloading = false
 
         public init(
@@ -75,6 +76,7 @@ public struct TWSSnippetFeature: Sendable {
         @CasePathable
         public enum Delegate {
             case openOverlay(TWSSnippet)
+            case reloadProject
         }
 
         case business(Business)
@@ -135,9 +137,19 @@ public struct TWSSnippetFeature: Sendable {
             return .none
         case .business(.downloadCompleted(.failure(let error))):
             logger.info("Resource download failed with error: \(error).")
-            state.error = error
             state.contentDownloaded = true
             state.isDownloading = false
+            switch error {
+            case .server(let statusCode, _):
+                if statusCode == 401 && !state.isRetry {
+                    state.isRetry = true
+                    return .send(.delegate(.reloadProject))
+                }
+            default:
+                break
+            }
+            
+            state.error = error
 
             return .none
 
