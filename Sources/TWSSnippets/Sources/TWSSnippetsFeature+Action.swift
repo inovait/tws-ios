@@ -48,6 +48,7 @@ extension TWSSnippetsFeature {
         @CasePathable
         public enum DelegateAction {
             case openOverlay(TWSSnippet)
+            case reloadProject
         }
         case delegate(DelegateAction)
         case business(BusinessAction)
