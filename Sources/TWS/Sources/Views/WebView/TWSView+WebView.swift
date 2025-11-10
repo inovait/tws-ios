@@ -101,7 +101,7 @@ struct WebView: UIViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let agent = (webView.value(forKey: "userAgent") as? String) ?? ""
-        webView.customUserAgent = (agent + " " + "TheWebSnippet").trimmingCharacters(in: .whitespacesAndNewlines)
+        webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15"
         webView.scrollView.bounces = true
         webView.scrollView.isScrollEnabled = true
         webView.allowsBackForwardNavigationGestures = true

@@ -19,7 +19,7 @@ import WebKit
 
 @MainActor
 class UserAgentProvider {
-    private(set) static var userAgent: String = String(WKWebView().value(forKey: "userAgent") as? String ?? "") + " TheWebSnippet"
+    private(set) static var userAgent: String = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15"
     
     private init() {}
 }
