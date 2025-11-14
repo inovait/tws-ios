@@ -44,7 +44,7 @@ extension WebView {
                     guard let content, let responseUrl = content.responseUrl else { return }
                     let urlRequest = URLRequest(url: responseUrl)
                     let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetStore.snippet)
-                    let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
+                    let navigation = webView.loadHTMLString(htmlToLoad, baseURL: responseUrl)
                     let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
                 },
@@ -82,7 +82,7 @@ extension WebView {
                     logger.debug("Load from raw HTML: \(responseUrl)")
                     let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
                     let urlRequest = URLRequest(url: responseUrl)
-                    let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
+                    let navigation = webView.loadHTMLString(htmlToLoad, baseURL: responseUrl)
                     let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
                 },
