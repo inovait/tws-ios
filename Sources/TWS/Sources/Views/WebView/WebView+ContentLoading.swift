@@ -82,7 +82,7 @@ extension WebView {
                     logger.debug("Load from raw HTML: \(responseUrl)")
                     let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippetToReload)
                     let urlRequest = URLRequest(url: responseUrl)
-                    let navigation = webView.loadSimulatedRequest(URLRequest(url: currentUrl), responseHTML: htmlToLoad)
+                    let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
                     let navigationDetails = NavigationDetails(WKNavigation: navigation, request: urlRequest)
                     coordinator.pullToRefresh.setNavigationRequest(navigation: navigationDetails)
                 },
