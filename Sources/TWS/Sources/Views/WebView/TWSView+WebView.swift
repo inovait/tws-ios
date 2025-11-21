@@ -238,27 +238,6 @@ struct WebView: UIViewRepresentable {
             }
         }
     }
-    
-    func loadProcessedContent(webView: WKWebView) -> NavigationDetails? {
-        // If error is present before the initial load resources were not fetched succesfully
-        if let err = snippetStore?.error {
-            updateState(for: webView, loadingState: .failed(err))
-            return nil
-        } else {
-            updateState(for: webView, loadingState: .loading(progress: 0.0))
-        }
-        
-        if let content = htmlContent {
-            logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
-            let urlRequest = URLRequest(url: content.responseUrl ?? self.targetURL)
-            let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
-            
-            return NavigationDetails(WKNavigation: navigation, request: urlRequest)
-        }
-        
-        return nil
-    }
 
     // MARK: - Permissions
 
