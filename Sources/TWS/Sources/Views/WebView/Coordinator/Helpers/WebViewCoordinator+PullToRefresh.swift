@@ -37,27 +37,18 @@ extension WebView.Coordinator {
 
             webView.scrollView.addSubview(refreshControl)
         }
-
-        func verifyForRefresh(urlRequest: URLRequest) -> Bool {
-            guard
-                let request = refreshRequest,
-                request.navigation.request.url == urlRequest.url
-            else { return false }
-            
-            return true
-        }
         
         func verifyForRefresh(navigation: WKNavigation) -> Bool {
             guard
                 let request = refreshRequest,
-                request.navigation.WKNavigation === navigation
+                request.navigation === navigation
             else { return false }
             request.continuation?.resume()
             refreshRequest = nil
             return true
         }
         
-        func setNavigationRequest(navigation: NavigationDetails?) {
+        func setNavigationRequest(navigation: WKNavigation?) {
             guard let navigation else { return }
             Task {
                 await withCheckedContinuation { continuation in
@@ -86,15 +77,15 @@ extension WebView.Coordinator {
 
     class PullToRefreshRequest: CustomStringConvertible {
         var description: String {
-            "\(self.navigation.WKNavigation)-\(self.navigation.request)"
+            "\(self.navigation)"
         }
 
         var continuation: CheckedContinuation<Void, Never>?
-        let navigation: NavigationDetails
+        let navigation: WKNavigation
 
         init(
             continuation: CheckedContinuation<Void, Never>?,
-            navigation: NavigationDetails
+            navigation: WKNavigation
         ) {
             self.continuation = continuation
             self.navigation = navigation

@@ -64,6 +64,7 @@ public struct TWSSnippetFeature: Sendable {
             case showSnippet
             case hideSnippet
             case downloadContent
+            case cancelDownload
             case downloadCompleted(Result<ResourceResponse, APIError>)
             case setLocalDynamicResources([TWSRawDynamicResource])
         }
@@ -126,8 +127,11 @@ public struct TWSSnippetFeature: Sendable {
             return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
                 let resources = await downloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
                 await send(.business(.downloadCompleted(resources)))
-            }
+            }.cancellable(id: CancelID.resourceDownload, cancelInFlight: true)
 
+        case .business(.cancelDownload):
+            return .cancel(id: CancelID.resourceDownload)
+            
         case .business(.downloadCompleted(.success(let resource))):
             logger.info("Resources downloaded succesfully.")
             state.contentDownloaded = true
@@ -156,5 +160,9 @@ public struct TWSSnippetFeature: Sendable {
         case .delegate:
             return .none
         }
+    }
+    
+    enum CancelID {
+        case resourceDownload
     }
 }

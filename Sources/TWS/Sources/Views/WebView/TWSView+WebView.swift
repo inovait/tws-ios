@@ -32,7 +32,8 @@ struct WebView: UIViewRepresentable {
     @Bindable var state: TWSViewState
     // This helps distinguish between parent and modal views
     @State var wkWebView: WKWebView? = nil
-
+    @State var latestNavigationEvent: TWSNavigationEvent = .init()
+    
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
@@ -269,9 +270,4 @@ struct WebView: UIViewRepresentable {
         
         return htmlContentToProcess
     }
-}
-
-struct NavigationDetails {
-    let WKNavigation: WKNavigation?
-    let request: URLRequest
 }

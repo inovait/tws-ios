@@ -26,11 +26,12 @@ class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
     private var cancellables = Set<AnyCancellable>()
     private var onSuccess: ((ResourceResponse?) -> Void)? = nil
+    private var shouldCancel: (() -> Bool)? = nil
     private var onError: ((Error) -> Void)? = nil
     
     init() {}
     
-    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (ResourceResponse?) -> Void, onError: @escaping (Error) -> Void) {
+    func loadNewStore(_ store: StoreOf<TWSSnippetFeature>, onSuccess: @escaping (ResourceResponse?) -> Void, shouldCancel: @escaping () -> Bool, onError: @escaping (Error) -> Void) {
         self.store = store
         self.onSuccess = onSuccess
         self.onError = onError
@@ -46,11 +47,25 @@ class ResourceDownloadHandler {
                 if let err = content.error {
                     onError(err)
                 } else if let html = content.htmlContent {
-                    onSuccess(html)
+                    if !shouldCancel() {
+                        onSuccess(html)
+                    }
                 }
             }
             .store(in: &cancellables)
         
         store.send(.business(.downloadContent))
+    }
+    
+    func destroyStore() {
+        self.store = nil
+        self.onError = nil
+        self.onSuccess = nil
+        self.shouldCancel = nil
+        cancellables.removeAll()
+    }
+    
+    func cancelDownload() {
+        store?.send(.business(.cancelDownload))
     }
 }
