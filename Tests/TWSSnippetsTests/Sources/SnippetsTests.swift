@@ -410,9 +410,10 @@ final class SnippetsTests: XCTestCase {
         await store.send(\.business.snippets[id: s1ID].view.openedTWSView)
         await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
             $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = .loading(nil)
         }
         
-        let expectedHtmlContent1: ResourceResponse = .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
+        let expectedHtmlContent1: TWSSnippetDownloadState = .loaded(.init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString))
         
         await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
             $0.snippets[id: s1ID]?.isDownloading = false
@@ -424,9 +425,10 @@ final class SnippetsTests: XCTestCase {
         await store.send(\.business.snippets[id: s2ID].view.openedTWSView)
         await store.receive(\.business.snippets[id: s2ID].business.downloadContent) {
             $0.snippets[id: s2ID]?.isDownloading = true
+            $0.snippets[id: s2ID]?.htmlContent = .loading(nil)
         }
         
-        let expectedHtmlContent2: ResourceResponse = .init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString)
+        let expectedHtmlContent2: TWSSnippetDownloadState = .loaded(.init(responseUrl: snippets[1].target, data: snippets[1].target.absoluteString))
         await store.receive(\.business.snippets[id: s2ID].business.downloadCompleted) {
             $0.snippets[id: s2ID]?.isDownloading = false
             $0.snippets[id: s2ID]?.contentDownloaded = true
@@ -496,9 +498,10 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.snippets[id: s1ID].business.downloadContent) {
             $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = .loading(nil)
         }
         
-        let expectedHtmlContent1: ResourceResponse = .init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString)
+        let expectedHtmlContent1: TWSSnippetDownloadState = .loaded(.init(responseUrl: snippets[0].target, data: snippets[0].target.absoluteString))
         await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
             $0.snippets[id: s1ID]?.isDownloading = false
             $0.snippets[id: s1ID]?.contentDownloaded = true
@@ -527,10 +530,10 @@ final class SnippetsTests: XCTestCase {
                 XCTAssert(false)
             }
             $0.snippets[id: s1ID]?.isDownloading = true
-            $0.snippets[id: s1ID]?.htmlContent = nil
+            $0.snippets[id: s1ID]?.htmlContent = .loading(expectedHtmlContent1.cachedResponse)
         }
         
-        let expectedHtmlContent2 = ResourceResponse(responseUrl: changedURL, data: changedURL.absoluteString)
+        let expectedHtmlContent2: TWSSnippetDownloadState = .loaded(ResourceResponse(responseUrl: changedURL, data: changedURL.absoluteString))
         await store.receive(\.business.snippets[id: s1ID].business.downloadCompleted) {
             $0.snippets[id: s1ID]?.isDownloading = false
             $0.snippets[id: s1ID]?.contentDownloaded = true
@@ -610,13 +613,14 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.snippetAction[id: s1ID].business.downloadContent) {
             $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = .loading(nil)
         }
         
         let expectedResult = ResourceResponse(responseUrl: snippetUrl1, data: snippetUrl1.absoluteString)
         await store.receive(\.business.snippetAction[id: s1ID].business.downloadCompleted) {
             $0.snippets[id: s1ID]?.isDownloading = false
             $0.snippets[id: s1ID]?.contentDownloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = expectedResult
+            $0.snippets[id: s1ID]?.htmlContent = .loaded(expectedResult)
         }
     }
     
@@ -727,11 +731,12 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.snippetAction[id: s1ID].business.downloadContent) {
             $0.snippets[id: s1ID]?.isDownloading = true
+            $0.snippets[id: s1ID]?.htmlContent = .loading(nil)
         }
         await store.receive(\.business.snippetAction[id: s1ID].business.downloadCompleted) {
             $0.snippets[id: s1ID]?.isDownloading = false
             $0.snippets[id: s1ID]?.contentDownloaded = true
-            $0.snippets[id: s1ID]?.htmlContent = .init(responseUrl: snippetUrl1, data: expectedResponse1)
+            $0.snippets[id: s1ID]?.htmlContent = .loaded(.init(responseUrl: snippetUrl1, data: expectedResponse1))
         }
         
         var stateCopy = store.state
@@ -748,11 +753,12 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.snippetAction[id: s2ID].business.downloadContent) {
             $0.snippets[id: s2ID]?.isDownloading = true
+            $0.snippets[id: s2ID]?.htmlContent = .loading(nil)
         }
         await store.receive(\.business.snippetAction[id: s2ID].business.downloadCompleted) {
             $0.snippets[id: s2ID]?.isDownloading = false
             $0.snippets[id: s2ID]?.contentDownloaded = true
-            $0.snippets[id: s2ID]?.htmlContent = .init(responseUrl: snippetUrl2, data: expectedResponse2)
+            $0.snippets[id: s2ID]?.htmlContent = .loaded(.init(responseUrl: snippetUrl2, data: expectedResponse2))
         }
         
         stateCopy = store.state
@@ -769,11 +775,12 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.business.snippetAction[id: s3ID].business.downloadContent) {
             $0.snippets[id: s3ID]?.isDownloading = true
+            $0.snippets[id: s3ID]?.htmlContent = .loading(nil)
         }
         await store.receive(\.business.snippetAction[id: s3ID].business.downloadCompleted) {
             $0.snippets[id: s3ID]?.isDownloading = false
             $0.snippets[id: s3ID]?.contentDownloaded = true
-            $0.snippets[id: s3ID]?.htmlContent = .init(responseUrl: snippetUrl3, data: expectedResponse3)
+            $0.snippets[id: s3ID]?.htmlContent = .loaded(.init(responseUrl: snippetUrl3, data: expectedResponse3))
         }
     }
     
@@ -875,6 +882,59 @@ final class SnippetsTests: XCTestCase {
         
         await store.receive(\.delegate.openOverlay)
         await store.receive(\.delegate.openOverlay)
+    }
+    
+    @MainActor
+    func testReloadWithCancellation() async throws {
+        let s1ID = "1"
+        
+        let snippet: TWSSnippet = .init(id: s1ID, target: URL(string: "https://www.test1.com")!)
+        
+        let expectedResponse1: ResourceResponse = ResourceResponse(responseUrl: snippet.target, data: snippet.target.absoluteString)
+        let store = TestStore(
+            initialState: TWSSnippetFeature.State(snippet: snippet),
+            reducer: { TWSSnippetFeature() },
+            withDependencies: {
+                $0.api.getResource = { url, _ in
+                    sleep(UInt32(0.8))
+                    return expectedResponse1
+                }
+            })
+        
+        await store.send(.view(.openedTWSView))
+        
+        await store.receive(\.business.downloadContent) {
+            $0.htmlContent = .loading(nil)
+            $0.isDownloading = true
+        }
+        
+        await store.receive(\.business.downloadCompleted, timeout: .seconds(2)) {
+            $0.htmlContent = .loaded(expectedResponse1)
+            $0.contentDownloaded = true
+            $0.isDownloading = false
+        }
+        
+        // Simulate a reload
+        await store.send(\.business.downloadContent) {
+            $0.htmlContent = .loading(expectedResponse1)
+            $0.isDownloading = true
+        }.cancel()
+        
+        await store.send(\.business.cancelDownload) {
+            $0.htmlContent = .cancelled(expectedResponse1)
+            $0.isDownloading = false
+        }
+        
+        await store.send(\.business.downloadContent) {
+            $0.htmlContent = .loading(expectedResponse1)
+            $0.isDownloading = true
+        }
+        
+        await store.receive(\.business.downloadCompleted, timeout: .seconds(2)) {
+            $0.htmlContent = .loaded(expectedResponse1)
+            $0.isDownloading = false
+            $0.contentDownloaded = true
+        }
     }
 }
 
