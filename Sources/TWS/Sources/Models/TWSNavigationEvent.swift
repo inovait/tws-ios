@@ -17,7 +17,7 @@
 import Foundation
 import WebKit
 
-class TWSNavigationHandler: AutoPrintable {
+internal class TWSNavigationHandler: AutoPrintable {
     var navigationEvent: TWSNavigationEvent = .init()
     
     func setNavigationEvent(navigationEvent: TWSNavigationEvent) {
@@ -38,7 +38,7 @@ class TWSNavigationHandler: AutoPrintable {
     }
 }
 
-class TWSNavigationEvent: AutoPrintable {
+internal class TWSNavigationEvent: AutoPrintable {
     private var sourceURL: URL?
     private var type: TWSNavigationEventType = .idle
     
