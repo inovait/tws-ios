@@ -63,6 +63,10 @@ class TWSNavigationEvent: AutoPrintable {
         return sourceURL
     }
     
+    func isNativeLoad() -> Bool {
+        self.navigation === navigation && type == .nativeLoad
+    }
+    
     func isReload(navigation: WKNavigation) -> Bool {
         self.navigation === navigation && type == .pullToRefresh || type == .reload
     }
@@ -77,6 +81,7 @@ enum TWSNavigationEventType {
     case pullToRefresh
     case reload
     case load
+    case nativeLoad
     case spa
 }
 

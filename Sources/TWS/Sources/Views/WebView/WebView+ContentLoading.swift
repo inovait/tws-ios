@@ -171,6 +171,7 @@ extension WebView {
             )
             return
         } else {
+            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .nativeLoad))
             let navigation = webView.load(loadUrl)
             DispatchQueue.main.async {
                 setNavigationRequest(navigation, coordinator: coordinator)
@@ -205,6 +206,7 @@ extension WebView {
     
     func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
         if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() {
+        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
             return false
         }
         

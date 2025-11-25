@@ -69,7 +69,9 @@ extension WebView.Coordinator {
                     
                     self.continuation = continuation
                 }
-                sender?.endRefreshing()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    sender?.endRefreshing()
+                }
             }
         }
         
