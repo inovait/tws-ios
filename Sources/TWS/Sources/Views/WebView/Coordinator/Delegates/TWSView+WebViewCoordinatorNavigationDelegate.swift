@@ -34,8 +34,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
         )
         
         let isPullToRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
-        let isRefresh = parent.latestNavigationEvent.isReload(navigation: navigation)
-        let isSPA = parent.latestNavigationEvent.isSPA(navigation: navigation)
+        let isRefresh = parent.navigationEventHandler.getNavigationEvent().isReload(navigation: navigation)
+        let isSPA = parent.navigationEventHandler.getNavigationEvent().isSPA(navigation: navigation)
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
             if let title = result as? String, error == nil, self.isMainWebView(webView: webView) {
@@ -56,6 +56,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
                 }
             }
         }
+        
+        parent.navigationEventHandler.finishNavigationEvent(navigation)
     }
 
     public func webView(
@@ -201,6 +203,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation response: \(navigationResponse)")
+        
         if navigationResponse.canShowMIMEType {
             decisionHandler(.allow)
         } else {

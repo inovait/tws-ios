@@ -17,26 +17,39 @@
 import Foundation
 import WebKit
 
-class TWSNavigationHandler {
-    var navigationEvent: TWSNavigationEvent?
+class TWSNavigationHandler: AutoPrintable {
+    var navigationEvent: TWSNavigationEvent = .init()
     
-    func finishNavigationEvent() -> WKNavigation? {
-        let navigation = navigationEvent?.getNavigation()
-        navigationEvent = nil
-        return navigation
+    func setNavigationEvent(navigationEvent: TWSNavigationEvent) {
+        self.navigationEvent = navigationEvent
+    }
+    
+    func getNavigationEvent() -> TWSNavigationEvent {
+        return navigationEvent
+    }
+    
+    func finishNavigationEvent(_ navigation: WKNavigation?) -> WKNavigation? {
+        if navigationEvent.getNavigation() === navigation {
+            let navigation = navigationEvent.getNavigation()
+            navigationEvent = .init()
+            return navigation
+        }
+        return nil
     }
 }
 
 class TWSNavigationEvent: AutoPrintable {
     private var url: URL = URL(string: "about:blank")!
+    private var sourceURL: URL?
     private var type: TWSNavigationEventType = .idle
     
     private var navigation: WKNavigation?
     
     init() {}
     
-    init(url: URL, type: TWSNavigationEventType) {
+    init(url: URL, sourceURL: URL?, type: TWSNavigationEventType) {
         self.url = url
+        self.sourceURL = sourceURL
         self.type = type
     }
     
@@ -46,6 +59,10 @@ class TWSNavigationEvent: AutoPrintable {
     
     func setNavigation(_ navigation: WKNavigation?) {
         self.navigation = navigation
+    }
+    
+    func getSourceURL() -> URL? {
+        return sourceURL
     }
     
     func isReload(navigation: WKNavigation) -> Bool {

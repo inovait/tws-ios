@@ -29,7 +29,7 @@ extension WebView {
         guard let urlToReload = state.currentUrl else { return }
         let initialUrl = initialUrl()
         
-        latestNavigationEvent = TWSNavigationEvent(url: urlToReload, type: isPullToRefresh ? .pullToRefresh : .reload)
+        navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(url: urlToReload, sourceURL: state.currentUrl, type: isPullToRefresh ? .pullToRefresh : .reload))
         
         if !isPullToRefresh {
             updateState(for: webView, loadingState: .loading(progress: 0))
@@ -51,7 +51,7 @@ extension WebView {
                     let navigation = createAndLoadURLRequest(for: responseUrl, using: snippetStore.snippet, with: content, in: webView)
                     setNavigationRequest(navigation, coordinator: coordinator, isPullToRefresh: isPullToRefresh)
                 },
-                shouldCancel: { shouldCancelNavigation(webView: webView) },
+                shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
                     updateState(for: webView, loadingState: .failed(err))
                     return
@@ -87,7 +87,7 @@ extension WebView {
                     let navigation = createAndLoadURLRequest(for: responseUrl, using: snippetToReload, with: content, in: webView)
                     setNavigationRequest(navigation, coordinator: coordinator, isPullToRefresh: isPullToRefresh)
                 },
-                shouldCancel: { shouldCancelNavigation(webView: webView) },
+                shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
                     updateState(for: webView, loadingState: .failed(err))
                     return
@@ -98,7 +98,7 @@ extension WebView {
         
         if initialUrl != state.lastLoadedUrl {
             // Normal MPA reload
-            if let currentUrl = state.currentUrl, currentUrl != htmlContent?.responseUrl {
+            if let currentUrl = state.currentUrl, currentUrl != htmlContent?.cachedResponse?.responseUrl {
                 let urlRequest = URLRequest(url: currentUrl)
                 let navigation = webView.load(urlRequest)
                 setNavigationRequest(navigation, coordinator: coordinator, isPullToRefresh: isPullToRefresh)
@@ -120,7 +120,7 @@ extension WebView {
         
         // When navigating to initial url
         if url == initialUrl {
-            latestNavigationEvent = TWSNavigationEvent(url: url, type: .load)
+            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(url: url, sourceURL: state.currentUrl, type: .load))
             guard let snippetStore else {
                 setNavigationRequest(loadProcessedContent(webView: webView), coordinator: coordinator)
                 return
@@ -135,7 +135,7 @@ extension WebView {
                         setNavigationRequest(navigation, coordinator: coordinator)
                     }
                 },
-                shouldCancel: { shouldCancelNavigation(webView: webView) },
+                shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
                     updateState(for: webView, loadingState: .failed(err))
                     return
@@ -146,7 +146,7 @@ extension WebView {
         }
         
         if behaveAsSpa {
-            latestNavigationEvent = TWSNavigationEvent(url: url, type: .spa)
+            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(url: url, sourceURL: state.currentUrl, type: .spa))
             let snippetToReload = TWSSnippet(id: "reloadSnippet", target: url, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
             
             let store: StoreOf<TWSSnippetFeature> = .init(
@@ -163,7 +163,7 @@ extension WebView {
                         setNavigationRequest(navigation, coordinator: coordinator)
                     }
                 },
-                shouldCancel: { shouldCancelNavigation(webView: webView) },
+                shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
                     updateState(for: webView, loadingState: .failed(err))
                     return
@@ -180,17 +180,17 @@ extension WebView {
     
     func loadProcessedContent(webView: WKWebView) -> WKNavigation? {
         // If error is present before the initial load resources were not fetched succesfully
-        if let err = snippetStore?.error {
+        if case let .failed(err) = htmlContent {
             updateState(for: webView, loadingState: .failed(err))
             return nil
         } else {
             updateState(for: webView, loadingState: .loading(progress: 0.0))
         }
         
-        if let content = htmlContent {
+        if case let .loaded(content) = htmlContent {
             let responseUrl = content.responseUrl ?? self.targetURL
             DispatchQueue.main.async {
-                latestNavigationEvent = TWSNavigationEvent(url: responseUrl, type: .load)
+                navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(url: responseUrl, sourceURL: state.currentUrl, type: .load))
             }
             
             return createAndLoadURLRequest(for: responseUrl, using: snippet, with: content, in: webView)
@@ -203,8 +203,21 @@ extension WebView {
         return state.lastLoadedUrl == nil || state.lastLoadedUrl != initialUrl()
     }
     
+    func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
+        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() {
+            return false
+        }
+        
+        resourceDownloadHandler.cancelDownload()
+        resourceDownloadHandler.destroyStore()
+        coordinator.pullToRefresh.cancelRefresh()
+        
+        updateState(for: webView, loadingState: .loaded)
+        return true
+    }
+    
     private func initialUrl() -> URL? {
-        return htmlContent?.responseUrl
+        return htmlContent?.cachedResponse?.responseUrl
     }
     
     private func createAndLoadURLRequest(for url: URL, using snippet: TWSSnippet, with content: ResourceResponse, in webView: WKWebView) -> WKNavigation {
@@ -216,21 +229,16 @@ extension WebView {
     
     private func setNavigationRequest(_ navigation: WKNavigation?) {
         DispatchQueue.main.async {
-            latestNavigationEvent.setNavigation(navigation)
+            navigationEventHandler.getNavigationEvent().setNavigation(navigation)
         }
     }
     
     private func setNavigationRequest(_ navigation: WKNavigation?, coordinator: Coordinator, isPullToRefresh: Bool = false) {
         DispatchQueue.main.async {
-            latestNavigationEvent.setNavigation(navigation)
+            navigationEventHandler.getNavigationEvent().setNavigation(navigation)
             if isPullToRefresh {
                 coordinator.pullToRefresh.setNavigationRequest(navigation: navigation)
             }
         }
     }
-    
-    private func shouldCancelNavigation(webView: WKWebView) -> Bool {
-        return false
-    }
-    
 }

@@ -38,17 +38,14 @@ class ResourceDownloadHandler {
         cancellables.removeAll()
         
         store.publisher
-            .map { ($0.htmlContent, $0.error) }
-            .compactMap { htmlContent, error -> (htmlContent: ResourceResponse?, error: Error?)? in
-                return (htmlContent: htmlContent, error: error)
-            }
+            .map { ($0.htmlContent) }
             .dropFirst()
             .sink { [weak self] content in
-                if let err = content.error {
+                if case let .failed(err) = content {
                     onError(err)
-                } else if let html = content.htmlContent {
+                } else if case let .loaded(content) = content {
                     if !shouldCancel() {
-                        onSuccess(html)
+                        onSuccess(content)
                     }
                 }
             }

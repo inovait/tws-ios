@@ -32,13 +32,13 @@ struct WebView: UIViewRepresentable {
     @Bindable var state: TWSViewState
     // This helps distinguish between parent and modal views
     @State var wkWebView: WKWebView? = nil
-    @State var latestNavigationEvent: TWSNavigationEvent = .init()
+    @State var navigationEventHandler: TWSNavigationHandler = .init()
     
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
     let snippetStore: StoreOf<TWSSnippetFeature>?
-    var htmlContent: ResourceResponse? { snippetStore?.htmlContent }
+    var htmlContent: TWSSnippetDownloadState? { snippetStore?.htmlContent }
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let displayID: String
