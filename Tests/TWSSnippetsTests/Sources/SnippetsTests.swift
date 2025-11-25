@@ -897,7 +897,7 @@ final class SnippetsTests: XCTestCase {
             withDependencies: {
                 $0.api.getResource = { url, _ in
                     do {
-                        try await Task.sleep(for: .seconds(2))
+                        try await Task.sleep(for: .seconds(1))
                     } catch {}
                     return expectedResponse1
                 }
