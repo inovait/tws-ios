@@ -193,8 +193,10 @@ extension WebView {
             DispatchQueue.main.async {
                 navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .load))
             }
+            let navigation = createAndLoadURLRequest(for: responseUrl, using: snippet, with: content, in: webView)
+            setNavigationRequest(navigation)
             
-            return createAndLoadURLRequest(for: responseUrl, using: snippet, with: content, in: webView)
+            return navigation
         }
         
         return nil
@@ -205,14 +207,18 @@ extension WebView {
     }
     
     func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
-        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
+        if navigationEventHandler.navigationEvent.isIdle() {
             return false
         }
         
+        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
+            return false
+        }
         resourceDownloadHandler.cancelDownload()
         resourceDownloadHandler.destroyStore()
         coordinator.pullToRefresh.cancelRefresh()
         
+        navigationEventHandler.cancelNavigationEvent()
         updateState(for: webView, loadingState: .loaded)
         return true
     }
@@ -226,6 +232,12 @@ extension WebView {
         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
         let urlRequest = URLRequest(url: url)
         return webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
+    }
+    
+    private func setNavigationRequest(_ navigation: WKNavigation) {
+        DispatchQueue.main.async {
+            navigationEventHandler.getNavigationEvent().setNavigation(navigation)
+        }
     }
     
     private func setNavigationRequest(_ navigation: WKNavigation?, coordinator: Coordinator, isPullToRefresh: Bool = false) {

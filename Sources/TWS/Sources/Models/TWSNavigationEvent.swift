@@ -36,6 +36,10 @@ internal class TWSNavigationHandler: AutoPrintable {
         }
         return nil
     }
+    
+    func cancelNavigationEvent() {
+        navigationEvent = .init()
+    }
 }
 
 internal class TWSNavigationEvent: AutoPrintable {
@@ -73,6 +77,10 @@ internal class TWSNavigationEvent: AutoPrintable {
     
     func isSPA(navigation: WKNavigation) -> Bool {
         return self.navigation === navigation && type == .spa
+    }
+    
+    func isIdle() -> Bool {
+        return type == .idle
     }
 }
 
