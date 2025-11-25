@@ -205,7 +205,6 @@ extension WebView {
     }
     
     func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
-        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() {
         if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
             return false
         }
