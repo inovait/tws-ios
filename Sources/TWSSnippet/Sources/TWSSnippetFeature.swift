@@ -19,8 +19,7 @@ public struct TWSSnippetFeature: Sendable {
         public var isVisible = true
         public var localProps: TWSSnippet.Props = .dictionary([:])
         public var localDynamicResources: [TWSRawDynamicResource] = []
-        public var htmlContent: ResourceResponse? = nil
-        public var error: APIError? = nil
+        public var htmlContent: TWSSnippetDownloadState = .idle
         
         var isRetry = false
         var isDownloading = false
@@ -64,6 +63,7 @@ public struct TWSSnippetFeature: Sendable {
             case showSnippet
             case hideSnippet
             case downloadContent
+            case cancelDownload
             case downloadCompleted(Result<ResourceResponse, APIError>)
             case setLocalDynamicResources([TWSRawDynamicResource])
         }
@@ -119,20 +119,25 @@ public struct TWSSnippetFeature: Sendable {
             
         case .business(.downloadContent):
             guard !state.isDownloading else { return .none }
-            state.htmlContent = nil
-            state.error = nil
+            state.htmlContent = .loading(state.htmlContent.cachedResponse)
             state.isDownloading = true
 
             return .run { [api, snippet = state.snippet, localDynamicResources = state.localDynamicResources] send in
                 let resources = await downloadAndInjectResources(for: snippet, using: api, localResources: localDynamicResources)
                 await send(.business(.downloadCompleted(resources)))
-            }
+            }.cancellable(id: CancelID.resourceDownload, cancelInFlight: true)
 
+        case .business(.cancelDownload):
+            state.isDownloading = false
+            state.htmlContent = .cancelled(state.htmlContent.cachedResponse)
+
+            return .cancel(id: CancelID.resourceDownload)
+            
         case .business(.downloadCompleted(.success(let resource))):
             logger.info("Resources downloaded succesfully.")
             state.contentDownloaded = true
             state.isDownloading = false
-            state.htmlContent = resource
+            state.htmlContent = .loaded(resource)
             
             return .none
         case .business(.downloadCompleted(.failure(let error))):
@@ -148,13 +153,36 @@ public struct TWSSnippetFeature: Sendable {
             default:
                 break
             }
-            
-            state.error = error
+
+            state.htmlContent = .failed(error)
 
             return .none
 
         case .delegate:
             return .none
+        }
+    }
+    
+    enum CancelID {
+        case resourceDownload
+    }
+}
+
+public enum TWSSnippetDownloadState: Equatable, Sendable {
+    case idle
+    case loading(ResourceResponse?)
+    case cancelled(ResourceResponse?)
+    case loaded(ResourceResponse)
+    case failed(APIError)
+    
+    public var cachedResponse: ResourceResponse? {
+        switch self {
+        case .loading(let res), .cancelled(let res):
+            return res
+        case .loaded(let res):
+            return res
+        default:
+            return nil
         }
     }
 }

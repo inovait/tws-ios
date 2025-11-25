@@ -30,12 +30,10 @@ class SnippetHeightProviderImpl: SnippetHeightProvider {
     // MARK: - Confirming to `SnippetHeightProvider`
 
     func set(height: CGFloat, for hash: WebPageDescription, displayID: String) {
-        logger.debug("Set h(\(height)) for \(hash.path)@\(displayID)")
         store[hash, default: [:]][displayID] = height
     }
 
     func getHeight(for hash: WebPageDescription, displayID: String) -> CGFloat? {
-        logger.debug("Get h(\(store[hash]?[displayID] ?? -1)) for \(hash.path)@\(displayID)")
         return store[hash]?[displayID]
     }
 }
