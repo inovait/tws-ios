@@ -227,12 +227,6 @@ extension WebView {
         return webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
     }
     
-    private func setNavigationRequest(_ navigation: WKNavigation?) {
-        DispatchQueue.main.async {
-            navigationEventHandler.getNavigationEvent().setNavigation(navigation)
-        }
-    }
-    
     private func setNavigationRequest(_ navigation: WKNavigation?, coordinator: Coordinator, isPullToRefresh: Bool = false) {
         DispatchQueue.main.async {
             navigationEventHandler.getNavigationEvent().setNavigation(navigation)

@@ -39,7 +39,6 @@ class TWSNavigationHandler: AutoPrintable {
 }
 
 class TWSNavigationEvent: AutoPrintable {
-    private var url: URL = URL(string: "about:blank")!
     private var sourceURL: URL?
     private var type: TWSNavigationEventType = .idle
     
@@ -47,8 +46,7 @@ class TWSNavigationEvent: AutoPrintable {
     
     init() {}
     
-    init(url: URL, sourceURL: URL?, type: TWSNavigationEventType) {
-        self.url = url
+    init(sourceURL: URL?, type: TWSNavigationEventType) {
         self.sourceURL = sourceURL
         self.type = type
     }
