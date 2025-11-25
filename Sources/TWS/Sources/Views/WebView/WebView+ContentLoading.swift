@@ -29,7 +29,7 @@ extension WebView {
         guard let urlToReload = state.currentUrl else { return }
         let initialUrl = initialUrl()
         
-        navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: isPullToRefresh ? .pullToRefresh : .reload))
+        setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: isPullToRefresh ? .pullToRefresh : .reload))
         
         if !isPullToRefresh {
             updateState(for: webView, loadingState: .loading(progress: 0))
@@ -120,7 +120,7 @@ extension WebView {
         
         // When navigating to initial url
         if url == initialUrl {
-            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .load))
+            setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: .load))
             guard let snippetStore else {
                 setNavigationRequest(loadProcessedContent(webView: webView), coordinator: coordinator)
                 return
@@ -146,7 +146,7 @@ extension WebView {
         }
         
         if behaveAsSpa {
-            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .spa))
+            setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: .spa))
             let snippetToReload = TWSSnippet(id: "reloadSnippet", target: url, dynamicResources: snippet.dynamicResources, visibility: snippet.visibility, engine: snippet.engine, headers: snippet.headers)
             
             let store: StoreOf<TWSSnippetFeature> = .init(
@@ -171,11 +171,10 @@ extension WebView {
             )
             return
         } else {
-            navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .nativeLoad))
+            setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: .nativeLoad))
             let navigation = webView.load(loadUrl)
-            DispatchQueue.main.async {
-                setNavigationRequest(navigation, coordinator: coordinator)
-            }
+            
+            setNavigationRequest(navigation, coordinator: coordinator)
         }
     }
     
@@ -190,9 +189,8 @@ extension WebView {
         
         if let content = htmlContent?.cachedResponse {
             let responseUrl = content.responseUrl ?? self.targetURL
-            DispatchQueue.main.async {
-                navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(sourceURL: state.currentUrl, type: .load))
-            }
+            setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: .load))
+
             let navigation = createAndLoadURLRequest(for: responseUrl, using: snippet, with: content, in: webView)
             setNavigationRequest(navigation)
             
@@ -232,6 +230,12 @@ extension WebView {
         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
         let urlRequest = URLRequest(url: url)
         return webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
+    }
+    
+    private func setNavigationEvent(_ event: TWSNavigationEvent) {
+        DispatchQueue.main.async {
+            navigationEventHandler.setNavigationEvent(navigationEvent: event)
+        }
     }
     
     private func setNavigationRequest(_ navigation: WKNavigation) {
