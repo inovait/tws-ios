@@ -187,7 +187,7 @@ extension WebView {
             updateState(for: webView, loadingState: .loading(progress: 0.0))
         }
         
-        if case let .loaded(content) = htmlContent {
+        if let content = htmlContent?.cachedResponse {
             let responseUrl = content.responseUrl ?? self.targetURL
             DispatchQueue.main.async {
                 navigationEventHandler.setNavigationEvent(navigationEvent: TWSNavigationEvent(url: responseUrl, sourceURL: state.currentUrl, type: .load))
