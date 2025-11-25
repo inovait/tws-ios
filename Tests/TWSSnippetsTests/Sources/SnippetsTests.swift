@@ -896,7 +896,7 @@ final class SnippetsTests: XCTestCase {
             reducer: { TWSSnippetFeature() },
             withDependencies: {
                 $0.api.getResource = { url, _ in
-                    sleep(UInt32(1.2))
+                    try await Task.sleep(for: .seconds(1))
                     return expectedResponse1
                 }
             })
