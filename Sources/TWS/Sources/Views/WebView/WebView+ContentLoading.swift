@@ -53,8 +53,7 @@ extension WebView {
                 },
                 shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
-                    updateState(for: webView, loadingState: .failed(err))
-                    return
+                    handleError(for: webView, using: coordinator, error: err)
                 }
             )
             
@@ -89,7 +88,7 @@ extension WebView {
                 },
                 shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
-                    updateState(for: webView, loadingState: .failed(err))
+                    handleError(for: webView, using: coordinator, error: err)
                     return
                 }
             )
@@ -137,8 +136,7 @@ extension WebView {
                 },
                 shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
-                    updateState(for: webView, loadingState: .failed(err))
-                    return
+                    handleError(for: webView, using: coordinator, error: err)
                 }
             )
             
@@ -165,8 +163,7 @@ extension WebView {
                 },
                 shouldCancel: { shouldCancelNavigation(webView: webView, coordinator: coordinator) },
                 onError: { err in
-                    updateState(for: webView, loadingState: .failed(err))
-                    return
+                    handleError(for: webView, using: coordinator, error: err)
                 }
             )
             return
@@ -204,6 +201,13 @@ extension WebView {
         return state.lastLoadedUrl == nil || state.lastLoadedUrl != initialUrl()
     }
     
+    func cancelNavigation(coordinator: Coordinator) {
+        resourceDownloadHandler.cancelDownload()
+        resourceDownloadHandler.destroyStore()
+        coordinator.pullToRefresh.cancelRefresh()
+        navigationEventHandler.cancelNavigationEvent()
+    }
+    
     func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
         if navigationEventHandler.navigationEvent.isIdle() {
             return false
@@ -212,17 +216,19 @@ extension WebView {
         if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
             return false
         }
-        resourceDownloadHandler.cancelDownload()
-        resourceDownloadHandler.destroyStore()
-        coordinator.pullToRefresh.cancelRefresh()
         
-        navigationEventHandler.cancelNavigationEvent()
+        cancelNavigation(coordinator: coordinator)
         updateState(for: webView, loadingState: .loaded)
         return true
     }
     
     private func initialUrl() -> URL? {
         return htmlContent?.cachedResponse?.responseUrl
+    }
+    
+    private func handleError(for webview: WKWebView, using coordinator: Coordinator, error: Error) {
+        cancelNavigation(coordinator: coordinator)
+        updateState(for: webview, loadingState: .failed(error))
     }
     
     private func createAndLoadURLRequest(for url: URL, using snippet: TWSSnippet, with content: ResourceResponse, in webView: WKWebView) -> WKNavigation {
