@@ -20,14 +20,14 @@ import Foundation
 public class TWSNotificationRegistrationData {
     private static let shared: TWSNotificationRegistrationData = TWSNotificationRegistrationData()
     
-    private var deviceToken: Data?
+    private var deviceToken: String?
     private init() {}
     
-    public static func registerDeviceToken(_ token: Data) {
-        shared.deviceToken = token
+    public static func registerDeviceToken(fcmDeviceToken: String?) {
+        shared.deviceToken = fcmDeviceToken
     }
     
-    public static func getDeviceToken() -> Data? {
+    public static func getDeviceToken() -> String? {
         return shared.deviceToken
     }
 }
