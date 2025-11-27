@@ -93,13 +93,13 @@ public struct TWSView: View {
                             )
                             // Check if initial load failed
                             .onAppear {
-                                if let err = store.error {
+                                if case let .failed(err) = store.htmlContent {
                                     state.loadingState = .failed(err)
                                 }
                             }
                             // Check if reload failed
-                            .onChange(of: store.error) { _, new in
-                                if let err = new {
+                            .onChange(of: store.htmlContent) { _, new in
+                                if case let .failed(err) = new {
                                     state.loadingState = .failed(err)
                                 }
                             }

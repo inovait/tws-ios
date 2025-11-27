@@ -26,13 +26,37 @@ extension WebView {
         controller.add(ConsoleLogMessageHandler(), name: "consoleLogHandler")
 
         return """
-        (function() {
-            var originalLog = console.log;
-            function captureLog(msg) {
-                originalLog.apply(console, arguments);
-                window.webkit.messageHandlers.consoleLogHandler.postMessage(msg);
-            }
-            console.log = captureLog;
+        (function () {
+            const handler = window.webkit?.messageHandlers?.consoleLogHandler;
+
+            if (!handler) return;
+
+            const methods = ["log", "warn", "info", "error", "debug"];
+
+            const safeStringify = (value) => {
+                try { return JSON.stringify(value); }
+                catch { return String(value); }
+            };
+
+            const send = (type, args) => {
+                try {
+                    handler.postMessage({
+                        type,
+                        timestamp: Date.now(),
+                        args: Array.from(args).map(safeStringify)
+                    });
+                } catch (_) {
+                }
+            };
+
+            methods.forEach((method) => {
+                const original = console[method];
+
+                console[method] = function (...args) {
+                    send(method, args);
+                    original.apply(console, args);
+                };
+            });
         })();
         """
     }

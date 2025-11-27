@@ -110,7 +110,7 @@ extension WebView {
                     guard let self = self else { return }
                     if self.parent.wkWebView == webview {
                         self.parent.state.currentUrl = url
-                        self.parent.updateState(for: webview)
+                        self.parent.shouldCancelNavigation(webView: webview, coordinator: self)
                     }
                 }
             }
