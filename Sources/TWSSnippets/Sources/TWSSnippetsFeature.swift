@@ -314,7 +314,7 @@ public struct TWSSnippetsFeature: Sendable {
                     do {
                         try await api.registerForRemoteNotifications(config, deviceToken)
                     } catch let err as APIError {
-                        logger.err(err)
+                        logger.err(err.localizedDescription)
                     }
                 }
             }
