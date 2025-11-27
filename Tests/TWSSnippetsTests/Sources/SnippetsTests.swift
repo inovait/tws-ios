@@ -937,6 +937,8 @@ final class SnippetsTests: XCTestCase {
             $0.isDownloading = false
             $0.contentDownloaded = true
         }
+        
+        await store.finish()
     }
 }
 
