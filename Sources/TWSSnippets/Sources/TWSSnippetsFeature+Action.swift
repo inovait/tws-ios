@@ -27,7 +27,9 @@ extension TWSSnippetsFeature {
 
         @CasePathable
         public enum BusinessAction {
+            case initialize
             case load
+            case registerDeviceForNotifications
             case projectLoaded(Result<TWSProjectBundle, Error>)
             case startVisibilityTimers([TWSSnippet])
             case listenForChanges
