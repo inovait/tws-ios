@@ -20,7 +20,25 @@ import Foundation
 public class TWSNotificationRegistrationData {
     private static let shared: TWSNotificationRegistrationData = TWSNotificationRegistrationData()
     
-    private var deviceToken: String?
+    private var deviceToken: String? {
+        didSet {
+            NotificationCenter.default.post(name: .deviceTokenChangedNotification, object: deviceToken)
+        }
+    }
+    
+    public static let deviceTokenStream = AsyncStream<String> { continuation in
+        let observer = NotificationCenter.default.addObserver(
+            forName: .deviceTokenChangedNotification,
+            object: nil,
+            queue: nil
+        ) { notification in
+            if let token = notification.object as? String {
+                continuation.yield(token)
+            }
+            
+        }
+    }
+    
     private init() {}
     
     public static func registerDeviceToken(fcmDeviceToken: String?) {
@@ -30,4 +48,8 @@ public class TWSNotificationRegistrationData {
     public static func getDeviceToken() -> String? {
         return shared.deviceToken
     }
+}
+
+extension Notification.Name {
+    static let deviceTokenChangedNotification = Notification.Name("DeviceTokenChangedNotification")
 }

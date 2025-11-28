@@ -303,14 +303,9 @@ public struct TWSSnippetsFeature: Sendable {
             
         case .registerDeviceForNotifications:
             return .run { send in
-                let deviceToken = await withCheckedContinuation { continuation in
-                    Task {
-                        let token = await TWSNotificationRegistrationData.getDeviceToken()
-                        continuation.resume(returning: token)
-                    }
-                }
+                let deviceToken = await TWSNotificationRegistrationData.deviceTokenStream.first { _ in true } ?? ""
                 
-                if let config = configuration() as? TWSBasicConfiguration, let deviceToken {
+                if let config = configuration() as? TWSBasicConfiguration {
                     do {
                         try await api.registerForRemoteNotifications(config, deviceToken)
                     } catch let err as APIError {
