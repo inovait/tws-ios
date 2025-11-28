@@ -305,7 +305,7 @@ public struct TWSSnippetsFeature: Sendable {
             return .run { send in
                 let deviceToken: String
                 
-                if let token = TWSNotificationRegistrationData.getDeviceToken() {
+                if let token = await TWSNotificationRegistrationData.getDeviceToken() {
                     deviceToken = token
                 } else {
                     deviceToken = await TWSNotificationRegistrationData.deviceTokenStream.first { _ in true } ?? ""
