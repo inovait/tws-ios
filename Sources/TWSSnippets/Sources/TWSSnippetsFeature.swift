@@ -303,7 +303,13 @@ public struct TWSSnippetsFeature: Sendable {
             
         case .registerDeviceForNotifications:
             return .run { send in
-                let deviceToken = await TWSNotificationRegistrationData.deviceTokenStream.first { _ in true } ?? ""
+                let deviceToken: String
+                
+                if let token = TWSNotificationRegistrationData.getDeviceToken() {
+                    deviceToken = token
+                } else {
+                    deviceToken = await TWSNotificationRegistrationData.deviceTokenStream.first { _ in true } ?? ""
+                }
                 
                 if let config = configuration() as? TWSBasicConfiguration {
                     do {
