@@ -32,12 +32,13 @@ struct WebView: UIViewRepresentable {
     @Bindable var state: TWSViewState
     // This helps distinguish between parent and modal views
     @State var wkWebView: WKWebView? = nil
-
+    @State var navigationEventHandler: TWSNavigationHandler = .init()
+    
     var id: String { snippet.id }
     var targetURL: URL { snippet.target }
     let snippet: TWSSnippet
     let snippetStore: StoreOf<TWSSnippetFeature>?
-    var htmlContent: ResourceResponse? { snippetStore?.htmlContent }
+    var htmlContent: TWSSnippetDownloadState? { snippetStore?.htmlContent }
     let locationServicesBridge: LocationServicesBridge
     let cameraMicrophoneServicesBridge: CameraMicrophoneServicesBridge
     let displayID: String
@@ -238,27 +239,6 @@ struct WebView: UIViewRepresentable {
             }
         }
     }
-    
-    func loadProcessedContent(webView: WKWebView) -> NavigationDetails? {
-        // If error is present before the initial load resources were not fetched succesfully
-        if let err = snippetStore?.error {
-            updateState(for: webView, loadingState: .failed(err))
-            return nil
-        } else {
-            updateState(for: webView, loadingState: .loading(progress: 0.0))
-        }
-        
-        if let content = htmlContent {
-            logger.debug("Load from raw HTML: \(targetURL.absoluteString)")
-            let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
-            let urlRequest = URLRequest(url: content.responseUrl ?? self.targetURL)
-            let navigation = webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
-            
-            return NavigationDetails(WKNavigation: navigation, request: urlRequest)
-        }
-        
-        return nil
-    }
 
     // MARK: - Permissions
 
@@ -290,9 +270,4 @@ struct WebView: UIViewRepresentable {
         
         return htmlContentToProcess
     }
-}
-
-struct NavigationDetails {
-    let WKNavigation: WKNavigation?
-    let request: URLRequest
 }

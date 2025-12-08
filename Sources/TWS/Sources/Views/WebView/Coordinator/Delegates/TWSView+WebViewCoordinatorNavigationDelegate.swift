@@ -32,8 +32,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
             for: webView,
             loadingState: .loaded
         )
-        let isRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
         
+        let isPullToRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
+        let isRefresh = parent.navigationEventHandler.getNavigationEvent().isReload(navigation: navigation)
+        let isSPA = parent.navigationEventHandler.getNavigationEvent().isSPA(navigation: navigation)
         // Mandatory to hop the thread, because of UI layout change
         webView.evaluateJavaScript("document.title") { (result, error) in
             if let title = result as? String, error == nil, self.isMainWebView(webView: webView) {
@@ -41,7 +43,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
                     guard let self = self else { return }
                     self.parent.state.title = title
                     if let url = webView.url {
-                        if !isRefresh {
+                        if !isRefresh && !isSPA {
                             self.parent.state.lastLoadedUrl = url
                         } else {
                             if self.parent.shouldChangeLastLoaded() {
@@ -54,6 +56,8 @@ extension WebView.Coordinator: WKNavigationDelegate {
                 }
             }
         }
+        
+        parent.navigationEventHandler.finishNavigationEvent(navigation)
     }
 
     public func webView(
@@ -156,7 +160,6 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
         if let url = navigationAction.request.url,
            navigationAction.targetFrame?.isMainFrame ?? true,
-           !pullToRefresh.verifyForRefresh(urlRequest: navigationAction.request),
             interceptor?.handleIntercept(.url(url)) == true {
             decisionHandler(.cancel, preferences)
             return
@@ -200,6 +203,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation response: \(navigationResponse)")
+        
         if navigationResponse.canShowMIMEType {
             decisionHandler(.allow)
         } else {
