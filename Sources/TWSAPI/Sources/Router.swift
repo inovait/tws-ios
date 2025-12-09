@@ -34,16 +34,22 @@ class Router {
     class func make(request: Request, retryEnabled: Bool = true) async throws(APIError) -> APIResult {
         let userAgent = await UserAgentProvider.userAgent
         
-        var components = URLComponents()
-        components.scheme = request.scheme
-        components.host = request.host
-        components.path = request.path
-
-        if !request.queryItems.isEmpty {
-            components.queryItems = request.queryItems
+        var url = request.url
+        
+        if url == nil {
+            var components = URLComponents()
+            components.scheme = request.scheme
+            components.host = request.host
+            components.path = request.path
+            
+            if !request.queryItems.isEmpty {
+                components.queryItems = request.queryItems
+            }
+            
+            url = components.url
         }
-
-        guard let url = components.url else {
+        
+        guard let url else {
             fatalError("Failed to create an URL")
         }
 
