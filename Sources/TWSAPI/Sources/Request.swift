@@ -17,7 +17,6 @@
 import Foundation
 
 struct Request {
-
     let method: Method
     let scheme: String
     let path: String
@@ -25,8 +24,50 @@ struct Request {
     let queryItems: [URLQueryItem]
     let headers: [String: String]
     let auth: Bool
-    var body: [String: Any] = [:]
+    var body: [String: Any]
+    let url: URL?
+    
+    init(
+        method: Method,
+        scheme: String,
+        path: String,
+        host: String,
+        queryItems: [URLQueryItem] = [],
+        headers: [String: String] = [:],
+        auth: Bool = false,
+        body: [String: Any] = [:]
+    ) {
+        self.method = method
+        self.scheme = scheme
+        self.path = path
+        self.host = host
+        self.queryItems = queryItems
+        self.headers = headers
+        self.auth = auth
+        self.body = body
+        self.url = nil
+    }
+    
+    init(
+        method: Method,
+        url: URL,
+        headers: [String: String] = [:],
+        auth: Bool = false,
+        body: [String: Any] = [:]
+    ) {
+        self.method = method
+        self.scheme = url.scheme ?? "https"
+        self.path = url.path
+        self.host = url.host ?? ""
+        
+        self.headers = headers
+        self.auth = auth
+        self.body = body
+        self.queryItems = []
+        self.url = url
+    }
 }
+
 
 extension Request {
 
