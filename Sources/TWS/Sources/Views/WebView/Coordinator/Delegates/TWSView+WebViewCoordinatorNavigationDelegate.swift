@@ -158,6 +158,13 @@ extension WebView.Coordinator: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
+        
+        if navigationAction.navigationType == .reload, navigationAction.targetFrame?.isMainFrame ?? true {
+            self.parent.reloadWithProcessedResources(webView: webView, coordinator: self)
+            decisionHandler(.cancel, preferences)
+            return
+        }
+        
         if let url = navigationAction.request.url,
            navigationAction.targetFrame?.isMainFrame ?? true,
             interceptor?.handleIntercept(.url(url)) == true {
