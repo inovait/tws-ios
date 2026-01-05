@@ -73,7 +73,7 @@ internal class TWSNavigationEvent: AutoPrintable {
     }
     
     func isNativeLoad() -> Bool {
-        self.navigation === navigation && type == .nativeLoad
+        type == .nativeLoad
     }
     
     func isReload(navigation: WKNavigation) -> Bool {
@@ -82,6 +82,10 @@ internal class TWSNavigationEvent: AutoPrintable {
     
     func isSPA(navigation: WKNavigation) -> Bool {
         return self.navigation === navigation && type == .spa
+    }
+    
+    func isSPA() -> Bool {
+        type == .spa
     }
     
     func isIdle() -> Bool {

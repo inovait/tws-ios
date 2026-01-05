@@ -215,7 +215,10 @@ extension WebView {
             return false
         }
         
-        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
+        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() ||
+            navigationEventHandler.navigationEvent.isNativeLoad() ||
+            navigationEventHandler.navigationEvent.isSPA()
+        {
             return false
         }
         
