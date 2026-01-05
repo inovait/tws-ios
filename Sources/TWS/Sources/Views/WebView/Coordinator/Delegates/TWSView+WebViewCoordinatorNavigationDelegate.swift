@@ -33,7 +33,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             loadingState: .loaded
         )
         
-        let isPullToRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
+        pullToRefresh.clearPullToRefreshIndicator()
         let isRefresh = parent.navigationEventHandler.getNavigationEvent().isReload(navigation: navigation)
         let isSPA = parent.navigationEventHandler.getNavigationEvent().isSPA(navigation: navigation)
         // Mandatory to hop the thread, because of UI layout change

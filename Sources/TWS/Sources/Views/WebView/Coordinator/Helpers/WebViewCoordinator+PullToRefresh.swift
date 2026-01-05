@@ -38,23 +38,16 @@ extension WebView.Coordinator {
             webView.scrollView.addSubview(refreshControl)
         }
         
-        func setNavigationRequest(navigation: WKNavigation?) {
-            guard let navigation else { return }
+        func setNavigationRequest() {
             clearNavigationRequest()
-            refreshRequest = navigation
         }
         
         func cancelRefresh() {
             clearNavigationRequest()
         }
         
-        func verifyForRefresh(navigation: WKNavigation) -> Bool {
-            guard
-                let request = refreshRequest,
-                request === navigation
-            else { return false }
+        func clearPullToRefreshIndicator() {
             clearNavigationRequest()
-            return true
         }
 
         // MARK: - Observers
@@ -79,7 +72,6 @@ extension WebView.Coordinator {
         private func clearNavigationRequest() {
             continuation?.resume()
             continuation = nil
-            refreshRequest = nil
         }
     }
 }

@@ -257,7 +257,7 @@ extension WebView {
         DispatchQueue.main.async {
             navigationEventHandler.getNavigationEvent().setNavigation(navigation)
             if isPullToRefresh {
-                coordinator.pullToRefresh.setNavigationRequest(navigation: navigation)
+                coordinator.pullToRefresh.setNavigationRequest()
             }
         }
     }
