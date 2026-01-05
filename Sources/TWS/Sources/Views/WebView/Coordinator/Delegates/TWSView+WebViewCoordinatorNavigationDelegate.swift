@@ -116,6 +116,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
+        if parent.navigationEventHandler.getNavigationEvent().isIdle() {
+            parent.updateState(for: webView, loadingState: .loading(progress: 0))
+        }
+        
         if !isMainWebView(webView: webView) {
             do {
                 try navigationProvider.showLoading(loadingView: self.parent.loadingView, on: webView)
