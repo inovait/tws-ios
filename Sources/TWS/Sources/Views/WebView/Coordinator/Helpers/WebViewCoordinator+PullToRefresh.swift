@@ -21,7 +21,6 @@ extension WebView.Coordinator {
     @MainActor
     class PullToRefresh {
         
-        var refreshRequest: WKNavigation?
         var continuation: CheckedContinuation<Void, Never>?
         private var reload : (() -> Void)? = nil
 
