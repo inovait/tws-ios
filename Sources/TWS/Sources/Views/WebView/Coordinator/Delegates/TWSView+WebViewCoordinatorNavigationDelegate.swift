@@ -71,6 +71,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug(msg)
         
         if (error as NSError).code == NSURLErrorCancelled {
+            parent.updateState(for: webView, loadingState: .loaded)
             return
         }
         
