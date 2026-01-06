@@ -40,11 +40,16 @@ internal class TWSNavigationHandler: AutoPrintable {
     func cancelNavigationEvent() {
         navigationEvent = .init()
     }
+    
+    func didStartLoading() -> Bool {
+        navigationEvent.getDidStartLoading()
+    }
 }
 
 internal class TWSNavigationEvent: AutoPrintable {
     private var sourceURL: URL?
     private var type: TWSNavigationEventType = .idle
+    private var didStartLoading = false
     
     private var navigation: WKNavigation?
     
@@ -68,7 +73,7 @@ internal class TWSNavigationEvent: AutoPrintable {
     }
     
     func isNativeLoad() -> Bool {
-        self.navigation === navigation && type == .nativeLoad
+        type == .nativeLoad
     }
     
     func isReload(navigation: WKNavigation) -> Bool {
@@ -79,8 +84,20 @@ internal class TWSNavigationEvent: AutoPrintable {
         return self.navigation === navigation && type == .spa
     }
     
+    func isSPA() -> Bool {
+        type == .spa
+    }
+    
     func isIdle() -> Bool {
         return type == .idle
+    }
+    
+    func setDidStartLoading() {
+        didStartLoading = true
+    }
+    
+    func getDidStartLoading() -> Bool {
+        didStartLoading
     }
 }
 

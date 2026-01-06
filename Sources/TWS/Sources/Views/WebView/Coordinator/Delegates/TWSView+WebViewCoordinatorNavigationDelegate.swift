@@ -33,7 +33,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             loadingState: .loaded
         )
         
-        let isPullToRefresh = pullToRefresh.verifyForRefresh(navigation: navigation)
+        pullToRefresh.clearPullToRefreshIndicator()
         let isRefresh = parent.navigationEventHandler.getNavigationEvent().isReload(navigation: navigation)
         let isSPA = parent.navigationEventHandler.getNavigationEvent().isSPA(navigation: navigation)
         // Mandatory to hop the thread, because of UI layout change
@@ -71,6 +71,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug(msg)
         
         if (error as NSError).code == NSURLErrorCancelled {
+            parent.updateState(for: webView, loadingState: .loaded)
             return
         }
         
@@ -116,6 +117,10 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView,
         didStartProvisionalNavigation navigation: WKNavigation!
     ) {
+        if parent.navigationEventHandler.getNavigationEvent().isIdle() {
+            parent.updateState(for: webView, loadingState: .loading(progress: 0))
+        }
+        
         if !isMainWebView(webView: webView) {
             do {
                 try navigationProvider.showLoading(loadingView: self.parent.loadingView, on: webView)
