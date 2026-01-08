@@ -75,7 +75,8 @@ let package = Package(
                 .target(name: "TWSModels"),
                 .target(name: "TWSSnippet"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSTriggers")
+                .target(name: "TWSTriggers"),
+                .target(name: "TWSNotificationRegistration")
             ],
             path: "Sources/TWSSnippets",
             swiftSettings: [
@@ -139,9 +140,15 @@ let package = Package(
         .target(
             name: "TWSNotifications",
             dependencies: [
-                .target(name: "TWS")
+                .target(name: "TWS"),
+                .target(name: "TWSNotificationRegistration")
             ],
             path: "Sources/TWSNotifications"
+        ),
+        .target(
+            name: "TWSNotificationRegistration",
+            dependencies: [],
+            path: "Sources/TWSNotificationRegistration"
         ),
         .target(
             name: "TWSTriggers",

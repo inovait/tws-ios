@@ -3,6 +3,8 @@ import ComposableArchitecture
 import TWSSnippet
 import TWSCommon
 import TWSTriggers
+import TWSAPI
+import TWSNotificationRegistration
 @_spi(Internals) import TWSModels
 
 // swiftlint:disable identifier_name
@@ -43,7 +45,12 @@ public struct TWSSnippetsFeature: Sendable {
         switch action {
 
         // MARK: - Loading snippets
-
+        case .initialize:
+            return .merge(
+                .send(.business(.load)),
+                .send(.business(.registerDeviceForNotifications))
+            )
+            
         case .load:
             guard state.state.canLoad
             else {
@@ -292,6 +299,28 @@ public struct TWSSnippetsFeature: Sendable {
             logger.warn("Requested to stop reconnecting to the socket")
             return .cancel(id: CancelID.reconnect(configuration().id))
 
+        // MARK: - TWS Remote Notifications
+            
+        case .registerDeviceForNotifications:
+            return .run { send in
+                let deviceToken: String
+                
+                if let token = await TWSNotificationRegistrationData.getDeviceToken() {
+                    deviceToken = token
+                } else {
+                    deviceToken = await TWSNotificationRegistrationData.deviceTokenStream.first { _ in true } ?? ""
+                }
+                
+                if let config = configuration() as? TWSBasicConfiguration {
+                    do {
+                        try await api.registerForRemoteNotifications(config, deviceToken)
+                    } catch let err as APIError {
+                        logger.err(err.localizedDescription)
+                    }
+                }
+            }
+            
+            return .none
         // MARK: - Other
 
         case let .setLocalProps(props):

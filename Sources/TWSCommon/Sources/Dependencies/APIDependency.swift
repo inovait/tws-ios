@@ -43,6 +43,14 @@ public struct APIDependency: Sendable {
         reportIssue("\(Self.self).getCampaigns")
         throw APIError.local(NSError(domain: "", code: -1))
     }
+    
+    public var registerForRemoteNotifications: @Sendable (
+        TWSBasicConfiguration,
+        String
+    ) async throws(APIError) -> Void = { _, _ throws(APIError) in
+        reportIssue("\(Self.self).registerForRemoteNotifications")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 }
 
 public enum APIDependencyKey: DependencyKey {
@@ -53,7 +61,8 @@ public enum APIDependencyKey: DependencyKey {
         return .init(
             getProject: api.getProject,
             getResource: api.getResource,
-            getCampaigns: api.getCampaign
+            getCampaigns: api.getCampaign,
+            registerForRemoteNotifications: api.registerForRemoteNotifications
         )
     }
     
@@ -65,6 +74,8 @@ public enum APIDependencyKey: DependencyKey {
             return .init(responseUrl: nil, data: "")
         } getCampaigns: { _, _ in
             return .init(snippets: [])
+        } registerForRemoteNotifications: { _, _ in
+            return
         }
     }
 }

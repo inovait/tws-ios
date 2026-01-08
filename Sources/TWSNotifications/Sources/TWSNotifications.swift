@@ -16,6 +16,7 @@
 
 import Foundation
 import TWS
+import TWSNotificationRegistration
 
 @MainActor
 public final class TWSNotification {
@@ -24,6 +25,14 @@ public final class TWSNotification {
     public init() {}
     
     // MARK: Public
+    
+    ///
+    /// Use this function to register devices with TWS remote notification services.
+    ///  - Parameter fcmDeviceToken: Device token provided by the Firebase Messaging service
+    ///
+    public func registerForTWSRemoteNotifications(fcmDeviceToken: String?) {
+        TWSNotificationRegistrationData.registerDeviceToken(fcmDeviceToken: fcmDeviceToken)
+    }
     
     /// Tries to handle notification data in a way that displays a full screen overlay of TWSView, displaying a snippet parsed from push notification body.
     /// Note: Manager instance for the configuration this notification is trying to access should be created and alive before you try calling this method.

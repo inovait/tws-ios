@@ -15,6 +15,11 @@ public struct TWSAPI {
     public let getCampaign: @Sendable (
         TWSBasicConfiguration, String
     ) async throws(APIError) -> TWSCampaign
+    
+    public let registerForRemoteNotifications: @Sendable (
+        _ projectId: TWSBasicConfiguration,
+        _ deviceToken: String
+    ) async throws(APIError) -> Void
 
     static func live(
         baseUrl: TWSBaseUrl
@@ -77,6 +82,21 @@ public struct TWSAPI {
                 } catch {
                     throw APIError.decode(error)
                 }
+            },
+            registerForRemoteNotifications: { project, deviceToken throws(APIError) in
+                let tokenParameter = URLQueryItem(name: "token", value: deviceToken)
+                
+                let request: Request = .init(
+                    method: .post,
+                    scheme: baseUrl.scheme,
+                    path: "/projects/\(project.id)/devicetoken",
+                    host: baseUrl.host,
+                    queryItems: [tokenParameter],
+                    headers: [:],
+                    auth: true
+                )
+                
+                let apiResult = try await Router.make(request: request)
             }
         )
     }
