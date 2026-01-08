@@ -26,7 +26,7 @@ extension WebView {
         coordinator: Coordinator,
         isPullToRefresh: Bool = false
     ) {
-        guard let urlToReload = state.currentUrl else { return }
+        let urlToReload = state.currentUrl ?? state.lastLoadedUrl ?? self.targetURL
         let initialUrl = initialUrl()
         
         setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: isPullToRefresh ? .pullToRefresh : .reload))
