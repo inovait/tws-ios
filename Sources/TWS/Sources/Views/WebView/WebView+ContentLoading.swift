@@ -202,10 +202,12 @@ extension WebView {
     }
     
     func cancelNavigation(coordinator: Coordinator) {
-        resourceDownloadHandler.cancelDownload()
-        resourceDownloadHandler.destroyStore()
-        coordinator.pullToRefresh.cancelRefresh()
-        navigationEventHandler.cancelNavigationEvent()
+        if !navigationEventHandler.didStartLoading() {
+            resourceDownloadHandler.cancelDownload()
+            resourceDownloadHandler.destroyStore()
+            coordinator.pullToRefresh.cancelRefresh()
+            navigationEventHandler.cancelNavigationEvent()
+        }
     }
     
     func shouldCancelNavigation(webView: WKWebView, coordinator: Coordinator) -> Bool {
@@ -213,7 +215,10 @@ extension WebView {
             return false
         }
         
-        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() || navigationEventHandler.navigationEvent.isNativeLoad() {
+        if state.currentUrl == navigationEventHandler.navigationEvent.getSourceURL() ||
+            navigationEventHandler.navigationEvent.isNativeLoad() ||
+            navigationEventHandler.navigationEvent.isSPA()
+        {
             return false
         }
         
@@ -233,6 +238,7 @@ extension WebView {
     
     private func createAndLoadURLRequest(for url: URL, using snippet: TWSSnippet, with content: ResourceResponse, in webView: WKWebView) -> WKNavigation {
         logger.debug("Load from raw HTML: \(content.responseUrl?.absoluteString)")
+        navigationEventHandler.navigationEvent.setDidStartLoading()
         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
         let urlRequest = URLRequest(url: url)
         return webView.loadSimulatedRequest(urlRequest, responseHTML: htmlToLoad)
@@ -254,7 +260,7 @@ extension WebView {
         DispatchQueue.main.async {
             navigationEventHandler.getNavigationEvent().setNavigation(navigation)
             if isPullToRefresh {
-                coordinator.pullToRefresh.setNavigationRequest(navigation: navigation)
+                coordinator.pullToRefresh.setNavigationRequest()
             }
         }
     }
