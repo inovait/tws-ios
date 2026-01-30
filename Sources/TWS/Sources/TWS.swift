@@ -106,7 +106,7 @@ public final class TWSManager: Identifiable {
 
     /// Triggers a manual refresh of the snippets, forcing them to reload from the source.
     public func forceRefresh() {
-        store.send(.snippets(.business(.load)))
+        store.send(.snippets(.business(.forceRefresh)))
     }
     
     
