@@ -3,6 +3,8 @@ import Foundation
 import TWSFormatters
 
 public struct TWSAPI {
+    
+    public let refreshAccessToken: @Sendable () async throws(APIError) -> Void
 
     public let getProject: @Sendable (
         _ projectId: TWSBasicConfiguration
@@ -20,6 +22,13 @@ public struct TWSAPI {
         baseUrl: TWSBaseUrl
     ) -> Self {
         .init(
+            refreshAccessToken: { () throws(APIError) in
+                do {
+                    try await Router.forceRefreshAccessToken()
+                } catch {
+                    throw APIError.auth(error.localizedDescription)
+                }
+            },
             getProject: { project throws(APIError) in
                 let result = try await Router.make(request: .init(
                         method: .get,

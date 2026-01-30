@@ -27,6 +27,7 @@ extension TWSSnippetsFeature {
 
         @CasePathable
         public enum BusinessAction {
+            case auth
             case load
             case projectLoaded(Result<TWSProjectBundle, Error>)
             case startVisibilityTimers([TWSSnippet])

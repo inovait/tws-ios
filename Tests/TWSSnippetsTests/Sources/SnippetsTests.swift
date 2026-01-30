@@ -25,6 +25,7 @@ import XCTest
 @testable import ComposableArchitecture
 @testable import TWSLocal
 @testable import TWSTriggers
+@testable import TWSAPI
 
 final class SnippetsTests: XCTestCase {
 
@@ -939,6 +940,37 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.finish()
+    }
+    
+    @MainActor
+    func testAuthBeforeLoadSuccess() async throws {
+        let store = TestStoreOf<TWSSnippetsFeature>(
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsFeature() }
+        )
+        
+        await store.send(\.business.auth)
+        await store.receive(\.business.load) {
+            $0.state = .loading(progress: 0)
+        }
+        
+        store.exhaustivity = .off
+    }
+    
+    @MainActor
+    func testAuthBeforeLoadError() async throws {
+        let store = TestStoreOf<TWSSnippetsFeature>(
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.refreshAccessToken = { () throws(APIError) in throw APIError.auth("Could not get token.")}
+            }
+        )
+        
+        await store.send(\.business.auth)
+        await store.receive(\.business.projectLoaded.failure) {
+            $0.state = .failed(APIError.auth("Could not get token."))
+        }
     }
 }
 

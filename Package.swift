@@ -30,6 +30,11 @@ let package = Package(
         .package(
             url: "https://github.com/Kitura/Swift-JWT.git",
             from: .init(4, 0, 0)
+        ),
+        // https://github.com/pointfreeco/swift-composable-architecture/issues/3704
+        .package(
+            url: "https://github.com/pointfreeco/swift-navigation",
+            from: .init(2, 3, 1)
         )
     ],
     targets: [
