@@ -23,7 +23,6 @@ actor AuthManager {
     private let registerUrl: URL
 
     private let keychainHelper = KeychainHelper()
-    private let accessTokenKey = "TWSAccessToken"
     private let refreshTokenKey = "TWSRefreshToken"
     private let JWTTokenKey = "TWSJWTToken"
     
