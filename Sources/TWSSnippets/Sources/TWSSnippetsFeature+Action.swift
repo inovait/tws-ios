@@ -30,6 +30,7 @@ extension TWSSnippetsFeature {
             case auth
             case load
             case projectLoaded(Result<TWSProjectBundle, Error>)
+            case forceRefresh
             case startVisibilityTimers([TWSSnippet])
             case listenForChanges
             case delayReconnect

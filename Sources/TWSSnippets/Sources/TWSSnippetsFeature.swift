@@ -80,6 +80,11 @@ public struct TWSSnippetsFeature: Sendable {
                     return
                 }
             }
+            
+        case .forceRefresh:
+            state.snippets = []
+            
+            return .send(.business(.load))
 
         case .startVisibilityTimers(let snippets):
             var effects = [Effect<Action>]()
