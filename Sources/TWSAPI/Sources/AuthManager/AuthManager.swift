@@ -73,7 +73,7 @@ actor AuthManager {
                 }
             }
             
-            let refreshToken = keychainHelper.get(for: refreshTokenKey) ?? ""
+            let refreshToken = try await getRefreshToken(false)
             let token = try await requestAccessToken(refreshToken)
             accessToken = token
             
