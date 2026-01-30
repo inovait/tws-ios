@@ -215,7 +215,7 @@ public final class TWSManager: Identifiable {
         defer { isSetup = true }
         guard !isSetup else { return }
         
-        store.send(.snippets(.business(.load)))
+        store.send(.snippets(.business(.auth)))
     }
 
     private func _syncState() {
