@@ -130,6 +130,10 @@ class Router {
             throw APIError.local(error)
         }
     }
+    
+    class func forceRefreshAccessToken() async throws {
+        try await authManager.forceRefreshAccessTokens()
+    }
 }
 
 struct APIResult {

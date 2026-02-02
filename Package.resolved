@@ -1,5 +1,5 @@
 {
-  "originHash" : "5ade2474e39d55bdcb25521866f86f4dc6c16fda8f9f6107a3c2676b0fb6678a",
+  "originHash" : "ad67a013becf8a6229e7e6dbd40a0aa4d649cb5eb65e0cf4fb20d2e65e45cb3c",
   "pins" : [
     {
       "identity" : "bluecryptor",
@@ -159,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "e28911721538fa0c2439e92320bad13e3200866f",
-        "version" : "2.2.3"
+        "revision" : "bf498690e1f6b4af790260f542e8428a4ba10d78",
+        "version" : "2.6.0"
       }
     },
     {

@@ -21,6 +21,11 @@ import ComposableArchitecture
 
 @DependencyClient
 public struct APIDependency: Sendable {
+    
+    public var refreshAccessToken: @Sendable () async throws(APIError) -> Void = { () throws(APIError) in
+        reportIssue("\(Self.self).login")
+        throw APIError.local(NSError(domain: "", code: -1))
+    }
 
     public var getProject: @Sendable (
         TWSBasicConfiguration
@@ -51,6 +56,7 @@ public enum APIDependencyKey: DependencyKey {
         let api = TWSAPIFactory.new()
         
         return .init(
+            refreshAccessToken: api.refreshAccessToken,
             getProject: api.getProject,
             getResource: api.getResource,
             getCampaigns: api.getCampaign
@@ -59,7 +65,9 @@ public enum APIDependencyKey: DependencyKey {
     
 
     public static var testValue: APIDependency {
-        .init { _ in
+        .init {
+            return
+        } getProject: { _ in
             return (.init(listenOn: URL(string: "http://unimplemented.com")!, snippets: []), nil)
         } getResource: { _, _ in
             return .init(responseUrl: nil, data: "")

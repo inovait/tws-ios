@@ -25,6 +25,7 @@ import XCTest
 @testable import ComposableArchitecture
 @testable import TWSLocal
 @testable import TWSTriggers
+@testable import TWSAPI
 
 final class SnippetsTests: XCTestCase {
 
@@ -939,6 +940,73 @@ final class SnippetsTests: XCTestCase {
         }
         
         await store.finish()
+    }
+    
+    @MainActor
+    func testAuthBeforeLoadSuccess() async throws {
+        let store = TestStoreOf<TWSSnippetsFeature>(
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsFeature() }
+        )
+        
+        await store.send(\.business.auth)
+        await store.receive(\.business.load) {
+            $0.state = .loading(progress: 0)
+        }
+        
+        store.exhaustivity = .off
+    }
+    
+    @MainActor
+    func testAuthBeforeLoadError() async throws {
+        let store = TestStoreOf<TWSSnippetsFeature>(
+            initialState: TWSSnippetsFeature.State(configuration: configuration),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.refreshAccessToken = { () throws(APIError) in throw APIError.auth("Could not get token.")}
+            }
+        )
+        
+        await store.send(\.business.auth)
+        await store.receive(\.business.projectLoaded.failure) {
+            $0.state = .failed(APIError.auth("Could not get token."))
+        }
+    }
+        
+    @MainActor
+    func testForceRefreshSnippets() async throws {
+        let snippets: [TWSSnippet] = [
+            .init(id: "id1", target: URL(string: "https://www.google.com")!),
+        ]
+
+        let state = TWSSnippetsFeature.State(configuration: configuration)
+        let project = TWSProject(listenOn: nil, snippets: snippets)
+        
+        let snippet = TWSSnippet(id: "test", target: URL(string: "https://test.com")!)
+        let store = TestStoreOf<TWSSnippetsFeature>(
+            initialState: TWSSnippetsFeature.State(configuration: configuration, snippets: [snippet]),
+            reducer: { TWSSnippetsFeature() },
+            withDependencies: {
+                $0.api.getProject = { _ in return (project, nil)}
+                $0.date.now = Date()
+            }
+        )
+        
+        await store.send(\.business.forceRefresh) {
+            $0.snippets = []
+        }
+        
+        await store.receive(\.business.load) {
+            $0.state = .loading(progress: 0)
+        }
+        
+        await store.receive(\.business.projectLoaded.success) {
+            $0.snippets = IdentifiedArray(uniqueElements: snippets.map { .init(snippet: $0) })
+            $0.state = .loaded
+            $0.shouldTriggerSdkInitCampaign = false
+        }
+        
+        store.exhaustivity = .off
     }
 }
 
