@@ -18,7 +18,7 @@ jobs:
         run: |
             XCODE_VERSION=$(/usr/bin/xcodebuild -version | head -1)
             echo ${XCODE_VERSION}
-            if [ "$XCODE_VERSION" == "Xcode 16.1" ]
+            if [ "$XCODE_VERSION" == "Xcode 26.0.1" ]
             then
                 echo "Version up to date"
             else

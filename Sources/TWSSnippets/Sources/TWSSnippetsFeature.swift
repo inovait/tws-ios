@@ -41,9 +41,17 @@ public struct TWSSnippetsFeature: Sendable {
 
     private func _reduce(into state: inout State, action: Action.BusinessAction) -> Effect<Action> {
         switch action {
-
         // MARK: - Loading snippets
-
+        case .auth:
+            return .run { [api] send in
+                do {
+                    try await api.refreshAccessToken()
+                    await send(.business(.load))
+                } catch {
+                    await send(.business(.projectLoaded(.failure(error))))
+                }
+            }
+            
         case .load:
             guard state.state.canLoad
             else {
@@ -54,6 +62,8 @@ public struct TWSSnippetsFeature: Sendable {
             state.state = .loading(progress: 0.0)
 
             return .run { [api] send in
+                
+                
                 switch configuration() {
                 case let config as TWSBasicConfiguration:
                     do {
@@ -70,6 +80,11 @@ public struct TWSSnippetsFeature: Sendable {
                     return
                 }
             }
+            
+        case .forceRefresh:
+            state.snippets = []
+            
+            return .send(.business(.load))
 
         case .startVisibilityTimers(let snippets):
             var effects = [Effect<Action>]()

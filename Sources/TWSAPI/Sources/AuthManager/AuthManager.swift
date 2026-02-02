@@ -23,9 +23,10 @@ actor AuthManager {
     private let registerUrl: URL
 
     private let keychainHelper = KeychainHelper()
-    private let accessTokenKey = "TWSAccessToken"
     private let refreshTokenKey = "TWSRefreshToken"
     private let JWTTokenKey = "TWSJWTToken"
+    
+    private var accessToken: String? = nil
 
     private var ongoingRefreshTask: Task<String, Error>?
     private var ongoingAccessTask: Task<String, Error>?
@@ -67,15 +68,16 @@ actor AuthManager {
 
         let accessTask = Task { () -> String in
             if !force {
-                if let savedAccessToken = keychainHelper.get(for: accessTokenKey) {
+                if let savedAccessToken = accessToken {
                     return savedAccessToken
                 }
             }
             
-            let refreshToken = keychainHelper.get(for: refreshTokenKey) ?? ""
-            let accessToken = try await requestAccessToken(refreshToken)
-            keychainHelper.save(accessToken, for: accessTokenKey)
-            return accessToken
+            let refreshToken = try await getRefreshToken(false)
+            let token = try await requestAccessToken(refreshToken)
+            accessToken = token
+            
+            return token
         }
 
         ongoingAccessTask = accessTask
