@@ -26,7 +26,6 @@ extension WebView {
         coordinator: Coordinator,
         isPullToRefresh: Bool = false
     ) {
-        let urlToReload = state.currentUrl ?? state.lastLoadedUrl ?? self.targetURL
         let initialUrl = initialUrl()
         
         setNavigationEvent(TWSNavigationEvent(sourceURL: state.currentUrl, type: isPullToRefresh ? .pullToRefresh : .reload))
@@ -79,7 +78,7 @@ extension WebView {
             resourceDownloadHandler.loadNewStore(
                 store,
                 onSuccess: { content in
-                    guard let content, let responseUrl = content.responseUrl, let currentUrl = state.currentUrl else {
+                    guard let content, let responseUrl = content.responseUrl, let _ = state.currentUrl else {
                         return
                     }
                     
@@ -237,7 +236,7 @@ extension WebView {
     }
     
     private func createAndLoadURLRequest(for url: URL, using snippet: TWSSnippet, with content: ResourceResponse, in webView: WKWebView) -> WKNavigation {
-        logger.debug("Load from raw HTML: \(content.responseUrl?.absoluteString)")
+        logger.debug("Load from raw HTML: \(String(describing: content.responseUrl?.absoluteString))")
         navigationEventHandler.navigationEvent.setDidStartLoading()
         let htmlToLoad = _handleMustacheProccesing(htmlContentToProcess: content.data, snippet: snippet)
         let urlRequest = URLRequest(url: url)
