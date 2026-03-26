@@ -59,7 +59,8 @@ let package = Package(
                 .target(name: "TWSSnippets"),
                 .target(name: "TWSSettings"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSFormatters")
+                .target(name: "TWSFormatters"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSCore"
         ),
@@ -67,7 +68,8 @@ let package = Package(
             name: "TWSLocal",
             dependencies: [
                 .target(name: "TWSModels"),
-                .target(name: "TWSSnippet")
+                .target(name: "TWSSnippet"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSLocal",
             swiftSettings: [
@@ -97,7 +99,8 @@ let package = Package(
                 .target(name: "TWSCommon"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSAPI")
+                .target(name: "TWSAPI"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSSnippet"
         ),
@@ -130,7 +133,8 @@ let package = Package(
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "URLRouting", package: "swift-url-routing"),
                 .target(name: "TWSAPI"),
-                .target(name: "TWSLogger")
+                .target(name: "TWSLogger"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSCommon"
         ),
@@ -144,14 +148,16 @@ let package = Package(
         .target(
             name: "TWSNotifications",
             dependencies: [
-                .target(name: "TWS")
+                .target(name: "TWS"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSNotifications"
         ),
         .target(
             name: "TWSTriggers",
             dependencies: [
-                .target(name: "TWSCommon")
+                .target(name: "TWSCommon"),
+                .target(name: "TWSCookieManager")
             ],
             path: "Sources/TWSTriggers"
         ),

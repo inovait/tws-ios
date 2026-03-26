@@ -122,7 +122,7 @@ struct WebView: UIViewRepresentable {
         }
         
         // Process content on first load
-        loadProcessedContent(webView: webView)
+        let _ = loadProcessedContent(webView: webView)
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
         context.coordinator.webView = webView
 
