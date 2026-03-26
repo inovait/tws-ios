@@ -94,8 +94,6 @@ public struct TWSTriggersFeature {
         case .campaignLoaded(.failure(let error)):
             logger.info("Campaign could not be loaded: \(error)")
             return .none
-        default:
-            return .none
         }
     }
 }

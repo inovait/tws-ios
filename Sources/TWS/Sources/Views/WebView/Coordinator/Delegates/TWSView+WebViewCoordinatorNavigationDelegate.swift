@@ -57,7 +57,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
             }
         }
         
-        parent.navigationEventHandler.finishNavigationEvent(navigation)
+        let _ = parent.navigationEventHandler.finishNavigationEvent(navigation)
     }
 
     public func webView(

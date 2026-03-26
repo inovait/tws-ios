@@ -82,7 +82,12 @@ public struct TWSSnippetsFeature: Sendable {
             }
             
         case .forceRefresh:
+            #if TESTING
+            // https://github.com/pointfreeco/swift-composable-architecture/discussions/3308
             state.snippets = []
+            #else
+            state.$snippets.withLock { $0 = [] }
+            #endif
             
             return .send(.business(.load))
 
