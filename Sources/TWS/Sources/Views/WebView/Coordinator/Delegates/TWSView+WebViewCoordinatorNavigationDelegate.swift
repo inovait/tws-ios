@@ -153,7 +153,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         _ webView: WKWebView
     ) {
         logger.debug("[Navigation \(webView.hash)] Web content process terminated")
-        self.parent.reloadWithProcessedResources(webView: webView, coordinator: self)
+        self.parent.contentProvider.reload(webView: webView, coordinator: self, isPullToRefresh: false)
     }
 
     func webView(
@@ -165,7 +165,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
         
         if navigationAction.navigationType == .reload, navigationAction.targetFrame?.isMainFrame ?? true {
-            self.parent.reloadWithProcessedResources(webView: webView, coordinator: self)
+            self.parent.contentProvider.reload(webView: webView, coordinator: self, isPullToRefresh: false)
             decisionHandler(.cancel, preferences)
             return
         }

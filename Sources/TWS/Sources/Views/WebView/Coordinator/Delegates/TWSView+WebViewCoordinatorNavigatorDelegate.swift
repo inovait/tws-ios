@@ -21,7 +21,7 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     func load(url: URLRequest, behaveAsSpa: Bool = false) {
         assert(webView != nil)
         if let webView {
-            parent.loadWithConditionallyProcessedResources(webView: webView, loadUrl: url, coordinator: self, behaveAsSpa: behaveAsSpa)
+            parent.contentProvider.load(webView: webView, coordinator: self, url, behaveAsSPA: behaveAsSpa)
         }
     }
     
@@ -38,7 +38,7 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
     func reload() {
         assert(webView != nil)
         guard let webView else { return }
-        parent.reloadWithProcessedResources(webView: webView, coordinator: self)
+        parent.contentProvider.reload(webView: webView, coordinator: self, isPullToRefresh: false)
     }
     
     func pushState(path: String) {

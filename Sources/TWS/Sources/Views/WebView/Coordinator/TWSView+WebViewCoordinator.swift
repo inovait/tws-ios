@@ -107,7 +107,7 @@ extension WebView {
                         let unwrapped = change.newValue,
                         let url = unwrapped
                     else { return }
-                    guard let self = self else { return }
+                    guard let self = self as? WebView.Coordinator else { return }
                     if self.parent.wkWebView == webview {
                         self.parent.state.currentUrl = url
                         let _ = self.parent.shouldCancelNavigation(webView: webview, coordinator: self)

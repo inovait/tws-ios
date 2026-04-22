@@ -48,8 +48,7 @@ struct WebView: UIViewRepresentable {
     let navigationProvider: NavigationProvider
     let downloadCompleted: ((TWSDownloadState) -> Void)?
     let enablePullToRefresh: Bool
-    
-    var resourceDownloadHandler: ResourceDownloadHandler = .init()
+    var contentProvider: WebViewContentProviding { DownloadedContentProvider(webview: self) }
 
     init(
         snippet: TWSSnippet,
@@ -113,7 +112,7 @@ struct WebView: UIViewRepresentable {
         if enablePullToRefresh {
             // process content on reloads
             context.coordinator.pullToRefresh.enable(on: webView) {
-                reloadWithProcessedResources(webView: webView, coordinator: context.coordinator, isPullToRefresh: true)
+                contentProvider.reload(webView: webView, coordinator: context.coordinator, isPullToRefresh: true)
             }
         }
 
@@ -122,7 +121,7 @@ struct WebView: UIViewRepresentable {
         }
         
         // Process content on first load
-        let _ = loadProcessedContent(webView: webView)
+        let _ = contentProvider.load(webView: webView)
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
         context.coordinator.webView = webView
 
@@ -178,10 +177,10 @@ struct WebView: UIViewRepresentable {
         if regainedNetworkConnection, case .failed = state.loadingState {
             if uiView.url == nil {
                 updateState(for: uiView, loadingState: .loading(progress: 0.0))
-                reloadWithProcessedResources(webView: uiView, coordinator: context.coordinator)
+                contentProvider.reload(webView: uiView, coordinator: context.coordinator, isPullToRefresh: false)
                 stateUpdated = true
             } else if !uiView.isLoading {
-                reloadWithProcessedResources(webView: uiView, coordinator: context.coordinator)
+                contentProvider.reload(webView: uiView, coordinator: context.coordinator, isPullToRefresh: false)
             }
         }
 
@@ -271,3 +270,4 @@ struct WebView: UIViewRepresentable {
         return htmlContentToProcess
     }
 }
+

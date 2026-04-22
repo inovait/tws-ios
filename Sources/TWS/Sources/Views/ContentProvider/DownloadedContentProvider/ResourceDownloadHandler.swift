@@ -22,7 +22,7 @@ import TWSModels
 
 // periphery:ignore
 @MainActor
-class ResourceDownloadHandler {
+final class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
     private var cancellables = Set<AnyCancellable>()
     private var onSuccess: ((ResourceResponse?) -> Void)? = nil
