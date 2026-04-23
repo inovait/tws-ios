@@ -15,6 +15,7 @@
 //
 
 import SwiftUI
+import TWSShared
 
 extension View {
 
@@ -132,6 +133,10 @@ extension EnvironmentValues {
             }
         )
     }
+    
+    @Entry var basicAuthView: @Sendable @MainActor () -> AnyView = {
+        AnyView(_BasicAuthView())
+    }
 }
 
 private struct _LoadingView: View {
@@ -148,5 +153,60 @@ private struct _LoadingView: View {
             Spacer()
         }
         .padding()
+    }
+}
+
+private struct _BasicAuthView: View {
+    @StateObject private var authManager = TWSAuthenticationChallengeManager.shared
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            VStack(spacing: 8) {
+                Text("Sign In to \(authManager.prompt)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Text("Your login information will be sent securely.")
+                    .font(.subheadline)
+                    .fontWeight(.light)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            VStack(spacing: 0) {
+                TextField("Username", text: $authManager.username)
+                    .textContentType(.username)
+                    .autocapitalization(.none)
+                    .padding()
+                
+                Divider()
+                
+                SecureField("Password", text: $authManager.password)
+                    .textContentType(.password)
+                    .padding()
+            }
+            .background(Color(.secondarySystemGroupedBackground))
+            .cornerRadius(12)
+            
+            VStack(spacing: 12) {
+                Button(action: { authManager.submit() }) {
+                    Text("Sign In")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button(role: .cancel, action: { authManager.cancel() }) {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemGroupedBackground))
     }
 }
