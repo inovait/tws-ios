@@ -8,7 +8,8 @@
 import Foundation
 
 @MainActor
-protocol CredentialStore {
+@_spi(Internals)
+public protocol CredentialStore {
 
     func save(_ credential: URLCredential, for key: CredentialsKey)
     func read(for key: CredentialsKey) -> URLCredential?

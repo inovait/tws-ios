@@ -17,7 +17,7 @@
 import Foundation
 @preconcurrency import WebKit
 internal import TWSCommon
-import TWSShared
+@_spi(Internals) import TWSShared
 
 extension WebView.Coordinator: WKNavigationDelegate {
 

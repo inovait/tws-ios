@@ -8,7 +8,9 @@
 import Foundation
 import Combine
 
+
 @MainActor
+@_spi(Internals)
 public final class TWSAuthenticationChallengeManager: ObservableObject {
     public static let shared = TWSAuthenticationChallengeManager()
     
@@ -22,6 +24,12 @@ public final class TWSAuthenticationChallengeManager: ObservableObject {
     private var persistanceStore: CredentialStore
     private var latestCredential: URLCredential? = nil
     private var pendingContinuation: CheckedContinuation<URLCredential?, Never>? = nil
+    
+    @_spi(Internals)
+    public convenience init(persistanceStore: CredentialStore) {
+        self.init()
+        self.persistanceStore = persistanceStore
+    }
 
     private init() {
         switch TWSConfig.getBasicAuthPersistence() {

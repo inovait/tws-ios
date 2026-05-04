@@ -15,7 +15,7 @@
 //
 
 import SwiftUI
-import TWSShared
+@_spi(Internals) import TWSShared
 
 extension View {
 

@@ -16,7 +16,7 @@
 
 import Foundation
 import WebKit
-internal import TWSShared
+@_spi(Internals) import TWSShared
 
 final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     

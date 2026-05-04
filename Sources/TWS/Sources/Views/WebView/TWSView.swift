@@ -16,9 +16,9 @@
 
 import SwiftUI
 @_spi(Internals) import TWSModels
+@_spi(Internals )import TWSShared
 internal import ComposableArchitecture
 internal import TWSSnippet
-import TWSShared
 import WebKit
 
 /// The main view to use to display snippets

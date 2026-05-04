@@ -227,6 +227,13 @@ let package = Package(
                 .target(name: "TWSLogger")
             ],
             path: "Tests/TWSCookieManagerTests"
+        ),
+        .testTarget(
+            name: "CredentialManagerTests",
+            dependencies: [
+                "TWSShared"
+            ],
+            path: "Tests/CredentialManagerTests"
         )
     ]
 )
