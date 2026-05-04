@@ -22,8 +22,4 @@ public struct CredentialsKey: Hashable {
             return "TWS.BasicAuth.\(host)"
         }
     }
-
-    var account: String {
-        host
-    }
 }

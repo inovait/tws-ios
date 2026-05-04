@@ -27,8 +27,4 @@ final class SessionCredentialStore: CredentialStore {
     func delete(for key: CredentialsKey) {
         credentials.removeValue(forKey: key)
     }
-
-    func deleteAll() {
-        credentials.removeAll()
-    }
 }
