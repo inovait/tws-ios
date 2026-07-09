@@ -24,7 +24,9 @@ protocol TWSViewNavigatorDelegate: AnyObject, Sendable {
     func navigateForward()
     func reload()
     func pushState(path: String)
+    func pushState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)?)
     func replaceState(path: String)
+    func replaceState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)?)
     func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)?)
 }
 
@@ -116,10 +118,24 @@ public class TWSViewNavigator: Sendable {
         delegate?.pushState(path: path)
     }
     
+    /// Triggers the delegate to inject pushState JavaScript into webView.
+    /// Used for navigating SPA web page, by pushing a new history entry to the history stack.
+    /// Exposes a callback for when javascript execution finishes.
+    public func pushState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
+        delegate?.pushState(path: path, completionHandler: completionHandler)
+    }
+    
     /// Triggers the delegate to inject replaceState JavaScript into webView.
     /// Used for navigating SPA web page, by modifying the current history entry of the history stack.
     public func replaceState(path: String) {
         delegate?.replaceState(path: path)
+    }
+    
+    /// Triggers the delegate to inject replaceState JavaScript into webView.
+    /// Used for navigating SPA web page, by modifying the current history entry of the history stack.
+    /// Exposes a callback for when javascript execution finishes.
+    public func replaceState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
+        delegate?.replaceState(path: path, completionHandler: completionHandler)
     }
     
     /// Triggers the delegate to inject custom JavaScript into webView, completion handler is an optional parameter that allows for handling success and error of the executed JavaScript.
