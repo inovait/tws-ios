@@ -30,7 +30,6 @@ public struct TWSBaseUrl : Sendable {
 
 public struct TWSBuildSettingsProvider {
     
-    // periphery:ignore
     struct Payload: Claims, Equatable {
         let exp: String
         let iss: String
