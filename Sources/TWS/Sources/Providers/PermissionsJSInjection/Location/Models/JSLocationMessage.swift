@@ -30,7 +30,6 @@ extension JSLocationMessage {
     }
 }
 
-// periphery:ignore - may be used by the client of our SDK
 /// A structure that represents options for configuring location-related commands.
 ///
 /// These parameters correspond to options available in the Geolocation API of web browsers,
