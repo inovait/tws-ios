@@ -29,12 +29,12 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         assert(webView != nil)
         webView?.goBack()
     }
-
+    
     func navigateForward() {
         assert(webView != nil)
         webView?.goForward()
     }
-
+    
     func reload() {
         assert(webView != nil)
         guard let webView else { return }
@@ -45,8 +45,17 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
         webView?.navigateFromNativeOrFallback(path: path, isReplaceState: false)
     }
     
+    func pushState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)?) {
+        webView?.navigateFromNativeOrFallback(path: path, isReplaceState: false, completionHandler: completionHandler)
+    }
+    
+    
     func replaceState(path: String) {
         webView?.navigateFromNativeOrFallback(path: path, isReplaceState: true)
+    }
+    
+    func replaceState(path: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)?) {
+        webView?.navigateFromNativeOrFallback(path: path, isReplaceState: true, completionHandler: completionHandler)
     }
     
     func evaluateJavaScript(script: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil) {
@@ -56,7 +65,7 @@ extension WebView.Coordinator: TWSViewNavigatorDelegate {
 }
 
 extension WKWebView {
-    func navigateFromNativeOrFallback(path: String, isReplaceState: Bool) {
+    func navigateFromNativeOrFallback(path: String, isReplaceState: Bool, completionHandler: ((Any, Error?) -> Void)? = nil) {
         let navigationExists = "typeof window.navigateFromNative === 'function';"
         self.evaluateJavaScript(navigationExists) { result, err in
             guard let result = result as? Bool else {
@@ -70,7 +79,7 @@ extension WKWebView {
                     navigateFromNative('\(path)', { replace: \(isReplaceState) });
                     console.log('navigateFromNative called');
                 """
-                self.evaluateJavaScript(navigate)
+                self.evaluateJavaScript(navigate, completionHandler: completionHandler)
             } else {
                 let navigate = isReplaceState ? "replaceState" : "pushState"
                 logger.info("Navigating with \(navigate)")
@@ -82,7 +91,7 @@ extension WKWebView {
                     console.log('fallback navigation');
                 """
                 
-                self.evaluateJavaScript(fallbackNavigate)
+                self.evaluateJavaScript(fallbackNavigate, completionHandler: completionHandler)
             }
             
         }

@@ -43,7 +43,6 @@ public struct SocketMessage: CustomDebugStringConvertible, Sendable {
     }
 
     #if DEBUG
-    // periphery:ignore - Used in unit tests
     init(id: TWSSnippet.ID, type: MessageType, snippet: TWSSnippet? = nil) {
         self.id = id
         self.type = type

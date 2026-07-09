@@ -4,6 +4,10 @@ import TWSModels
 public struct TWSLog: Sendable {
 
     private let logger: os.Logger
+    
+    private static let isLoggingEnabled: Bool = {
+        return Bundle.main.object(forInfoDictionaryKey: "TWSLoggingEnabled") as? Bool ?? true
+    }()
 
     public init(category: String) {
         let bundleId = Bundle.main.bundleIdentifier
@@ -20,7 +24,9 @@ public struct TWSLog: Sendable {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.debug("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        if TWSLog.isLoggingEnabled {
+            logger.debug("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        }
     }
 
     public func info(
@@ -29,7 +35,9 @@ public struct TWSLog: Sendable {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.info("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        if TWSLog.isLoggingEnabled {
+            logger.info("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        }
     }
 
     public func warn(
@@ -38,7 +46,9 @@ public struct TWSLog: Sendable {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.warning("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        if TWSLog.isLoggingEnabled {
+            logger.warning("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        }
     }
 
     public func err(
@@ -47,7 +57,9 @@ public struct TWSLog: Sendable {
         lineNumber: Int = #line,
         functionName: String = #function
     ) {
-        logger.critical("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        if TWSLog.isLoggingEnabled {
+            logger.critical("\(createLogMessage(message, className, lineNumber, functionName), privacy: .public)")
+        }
     }
 
     private func createLogMessage(

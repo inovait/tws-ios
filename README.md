@@ -95,6 +95,9 @@ To contribute to this library:
     * in Xcode Product > Test or 
     * from terminal `xcodebuild test -workspace 'TheWebSnippet.xcworkspace' -scheme Sample -destination 'platform=iOS SIMULATOR,name=iPhone 16,OS=18.1'`
 
+## Note
+
+When developing with our SDK, the logging can be silenced by adding TWSLoggingEnabled flag in info.plist to NO.
 
 ## License
 
