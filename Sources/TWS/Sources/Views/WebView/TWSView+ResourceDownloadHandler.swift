@@ -24,8 +24,11 @@ import TWSModels
 class ResourceDownloadHandler {
     private var store: StoreOf<TWSSnippetFeature>? = nil
     private var cancellables = Set<AnyCancellable>()
+    // periphery:ignore
     private var onSuccess: ((ResourceResponse?) -> Void)? = nil
+    // periphery:ignore
     private var shouldCancel: (() -> Bool)? = nil
+    // periphery:ignore
     private var onError: ((Error) -> Void)? = nil
     
     init() {}
