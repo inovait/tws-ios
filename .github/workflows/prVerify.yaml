@@ -35,6 +35,9 @@ jobs:
           log_level: debug
 
       - name: Run Tests
+        env:
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 2
         run: |
           fastlane do_tests
 

@@ -30,9 +30,10 @@ public struct TWSBaseUrl : Sendable {
 
 public struct TWSBuildSettingsProvider {
     
-    // periphery:ignore
     struct Payload: Claims, Equatable {
+        // periphery:ignore
         let exp: String
+        // periphery:ignore
         let iss: String
         // swiftlint:disable identifier_name
     }
