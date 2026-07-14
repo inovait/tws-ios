@@ -17,6 +17,7 @@
 import Foundation
 @preconcurrency import WebKit
 internal import TWSCommon
+@_spi(Internals) import TWSShared
 
 extension WebView.Coordinator: WKNavigationDelegate {
 
@@ -229,6 +230,12 @@ extension WebView.Coordinator: WKNavigationDelegate {
         completionHandler: @escaping @MainActor @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         logger.debug("[Navigation \(webView.hash)] Received authentication challenge")
+        let method = challenge.protectionSpace.authenticationMethod
+
+        if method == NSURLAuthenticationMethodHTTPBasic || method == NSURLAuthenticationMethodHTTPDigest {
+            TWSAuthenticationChallengeManager.basicAuthFlowHandler(challenge: challenge, pendingAuthChallenge: completionHandler)
+            return
+        }
         completionHandler(.performDefaultHandling, nil)  // Default handling for authentication challenge
     }
 

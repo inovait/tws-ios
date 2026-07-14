@@ -16,6 +16,7 @@
 
 import SwiftUI
 @_spi(Internals) import TWSModels
+@_spi(Internals )import TWSShared
 internal import ComposableArchitecture
 internal import TWSSnippet
 import WebKit
@@ -27,7 +28,10 @@ public struct TWSView: View {
     @Environment(\.loadingView) private var loadingView
     @Environment(\.preloadingView) private var preloadingView
     @Environment(\.errorView) private var errorView
+    @Environment(\.basicAuthView) private var basicAuthView
     @Environment(\.navigator) private var navigator
+    @StateObject private var authManager = TWSAuthenticationChallengeManager.shared
+    
     @Bindable var bindableState: TWSViewState
     @State var internalState = TWSViewState()
 
@@ -135,6 +139,9 @@ public struct TWSView: View {
             store = presenter.store(forSnippetID: snippet.id)
             store?.send(.business(.setLocalDynamicResources(overrides)))
         }
+        .fullScreenCover(isPresented: $authManager.isPresentingSignIn) {
+            basicAuthView()
+        }
     }
 }
 
@@ -197,3 +204,4 @@ private struct _TWSView: View {
         )
     }
 }
+
