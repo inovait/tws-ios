@@ -63,7 +63,7 @@ class CustomInterceptor: TWSViewInterceptor {
         _ intercept: TWSIntercepted
     ) -> Bool {
         switch intercept {
-        case .url(let url):
+        case .url(let url, _):
             if let destination = Destination(rawValue: url.lastPathComponent) {
                 self.destination = destination
                 return true

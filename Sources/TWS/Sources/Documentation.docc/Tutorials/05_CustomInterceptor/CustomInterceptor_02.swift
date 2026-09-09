@@ -18,7 +18,7 @@ struct CustomView: View {
 class NavigationInterceptor: TWSViewInterceptor {
     func handleIntercept(_ intercept: TWSIntercepted) -> Bool {
         switch intercept {
-        case .url(let url):
+        case .url(let url, _):
             if url.absoluteString == "https://www.myWebPage.com/helloWorld" {
                 return true
             } else if url.absoluteString.contains("https://www.myWebPage.com/greetUser/") {
