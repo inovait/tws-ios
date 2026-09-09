@@ -68,10 +68,55 @@ public protocol TWSViewInterceptor: AnyObject, Sendable {
     ///
     ///  Note: URL is returned for content loads, path is returned if you handle SPA navigation with JavaScript bridge sending
     ///  window.webkit.messageHandlers.intercept.postMessage(path) from JavaScript
+    ///
+    ///  > Important: This is called while the web view is still waiting for a navigation policy decision.
+    ///  Do not start a navigation on that web view from here - including ``TWSViewNavigator/reload()``,
+    ///  ``TWSViewNavigator/load(url:behaveAsSpa:)`` or state changes that cause SwiftUI to reload it.
+    ///  Hop to the next main-runloop turn first.
     func handleIntercept(_ intercept: TWSIntercepted) -> Bool
 }
 
 public enum TWSIntercepted {
+
+    /// An SPA navigation reported by the JavaScript bridge.
     case path(String)
-    case url(URL)
+
+    /// A content load the web view is about to perform, and what caused it.
+    ///
+    /// Switch on `navigationType` to treat kinds of navigation differently - most usefully
+    /// ``TWSNavigationType/reload``, which lets you react to a page reloading itself.
+    case url(URL, navigationType: TWSNavigationType)
+}
+
+/// What caused a navigation the web view is about to perform.
+///
+/// Mirrors `WKNavigationType` so that interceptors do not have to import WebKit.
+public enum TWSNavigationType: Equatable, Sendable {
+
+    /// The user activated a link.
+    case linkActivated
+
+    /// A form was submitted.
+    case formSubmitted
+
+    /// The user went back or forward through the session history.
+    case backForward
+
+    /// The page is reloading itself, e.g. via `location.reload()`.
+    ///
+    /// Returning `true` for a reload hands it to your app: TWS cancels it and does *not* run its own
+    /// reload, so the snippet's dynamic resources are not re-injected and the loading state does not
+    /// advance - drive the reload yourself if you take it over. Returning `false` leaves TWS's default
+    /// reload handling untouched.
+    ///
+    /// > Note: Only page-initiated reloads reach the interceptor. Reloads your app starts through
+    /// ``TWSViewNavigator/reload()``, and pull-to-refresh, bypass the navigation policy delegate
+    /// entirely.
+    case reload
+
+    /// A form was resubmitted, e.g. by going back to a page that was the result of a form submission.
+    case formResubmitted
+
+    /// Navigation is taking place for some other reason.
+    case other
 }
