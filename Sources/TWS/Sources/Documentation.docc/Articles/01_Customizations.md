@@ -142,6 +142,25 @@ The ``TWSViewInterceptor`` protocol provides an interface for intercepting and h
 
 > Note: Returning `true` from the `handleIntercept(_:)` method will prevent the web view from loading the intercepted URL.
 
+#### Navigation types
+
+The ``TWSIntercepted/url(_:navigationType:)`` case carries a ``TWSNavigationType`` describing what caused
+the navigation, so you can treat a tapped link differently from a form submission or a reload.
+
+``TWSNavigationType/reload`` deserves special care. Returning `true` for it takes the reload away from TWS:
+the web view is cancelled and TWS does **not** run its own reload, so the snippet's dynamic resources are
+not re-injected and the loading state does not advance. Take it over only if you intend to drive the
+reload yourself; otherwise return `false` and let TWS handle it.
+
+Only page-initiated reloads (`location.reload()` and friends) reach the interceptor. Reloads your app
+starts through ``TWSViewNavigator/reload()``, and pull-to-refresh, bypass the navigation policy delegate
+entirely.
+
+> Important: `handleIntercept(_:)` is called while the web view is still waiting for a navigation policy
+decision. Do not start a navigation on that web view from inside it - including ``TWSViewNavigator/reload()``
+or ``TWSViewNavigator/load(url:behaveAsSpa:)`` - and do not change state that makes SwiftUI reload the view.
+Hop to the next main-runloop turn first.
+
 #### Usage
 
 You can provide a custom implementation of this protocol and inject it into the ``TWSView`` using the appropriate configuration or environment modifier.
@@ -150,11 +169,18 @@ You can provide a custom implementation of this protocol and inject it into the 
 
 ```swift
 final class CustomInterceptor: TWSViewInterceptor {
-    func handleIntercept(_ intercept: handleIntercepted) -> Bool {
+    func handleIntercept(_ intercept: TWSIntercepted) -> Bool {
         switch intercept {
 
         // Intercepted MPA loads
-        case .url(let url):
+        case .url(let url, let navigationType):
+            // Let TWS re-inject its resources when the page reloads itself.
+            // Check this first: a reload of a page you are only passing through should not be
+            // mistaken for a navigation you want to handle natively.
+            if navigationType == .reload {
+                return false
+            }
+
             if url.host == "native.example.com" {
                 // Handle URL natively
                 print("Intercepted and handled natively: \(url)")
