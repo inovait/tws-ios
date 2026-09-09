@@ -164,7 +164,15 @@ extension WebView.Coordinator: WKNavigationDelegate {
     ) {
         logger.debug("[Navigation \(webView.hash)] Decide policy for navigation action: \(navigationAction.request)")
         
+        let navigationType = TWSNavigationType(navigationAction.navigationType)
+        
         if navigationAction.navigationType == .reload, navigationAction.targetFrame?.isMainFrame ?? true {
+            if let url = navigationAction.request.url,
+               interceptor?.handleIntercept(.url(url, navigationType: navigationType)) == true {
+                decisionHandler(.cancel, preferences)
+                return
+            }
+
             self.parent.reloadWithProcessedResources(webView: webView, coordinator: self)
             decisionHandler(.cancel, preferences)
             return
@@ -172,7 +180,7 @@ extension WebView.Coordinator: WKNavigationDelegate {
         
         if let url = navigationAction.request.url,
            navigationAction.targetFrame?.isMainFrame ?? true,
-            interceptor?.handleIntercept(.url(url)) == true {
+            interceptor?.handleIntercept(.url(url, navigationType: navigationType)) == true {
             decisionHandler(.cancel, preferences)
             return
         }
@@ -261,5 +269,20 @@ extension WebView.Coordinator: WKNavigationDelegate {
             for: webView,
             dynamicHeight: max(cachedScrollHeight ?? webView.scrollView.contentSize.height, 16)
         )
+    }
+}
+
+extension TWSNavigationType {
+
+    init(_ navigationType: WKNavigationType) {
+        switch navigationType {
+        case .linkActivated: self = .linkActivated
+        case .formSubmitted: self = .formSubmitted
+        case .backForward: self = .backForward
+        case .reload: self = .reload
+        case .formResubmitted: self = .formResubmitted
+        case .other: self = .other
+        @unknown default: self = .other
+        }
     }
 }

@@ -34,7 +34,7 @@ class NavigationInterceptor: TWSViewInterceptor {
     
     func handleIntercept(_ intercept: TWSIntercepted) -> Bool {
         switch intercept {
-        case .url(let url):
+        case .url(let url, _):
             if url.absoluteString == "https://www.myWebPage.com/helloWorld" {
                 destination = .helloWorld
                 return true
