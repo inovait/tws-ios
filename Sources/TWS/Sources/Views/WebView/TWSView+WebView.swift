@@ -49,6 +49,8 @@ struct WebView: UIViewRepresentable {
     let downloadCompleted: ((TWSDownloadState) -> Void)?
     let enablePullToRefresh: Bool
     
+    let onCreate: (@MainActor @Sendable (WKWebView) -> Void)?
+    
     var resourceDownloadHandler: ResourceDownloadHandler = .init()
 
     init(
@@ -66,7 +68,8 @@ struct WebView: UIViewRepresentable {
         canGoForward: Binding<Bool>,
         downloadCompleted: ((TWSDownloadState) -> Void)?,
         state: Bindable<TWSViewState>,
-        enablePullToRefresh: Bool
+        enablePullToRefresh: Bool,
+        onCreate: (@MainActor @Sendable (WKWebView) -> Void)?
     ) {
         self.snippet = snippet
         self.snippetStore = snippetStore
@@ -84,6 +87,7 @@ struct WebView: UIViewRepresentable {
         self.downloadCompleted = downloadCompleted
         self._state = state
         self.enablePullToRefresh = enablePullToRefresh
+        self.onCreate = onCreate
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -109,6 +113,9 @@ struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         navigator.delegate = context.coordinator
+        // Bind the web view to the coordinator before any host code can run, so that the navigator is
+        // usable from `onCreate` below - its delegate methods assert on a nil web view.
+        context.coordinator.webView = webView
 
         if enablePullToRefresh {
             // process content on reloads
@@ -121,10 +128,14 @@ struct WebView: UIViewRepresentable {
             controller.add(SPAInterceptorBridge(interceptor: interceptor), name: "intercept")
         }
         
+        // Hand the web view to the host once TWS has finished wiring its own handlers up, so that
+        // anything registered here cannot collide with them, but before the first load, so that user
+        // scripts added here still apply to it.
+        onCreate?(webView)
+        
         // Process content on first load
         let _ = loadProcessedContent(webView: webView)
         registerWebViewObservers(coordinator: context.coordinator, webView: webView)
-        context.coordinator.webView = webView
 
         logger.debug("INIT WKWebView \(webView.hash) bind to \(id)")
         

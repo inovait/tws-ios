@@ -38,6 +38,7 @@ public struct TWSView: View {
     let overrides: [TWSRawDynamicResource]
     let overrideVisibilty: Bool
     let enablePullToRefresh: Bool
+    let onCreate: (@MainActor @Sendable (WKWebView) -> Void)?
 
     /// Main contructor
     /// - Parameters:
@@ -45,18 +46,31 @@ public struct TWSView: View {
     ///   - state: An observable instance of all the values that ``TWSView`` can manage and update such as page's title, etc.
     ///   - overrides: An array of raw CSS/JavaScript strings that are injected in the web view. The new lines will be removed so make sure the string is valid (the best is if you use a minified version.
     ///   - enablePullToRefresh: Flag used to determine whether pull to refresh action should be enabled.
+    ///   - onCreate: Called with the underlying `WKWebView` once TWS has wired up its own handlers but
+    ///   before the first content load, so you can configure it - registering your own JavaScript bridge,
+    ///   for example. See <doc:04_JavaScriptBridges>.
+    ///
+    ///   The navigator is usable from here, but the web view has not loaded anything yet: content you load
+    ///   yourself will be replaced by the snippet's first load.
+    ///
+    ///   Called once per web view, which means once per change of the view's identity rather than once per
+    ///   app launch, and not at all for popups opened by the web content. Do not reassign `navigationDelegate`
+    ///   or `uiDelegate`: TWS owns both, and replacing either disables navigation handling, interception,
+    ///   downloads and permissions.
     public init(
         snippet: TWSSnippet,
         state: Bindable<TWSViewState> = .init(TWSViewState.defaultState()),
         overrides: [TWSRawDynamicResource] = [],
         overrideVisibilty: Bool = false,
-        enablePullToRefresh: Bool = false
+        enablePullToRefresh: Bool = false,
+        onCreate: (@MainActor @Sendable (WKWebView) -> Void)? = nil
     ) {
         self.snippet = snippet
         self.overrides = overrides
         self.overrideVisibilty = overrideVisibilty
         self._bindableState = state
         self.enablePullToRefresh = enablePullToRefresh
+        self.onCreate = onCreate
     }
 
     public var body: some View {
@@ -76,7 +90,8 @@ public struct TWSView: View {
                                 snippet: snippet,
                                 displayID: displayID,
                                 state: $state,
-                                enablePullToRefresh: enablePullToRefresh
+                                enablePullToRefresh: enablePullToRefresh,
+                                onCreate: onCreate
                             )
                             .id(snippet.id)
                             // The actual URL changed for the same Snippet ~ redraw is required
@@ -156,17 +171,20 @@ private struct _TWSView: View {
     let snippet: TWSSnippet
     let displayID: String
     let enablePullToRefresh: Bool
+    let onCreate: (@MainActor @Sendable (WKWebView) -> Void)?
     
     init(
         snippet: TWSSnippet,
         displayID id: String,
         state: Bindable<TWSViewState>,
-        enablePullToRefresh: Bool
+        enablePullToRefresh: Bool,
+        onCreate: (@MainActor @Sendable (WKWebView) -> Void)?
     ) {
         self.snippet = snippet
         self.displayID = id.trimmingCharacters(in: .whitespacesAndNewlines)
         self._state = state
         self.enablePullToRefresh = enablePullToRefresh
+        self.onCreate = onCreate
     }
 
     var body: some View {
@@ -186,7 +204,8 @@ private struct _TWSView: View {
             canGoForward: $navigator.canGoForward,
             downloadCompleted: onDownloadCompleted,
             state: $state,
-            enablePullToRefresh: enablePullToRefresh
+            enablePullToRefresh: enablePullToRefresh,
+            onCreate: onCreate
         )
         // onOpenUrl used for Authentication via Safari, wrapped because overlays are opened via UIKit, which should not have onOpenUrl modifier
         .modifier(onOpenURLModifier(enabled: !isOverlay, openUrl: $openURL))
