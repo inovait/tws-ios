@@ -16,6 +16,7 @@
 
 import Foundation
 import WebKit
+@_spi(Internals) import TWSShared
 
 final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     
@@ -37,7 +38,24 @@ final class RedirectHandler: NSObject, URLSessionDelegate, URLSessionTaskDelegat
                 }
             }
         }
-        
         completionHandler(request)
+    }
+    
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @Sendable @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        let method = challenge.protectionSpace.authenticationMethod
+
+        if method == NSURLAuthenticationMethodHTTPBasic || method == NSURLAuthenticationMethodHTTPDigest {
+            Task {
+                await TWSAuthenticationChallengeManager.basicAuthFlowHandler(challenge: challenge, pendingAuthChallenge: completionHandler)
+            }
+            return
+        }
+
+        completionHandler(.performDefaultHandling, nil)
     }
 }

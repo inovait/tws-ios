@@ -45,7 +45,8 @@ let package = Package(
                 .target(name: "TWSCore"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSLocal")
+                .target(name: "TWSLocal"),
+                .target(name: "TWSShared")
             ],
             path: "Sources/TWS",
             resources: [
@@ -123,7 +124,8 @@ let package = Package(
                 .product(name: "SwiftJWT", package: "Swift-JWT"),
                 .target(name: "TWSModels"),
                 .target(name: "TWSLogger"),
-                .target(name: "TWSFormatters")
+                .target(name: "TWSFormatters"),
+                .target(name: "TWSShared")
             ],
             path: "Sources/TWSAPI"
         ),
@@ -166,6 +168,9 @@ let package = Package(
                 .target(name: "TWSLogger")
             ],
             path: "Sources/TWSCookieManager"),
+        .target(name: "TWSShared",
+            dependencies: [],
+            path: "Sources/TWSShared"),
         // Tests
         .testTarget(
             name: "TWSSnippetsTests",
@@ -222,6 +227,13 @@ let package = Package(
                 .target(name: "TWSLogger")
             ],
             path: "Tests/TWSCookieManagerTests"
+        ),
+        .testTarget(
+            name: "CredentialManagerTests",
+            dependencies: [
+                "TWSShared"
+            ],
+            path: "Tests/CredentialManagerTests"
         )
     ]
 )
